@@ -106,10 +106,9 @@ namespace GetOffMyLawn {
         int pieceCount = 0;
 
         foreach (var piece in pieces) {
-          if (piece.IsCreator()
-              && (piece.m_category == Piece.PieceCategory.Building
-                  || piece.m_category == Piece.PieceCategory.Crafting
-                  || piece.m_category == Piece.PieceCategory.Furniture)) {
+          if (piece.m_category == Piece.PieceCategory.Building
+              || piece.m_category == Piece.PieceCategory.Crafting
+              || piece.m_category == Piece.PieceCategory.Furniture) {
             piece.m_nview.GetZDO().Set("health", pieceHealth.Value);
             pieceCount++;
           }
