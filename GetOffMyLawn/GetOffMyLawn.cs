@@ -92,7 +92,7 @@ namespace GetOffMyLawn {
           return;
         }
 
-        if (__instance.IsEnabled()) {
+        if (!__instance.IsEnabled()) {
           return;
         }
 
