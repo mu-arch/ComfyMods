@@ -8,7 +8,7 @@ namespace GetOffMyLawn {
   [BepInPlugin(GetOffMyLawn.Package, GetOffMyLawn.ModName, GetOffMyLawn.Version)]
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.getoffmylawn";
-    public const string Version = "0.0.2";
+    public const string Version = "0.0.3";
     public const string ModName = "Get Off My Lawn";
 
     private static ConfigEntry<bool> isModEnabled;
@@ -141,12 +141,27 @@ namespace GetOffMyLawn {
           return;
         }
 
-        if (!PrivateArea.CheckAccess(hoveringPiece.transform.position, 0f, /*flash=*/ true, /*wardCheck=*/ false)) {
-          return;
+        List<Piece> pieces = new List<Piece>();
+        Piece.GetAllPiecesInRadius(hoveringPiece.transform.position, _wardRadius, pieces);
+
+        if (IsPermittedToRepair(pieces)) {
+          ZLog.Log("Repairing piece '" + hoveringPiece.m_name + "' to health: " + pieceHealth.Value);
+          hoveringPiece.m_nview.GetZDO().Set("health", pieceHealth.Value);
+        }
+      }
+
+      private static bool IsPermittedToRepair(List<Piece> piecesToCheck) {
+        long playerId = Player.m_localPlayer.GetPlayerID();
+
+        foreach (var piece in piecesToCheck) {
+          // Check if PrivateArea/Ward piece is in radius, if so check if permitted.
+          if (piece.TryGetComponent<PrivateArea>(out PrivateArea privateArea)) {
+            return privateArea.IsPermitted(playerId);
+          }
         }
 
-        ZLog.Log("Repairing piece '" + hoveringPiece.m_name + "' to health: " + pieceHealth.Value);
-        hoveringPiece.m_nview.GetZDO().Set("health", pieceHealth.Value);
+        // No PrivateArea/Ward pieces in radius, OK to repair.
+        return true;
       }
     }
   }
