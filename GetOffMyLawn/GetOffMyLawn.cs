@@ -156,7 +156,8 @@ namespace GetOffMyLawn {
         foreach (var piece in piecesToCheck) {
           // Check if PrivateArea/Ward piece is in radius, if so check if permitted.
           if (piece.TryGetComponent<PrivateArea>(out PrivateArea privateArea)) {
-            return privateArea.IsPermitted(playerId);
+            // Creator/Owner and Permitted are mutually exclusive permissions, so both must be checked.
+            return piece.IsCreator() || privateArea.IsPermitted(playerId);
           }
         }
 
