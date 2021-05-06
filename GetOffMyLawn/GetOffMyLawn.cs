@@ -8,7 +8,7 @@ namespace GetOffMyLawn {
   [BepInPlugin(GetOffMyLawn.Package, GetOffMyLawn.ModName, GetOffMyLawn.Version)]
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.getoffmylawn";
-    public const string Version = "0.0.3";
+    public const string Version = "0.0.4";
     public const string ModName = "Get Off My Lawn";
 
     private static ConfigEntry<bool> isModEnabled;
