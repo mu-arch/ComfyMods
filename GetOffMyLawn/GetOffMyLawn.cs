@@ -8,12 +8,14 @@ namespace GetOffMyLawn {
   [BepInPlugin(GetOffMyLawn.Package, GetOffMyLawn.ModName, GetOffMyLawn.Version)]
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.getoffmylawn";
-    public const string Version = "0.0.4";
+    public const string Version = "0.0.5";
     public const string ModName = "Get Off My Lawn";
 
     private static ConfigEntry<bool> isModEnabled;
     private static ConfigEntry<float> pieceHealth;
-    private const float _wardRadius = 30f;
+
+    private static ConfigEntry<bool> showTopLeftMessageOnPieceRepair;
+    private static ConfigEntry<bool> showRepairEffectOnWardActivation;
 
     private readonly Harmony harmony = new Harmony("redseiko.valheim.getoffmylawn");
 
@@ -23,9 +25,23 @@ namespace GetOffMyLawn {
       pieceHealth =
           Config.Bind(
               "PieceValues",
-              "PieceHealth",
+              "pieceHealth",
               100000f,
               "Target value to set piece health to when creating and repairing.");
+
+      showTopLeftMessageOnPieceRepair =
+          Config.Bind(
+              "Indicators",
+              "showTopLeftMessageOnPieceRepair",
+              false,
+              "Shows a message in the top-left message area on piece repair.");
+
+      showRepairEffectOnWardActivation =
+          Config.Bind(
+              "Indicators",
+              "showRepairEffectOnWardActivation",
+              false,
+              "Shows the repair effect on affected pieces when activating a ward.");
 
       harmony.PatchAll();
     }
@@ -73,11 +89,13 @@ namespace GetOffMyLawn {
           return;
         }
 
-        if (__instance.m_category == Piece.PieceCategory.Building
+        if (__instance.m_category == Piece.PieceCategory.Misc
+            || __instance.m_category == Piece.PieceCategory.Building
             || __instance.m_category == Piece.PieceCategory.Crafting
             || __instance.m_category == Piece.PieceCategory.Furniture) {
+          string pieceName = Localization.instance.Localize(__instance.m_name);
+          ZLog.Log("Creating piece '" + pieceName + "' with health: " + pieceHealth.Value);
 
-          ZLog.Log("Creating piece '" + __instance.m_name + "' with health: " + pieceHealth.Value);
           __instance.m_nview.GetZDO().Set("health", pieceHealth.Value);
         }
       }
@@ -92,29 +110,41 @@ namespace GetOffMyLawn {
           return;
         }
 
+        if (!__instance.m_piece.IsCreator()) {
+          return;
+        }
+
         if (!__instance.IsEnabled()) {
           return;
         }
 
-        Vector3 position = __instance == null
-            ? Player.m_localPlayer.transform.position
-            : __instance.transform.position;
-
         List<Piece> pieces = new List<Piece>();
-        Piece.GetAllPiecesInRadius(position, _wardRadius, pieces);
+        Piece.GetAllPiecesInRadius(__instance.transform.position, __instance.m_radius, pieces);
 
         int pieceCount = 0;
 
         foreach (var piece in pieces) {
-          if (piece.m_category == Piece.PieceCategory.Building
+          if (piece.m_category == Piece.PieceCategory.Misc
+              || piece.m_category == Piece.PieceCategory.Building
               || piece.m_category == Piece.PieceCategory.Crafting
               || piece.m_category == Piece.PieceCategory.Furniture) {
             piece.m_nview.GetZDO().Set("health", pieceHealth.Value);
+
+            if (showRepairEffectOnWardActivation.Value) {
+              piece.m_placeEffect.Create(piece.transform.position, piece.transform.rotation);
+            }
+
             pieceCount++;
           }
         }
 
         ZLog.Log("Repairing " + pieceCount + " pieces to health: " + pieceHealth.Value);
+
+        if (showTopLeftMessageOnPieceRepair.Value) {
+          Player.m_localPlayer.Message(
+              MessageHud.MessageType.TopLeft,
+              "Repaired '" + pieceCount + "' pieces to health: " + pieceHealth.Value);
+        }
       }
     }
 
@@ -141,28 +171,21 @@ namespace GetOffMyLawn {
           return;
         }
 
-        List<Piece> pieces = new List<Piece>();
-        Piece.GetAllPiecesInRadius(hoveringPiece.transform.position, _wardRadius, pieces);
+        string pieceName = Localization.instance.Localize(hoveringPiece.m_name);
 
-        if (IsPermittedToRepair(pieces)) {
-          ZLog.Log("Repairing piece '" + hoveringPiece.m_name + "' to health: " + pieceHealth.Value);
-          hoveringPiece.m_nview.GetZDO().Set("health", pieceHealth.Value);
-        }
-      }
-
-      private static bool IsPermittedToRepair(List<Piece> piecesToCheck) {
-        long playerId = Player.m_localPlayer.GetPlayerID();
-
-        foreach (var piece in piecesToCheck) {
-          // Check if PrivateArea/Ward piece is in radius, if so check if permitted.
-          if (piece.TryGetComponent<PrivateArea>(out PrivateArea privateArea)) {
-            // Creator/Owner and Permitted are mutually exclusive permissions, so both must be checked.
-            return piece.IsCreator() || privateArea.IsPermitted(playerId);
-          }
+        if (!PrivateArea.CheckAccess(hoveringPiece.transform.position, 0f, /*flash=*/ false, /*wardCheck=*/ false)) {
+          ZLog.Log("Unable to repair piece '" + pieceName + "' due to ward in range.");
+          return;
         }
 
-        // No PrivateArea/Ward pieces in radius, OK to repair.
-        return true;
+        ZLog.Log("Repairing piece '" + pieceName + "' to health: " + pieceHealth.Value);
+        hoveringPiece.m_nview.GetZDO().Set("health", pieceHealth.Value);
+
+        if (showTopLeftMessageOnPieceRepair.Value) {
+            __instance.Message(
+              MessageHud.MessageType.TopLeft,
+              "Repaired piece " + pieceName + " to health: " + pieceHealth.Value);
+        }
       }
     }
   }
