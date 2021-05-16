@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -61,7 +62,7 @@ namespace SectorDisplay {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.Update))]
       private static void PlayerUpdatePostfix(Player __instance) {
-        if (__instance == null) {
+        if (__instance == null || ZoneSystem.instance == null || ZNet.instance == null) {
           return;
         }
 
