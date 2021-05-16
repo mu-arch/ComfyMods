@@ -12,6 +12,7 @@ namespace OdinSaves {
 
     private static ConfigEntry<bool> isModEnabled;
     private static ConfigEntry<int> savePlayerProfileInterval;
+    private static ConfigEntry<bool> setLogoutPointOnSave;
     private static ConfigEntry<bool> showMessageOnModSave;
 
     private Harmony _harmony;
@@ -25,11 +26,17 @@ namespace OdinSaves {
         300,
         "Interval (in seconds) for how often to save the player profile. Game default (and maximum) is 1200s.");
 
+      setLogoutPointOnSave = Config.Bind(
+        "Global",
+        "setLogoutPointOnSave",
+        true,
+        "Sets your logout point to your current position when the mod performs a save.");
+
       showMessageOnModSave = Config.Bind(
         "Global",
         "saveMessageOnModSave",
         true,
-        "Show a message (in the middle of your screen) when the mod tries a save.");
+        "Show a message (in the middle of your screen) when the mod tries to save.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
     }
@@ -58,7 +65,7 @@ namespace OdinSaves {
         }
 
         __instance.m_saveTimer = 0f;
-        __instance.SavePlayerProfile(/*setLogoutPoint=*/ false);
+        __instance.SavePlayerProfile(/*setLogoutPoint=*/ setLogoutPointOnSave.Value);
 
         if (ZNet.instance) {
           ZNet.instance.Save(/*sync=*/ false);
