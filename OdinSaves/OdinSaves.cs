@@ -12,6 +12,7 @@ namespace OdinSaves {
 
     private static ConfigEntry<bool> isModEnabled;
     private static ConfigEntry<int> savePlayerProfileInterval;
+    private static ConfigEntry<bool> showMessageOnModSave;
 
     private Harmony _harmony;
 
@@ -23,6 +24,12 @@ namespace OdinSaves {
         "savePlayerProfileInterval",
         300,
         "Interval (in seconds) for how often to save the player profile. Game default (and maximum) is 1200s.");
+
+      showMessageOnModSave = Config.Bind(
+        "Global",
+        "saveMessageOnModSave",
+        true,
+        "Show a message (in the middle of your screen) when the mod tries a save.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
     }
@@ -46,7 +53,9 @@ namespace OdinSaves {
           return;
         }
 
-        MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, "Saving player profile...");
+        if (showMessageOnModSave.Value) {
+          MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, "Saving player profile...");
+        }
 
         __instance.m_saveTimer = 0f;
         __instance.SavePlayerProfile(/*setLogoutPoint=*/ false);
