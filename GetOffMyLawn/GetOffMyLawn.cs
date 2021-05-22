@@ -8,7 +8,7 @@ namespace GetOffMyLawn {
   [BepInPlugin(GetOffMyLawn.Package, GetOffMyLawn.ModName, GetOffMyLawn.Version)]
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.getoffmylawn";
-    public const string Version = "0.0.5";
+    public const string Version = "0.0.6";
     public const string ModName = "Get Off My Lawn";
 
     private static ConfigEntry<bool> isModEnabled;
@@ -85,7 +85,7 @@ namespace GetOffMyLawn {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Piece.SetCreator))]
       private static void SetCreatorPostfix(ref Piece __instance) {
-        if (!isModEnabled.Value) {
+        if (!isModEnabled.Value || !__instance || !__instance.m_nview) {
           return;
         }
 
