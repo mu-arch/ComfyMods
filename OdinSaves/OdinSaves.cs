@@ -2,15 +2,16 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 using System.Reflection;
+using UnityEngine;
 
 namespace OdinSaves {
   [BepInPlugin(OdinSaves.Package, OdinSaves.ModName, OdinSaves.Version)]
   public class OdinSaves : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.odinsaves";
-    public const string Version = "0.0.1";
+    public const string Version = "0.0.2";
     public const string ModName = "Odin Saves";
 
-    private static ConfigEntry<bool> isModEnabled;
+    private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<int> savePlayerProfileInterval;
     private static ConfigEntry<bool> setLogoutPointOnSave;
     private static ConfigEntry<bool> showMessageOnModSave;
@@ -18,7 +19,7 @@ namespace OdinSaves {
     private Harmony _harmony;
 
     private void Awake() {
-      isModEnabled = Config.Bind("Global", "isModEnabled", true, "Whether the mod should be enabled.");
+      _isModEnabled = Config.Bind("Global", "isModEnabled", true, "Whether the mod should be enabled.");
 
       savePlayerProfileInterval = Config.Bind(
         "Global",
@@ -51,8 +52,8 @@ namespace OdinSaves {
     private class GamePatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Game.UpdateSaving))]
-      private static void UpdateSavingPostfix(Game __instance) {
-        if (!isModEnabled.Value) {
+      private static void UpdateSavingPostfix(ref Game __instance) {
+        if (!_isModEnabled.Value) {
           return;
         }
 
@@ -70,6 +71,15 @@ namespace OdinSaves {
         if (ZNet.instance) {
           ZNet.instance.Save(/*sync=*/ false);
         }
+      }
+    }
+
+    [HarmonyPatch(typeof(Player))]
+    private class PlayerPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Player.OnDeath))]
+      private static void PlayerOnDeathPostfix(ref Player __instance) {
+        Game.instance.m_playerProfile.ClearLoguoutPoint();
       }
     }
   }
