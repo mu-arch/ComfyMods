@@ -4,7 +4,7 @@ using HarmonyLib;
 using System.Reflection;
 
 namespace LetMePlay {
-  [BepInPlugin("your.unique.mod.identifier", LetMePlay.ModName, LetMePlay.Version)]
+  [BepInPlugin(LetMePlay.Package, LetMePlay.ModName, LetMePlay.Version)]
   public class LetMePlay : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.letmeplay";
     public const string Version = "0.0.1";
