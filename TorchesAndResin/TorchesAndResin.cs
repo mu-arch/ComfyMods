@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 
 namespace TorchesAndResin {
-  [BepInPlugin("your.unique.mod.identifier", TorchesAndResin.PluginName, TorchesAndResin.PluginVersion)]
+  [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class TorchesAndResin : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.torchesandresin";
     public const string PluginName = "Torches and Resin";
