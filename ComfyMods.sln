@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PieceTracking", "PieceTrack
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LetMePlay", "LetMePlay\LetMePlay.csproj", "{89EF3289-8B5A-4174-8B1E-A082AB4FE9BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TorchesAndResin", "TorchesAndResin\TorchesAndResin.csproj", "{0DCD6A5F-93EE-4E00-B8DF-8720D1176557}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{89EF3289-8B5A-4174-8B1E-A082AB4FE9BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89EF3289-8B5A-4174-8B1E-A082AB4FE9BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89EF3289-8B5A-4174-8B1E-A082AB4FE9BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DCD6A5F-93EE-4E00-B8DF-8720D1176557}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DCD6A5F-93EE-4E00-B8DF-8720D1176557}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DCD6A5F-93EE-4E00-B8DF-8720D1176557}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DCD6A5F-93EE-4E00-B8DF-8720D1176557}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
