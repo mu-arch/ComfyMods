@@ -10,23 +10,25 @@ namespace LetMePlay {
   [BepInPlugin(Package, ModName, Version)]
   public class LetMePlay : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.letmeplay";
-    public const string Version = "0.0.2";
+    public const string Version = "0.0.3";
     public const string ModName = "Let Me Play";
 
     private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<bool> _disableWardShieldFlash;
+    private static ConfigEntry<bool> _disableCameraSwayWhileSitting;
 
     private Harmony _harmony;
 
     private void Awake() {
-      _isModEnabled = Config.Bind("Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      _isModEnabled = Config.Bind<bool>("Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       _disableWardShieldFlash =
           Config.Bind<bool>(
-              "Effects",
-              "disableWardShieldFlash",
-              false,
-              "Disable wards from flashing their blue shield.");
+              "Effects", "disableWardShieldFlash", false, "Disable wards from flashing their blue shield.");
+
+      _disableCameraSwayWhileSitting =
+          Config.Bind<bool>(
+              "Camera", "disableCameraSwayWhileSitting", false, "Disables the camera sway while sitting.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
     }
@@ -61,6 +63,7 @@ namespace LetMePlay {
             __instance.m_shared.m_icons[__instance.m_variant] = GetSprite("yagluthdrop");
             __instance.m_shared.m_name = __instance.m_dropPrefab.name;
             __instance.m_shared.m_description = "Non-player item: " + __instance.m_dropPrefab.name;
+            __instance.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Misc;
             __instance.m_crafterID = 12345678L;
             __instance.m_crafterName = "redseiko.valheim.letmeplay";
           }
@@ -72,5 +75,15 @@ namespace LetMePlay {
       return Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(obj => obj.name == spriteName);
     }
 
+    [HarmonyPatch(typeof(GameCamera))]
+    private class GameCameraPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(GameCamera.GetCameraBaseOffset))]
+      private static void GetCameraBaseOffsetPostfix(GameCamera __instance, Player player, ref Vector3 __result) {
+        if (_isModEnabled.Value && _disableCameraSwayWhileSitting.Value) {
+          __result = player.m_eye.transform.position - player.transform.position;
+        }
+      }
+    }
   }
 }

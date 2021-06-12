@@ -4,6 +4,9 @@
 # Wards
   * Disable wards from flashing their blue shield.
 
+# Camera
+  * Disable camera sway (which is due to player head animation) when sitting on a chair/bench.
+
 # Inventory
   * Fixes interaction with non-player items (GoblinSpear, etc) in player inventory and chests.
     * These items will have the `YagluthThing` icon and the prefab name.
