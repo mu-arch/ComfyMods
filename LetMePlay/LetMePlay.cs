@@ -10,25 +10,31 @@ namespace LetMePlay {
   [BepInPlugin(Package, ModName, Version)]
   public class LetMePlay : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.letmeplay";
-    public const string Version = "0.0.3";
+    public const string Version = "0.0.4";
     public const string ModName = "Let Me Play";
 
     private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<bool> _disableWardShieldFlash;
     private static ConfigEntry<bool> _disableCameraSwayWhileSitting;
+    private static ConfigEntry<bool> _disableBuildPlacementMarker;
 
     private Harmony _harmony;
 
     private void Awake() {
-      _isModEnabled = Config.Bind<bool>("Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      _isModEnabled = Config.Bind("Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       _disableWardShieldFlash =
-          Config.Bind<bool>(
-              "Effects", "disableWardShieldFlash", false, "Disable wards from flashing their blue shield.");
+          Config.Bind("Effects", "disableWardShieldFlash", false, "Disable wards from flashing their blue shield.");
 
       _disableCameraSwayWhileSitting =
-          Config.Bind<bool>(
-              "Camera", "disableCameraSwayWhileSitting", false, "Disables the camera sway while sitting.");
+          Config.Bind("Camera", "disableCameraSwayWhileSitting", false, "Disables the camera sway while sitting.");
+
+      _disableBuildPlacementMarker =
+          Config.Bind(
+              "Build",
+              "disableBuildPlacementMarker",
+              false,
+              "Disables the yellow placement marker (and gizmo indicator) when building.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
     }
@@ -82,6 +88,20 @@ namespace LetMePlay {
       private static void GetCameraBaseOffsetPostfix(GameCamera __instance, Player player, ref Vector3 __result) {
         if (_isModEnabled.Value && _disableCameraSwayWhileSitting.Value) {
           __result = player.m_eye.transform.position - player.transform.position;
+        }
+      }
+    }
+
+    [HarmonyPatch(typeof(Player))]
+    private class PlayerPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Player.UpdatePlacementGhost))]
+      private static void UpdatePlacementGhostPostfix(Player __instance) {
+        if (__instance
+            && __instance.m_placementMarkerInstance
+            && _isModEnabled.Value
+            && _disableBuildPlacementMarker.Value) {
+          __instance.m_placementMarkerInstance.SetActive(false);
         }
       }
     }
