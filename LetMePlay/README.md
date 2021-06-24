@@ -17,7 +17,7 @@
     * If you are using gizmo, the gizmo indicator will also be disabled.
 
 # Instructions
-* Most toggles/options are initially disabled, there are two ways to toggle them.
+* Most toggles/options are **initially disabled**, there are two ways to toggle them.
 
   1) Press F1 in-game to open the ConfigurationManager and navigate to "Let Me Play" section.
   2) Start the game once to generate the configuration file, then navigate to and open the file:

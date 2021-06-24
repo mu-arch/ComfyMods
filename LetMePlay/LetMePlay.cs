@@ -10,7 +10,7 @@ namespace LetMePlay {
   [BepInPlugin(Package, ModName, Version)]
   public class LetMePlay : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.letmeplay";
-    public const string Version = "0.0.4";
+    public const string Version = "0.0.5";
     public const string ModName = "Let Me Play";
 
     private static ConfigEntry<bool> _isModEnabled;
@@ -49,7 +49,7 @@ namespace LetMePlay {
     private class PrivateAreaPatch {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(PrivateArea.RPC_FlashShield))]
-      private static bool PrivateAreaRpcFlashShield(PrivateArea __instance, long uid) {
+      private static bool PrivateAreaRpcFlashShield(PrivateArea __instance) {
         if (_isModEnabled.Value && _disableWardShieldFlash.Value) {
           return false;
         }
@@ -62,11 +62,12 @@ namespace LetMePlay {
     private class ItemDataPatch {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ItemDrop.ItemData.GetIcon))]
-      private static void ItemDataGetIcon(ItemDrop.ItemData __instance) {
+      private static void ItemDataGetIcon(ref ItemDrop.ItemData __instance) {
         if (_isModEnabled.Value) {
           if (__instance.m_variant < 0 || __instance.m_variant >= __instance.m_shared.m_icons.Length) {
             Array.Resize(ref __instance.m_shared.m_icons, __instance.m_variant + 1);
-            __instance.m_shared.m_icons[__instance.m_variant] = GetSprite("yagluthdrop");
+
+            __instance.m_shared.m_icons[__instance.m_variant] = GetSprite("hammer_icon_small");
             __instance.m_shared.m_name = __instance.m_dropPrefab.name;
             __instance.m_shared.m_description = "Non-player item: " + __instance.m_dropPrefab.name;
             __instance.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Misc;
@@ -96,9 +97,10 @@ namespace LetMePlay {
     private class PlayerPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.UpdatePlacementGhost))]
-      private static void UpdatePlacementGhostPostfix(Player __instance) {
+      private static void UpdatePlacementGhostPostfix(ref Player __instance) {
         if (__instance
             && __instance.m_placementMarkerInstance
+            && __instance.m_placementMarkerInstance.activeSelf
             && _isModEnabled.Value
             && _disableBuildPlacementMarker.Value) {
           __instance.m_placementMarkerInstance.SetActive(false);
