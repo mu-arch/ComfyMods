@@ -1,5 +1,5 @@
 ﻿# Let Me Play
-  * Collection of tweaks and mods to improve player experience and accessability.
+  * Collection of tweaks and mods to improve player experience and accessibility.
 
 # Wards
   * Disable wards from flashing their blue shield.
@@ -9,7 +9,7 @@
 
 # Inventory
   * Fixes interaction with non-player items (GoblinSpear, etc) in player inventory and chests.
-    * These items will have the `YagluthThing` icon and the prefab name.
+    * These items will have the `grey hammer` icon and the prefab name.
     * These items will have a special description and this mod as the crafter name.
 
 # Build
