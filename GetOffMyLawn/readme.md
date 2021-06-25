@@ -5,7 +5,7 @@ Set the health of any player built in the game to a configurable (default: 10000
 Jotunn the Valheim Library (https://www.nexusmods.com/valheim/mods/1138)
 
 ## User Interface
-This fuctionality is available on repaired objects or new build objects placed.
+This fuctionality is available on repaired objects or placed build objects.
 
 Set the health of the currently targeted build object to a high value by repairing it (note: build object must be either unwarded or on a ward the user can access).
 
