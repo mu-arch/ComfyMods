@@ -10,6 +10,6 @@ This fuctionality is available on repaired objects or new build objects placed.
 Set the health of the currently targeted build object to a high value by repairing it (note: build object must be either unwarded or on a ward the user can access).
 
 ## Instructions
-Extract GetOffMyLawn.dll to your /Valheim/BepInEx/plugins/ folder.
-Place a new building piece or repair a building piece to set its health value to the configured value.
-Activate a ward to set the health value of all building pieces within range to the configured value.
+1. Extract GetOffMyLawn.dll to your /Valheim/BepInEx/plugins/ folder.
+2. Place a new building piece or repair a building piece to set its health value to the configured value.
+3. Activate a ward to set the health value of all building pieces within range to the configured value.
