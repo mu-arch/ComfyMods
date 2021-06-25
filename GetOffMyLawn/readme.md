@@ -2,7 +2,7 @@
 Set the health of any player built in the game to a configurable (default: 100000) value.
 
 ## Dependencies
-Jotunn the Valheim Library (https://www.nexusmods.com/valheim/mods/1138)
+None
 
 ## User Interface
 This fuctionality is available on repaired objects or placed build objects.
