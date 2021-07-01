@@ -10,7 +10,7 @@ using UnityEngine;
 namespace ColorfulLights {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ColorfulLights : BaseUnityPlugin {
-    public const string PluginGUID = "redseiko.vahleim.colorfullights";
+    public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
     public const string PluginVersion = "1.0.0";
 
