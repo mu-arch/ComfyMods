@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyTree", "SkyTree\SkyTree.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulLights", "ColorfulLights\ColorfulLights.csproj", "{7B47B8F8-811B-488B-A8EE-D20EC60F25F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulWards", "ColorfulWards\ColorfulWards.csproj", "{D1397EA5-483E-42F8-9FEC-AA29755AAAF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{7B47B8F8-811B-488B-A8EE-D20EC60F25F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B47B8F8-811B-488B-A8EE-D20EC60F25F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B47B8F8-811B-488B-A8EE-D20EC60F25F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1397EA5-483E-42F8-9FEC-AA29755AAAF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1397EA5-483E-42F8-9FEC-AA29755AAAF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1397EA5-483E-42F8-9FEC-AA29755AAAF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1397EA5-483E-42F8-9FEC-AA29755AAAF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -15,13 +15,11 @@ namespace ColorfulLights {
     public const string PluginVersion = "1.0.0";
 
     private class FireplaceData {
-      public Vector3 Position { get; set; }
       public List<ParticleSystem> Systems { get; }
       public List<ParticleSystemRenderer> Renderers { get; }
       public Color TargetColor { get; set; }
 
       public FireplaceData() {
-        Position = Vector3.zero;
         Systems = new List<ParticleSystem>();
         Renderers = new List<ParticleSystemRenderer>();
         TargetColor = Color.clear;
