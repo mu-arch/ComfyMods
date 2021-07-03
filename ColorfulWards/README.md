@@ -2,7 +2,6 @@
 
   * You can color the glow effect of any ward using RGB and HTML color codes!
   * Those without the mod installed will still see the default yellow glow.
-
   * **Wards will now only extend/cover its default radius (30m) on the vertical/Y axis.**
     * In the vanilla game, the range is infinite on the Y axis and the default radius on the XZ axis.
 
