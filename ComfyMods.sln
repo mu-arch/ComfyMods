@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulWards", "ColorfulWa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulPortals", "ColorfulPortals\ColorfulPortals.csproj", "{77BCDD82-4A30-4874-ADBA-3B9DD9DD6CCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulPieces", "ColorfulPieces\ColorfulPieces.csproj", "{BFAA6B86-51A5-42A3-83A5-AF812A989C5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{77BCDD82-4A30-4874-ADBA-3B9DD9DD6CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77BCDD82-4A30-4874-ADBA-3B9DD9DD6CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77BCDD82-4A30-4874-ADBA-3B9DD9DD6CCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFAA6B86-51A5-42A3-83A5-AF812A989C5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFAA6B86-51A5-42A3-83A5-AF812A989C5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFAA6B86-51A5-42A3-83A5-AF812A989C5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFAA6B86-51A5-42A3-83A5-AF812A989C5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
