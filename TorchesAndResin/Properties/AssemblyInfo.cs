@@ -1,16 +1,16 @@
-﻿using GetOffMyLawn;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using TorchesAndResin;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GetOffMyLawn")]
+[assembly: AssemblyTitle("TorchesAndResin")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GetOffMyLawn")]
+[assembly: AssemblyProduct("TorchesAndResin")]
 [assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("514d9344-a1b0-4edf-93a8-17c7ae859946")]
+[assembly: Guid("0dcd6a5f-93ee-4e00-b8df-8720d1176557")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,5 +33,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(GetOffMyLawn.GetOffMyLawn.Version)]
-[assembly: AssemblyFileVersion(GetOffMyLawn.GetOffMyLawn.Version)]
+[assembly: AssemblyVersion(TorchesAndResin.TorchesAndResin.PluginVersion)]
+[assembly: AssemblyFileVersion(TorchesAndResin.TorchesAndResin.PluginVersion)]

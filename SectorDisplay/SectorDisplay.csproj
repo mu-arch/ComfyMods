@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{514D9344-A1B0-4EDF-93A8-17C7AE859946}</ProjectGuid>
+    <ProjectGuid>{989836D4-2272-4820-80E5-C9CBBFCE8BE8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GetOffMyLawn</RootNamespace>
-    <AssemblyName>GetOffMyLawn</AssemblyName>
+    <RootNamespace>SectorDisplay</RootNamespace>
+    <AssemblyName>SectorDisplay</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -260,13 +260,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GetOffMyLawn.cs" />
+    <Compile Include="SectorDisplay.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\.editorconfig">
-      <Link>.editorconfig</Link>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

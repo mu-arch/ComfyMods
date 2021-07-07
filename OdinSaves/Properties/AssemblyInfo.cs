@@ -1,4 +1,4 @@
-﻿using GetOffMyLawn;
+﻿using OdinSaves;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GetOffMyLawn")]
+[assembly: AssemblyTitle("OdinSaves")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GetOffMyLawn")]
-[assembly: AssemblyCopyright("Copyright © 2021")]
+[assembly: AssemblyProduct("OdinSaves")]
+[assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("514d9344-a1b0-4edf-93a8-17c7ae859946")]
+[assembly: Guid("649fad21-6342-4434-8747-28db2fe311bc")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,5 +33,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(GetOffMyLawn.GetOffMyLawn.Version)]
-[assembly: AssemblyFileVersion(GetOffMyLawn.GetOffMyLawn.Version)]
+[assembly: AssemblyVersion(OdinSaves.OdinSaves.Version)]
+[assembly: AssemblyFileVersion(OdinSaves.OdinSaves.Version)]
