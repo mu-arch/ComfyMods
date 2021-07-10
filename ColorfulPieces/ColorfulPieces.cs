@@ -14,7 +14,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "0.9.0";
+    public const string PluginVersion = "1.0.0";
 
     private static readonly KeyboardShortcut _changeColorActionShortcut =
         new KeyboardShortcut(KeyCode.R, KeyCode.LeftShift);
@@ -127,6 +127,7 @@ namespace ColorfulPieces {
           || !wearNTear.m_nview
           || !wearNTear.m_nview.IsValid()
           || !PrivateArea.CheckAccess(wearNTear.transform.position, flash: true)) {
+        _logger.LogWarning("Piece does not have a valid ZNetView or is in a PrivateArea.");
         return false;
       }
 
@@ -148,7 +149,12 @@ namespace ColorfulPieces {
       if (_wearNTearData.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = _targetPieceColor.Value;
         wearNTearData.TargetEmissionColorFactor = _targetPieceEmissionColorFactor.Value;
+
         SetWearNTearColors(wearNTearData);
+      }
+
+      if (wearNTear.m_piece) {
+        wearNTear.m_piece.m_placeEffect.Create(wearNTear.transform.position, wearNTear.transform.rotation);
       }
     }
 
@@ -165,7 +171,12 @@ namespace ColorfulPieces {
       if (_wearNTearData.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = Color.clear;
         wearNTearData.TargetEmissionColorFactor = 0f;
+
         ClearWearNTearColors(wearNTearData);
+      }
+
+      if (wearNTear.m_piece) {
+        wearNTear.m_piece.m_placeEffect.Create(wearNTear.transform.position, wearNTear.transform.rotation);
       }
     }
 
@@ -219,8 +230,8 @@ namespace ColorfulPieces {
     private class HudPatch {
       private static readonly string _hoverNameTextTemplate =
         "{0}{1}"
-            + "[<color={2}>{3}</color>] Change color to: <color=#{4}>#{4}</color> (f: <color=#{4}>{5}</color>)\n"
-            + "[<color={6}>{7}</color>] Clear existing color\n";
+            + "[<color={2}>{3}</color>] Change piece color to: <color=#{4}>#{4}</color> (f: <color=#{4}>{5}</color>)\n"
+            + "[<color={6}>{7}</color>] Clear existing piece color\n";
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
