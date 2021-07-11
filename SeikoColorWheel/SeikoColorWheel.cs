@@ -74,23 +74,6 @@ namespace SeikoColorWheel
                    KeyCode.O,
                    new ConfigDescription("Key that opens the overlay"));
 
-
-
-
-            //List<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            //foreach (Assembly assem in assems)
-            //{
-
-            //    Module at = assem.Modules.ToArray()[0];
-            //    foreach (var type in at.GetTypes())
-            //    {
-            //        BepInPlugin bep = type.GetCustomAttribute<BepInPlugin>();
-            //        if (bep != null)
-            //        {
-            //            bep.
-            //        }
-            //    }
-            //}
             Assembly assembly = Assembly.GetExecutingAssembly();
             Harmony harmony = new(ModGUID);
             harmony.PatchAll(assembly);
@@ -197,7 +180,7 @@ namespace SeikoColorWheel
                             var torchbutton = menu.transform.Find("ColorfulTorches").GetComponent<Button>();
                             torchbutton.onClick.AddListener(() =>
                             {
-                                ColorPicker.Create(fireplacecolor.Value, $"Choose the { fireplacecolor.Value}'s color!", SetColorFireplace, ColorFinished, true);
+                                ColorPicker.Create(fireplacecolor.Value, $"Choose the { ColorfulLights.Value.Instance.name}'s color!", SetColorFireplace, ColorFinished, true);
                             });
                         }
                         else if (colorlights == false)
@@ -212,7 +195,7 @@ namespace SeikoColorWheel
                             var wardbutton = menu.transform.Find("ColorfulWards").GetComponent<Button>();
                             wardbutton.onClick.AddListener(() =>
                             {
-                                ColorPicker.Create(wardcolor.Value, $"Choose the { wardcolor.Value}'s color!", SetColorWard, ColorFinished, true);
+                                ColorPicker.Create(wardcolor.Value, $"Choose the { ColorfulWards.Value.Instance.name}'s color!", SetColorWard, ColorFinished, true);
                             });
                         }
                         else if (clorwards == false)
@@ -227,7 +210,7 @@ namespace SeikoColorWheel
                             var portalbutton = menu.transform.Find("ColorfulPortals").GetComponent<Button>();
                             portalbutton.onClick.AddListener(() =>
                             {
-                                ColorPicker.Create(portalcolor.Value, $"Choose the { portalcolor.Value}'s color!", SetColorPortal, ColorFinished, true);
+                                ColorPicker.Create(portalcolor.Value, $"Choose the { ColorfulPortals.Value.Instance.name}'s color!", SetColorPortal, ColorFinished, true);
                             });
                         }
                         else if (colorportals == false)
@@ -241,7 +224,7 @@ namespace SeikoColorWheel
                             var piecebutton = menu.transform.Find("ColorfulPieces").GetComponent<Button>();
                             piecebutton.onClick.AddListener(() =>
                             {
-                                ColorPicker.Create(piececolor.Value, $"Choose the { piececolor.Value}'s color!", SetColorPiece, ColorFinished, true);
+                                ColorPicker.Create(piececolor.Value, $"Choose the { ColorfulPieces.Value.Instance.name}'s color!", SetColorPiece, ColorFinished, true);
                             });
                         }
                         else if (colorpieces == false)
@@ -256,7 +239,7 @@ namespace SeikoColorWheel
                             var yachtbutton = menu.transform.Find("YachtClub").GetComponent<Button>();
                             yachtbutton.onClick.AddListener(() =>
                             {
-                                ColorPicker.Create(yachtcolor.Value, $"Choose the { yachtcolor.Value}'s color!", SetColorYacht, ColorFinished, true);
+                                ColorPicker.Create(yachtcolor.Value, $"Choose the { YachtClub.Value.Instance.name}'s color!", SetColorYacht, ColorFinished, true);
                             });
                         }
                         else if (colorboats == false)
