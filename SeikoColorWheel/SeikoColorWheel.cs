@@ -17,9 +17,9 @@ namespace SeikoColorWheel
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class NewMod : BaseUnityPlugin
     {
-        private const string ModName = "zNew Mod";
+        private const string ModName = "RedSeikoColorWheel";
         private const string ModVersion = "1.0";
-        private const string ModGUID = "zsome.new.guid";
+        private const string ModGUID = "com.redseiko.comfy";
         private static readonly ConfigSync configSync = new(ModGUID) { DisplayName = ModName };
         private static GameObject ColorWheelMenu { get; set; }
 
@@ -28,7 +28,6 @@ namespace SeikoColorWheel
         public KeyValuePair<string, PluginInfo> ColorfulLights { get; private set; }
 
         private ConfigEntry<Color> fireplacecolor;
-        private IEnumerable<Assembly> assems;
         private ConfigEntry<Color> yachtcolor;
         private ConfigEntry<Color> piececolor;
         private ConfigEntry<Color> portalcolor;
