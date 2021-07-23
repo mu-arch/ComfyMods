@@ -100,7 +100,7 @@ namespace ColorfulWards {
     }
 
     private void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      _targetWardColorHex.Value = $"{GetColorHtmlString(_targetWardColor.Value)}";
+      _targetWardColorHex.Value = $"#{GetColorHtmlString(_targetWardColor.Value)}";
     }
 
     private void UpdateColorValue(object sender, EventArgs eventArgs) {

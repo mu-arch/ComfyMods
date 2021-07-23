@@ -14,11 +14,13 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<Color> _targetPortalColor;
     private static ConfigEntry<string> _targetPortalColorHex;
+
+    private static ConfigEntry<bool> _showChangeColorHoverText;
 
     private static ManualLogSource _logger;
     private Harmony _harmony;
@@ -39,6 +41,10 @@ namespace ColorfulPortals {
       _targetPortalColor.SettingChanged += UpdateColorHexValue;
       _targetPortalColorHex.SettingChanged += UpdateColorValue;
 
+      _showChangeColorHoverText =
+          Config.Bind(
+              "Hud", "showChangeColorHoverText", true, "Show the 'change color' text when hovering over a portal.");
+
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
     }
@@ -50,18 +56,19 @@ namespace ColorfulPortals {
     }
 
     private void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      _targetPortalColorHex.Value =
-          string.Format(
-              "#{0}",
-              _targetPortalColor.Value.a == 1.0f
-                  ? ColorUtility.ToHtmlStringRGB(_targetPortalColor.Value)
-                  : ColorUtility.ToHtmlStringRGBA(_targetPortalColor.Value));
+      _targetPortalColorHex.Value = $"#{GetColorHtmlString(_targetPortalColor.Value)}";
     }
 
     private void UpdateColorValue(object sender, EventArgs eventArgs) {
       if (ColorUtility.TryParseHtmlString(_targetPortalColorHex.Value, out Color color)) {
         _targetPortalColor.Value = color;
       }
+    }
+
+    private static string GetColorHtmlString(Color color) {
+      return color.a == 1.0f
+          ? ColorUtility.ToHtmlStringRGB(color)
+          : ColorUtility.ToHtmlStringRGBA(color);
     }
 
     private class TeleportWorldData {
@@ -89,6 +96,7 @@ namespace ColorfulPortals {
     [HarmonyPatch(typeof(TeleportWorld))]
     private class TeleportWorldPatch {
       private static readonly int _teleportWorldColorHashCode = "TeleportWorldColor".GetStableHashCode();
+      private static readonly int _teleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
 
       private static readonly KeyboardShortcut _changeColorActionShortcut =
           new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift);
@@ -122,7 +130,7 @@ namespace ColorfulPortals {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.GetHoverText))]
       private static void TeleportWorldGetHoverTextPostfix(ref TeleportWorld __instance, ref string __result) {
-        if (!_isModEnabled.Value || !__instance) {
+        if (!_isModEnabled.Value || !_showChangeColorHoverText.Value || !__instance) {
           return;
         }
 
@@ -160,7 +168,8 @@ namespace ColorfulPortals {
           __instance.m_nview.ClaimOwnership();
         }
 
-        __instance.m_nview.GetZDO().Set(_teleportWorldColorHashCode, Utils.ColorToVec3(_targetPortalColor.Value));
+        __instance.m_nview.m_zdo.Set(_teleportWorldColorHashCode, Utils.ColorToVec3(_targetPortalColor.Value));
+        __instance.m_nview.m_zdo.Set(_teleportWorldColorAlphaHashCode, _targetPortalColor.Value.a);
 
         if (_teleportWorldData.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
           teleportWorldData.TargetColor = _targetPortalColor.Value;
@@ -185,9 +194,10 @@ namespace ColorfulPortals {
           return;
         }
 
-        teleportWorldData.TargetColor =
-            Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[_teleportWorldColorHashCode]);
+        Color portalColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[_teleportWorldColorHashCode]);
+        portalColor.a = __instance.m_nview.m_zdo.GetFloat(_teleportWorldColorAlphaHashCode, defaultValue: 1f);
 
+        teleportWorldData.TargetColor = portalColor;
         SetTeleportWorldColors(teleportWorldData);
       }
 
