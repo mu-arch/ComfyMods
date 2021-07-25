@@ -3,11 +3,13 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
+using System.Collections;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace OdinSaves {
   [BepInPlugin(OdinSaves.Package, OdinSaves.ModName, OdinSaves.Version)]
@@ -93,88 +95,151 @@ namespace OdinSaves {
     [HarmonyPatch(typeof(PlayerProfile))]
     private class PlayerProfilePatch {
       [HarmonyPostfix]
-      [HarmonyPatch(nameof(PlayerProfile.Load))]
-      private static void PlayerProfileLoadPostfix(ref PlayerProfile __instance, ref bool __result) {
-        if (!_isModEnabled.Value || !__result) {
-          return;
-        }
-
-        foreach (PlayerProfile.WorldPlayerData worldPlayerData in __instance.m_worldData.Values) {
-          CompressMapData(worldPlayerData);
-        }
-      }
-
-      [HarmonyPostfix]
       [HarmonyPatch(nameof(PlayerProfile.GetMapData))]
       private static void PlayerProfileGetMapDataPostfix(ref PlayerProfile __instance, ref byte[] __result) {
-        if (__result == null || !IsGZipData(__result)) {
-          return;
-        }
-
-        using (var inStream = new MemoryStream(__result))
-        using (var inflateStream = new GZipStream(inStream, CompressionMode.Decompress))
-        using (var outStream = new MemoryStream()) {
-          inflateStream.CopyTo(outStream);
-          __result = outStream.ToArray();
-        }
+        __result = DecompressMapData(ref __result);
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(PlayerProfile.SetMapData))]
       private static void PlayerProfileSetMapDataPrefix(ref PlayerProfile __instance, ref byte[] data) {
-        if (!_isModEnabled.Value) {
+        if (!_isModEnabled.Value || HasUncompressedData(__instance)) {
           return;
         }
 
-        using (MemoryStream memoryStream = new MemoryStream(capacity: data.Length)) {
-          using (GZipStream deflateStream = new GZipStream(memoryStream, CompressionMode.Compress)) {
-            deflateStream.Write(data, 0, data.Length);
-            deflateStream.Close();
-          }
-
-          data = memoryStream.ToArray();
-        }
+        data = CompressMapData(ref data);
       }
     }
 
-    private static void CompressMapData(PlayerProfile.WorldPlayerData worldPlayerData) {
-      if (worldPlayerData.m_mapData == null
-          || worldPlayerData.m_mapData.Length < 3
-          || IsGZipData(worldPlayerData.m_mapData)) {
-        return;
+    private static byte[] CompressMapData(ref byte[] mapData) {
+      if (mapData == null || IsGZipData(mapData)) {
+        return mapData;
       }
 
-      using (MemoryStream memoryStream = new MemoryStream(capacity: worldPlayerData.m_mapData.Length)) {
-        using (GZipStream deflateStream = new GZipStream(memoryStream, CompressionMode.Compress)) {
-          deflateStream.Write(worldPlayerData.m_mapData, 0, worldPlayerData.m_mapData.Length);
+      using (MemoryStream outStream = new MemoryStream(capacity: mapData.Length)) {
+        using (GZipStream deflateStream = new GZipStream(outStream, CompressionMode.Compress)) {
+          deflateStream.Write(mapData, 0, mapData.Length);
         }
 
-        worldPlayerData.m_mapData = memoryStream.ToArray();
+        return outStream.ToArray();
+      }
+    }
+
+    private static byte[] DecompressMapData(ref byte[] mapData) {
+      if (mapData == null || !IsGZipData(mapData)) {
+        return mapData;
+      }
+
+      using (var inStream = new MemoryStream(mapData))
+      using (var inflateStream = new GZipStream(inStream, CompressionMode.Decompress))
+      using (var outStream = new MemoryStream(capacity: 1024 * 1024 * 4)) {
+        inflateStream.CopyTo(outStream);
+        return outStream.ToArray();
       }
     }
 
     private static bool IsGZipData(byte[] data) {
-      return data.Length >= 3 && data[0] == 0x1f && data[1] == 0x8b && data[2] == 0x08;
+      return data != null && data.Length >= 3 && data[0] == 0x1f && data[1] == 0x8b && data[2] == 0x08;
+    }
+
+    private static bool HasUncompressedData(PlayerProfile profile) {
+      return profile.m_worldData.Values.All(value => value.m_mapData == null || !IsGZipData(value.m_mapData));
     }
 
     [HarmonyPatch(typeof(FejdStartup))]
     private class FejdStartupPatch {
+      private static Button _compressDecompressButton;
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(FejdStartup.Awake))]
+      private static void FejdStartupAwakePostfix(ref FejdStartup __instance) {
+        CreateCompressDecompressButton(__instance);
+      }
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.UpdateCharacterList))]
       [HarmonyAfter(new string[] { "MK_BetterUI" })]
       private static void FejdStartupUpdateCharacterListPostfix(ref FejdStartup __instance) {
         if (__instance.m_profileIndex >= 0 && __instance.m_profileIndex < __instance.m_profiles.Count) {
           PlayerProfile profile = __instance.m_profiles[__instance.m_profileIndex];
-          float mapDataBytes = profile.m_worldData.Values.Select(value => value.m_mapData.Length).Sum();
 
-          __instance.m_csName.text =
-              string.Format(
-                  "{0}<size=20>{1}Worlds: <color={2}>{3}</color>   MapData: <color={2}>{4}</color> KB</size>",
-                  __instance.m_csName.text,
-                  __instance.m_csName.text == profile.GetName() ? "\n" : "   ",
-                  "orange",
-                  profile.m_worldData.Count,
-                  (mapDataBytes / 1024).ToString("N0"));
+          UpdateNameText(__instance, profile);
+          UpdateCompressDecompressButton(__instance, profile);
+        }
+      }
+
+      private static void UpdateNameText(FejdStartup fejdStartup, PlayerProfile profile) {
+        float mapDataBytes =
+            profile.m_worldData.Values.Select(value => value.m_mapData == null ? 0 : value.m_mapData.Length).Sum();
+
+        fejdStartup.m_csName.text =
+            string.Format(
+                "{0}<size=20>{1}Worlds: <color={2}>{3}</color>   MapData: <color={2}>{4}</color> KB</size>",
+                fejdStartup.m_csName.text,
+                fejdStartup.m_csName.text == profile.GetName() ? "\n" : "   ",
+                "orange",
+                profile.m_worldData.Count,
+                (mapDataBytes / 1024).ToString("N0"));
+      }
+
+      private static void CreateCompressDecompressButton(FejdStartup fejdStartup) {
+        _compressDecompressButton =
+            Instantiate(fejdStartup.m_csNewButton, fejdStartup.m_selectCharacterPanel.transform);
+
+        RectTransform transform = _compressDecompressButton.GetComponent<RectTransform>();
+        transform.anchorMin = new Vector2(0.5f, 0f);
+        transform.anchorMax = new Vector2(0.5f, 0f);
+        transform.pivot = new Vector2(0.5f, 0.5f);
+        transform.anchoredPosition = new Vector2(410f, 151f);
+
+        _compressDecompressButton.onClick.RemoveAllListeners();
+        _compressDecompressButton.onClick = new Button.ButtonClickedEvent();
+
+        transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
+
+        Text text = _compressDecompressButton.GetComponentInChildren<Text>();
+        text.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
+        text.text = "Compression";
+
+        _compressDecompressButton.gameObject.name = "Compression";
+        _compressDecompressButton.gameObject.SetActive(false);
+      }
+
+      private static void UpdateCompressDecompressButton(FejdStartup fejdStartup, PlayerProfile profile) {
+        bool hasUncompressedData = HasUncompressedData(profile);
+
+        _compressDecompressButton.GetComponentInChildren<Text>().text =
+            hasUncompressedData ? "Compress Profile" : "Decompress Profile";
+
+        _compressDecompressButton.onClick.RemoveAllListeners();
+        _compressDecompressButton.onClick.AddListener(
+            () => {
+              OnCompressDecompressButtonClick(profile, hasUncompressedData);
+
+              profile.Save();
+              fejdStartup.UpdateCharacterList();
+            });
+
+        _compressDecompressButton.gameObject.SetActive(true);
+      }
+
+      private static void OnCompressDecompressButtonClick(PlayerProfile profile, bool hasUncompressedData) {
+        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
+          worldPlayerData.m_mapData =
+              hasUncompressedData
+                  ? CompressMapData(ref worldPlayerData.m_mapData)
+                  : DecompressMapData(ref worldPlayerData.m_mapData);
+        }
+      }
+
+      private static IEnumerator CompressDecompressMapDataCoroutine(PlayerProfile profile, bool hasUncompressedData) {
+        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
+          worldPlayerData.m_mapData =
+              hasUncompressedData
+                  ? CompressMapData(ref worldPlayerData.m_mapData)
+                  : DecompressMapData(ref worldPlayerData.m_mapData);
+
+          yield return null;
         }
       }
     }
