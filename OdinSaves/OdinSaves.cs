@@ -76,12 +76,17 @@ namespace OdinSaves {
         }
 
         __instance.m_saveTimer = 0f;
-        __instance.SavePlayerProfile(setLogoutPoint: setLogoutPointOnSave.Value);
+        __instance.StartCoroutine(GameSavePlayerProfileAsync(__instance, setLogoutPointOnSave.Value).AsIEnumerator());
 
         if (ZNet.instance) {
           ZNet.instance.Save(sync: false);
         }
       }
+    }
+
+    private static async Task GameSavePlayerProfileAsync(Game game, bool setLogoutPointOnSave) {
+      await Task.Delay(millisecondsDelay: 250).ConfigureAwait(continueOnCapturedContext: false);
+      game.SavePlayerProfile(setLogoutPointOnSave);
     }
 
     [HarmonyPatch(typeof(Player))]
@@ -146,12 +151,12 @@ namespace OdinSaves {
       return profile.m_worldData.Values.All(value => value.m_mapData == null || !IsGZipData(value.m_mapData));
     }
 
+    private static GameObject _profileCompressionRoot;
+    private static Button _compressDecompressButton;
+    private static Text _profileCompressionText;
+
     [HarmonyPatch(typeof(FejdStartup))]
     private class FejdStartupPatch {
-      private static GameObject _profileCompressionRoot;
-      private static Button _compressDecompressButton;
-      private static Text _profileCompressionText;
-
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.Awake))]
       private static void FejdStartupAwakePostfix(ref FejdStartup __instance) {
@@ -230,7 +235,6 @@ namespace OdinSaves {
               fejdStartup.StartCoroutine(
                   CompressDecompressProfileCoroutine(fejdStartup, profile, hasUncompressedData)));
 
-        _compressDecompressButton.interactable = true;
         _compressDecompressButton.gameObject.SetActive(true);
       }
 
@@ -257,20 +261,7 @@ namespace OdinSaves {
         _compressDecompressButton.GetComponentInChildren<Text>().text =
             hasUncompressedData ? "Compressing..." : "Decompressing...";
 
-        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
-          worldPlayerData.m_mapData =
-              hasUncompressedData
-                  ? CompressMapData(ref worldPlayerData.m_mapData)
-                  : DecompressMapData(ref worldPlayerData.m_mapData);
-
-          yield return null;
-        }
-
-        Task profileSaveTask = ProfileSave(profile);
-
-        while (!profileSaveTask.IsCompleted) {
-          yield return null;
-        }
+        yield return CompressDecompressProfileAsync(profile, hasUncompressedData).AsIEnumerator();
 
         foreach (Selectable selectable in selectables) {
           selectable.interactable = true;
@@ -279,8 +270,16 @@ namespace OdinSaves {
         fejdStartup.UpdateCharacterList();
       }
 
-      private static async Task ProfileSave(PlayerProfile profile) {
-        await Task.Delay(millisecondsDelay: 500).ConfigureAwait(continueOnCapturedContext: false);
+      private static async Task CompressDecompressProfileAsync(PlayerProfile profile, bool hasUncompressedData) {
+        await Task.Delay(millisecondsDelay: 250).ConfigureAwait(continueOnCapturedContext: false);
+
+        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
+          worldPlayerData.m_mapData =
+              hasUncompressedData
+                  ? CompressMapData(ref worldPlayerData.m_mapData)
+                  : DecompressMapData(ref worldPlayerData.m_mapData);
+        }
+
         profile.Save();
       }
     }
