@@ -7,7 +7,7 @@
 
 # Instructions
 
-  1. Unzip `ColorfulLights.dll` to your `/Valheim/BepInEx/plugins/` folder.
+  1. Unzip `ColorfulWards.dll` to your `/Valheim/BepInEx/plugins/` folder.
   2. In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulWards section.
      * Change the target color using the RGB sliders or using an HTML color code.
   3. Hover over any ward **that you are the owner of** and a prompt to change its color will appear.
