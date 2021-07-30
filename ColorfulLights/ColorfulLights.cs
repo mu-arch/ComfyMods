@@ -4,9 +4,10 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ColorfulLights {
@@ -14,22 +15,9 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
-    private class FireplaceData {
-      public List<ParticleSystem> Systems { get; }
-      public List<ParticleSystemRenderer> Renderers { get; }
-      public Color TargetColor { get; set; }
-
-      public FireplaceData() {
-        Systems = new List<ParticleSystem>();
-        Renderers = new List<ParticleSystemRenderer>();
-        TargetColor = Color.clear;
-      }
-    }
-
-    private static readonly ConditionalWeakTable<Fireplace, FireplaceData> _fireplaceData =
-        new ConditionalWeakTable<Fireplace, FireplaceData>();
+    private static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
 
     private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<Color> _targetFireplaceColor;
@@ -65,6 +53,8 @@ namespace ColorfulLights {
 
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+
+      StartCoroutine(RemoveDestroyedFireplacesCoroutine());
     }
 
     private void OnDestroy() {
@@ -89,14 +79,43 @@ namespace ColorfulLights {
           : ColorUtility.ToHtmlStringRGBA(color);
     }
 
+    private static IEnumerator RemoveDestroyedFireplacesCoroutine() {
+      WaitForSeconds waitThirtySeconds = new(seconds: 30f);
+      List<KeyValuePair<Fireplace, FireplaceData>> existingFireplaces = new();
+      int fireplaceCount = 0;
+
+      while (true) {
+        yield return waitThirtySeconds;
+        fireplaceCount = _fireplaceDataCache.Count;
+
+        existingFireplaces.AddRange(_fireplaceDataCache.Where(entry => entry.Key));
+        _fireplaceDataCache.Clear();
+
+        foreach (KeyValuePair<Fireplace, FireplaceData> entry in existingFireplaces) {
+          _fireplaceDataCache[entry.Key] = entry.Value;
+        }
+
+        existingFireplaces.Clear();
+        _logger.LogInfo($"Removed {fireplaceCount - _fireplaceDataCache.Count}/{fireplaceCount} fireplace refs.");
+      }
+    }
+
+    private static bool TryGetFireplace(Fireplace key, out FireplaceData value) {
+      if (key) {
+        return _fireplaceDataCache.TryGetValue(key, out value);
+      }
+
+      value = default;
+      return false;
+    }
+
     [HarmonyPatch(typeof(Fireplace))]
     private class FireplacePatch {
       private static readonly int _fuelHashCode = "fuel".GetStableHashCode();
       private static readonly int _fireplaceColorHashCode = "FireplaceColor".GetStableHashCode();
       private static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
 
-      private static readonly KeyboardShortcut _changeColorActionShortcut =
-          new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift);
+      private static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Fireplace.Awake))]
@@ -105,7 +124,7 @@ namespace ColorfulLights {
           return;
         }
 
-        _fireplaceData.Add(__instance, ExtractFireplaceData(__instance));
+        _fireplaceDataCache.Add(__instance, ExtractFireplaceData(__instance));
       }
 
       [HarmonyPostfix]
@@ -154,7 +173,7 @@ namespace ColorfulLights {
 
         __instance.m_fuelAddedEffects.Create(__instance.transform.position, __instance.transform.rotation);
 
-        if (_fireplaceData.TryGetValue(__instance, out FireplaceData fireplaceData)) {
+        if (TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
           SetParticleColors(fireplaceData.Systems, fireplaceData.Renderers, _targetFireplaceColor.Value);
           fireplaceData.TargetColor = _targetFireplaceColor.Value;
         }
@@ -170,7 +189,7 @@ namespace ColorfulLights {
         if (!_isModEnabled.Value
             || !__instance.m_fireworks
             || item.m_shared.m_name != __instance.m_fireworkItem.m_itemData.m_shared.m_name
-            || !_fireplaceData.TryGetValue(__instance, out FireplaceData fireplaceData)) {
+            || !TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
           return true;
         }
 
@@ -217,7 +236,7 @@ namespace ColorfulLights {
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
             || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(_fireplaceColorHashCode)
-            || !_fireplaceData.TryGetValue(__instance, out FireplaceData fireplaceData)) {
+            || !TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
           return;
         }
 
@@ -256,7 +275,7 @@ namespace ColorfulLights {
     }
 
     private static FireplaceData ExtractFireplaceData(Fireplace fireplace) {
-      FireplaceData data = new FireplaceData();
+      FireplaceData data = new();
 
       ExtractFireplaceData(data, fireplace.m_enabledObject);
       ExtractFireplaceData(data, fireplace.m_enabledObjectHigh);
@@ -297,6 +316,18 @@ namespace ColorfulLights {
       foreach (ParticleSystemRenderer renderer in renderers) {
         renderer.material.color = targetColor;
       }
+    }
+  }
+
+  internal class FireplaceData {
+    public List<ParticleSystem> Systems { get; }
+    public List<ParticleSystemRenderer> Renderers { get; }
+    public Color TargetColor { get; set; }
+
+    public FireplaceData() {
+      Systems = new List<ParticleSystem>();
+      Renderers = new List<ParticleSystemRenderer>();
+      TargetColor = Color.clear;
     }
   }
 }
