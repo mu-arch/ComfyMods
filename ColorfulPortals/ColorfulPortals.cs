@@ -3,10 +3,10 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ColorfulPortals {
@@ -14,7 +14,7 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     private static ConfigEntry<bool> _isModEnabled;
     private static ConfigEntry<Color> _targetPortalColor;
@@ -47,6 +47,8 @@ namespace ColorfulPortals {
 
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+
+      StartCoroutine(RemovedDestroyedTeleportWorldsCoroutine());
     }
 
     private void OnDestroy() {
@@ -90,16 +92,44 @@ namespace ColorfulPortals {
       }
     }
 
-    private static readonly ConditionalWeakTable<TeleportWorld, TeleportWorldData> _teleportWorldData =
-        new ConditionalWeakTable<TeleportWorld, TeleportWorldData>();
+    private static readonly Dictionary<TeleportWorld, TeleportWorldData> _teleportWorldDataCache = new();
+
+    private static IEnumerator RemovedDestroyedTeleportWorldsCoroutine() {
+      WaitForSeconds waitThirtySeconds = new(seconds: 30f);
+      List<KeyValuePair<TeleportWorld, TeleportWorldData>> existingPortals = new();
+      int portalCount = 0;
+
+      while (true) {
+        yield return waitThirtySeconds;
+        portalCount = _teleportWorldDataCache.Count;
+
+        existingPortals.AddRange(_teleportWorldDataCache.Where(entry => entry.Key));
+        _teleportWorldDataCache.Clear();
+
+        foreach (KeyValuePair<TeleportWorld, TeleportWorldData> entry in existingPortals) {
+          _teleportWorldDataCache[entry.Key] = entry.Value;
+        }
+
+        existingPortals.Clear();
+        _logger.LogInfo($"Removed {portalCount - _teleportWorldDataCache.Count}/{portalCount} portal references.");
+      }
+    }
+
+    private static bool TryGetTeleportWorld(TeleportWorld key, out TeleportWorldData value) {
+      if (key) {
+        return _teleportWorldDataCache.TryGetValue(key, out value);
+      }
+
+      value = default;
+      return false;
+    }
 
     [HarmonyPatch(typeof(TeleportWorld))]
     private class TeleportWorldPatch {
       private static readonly int _teleportWorldColorHashCode = "TeleportWorldColor".GetStableHashCode();
       private static readonly int _teleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
 
-      private static readonly KeyboardShortcut _changeColorActionShortcut =
-          new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift);
+      private static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
@@ -124,7 +154,7 @@ namespace ColorfulPortals {
           targetFoundObject.SetActive(true);
         }
 
-        _teleportWorldData.Add(__instance, new TeleportWorldData(__instance));
+        _teleportWorldDataCache.Add(__instance, new TeleportWorldData(__instance));
       }
 
       [HarmonyPostfix]
@@ -171,7 +201,7 @@ namespace ColorfulPortals {
         __instance.m_nview.m_zdo.Set(_teleportWorldColorHashCode, Utils.ColorToVec3(_targetPortalColor.Value));
         __instance.m_nview.m_zdo.Set(_teleportWorldColorAlphaHashCode, _targetPortalColor.Value.a);
 
-        if (_teleportWorldData.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
+        if (_teleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
           teleportWorldData.TargetColor = _targetPortalColor.Value;
           SetTeleportWorldColors(teleportWorldData);
         }
@@ -190,7 +220,7 @@ namespace ColorfulPortals {
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
             || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(_teleportWorldColorHashCode)
-            || !_teleportWorldData.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
+            || !_teleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
           return;
         }
 

@@ -15,6 +15,10 @@
 
 # Changelog
 
+## 1.2.0
+
+  * Fixed a memory-leak when caching TeleportWorld/Portals.
+
 ## 1.1.0
 
   * Adding configuration setting to hide the 'change color' prompt over a ward.
