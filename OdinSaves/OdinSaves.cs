@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -76,6 +77,7 @@ namespace OdinSaves {
         }
 
         __instance.m_saveTimer = 0f;
+
         __instance.StartCoroutine(GameSavePlayerProfileAsync(__instance, setLogoutPointOnSave.Value).AsIEnumerator());
 
         if (ZNet.instance) {
@@ -85,8 +87,8 @@ namespace OdinSaves {
     }
 
     private static async Task GameSavePlayerProfileAsync(Game game, bool setLogoutPointOnSave) {
-      await Task.Delay(millisecondsDelay: 250).ConfigureAwait(continueOnCapturedContext: false);
-      game.SavePlayerProfile(setLogoutPointOnSave);
+      _logger.LogInfo("Saving player profile asynchronously...");
+      await Task.Run(() => game.SavePlayerProfile(setLogoutPointOnSave)).ConfigureAwait(false);
     }
 
     [HarmonyPatch(typeof(Player))]
@@ -122,8 +124,8 @@ namespace OdinSaves {
         return mapData;
       }
 
-      using MemoryStream outStream = new MemoryStream(capacity: mapData.Length);
-      using (GZipStream deflateStream = new GZipStream(outStream, CompressionMode.Compress)) {
+      using MemoryStream outStream = new(capacity: mapData.Length);
+      using (GZipStream deflateStream = new(outStream, CompressionMode.Compress)) {
         deflateStream.Write(mapData, 0, mapData.Length);
       }
 
@@ -271,16 +273,16 @@ namespace OdinSaves {
       }
 
       private static async Task CompressDecompressProfileAsync(PlayerProfile profile, bool hasUncompressedData) {
-        await Task.Delay(millisecondsDelay: 250).ConfigureAwait(continueOnCapturedContext: false);
+        await Task.Run(() => {
+          foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
+            worldPlayerData.m_mapData =
+                hasUncompressedData
+                    ? CompressMapData(ref worldPlayerData.m_mapData)
+                    : DecompressMapData(ref worldPlayerData.m_mapData);
+          }
 
-        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
-          worldPlayerData.m_mapData =
-              hasUncompressedData
-                  ? CompressMapData(ref worldPlayerData.m_mapData)
-                  : DecompressMapData(ref worldPlayerData.m_mapData);
-        }
-
-        profile.Save();
+          profile.Save();
+        }).ConfigureAwait(false);
       }
     }
   }
