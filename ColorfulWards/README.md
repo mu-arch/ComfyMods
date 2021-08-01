@@ -16,10 +16,16 @@
 
 # Changelog
 
+## 1.2.0
+
+  * Fixed a memory-leak when caching PrivateArea/Wards.
+
 ## 1.1.0
+
   * Adding configuration setting to hide the 'change color' prompt over a ward.
   * Now saves the target color's **alpha** value to the ZDO and reads/uses this alpha value if present in the ZDO.
     * However, there isn't any apparent effect/use for color alpha for ward lights and particle systems.'
 
 ## 1.0.0
+
   * Initial release.
