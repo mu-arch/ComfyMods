@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace EulersRuler {
     private static ConfigEntry<Vector2> _hoverPiecePanelPosition;
     private static ConfigEntry<Vector2> _placementGhostPanelPosition;
 
+    private static ManualLogSource _logger;
     private Harmony _harmony;
 
     void Awake() {
@@ -50,6 +52,7 @@ namespace EulersRuler {
       _placementGhostPanelPosition.SettingChanged +=
           (sender, eventArgs) => _placementGhostPanel.SetPosition(_placementGhostPanelPosition.Value);
 
+      _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
     }
 
@@ -226,14 +229,13 @@ namespace EulersRuler {
 
       void CreatePanel(Transform parent) {
         _panel = new("EulersRulerPanel", typeof(RectTransform));
-        _panel.transform.SetParent(parent);
+        _panel.transform.SetParent(parent, worldPositionStays: false);
 
         RectTransform transform = _panel.GetComponent<RectTransform>();
         transform.anchorMin = new Vector2(1, 0);
         transform.anchorMax = new Vector2(1, 0);
         transform.pivot = Vector2.zero;
         transform.anchoredPosition = Vector2.zero;
-        transform.localScale = Vector3.one;
 
         HorizontalLayoutGroup panelLayout = _panel.AddComponent<HorizontalLayoutGroup>();
         panelLayout.spacing = 8f;
@@ -243,7 +245,7 @@ namespace EulersRuler {
         panelFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
         _leftColumn = new("LeftColumn", typeof(RectTransform));
-        _leftColumn.transform.SetParent(_panel.transform);
+        _leftColumn.transform.SetParent(_panel.transform, worldPositionStays: false);
 
         VerticalLayoutGroup leftLayout = _leftColumn.AddComponent<VerticalLayoutGroup>();
         leftLayout.childControlWidth = true;
@@ -258,7 +260,7 @@ namespace EulersRuler {
         leftFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         _rightColumn = new("RightColumn", typeof(RectTransform));
-        _rightColumn.transform.SetParent(_panel.transform);
+        _rightColumn.transform.SetParent(_panel.transform, worldPositionStays: false);
 
         VerticalLayoutGroup rightLayout = _rightColumn.AddComponent<VerticalLayoutGroup>();
         rightLayout.childControlWidth = true;
@@ -275,7 +277,7 @@ namespace EulersRuler {
 
       public TwoColumnPanel AddPanelRow(out Text leftText, out Text rightText) {
         GameObject leftSide = new("Label", typeof(RectTransform));
-        leftSide.transform.SetParent(_leftColumn.transform);
+        leftSide.transform.SetParent(_leftColumn.transform, worldPositionStays: false);
 
         leftText = leftSide.AddComponent<Text>();
         leftText.alignment = TextAnchor.MiddleRight;
@@ -289,7 +291,7 @@ namespace EulersRuler {
         leftOutline.effectDistance = new Vector2(1, -1);
 
         GameObject rightSide = new("Value", typeof(RectTransform));
-        rightSide.transform.SetParent(_rightColumn.transform);
+        rightSide.transform.SetParent(_rightColumn.transform, worldPositionStays: false);
 
         rightText = rightSide.AddComponent<Text>();
         rightText.alignment = TextAnchor.MiddleLeft;
