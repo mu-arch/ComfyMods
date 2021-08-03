@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YachtClub", "YachtClub\Yach
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DyeHard", "DyeHard\DyeHard.csproj", "{7C3156D5-B19A-467C-BF87-D37AEACCBC56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EulersRuler", "EulersRuler\EulersRuler.csproj", "{86A1824A-1BBE-404B-A4E3-F619D06CA938}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{7C3156D5-B19A-467C-BF87-D37AEACCBC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C3156D5-B19A-467C-BF87-D37AEACCBC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C3156D5-B19A-467C-BF87-D37AEACCBC56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86A1824A-1BBE-404B-A4E3-F619D06CA938}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86A1824A-1BBE-404B-A4E3-F619D06CA938}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86A1824A-1BBE-404B-A4E3-F619D06CA938}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86A1824A-1BBE-404B-A4E3-F619D06CA938}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
