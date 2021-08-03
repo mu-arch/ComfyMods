@@ -1,8 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,13 +14,42 @@ namespace EulersRuler {
 
     private static ConfigEntry<bool> _isModEnabled;
 
-    private static ManualLogSource _logger;
+    private static ConfigEntry<Vector2> _hoverPiecePanelPosition;
+    private static ConfigEntry<Vector2> _placementGhostPanelPosition;
+
     private Harmony _harmony;
 
     void Awake() {
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
-      _logger = Logger;
+      _isModEnabled.SettingChanged += (sender, eventArgs) => {
+        DestroyPanels();
+
+        if (_isModEnabled.Value && Hud.instance) {
+          CreatePanels(Hud.instance);
+        }
+      };
+
+      _hoverPiecePanelPosition =
+          Config.Bind(
+              "Hud",
+              "hoverPiecePanelPosition",
+              new Vector2(-100, 200),
+              "Position of the HoverPiece properties panel.");
+
+      _hoverPiecePanelPosition.SettingChanged +=
+          (sender, eventArgs) => _hoverPiecePanel.SetPosition(_hoverPiecePanelPosition.Value);
+
+      _placementGhostPanelPosition =
+          Config.Bind(
+              "Hud",
+              "placementGhostPanelPosition",
+              new Vector2(100, 15),
+              "Position of the PlacementGhost properties panel.");
+
+      _placementGhostPanelPosition.SettingChanged +=
+          (sender, eventArgs) => _placementGhostPanel.SetPosition(_placementGhostPanelPosition.Value);
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
     }
 
@@ -30,21 +57,24 @@ namespace EulersRuler {
       _harmony?.UnpatchSelf();
     }
 
-    private static GameObject _hudPanel;
+    private static readonly Gradient _percentGradient = CreatePercentGradient();
+    private static readonly int _healthHashCode = "health".GetStableHashCode();
 
-    private static Text _healthTextLabel;
-    private static Text _healthTextValue;
-    private static Text _integrityTextLabel;
-    private static Text _integrityTextValue;
-    private static Text _rotationTextLabel;
-    private static Text _rotationTextValue;
+    private static TwoColumnPanel _hoverPiecePanel;
+    private static Text _pieceNameTextLabel;
+    private static Text _pieceNameTextValue;
+    private static Text _pieceHealthTextLabel;
+    private static Text _pieceHealthTextValue;
+    private static Text _pieceStabilityTextLabel;
+    private static Text _pieceStabilityTextValue;
+    private static Text _pieceRotationTextLabel;
+    private static Text _pieceRotationTextValue;
 
+    private static TwoColumnPanel _placementGhostPanel;
     private static Text _ghostNameTextLabel;
     private static Text _ghostNameTextValue;
     private static Text _ghostRotationTextLabel;
     private static Text _ghostRotationTextValue;
-
-    private static readonly int _healthHashCode = "health".GetStableHashCode();
 
     [HarmonyPatch(typeof(Hud))]
     class HudPatch {
@@ -52,183 +82,228 @@ namespace EulersRuler {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.Awake))]
       static void AwakePostfix(ref Hud __instance) {
-        CreateHudPanel(__instance);
+        if (_isModEnabled.Value) {
+          CreatePanels(__instance);
+        }
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
       static void UpdateCrosshairPostfix(ref Hud __instance, Player player) {
-        if (!_isModEnabled.Value) {
-          return;
-        }
-
-        if (player.m_hoveringPiece && player.m_hoveringPiece.TryGetComponent(out WearNTear wearNTear)) {
-          SetActive(_healthTextLabel, true);
-          SetActive(_healthTextValue, true);
-          SetActive(_integrityTextLabel, true);
-          SetActive(_integrityTextValue, true);
-          SetActive(_rotationTextLabel, true);
-          SetActive(_rotationTextValue, true);
-
-          UpdateHoverPieceProperties(wearNTear);
-        } else {
-          SetActive(_healthTextLabel, false);
-          SetActive(_healthTextValue, false);
-          SetActive(_integrityTextLabel, false);
-          SetActive(_integrityTextValue, false);
-          SetActive(_rotationTextLabel, false);
-          SetActive(_rotationTextValue, false);
-        }
-
-        if (player.m_placementGhost) {
-          SetActive(_ghostNameTextLabel, true);
-          SetActive(_ghostNameTextValue, true);
-          SetActive(_ghostRotationTextLabel, true);
-          SetActive(_ghostRotationTextValue, true);
-
+        if (_isModEnabled.Value) {
+          UpdateHoverPieceProperties(player.m_hoveringPiece);
           UpdatePlacementGhostProperties(player.m_placementGhost);
-        } else {
-          SetActive(_ghostNameTextLabel, false);
-          SetActive(_ghostNameTextValue, false);
-          SetActive(_ghostRotationTextLabel, false);
-          SetActive(_ghostRotationTextValue, false);
+
+          __instance.m_pieceHealthRoot.gameObject.SetActive(false);
         }
       }
     }
 
-    private static void SetActive(Text text, bool active) {
-      if (text.gameObject.activeSelf != active) {
-        text.gameObject.SetActive(active);
-      }
+    private static void CreatePanels(Hud hud) {
+      _hoverPiecePanel =
+          new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
+              .SetPosition(_hoverPiecePanelPosition.Value)
+              .AddPanelRow(out _pieceNameTextLabel, out _pieceNameTextValue)
+              .AddPanelRow(out _pieceHealthTextLabel, out _pieceHealthTextValue)
+              .AddPanelRow(out _pieceStabilityTextLabel, out _pieceStabilityTextValue)
+              .AddPanelRow(out _pieceRotationTextLabel, out _pieceRotationTextValue);
+
+      _pieceNameTextLabel.text = "Piece \u25c8";
+      _pieceHealthTextLabel.text = "Health \u2661";
+      _pieceStabilityTextLabel.text = "Stability \u2616";
+      _pieceRotationTextLabel.text = "Rotation \u29bf";
+
+      _placementGhostPanel =
+          new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
+              .SetPosition(_placementGhostPanelPosition.Value)
+              .AddPanelRow(out _ghostNameTextLabel, out _ghostNameTextValue)
+              .AddPanelRow(out _ghostRotationTextLabel, out _ghostRotationTextValue);
+
+      _ghostNameTextLabel.text = "Placing \u25a5";
+      _ghostRotationTextLabel.text = "Rotation \u29bf";
     }
 
-    private static void UpdateHoverPieceProperties(WearNTear wearNTear) {
-      float health = wearNTear.m_nview.m_zdo.GetFloat(_healthHashCode, wearNTear.m_health);
+    private static void DestroyPanels() {
+      _hoverPiecePanel.DestroyPanel();
+      _placementGhostPanel.DestroyPanel();
+    }
 
-      _healthTextValue.text =
+    private static void UpdateHoverPieceProperties(Piece piece) {
+      if (!piece || !piece.TryGetComponent(out WearNTear wearNTear)) {
+        _hoverPiecePanel.SetActive(false);
+        return;
+      }
+
+      _hoverPiecePanel.SetActive(true);
+
+      _pieceNameTextValue.text = $"<color=#FFCA28>{Localization.instance.Localize(piece.m_name)}</color>";
+
+      float health = wearNTear.m_nview.m_zdo.GetFloat(_healthHashCode, wearNTear.m_health);
+      float healthPercent = Mathf.Clamp01(health / wearNTear.m_health);
+
+      _pieceHealthTextValue.text =
           string.Format(
-              "<color={0}>{1}</color>/<color={2}>{3}</color> (<color={4}>{5:P2}</color>)",
+              "<color={0}>{1:N0}</color> /<color={2}>{3}</color> (<color=#{4}>{5:P0}</color>)",
               "#9CCC65",
               health,
-              "#66BB6A",
+              "#FAFAFA",
               wearNTear.m_health,
-              "#D4E157",
-              Mathf.Clamp01(health / wearNTear.m_health));
+              ColorUtility.ToHtmlStringRGB(_percentGradient.Evaluate(healthPercent)),
+              healthPercent);
 
-      _integrityTextValue.text =
+      float support = wearNTear.GetSupport();
+      float maxSupport = wearNTear.GetMaxSupport();
+      float supportPrecent = Mathf.Clamp01(support / maxSupport);
+
+      _pieceStabilityTextValue.text =
           string.Format(
-            "<color={0}>{1:N0}</color>/<color={2}>{3:N0}</color>",
-            "#29B6F6",
-            wearNTear.GetSupport(),
-            "#42A5F5",
-            wearNTear.GetMaxSupport());
+            "<color={0}>{1:N0}</color> /<color={2}>{3}</color> (<color=#{4}>{5:P0}</color>)",
+            "#4FC3F7",
+            support,
+            "#FAFAFA",
+            maxSupport,
+            ColorUtility.ToHtmlStringRGB(_percentGradient.Evaluate(supportPrecent)),
+            supportPrecent);
 
-      _rotationTextValue.text = $"{wearNTear.transform.rotation.eulerAngles}";
+      _pieceRotationTextValue.text = $"{wearNTear.transform.rotation.eulerAngles}";
     }
 
     private static void UpdatePlacementGhostProperties(GameObject placementGhost) {
-      _ghostNameTextValue.text = $"<color=#FFCA28>{placementGhost.name}</color>";
+      if (!placementGhost || !placementGhost.TryGetComponent(out Piece piece)) {
+        _placementGhostPanel.SetActive(false);
+        return;
+      }
+
+      _placementGhostPanel.SetActive(true);
+
+      _ghostNameTextValue.text = $"<color=#FFCA28>{Localization.instance.Localize(piece.m_name)}</color>";
       _ghostRotationTextValue.text = $"{placementGhost.transform.rotation.eulerAngles}";
     }
 
+    private static Gradient CreatePercentGradient() {
+      Gradient gradient = new();
+
+      gradient.SetKeys(
+          new GradientColorKey[] {
+            new GradientColorKey(new Color32(239, 83, 80, 255), 0f),
+            new GradientColorKey(new Color32(255, 238, 88, 255), 0.5f),
+            new GradientColorKey(new Color32(156, 204, 101, 255), 1f),
+          },
+          new GradientAlphaKey[] {
+            new GradientAlphaKey(1f, 0f),
+            new GradientAlphaKey(1f, 1f),
+          });
+
+      return gradient;
+    }
+
     class TwoColumnPanel {
+      private GameObject _panel = null;
+      private GameObject _leftColumn = null;
+      private GameObject _rightColumn = null;
 
-    }
+      private readonly Font _font = null;
 
-    static void CreateHudPanel(Hud hud) {
-      _hudPanel = new("EulersRulerRoot", typeof(RectTransform));
-      _hudPanel.transform.SetParent(hud.m_crosshair.transform);
+      public TwoColumnPanel(Transform parent, Font font) {
+        CreatePanel(parent);
+        _font = font;
+      }
 
-      RectTransform transform = _hudPanel.GetComponent<RectTransform>();
-      transform.anchorMin = new Vector2(1, 0);
-      transform.anchorMax = new Vector2(1, 0);
-      transform.pivot = Vector2.zero;
-      transform.anchoredPosition = new Vector2(100, 100);
+      public void DestroyPanel() {
+        Destroy(_panel);
+      }
 
-      HorizontalLayoutGroup panelLayout = _hudPanel.AddComponent<HorizontalLayoutGroup>();
-      panelLayout.spacing = 8f;
+      public void SetActive(bool active) {
+        if (_panel.activeSelf != active) {
+          _panel.SetActive(active);
+        }
+      }
 
-      ContentSizeFitter panelFitter = _hudPanel.AddComponent<ContentSizeFitter>();
-      panelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-      panelFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
+      public TwoColumnPanel SetPosition(Vector2 position) {
+        _panel.GetComponent<RectTransform>().anchoredPosition = position;
+        return this;
+      }
 
-      GameObject leftColumn = new("LeftColumn", typeof(RectTransform));
-      leftColumn.transform.SetParent(_hudPanel.transform);
+      void CreatePanel(Transform parent) {
+        _panel = new("EulersRulerPanel", typeof(RectTransform));
+        _panel.transform.SetParent(parent);
 
-      VerticalLayoutGroup leftLayout = leftColumn.AddComponent<VerticalLayoutGroup>();
-      leftLayout.childControlWidth = true;
-      leftLayout.childControlHeight = true;
-      leftLayout.childForceExpandWidth = true;
-      leftLayout.childForceExpandHeight = false;
-      leftLayout.childAlignment = TextAnchor.LowerLeft;
-      leftLayout.spacing = 5f;
+        RectTransform transform = _panel.GetComponent<RectTransform>();
+        transform.anchorMin = new Vector2(1, 0);
+        transform.anchorMax = new Vector2(1, 0);
+        transform.pivot = Vector2.zero;
+        transform.anchoredPosition = Vector2.zero;
+        transform.localScale = Vector3.one;
 
-      ContentSizeFitter leftFitter = leftColumn.AddComponent<ContentSizeFitter>();
-      leftFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-      leftFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        HorizontalLayoutGroup panelLayout = _panel.AddComponent<HorizontalLayoutGroup>();
+        panelLayout.spacing = 8f;
 
-      GameObject rightColumn = new("RightColumn", typeof(RectTransform));
-      rightColumn.transform.SetParent(_hudPanel.transform);
+        ContentSizeFitter panelFitter = _panel.AddComponent<ContentSizeFitter>();
+        panelFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        panelFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
 
-      VerticalLayoutGroup rightLayout = rightColumn.AddComponent<VerticalLayoutGroup>();
-      rightLayout.childControlWidth = true;
-      rightLayout.childControlHeight = true;
-      rightLayout.childForceExpandWidth = true;
-      rightLayout.childForceExpandHeight = false;
-      rightLayout.childAlignment = TextAnchor.LowerRight;
-      rightLayout.spacing = 5f;
+        _leftColumn = new("LeftColumn", typeof(RectTransform));
+        _leftColumn.transform.SetParent(_panel.transform);
 
-      ContentSizeFitter rightFitter = rightColumn.AddComponent<ContentSizeFitter>();
-      rightFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-      rightFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        VerticalLayoutGroup leftLayout = _leftColumn.AddComponent<VerticalLayoutGroup>();
+        leftLayout.childControlWidth = true;
+        leftLayout.childControlHeight = true;
+        leftLayout.childForceExpandWidth = true;
+        leftLayout.childForceExpandHeight = false;
+        leftLayout.childAlignment = TextAnchor.LowerLeft;
+        leftLayout.spacing = 5f;
 
-      AddPanelRow(hud, leftColumn, rightColumn, out _healthTextLabel, out _healthTextValue);
-      _healthTextLabel.text = "\u2661";
+        ContentSizeFitter leftFitter = _leftColumn.AddComponent<ContentSizeFitter>();
+        leftFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        leftFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-      AddPanelRow(hud, leftColumn, rightColumn, out _integrityTextLabel, out _integrityTextValue);
-      _integrityTextLabel.text = "\u2616";
+        _rightColumn = new("RightColumn", typeof(RectTransform));
+        _rightColumn.transform.SetParent(_panel.transform);
 
-      AddPanelRow(hud, leftColumn, rightColumn, out _rotationTextLabel, out _rotationTextValue);
-      _rotationTextLabel.text = "\u29bf";
+        VerticalLayoutGroup rightLayout = _rightColumn.AddComponent<VerticalLayoutGroup>();
+        rightLayout.childControlWidth = true;
+        rightLayout.childControlHeight = true;
+        rightLayout.childForceExpandWidth = true;
+        rightLayout.childForceExpandHeight = false;
+        rightLayout.childAlignment = TextAnchor.LowerRight;
+        rightLayout.spacing = 5f;
 
-      AddPanelRow(hud, leftColumn, rightColumn, out _ghostNameTextLabel, out _ghostNameTextValue);
-      _ghostNameTextLabel.text = "Name";
+        ContentSizeFitter rightFitter = _rightColumn.AddComponent<ContentSizeFitter>();
+        rightFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        rightFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+      }
 
-      AddPanelRow(hud, leftColumn, rightColumn, out _ghostRotationTextLabel, out _ghostRotationTextValue);
-      _ghostRotationTextLabel.text = "\u29bf";
+      public TwoColumnPanel AddPanelRow(out Text leftText, out Text rightText) {
+        GameObject leftSide = new("Label", typeof(RectTransform));
+        leftSide.transform.SetParent(_leftColumn.transform);
 
-      _hudPanel.SetActive(true);
-    }
+        leftText = leftSide.AddComponent<Text>();
+        leftText.alignment = TextAnchor.MiddleRight;
+        leftText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        leftText.font = _font;
+        leftText.fontSize = 18;
+        leftText.text = "Label";
 
-    static void AddPanelRow(
-        Hud hud, GameObject leftColumn, GameObject rightColumn, out Text leftText, out Text rightText) {
-      GameObject leftSide = new("LeftSide", typeof(RectTransform));
-      leftSide.transform.SetParent(leftColumn.transform);
+        Outline leftOutline = leftSide.AddComponent<Outline>();
+        leftOutline.effectColor = Color.black;
+        leftOutline.effectDistance = new Vector2(1, -1);
 
-      leftText = leftSide.AddComponent<Text>();
-      leftText.alignment = TextAnchor.MiddleRight;
-      leftText.horizontalOverflow = HorizontalWrapMode.Overflow;
-      leftText.font = hud.m_hoverName.font;
-      leftText.fontSize = 18;
-      leftText.text = "LeftSide";
+        GameObject rightSide = new("Value", typeof(RectTransform));
+        rightSide.transform.SetParent(_rightColumn.transform);
 
-      Outline leftOutline = leftSide.AddComponent<Outline>();
-      leftOutline.effectColor = Color.black;
-      leftOutline.effectDistance = new Vector2(1, -1);
+        rightText = rightSide.AddComponent<Text>();
+        rightText.alignment = TextAnchor.MiddleLeft;
+        rightText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        rightText.font = _font;
+        rightText.fontSize = 18;
+        rightText.text = "Value";
 
-      GameObject rightSide = new("RightSide", typeof(RectTransform));
-      rightSide.transform.SetParent(rightColumn.transform);
+        Outline rightOutline = rightSide.AddComponent<Outline>();
+        rightOutline.effectColor = Color.black;
+        rightOutline.effectDistance = new Vector2(1, -1);
 
-      rightText = rightSide.AddComponent<Text>();
-      rightText.alignment = TextAnchor.MiddleLeft;
-      rightText.horizontalOverflow = HorizontalWrapMode.Wrap;
-      rightText.font = hud.m_hoverName.font;
-      rightText.fontSize = 18;
-      rightText.text = "RightSide";
-
-      Outline rightOutline = rightSide.AddComponent<Outline>();
-      rightOutline.effectColor = Color.black;
-      rightOutline.effectDistance = new Vector2(1, -1);
+        return this;
+      }
     }
   }
 }
