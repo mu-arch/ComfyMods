@@ -4,6 +4,7 @@ using UnityEngine.UI;
 namespace EulersRuler {
   internal class TwoColumnPanel {
     private readonly Font _textFont = null;
+    private int _textFontSize = 18;
 
     private GameObject _panel = null;
     private GameObject _leftColumn = null;
@@ -34,6 +35,16 @@ namespace EulersRuler {
       transform.anchorMin = anchorMin;
       transform.anchorMax = anchorMax;
       transform.pivot = pivot;
+
+      return this;
+    }
+
+    internal TwoColumnPanel SetFontSize(int fontSize) {
+      _textFontSize = fontSize;
+
+      foreach (Text text in _panel.GetComponentsInChildren<Text>()) {
+        text.fontSize = fontSize;
+      }
 
       return this;
     }
@@ -94,7 +105,7 @@ namespace EulersRuler {
       leftText.alignment = TextAnchor.MiddleRight;
       leftText.horizontalOverflow = HorizontalWrapMode.Overflow;
       leftText.font = _textFont;
-      leftText.fontSize = 18;
+      leftText.fontSize = _textFontSize;
       leftText.text = "LeftText";
 
       Outline leftOutline = leftSide.AddComponent<Outline>();
@@ -108,7 +119,7 @@ namespace EulersRuler {
       rightText.alignment = TextAnchor.MiddleLeft;
       rightText.horizontalOverflow = HorizontalWrapMode.Wrap;
       rightText.font = _textFont;
-      rightText.fontSize = 18;
+      rightText.fontSize = _textFontSize;
       rightText.text = "RightText";
 
       Outline rightOutline = rightSide.AddComponent<Outline>();

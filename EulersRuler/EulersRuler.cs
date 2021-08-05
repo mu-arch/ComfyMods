@@ -1,101 +1,18 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
-using System;
-using System.Linq;
+using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+
+using static EulersRuler.PluginConfig;
 
 namespace EulersRuler {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class EulersRuler : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.eulersruler";
     public const string PluginName = "EulersRuler";
-    public const string PluginVersion = "1.0.0";
-
-    [Flags]
-    private enum HoverPiecePanelRow {
-      None        = 0,
-      Name        = 1,
-      Health      = 2,
-      Stability   = 4,
-      Euler       = 8,
-      Quaternion  = 16,
-    }
-
-    [Flags]
-    private enum PlacementGhostPanelRow {
-      None        = 0,
-      Name        = 1,
-      Euler       = 2,
-      Quaternion  = 4,
-    }
-
-    private static ConfigEntry<bool> _isModEnabled;
-
-    private static ConfigEntry<Vector2> _hoverPiecePanelPosition;
-    private static ConfigEntry<HoverPiecePanelRow> _hoverPiecePanelEnabledRows;
-
-    private static ConfigEntry<Vector2> _placementGhostPanelPosition;
-    private static ConfigEntry<PlacementGhostPanelRow> _placementGhostPanelEnabledRows;
-
-    private static ManualLogSource _logger;
-    private Harmony _harmony;
-
-    void Awake() {
-      _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
-
-      _isModEnabled.SettingChanged += (sender, eventArgs) => {
-        DestroyPanels();
-
-        if (_isModEnabled.Value && Hud.instance) {
-          CreatePanels(Hud.instance);
-        }
-      };
-
-      _hoverPiecePanelPosition =
-          Config.Bind(
-              "HoverPiecePanel",
-              "hoverPiecePanelPosition",
-              new Vector2(0, 225),
-              "Position of the HoverPiece properties panel.");
-
-      _hoverPiecePanelPosition.SettingChanged +=
-          (sender, eventArgs) => _hoverPiecePanel.SetPosition(_hoverPiecePanelPosition.Value);
-
-      _hoverPiecePanelEnabledRows =
-          Config.Bind(
-              "HoverPiecePanel",
-              "hoverPiecePanelEnabledRows",
-              HoverPiecePanelRow.Name | HoverPiecePanelRow.Health | HoverPiecePanelRow.Stability,
-              "Which rows to display on the HoverPiece properties panel.");
-
-      _placementGhostPanelPosition =
-          Config.Bind(
-              "PlacementGhostPanel",
-              "placementGhostPanelPosition",
-              new Vector2(100, 0),
-              "Position of the PlacementGhost properties panel.");
-
-      _placementGhostPanelPosition.SettingChanged +=
-          (sender, eventArgs) => _placementGhostPanel.SetPosition(_placementGhostPanelPosition.Value);
-
-      _placementGhostPanelEnabledRows =
-          Config.Bind(
-              "PlacementGhostPanel",
-              "placementGhostPanelEnabledRows",
-              (PlacementGhostPanelRow) Enum.GetValues(typeof(PlacementGhostPanelRow)).Cast<int>().Sum(),
-              "Which rows to display on the PlacementGhost properties panel.");
-
-      _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
-    }
-
-    void OnDestroy() {
-      _harmony?.UnpatchSelf();
-    }
+    public const string PluginVersion = "1.1.0";
 
     private static readonly Gradient _healthPercentGradient = CreateHealthPercentGradient();
     private static readonly Gradient _stabilityPercentGradient = CreateStabilityPercentGradient();
@@ -122,6 +39,42 @@ namespace EulersRuler {
     private static Text _placementGhostQuaternionTextLabel;
     private static Text _placementGhostQuaternionTextValue;
 
+    private static GameObject _pieceHealthRoot;
+    private static GuiBar _pieceHealthBar;
+
+    private Harmony _harmony;
+
+    void Awake() {
+      CreateConfig(Config);
+
+      _isModEnabled.SettingChanged += (sender, eventArgs) => {
+        _hoverPiecePanel?.DestroyPanel();
+        _placementGhostPanel?.DestroyPanel();
+
+        if (_isModEnabled.Value && Hud.instance) {
+          CreatePanels(Hud.instance);
+        }
+      };
+
+      _hoverPiecePanelPosition.SettingChanged +=
+          (sender, eventArgs) => _hoverPiecePanel?.SetPosition(_hoverPiecePanelPosition.Value);
+
+      _hoverPiecePanelFontSize.SettingChanged +=
+          (sender, eventArgs) => _hoverPiecePanel?.SetFontSize(_hoverPiecePanelFontSize.Value);
+
+      _placementGhostPanelPosition.SettingChanged +=
+          (sender, eventArgs) => _placementGhostPanel?.SetPosition(_placementGhostPanelPosition.Value);
+
+      _placementGhostPanelFontSize.SettingChanged +=
+          (sender, eventArgs) => _placementGhostPanel?.SetFontSize(_placementGhostPanelFontSize.Value);
+
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+    }
+
+    void OnDestroy() {
+      _harmony?.UnpatchSelf();
+    }
+
     [HarmonyPatch(typeof(Hud))]
     class HudPatch {
 
@@ -131,17 +84,17 @@ namespace EulersRuler {
         if (_isModEnabled.Value) {
           CreatePanels(__instance);
         }
+
+        _pieceHealthRoot = __instance.m_pieceHealthRoot.gameObject;
+        _pieceHealthBar = __instance.m_pieceHealthBar;
+
+        __instance.StartCoroutine(UpdatePropertiesCoroutine());
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
       static void UpdateCrosshairPostfix(ref Hud __instance, Player player) {
-        if (_isModEnabled.Value) {
-          UpdateHoverPieceProperties(player.m_hoveringPiece, _hoverPiecePanelEnabledRows.Value);
-          UpdatePlacementGhostProperties(player.m_placementGhost, _placementGhostPanelEnabledRows.Value);
-
-          __instance.m_pieceHealthRoot.gameObject.SetActive(false);
-        }
+        UpdateHoverPieceHealthBar(player.m_hoveringPiece, _isModEnabled.Value && _showHoverPieceHealthBar.Value);
       }
     }
 
@@ -150,6 +103,7 @@ namespace EulersRuler {
           new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
               .SetPosition(_hoverPiecePanelPosition.Value)
               .SetAnchors(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1))
+              .SetFontSize(_hoverPiecePanelFontSize.Value)
               .AddPanelRow(out _pieceNameTextLabel, out _pieceNameTextValue)
               .AddPanelRow(out _pieceHealthTextLabel, out _pieceHealthTextValue)
               .AddPanelRow(out _pieceStabilityTextLabel, out _pieceStabilityTextValue)
@@ -166,6 +120,7 @@ namespace EulersRuler {
           new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
               .SetPosition(_placementGhostPanelPosition.Value)
               .SetAnchors(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f))
+              .SetFontSize(_placementGhostPanelFontSize.Value)
               .AddPanelRow(out _placementGhostNameTextLabel, out _placementGhostNameTextValue)
               .AddPanelRow(out _placementGhostEulerTextLabel, out _placementGhostEulerTextValue)
               .AddPanelRow(out _placementGhostQuaternionTextLabel, out _placementGhostQuaternionTextValue);
@@ -175,13 +130,23 @@ namespace EulersRuler {
       _placementGhostQuaternionTextLabel.text = "Quaternion \u2318";
     }
 
-    private static void DestroyPanels() {
-      _hoverPiecePanel?.DestroyPanel();
-      _placementGhostPanel?.DestroyPanel();
+    private static IEnumerator UpdatePropertiesCoroutine() {
+      WaitForSeconds waitInterval = new(seconds: 0.25f);
+
+      while (true) {
+        yield return waitInterval;
+
+        if (!_isModEnabled.Value || !Player.m_localPlayer) {
+          continue;
+        }
+
+        UpdateHoverPieceProperties(Player.m_localPlayer.m_hoveringPiece, _hoverPiecePanelEnabledRows.Value);
+        UpdatePlacementGhostProperties(Player.m_localPlayer.m_placementGhost, _placementGhostPanelEnabledRows.Value);
+      }
     }
 
     private static void UpdateHoverPieceProperties(Piece piece, HoverPiecePanelRow enabledRows) {
-      if (!piece || enabledRows == HoverPiecePanelRow.None || !piece.TryGetComponent(out WearNTear wearNTear)) {
+      if (!piece || !piece.TryGetComponent(out WearNTear wearNTear)) {
         _hoverPiecePanel?.SetActive(false);
         return;
       }
@@ -214,12 +179,11 @@ namespace EulersRuler {
 
         _pieceHealthTextValue.text =
             string.Format(
-                "<color={0}>{1}</color> /<color={2}>{3}</color> (<color=#{4}>{5:0%}</color>)",
-                "#9CCC65",
-                Mathf.Abs(health) > 1E9 ? health.ToString("g5") : health.ToString("N0"),
+                "<color=#{0}>{1}</color> /<color={2}>{3}</color> (<color=#{0}>{4:0%}</color>)",
+                ColorUtility.ToHtmlStringRGB(_healthPercentGradient.Evaluate(healthPercent)),
+                Mathf.Abs(health) > 1E9 ? health.ToString("G5") : health.ToString("N0"),
                 "#FAFAFA",
                 wearNTear.m_health,
-                ColorUtility.ToHtmlStringRGB(_healthPercentGradient.Evaluate(healthPercent)),
                 healthPercent);
       }
     }
@@ -235,12 +199,11 @@ namespace EulersRuler {
 
         _pieceStabilityTextValue.text =
             string.Format(
-              "<color={0}>{1:N0}</color> /<color={2}>{3}</color> (<color=#{4}>{5:0%}</color>)",
-              "#64B5F6",
+              "<color=#{0}>{1:N0}</color> /<color={2}>{3}</color> (<color=#{0}>{4:0%}</color>)",
+              ColorUtility.ToHtmlStringRGB(_stabilityPercentGradient.Evaluate(supportPrecent)),
               support,
               "#FAFAFA",
               maxSupport,
-              ColorUtility.ToHtmlStringRGB(_stabilityPercentGradient.Evaluate(supportPrecent)),
               supportPrecent);
       }
     }
@@ -261,6 +224,21 @@ namespace EulersRuler {
       if (isRowEnabled) {
         _pieceQuaternionTextValue.text = $"<color=#D7CCC8>{wearNTear.transform.rotation}</color>";
       }
+    }
+
+    private static void UpdateHoverPieceHealthBar(Piece piece, bool isEnabled) {
+      if (!isEnabled || !piece || !piece.TryGetComponent(out WearNTear wearNTear)) {
+        _pieceHealthRoot.SetActive(false);
+        return;
+      }
+
+      _pieceHealthRoot.SetActive(true);
+
+      float healthPercent =
+          Mathf.Clamp01(wearNTear.m_nview.m_zdo.GetFloat(_healthHashCode, wearNTear.m_health) / wearNTear.m_health);
+
+      _pieceHealthBar.SetValue(healthPercent);
+      _pieceHealthBar.SetColor(_healthPercentGradient.Evaluate(healthPercent));
     }
 
     private static void UpdatePlacementGhostProperties(GameObject placementGhost, PlacementGhostPanelRow enabledRows) {
@@ -310,13 +288,13 @@ namespace EulersRuler {
 
       gradient.SetKeys(
           new GradientColorKey[] {
-            new GradientColorKey(new Color32(239, 83, 80, 255), 0f),
+            new GradientColorKey(new Color32(239, 83, 80, 255), 0.25f),
             new GradientColorKey(new Color32(255, 238, 88, 255), 0.5f),
-            new GradientColorKey(new Color32(156, 204, 101, 255), 1f),
+            new GradientColorKey(new Color32(156, 204, 101, 255), 1),
           },
           new GradientAlphaKey[] {
-            new GradientAlphaKey(1f, 0f),
-            new GradientAlphaKey(1f, 1f),
+            new GradientAlphaKey(1, 0),
+            new GradientAlphaKey(1, 1),
           });
 
       return gradient;
@@ -327,13 +305,13 @@ namespace EulersRuler {
 
       gradient.SetKeys(
           new GradientColorKey[] {
-            new GradientColorKey(new Color32(239, 83, 80, 255), 0f),
+            new GradientColorKey(new Color32(239, 83, 80, 255), 0.25f),
             new GradientColorKey(new Color32(255, 238, 88, 255), 0.5f),
-            new GradientColorKey(new Color32(100, 181, 246, 255), 1f),
+            new GradientColorKey(new Color32(100, 181, 246, 255), 1),
           },
           new GradientAlphaKey[] {
-            new GradientAlphaKey(1f, 0f),
-            new GradientAlphaKey(1f, 1f),
+            new GradientAlphaKey(1, 0),
+            new GradientAlphaKey(1, 1),
           });
 
       return gradient;

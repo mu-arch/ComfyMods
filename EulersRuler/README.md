@@ -1,7 +1,8 @@
-# EulersRuler v1.0.0
+# EulersRuler
 
   * Shows targeted piece name, health, stability and rotatios while hammer is active
   * Shows name and rotation of build piece currently being placed.
+  * Show (or hide) the vanilla piece health bar (colorized to the current piece health).
 
 ## User Interface
 
@@ -24,6 +25,14 @@
     * Mod functionality is duplicated, disable one or the other.
 
 ## Changelog
+
+### 1.1.0
+
+  * Added configuration for properties text font size.
+  * Added configuration to hide or show the vanilla piece health bar.
+  * Health bar colorized to match piece health gradient.
+  * Health and stability current values colorized to match their percent gradient color.
+  * Update HoverPiece and PlacementGhost code moved to coroutine to only update 4x/second instead of every frame.
 
 ### 1.0.0
 
