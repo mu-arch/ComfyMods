@@ -1,5 +1,8 @@
 ﻿using BepInEx;
+
 using HarmonyLib;
+
+using System;
 using System.Collections;
 using System.Reflection;
 using UnityEngine;
@@ -12,7 +15,7 @@ namespace EulersRuler {
   public class EulersRuler : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.eulersruler";
     public const string PluginName = "EulersRuler";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     private static readonly Gradient _healthPercentGradient = CreateHealthPercentGradient();
     private static readonly Gradient _stabilityPercentGradient = CreateStabilityPercentGradient();
@@ -146,7 +149,7 @@ namespace EulersRuler {
     }
 
     private static void UpdateHoverPieceProperties(Piece piece, HoverPiecePanelRow enabledRows) {
-      if (!piece || !piece.TryGetComponent(out WearNTear wearNTear)) {
+      if (!piece || !piece.m_nview || !piece.m_nview.IsValid() || !piece.TryGetComponent(out WearNTear wearNTear)) {
         _hoverPiecePanel?.SetActive(false);
         return;
       }
@@ -227,8 +230,14 @@ namespace EulersRuler {
     }
 
     private static void UpdateHoverPieceHealthBar(Piece piece, bool isEnabled) {
-      if (!isEnabled || !piece || !piece.TryGetComponent(out WearNTear wearNTear)) {
-        _pieceHealthRoot.SetActive(false);
+      if (!isEnabled
+          || !_pieceHealthRoot
+          || !_pieceHealthBar
+          || !piece
+          || !piece.m_nview
+          || !piece.m_nview.IsValid()
+          || !piece.TryGetComponent(out WearNTear wearNTear)) {
+        _pieceHealthRoot?.SetActive(false);
         return;
       }
 
