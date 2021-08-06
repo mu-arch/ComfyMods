@@ -26,6 +26,10 @@
 
 ## Changelog
 
+### 1.1.1
+
+  * Fixed a `NullReferenceException` when the player deconstructs the current hovered piece.
+
 ### 1.1.0
 
   * Added configuration for properties text font size.
