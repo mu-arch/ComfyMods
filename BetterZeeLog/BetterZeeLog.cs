@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace BetterZeeLog {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-  public class NewMod : BaseUnityPlugin {
+  public class BetterZeeLog : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterzeelog";
     public const string PluginName = "BetterZeeLog";
     public const string PluginVersion = "1.0.0";
@@ -17,7 +17,7 @@ namespace BetterZeeLog {
     static ConfigEntry<bool> _isModEnabled;
 
     Harmony _harmony;
-
+      
     void Awake() {
       _isModEnabled =
           Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
