@@ -81,6 +81,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.UI.dll</HintPath>
     </Reference>
@@ -90,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BetterConnectPanel.cs" />
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="TwoColumnPanel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,54 +1,34 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using HarmonyLib;
 using Steamworks;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
+
+using static BetterConnectPanel.PluginConfig;
 
 namespace BetterConnectPanel {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class BetterConnectPanel : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterconnectpanel";
     public const string PluginName = "BetterConnectPanel";
-    public const string PluginVersion = "1.0.0";
-
-    static ConfigEntry<bool> _isModEnabled;
-    static ConfigEntry<Vector2> _networkPanelPosition;
-    static ConfigEntry<int> _networkPanelFontSize;
-    static ConfigEntry<Color> _networkPanelBackgroundColor;
+    public const string PluginVersion = "1.1.0";
 
     Harmony _harmony;
 
     void Awake() {
-      _isModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      CreateConfig(Config);
 
-      _isModEnabled.SettingChanged += (sender, eventArgs) => TogglePanels(Hud.instance);
-
-      _networkPanelPosition =
-          Config.Bind(
-              "NetworkPanel", "networkPanelPosition", new Vector2(10f, -150f), "Position of the NetworkPanel.");
+      _isModEnabled.SettingChanged += (sender, eventArgs) => TogglePanels();
 
       _networkPanelPosition.SettingChanged +=
           (sender, eventArgs) => _networkPanel?.SetPosition(_networkPanelPosition.Value);
 
-      _networkPanelFontSize =
-          Config.Bind(
-              "NetworkPanel",
-              "networkPanelFontSize",
-              14,
-              new ConfigDescription("Font size for the NetworkPanel.", new AcceptableValueRange<int>(6, 32)));
-
       _networkPanelFontSize.SettingChanged +=
           (sender, eventArgs) => _networkPanel?.SetTextFontSize(_networkPanelFontSize.Value);
-
-      _networkPanelBackgroundColor =
-          Config.Bind(
-              "NetworkPanel",
-              "networkPanelBackgroundColor",
-              (Color) new Color32(0, 0, 0, 96),
-              "Background color of the NetworkPanel.");
 
       _networkPanelBackgroundColor.SettingChanged +=
           (sender, eventArgs) => _networkPanel?.SetBackgroundColor(_networkPanelBackgroundColor.Value);
@@ -62,10 +42,33 @@ namespace BetterConnectPanel {
 
     [HarmonyPatch(typeof(ConnectPanel))]
     class ConnectPanelPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ConnectPanel.Start))]
-      static void StartPostfix(ref ConnectPanel __instance) {
-        // Destroy(__instance);
+      static readonly CodeMatch _inputGetKeyDownMatch =
+          new(
+              OpCodes.Call,
+              AccessTools.Method(typeof(Input), nameof(Input.GetKeyDown), new Type[] { typeof(KeyCode) }));
+
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(ConnectPanel.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, _inputGetKeyDownMatch)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(UpdateInputGetKeyDownDelegate).operand)
+            .InstructionEnumeration();
+      }
+
+      static bool UpdateInputGetKeyDownDelegate(KeyCode keyCode) {
+        if (_isModEnabled.Value && _networkPanelToggleShortcut.Value.IsDown()) {
+          _isNetworkPanelEnabled = !_isNetworkPanelEnabled;
+          TogglePanels();
+
+          if (_networkPanelToggleShortcut.Value.MainKey == KeyCode.F2) {
+            return false;
+          }
+        }
+
+        return Input.GetKeyDown(KeyCode.F2);
       }
     }
 
@@ -73,8 +76,8 @@ namespace BetterConnectPanel {
     class HudPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.Awake))]
-      static void AwakePostfix(ref Hud __instance) {
-        TogglePanels(__instance);
+      static void AwakePostfix() {
+        TogglePanels();
       }
     }
 
@@ -89,15 +92,17 @@ namespace BetterConnectPanel {
     static TwoColumnPanel.PanelRow _conectionSentUnackedReliableRow;
     static TwoColumnPanel.PanelRow _connectionEstimatedSendQueueTimeRow;
 
-    static void TogglePanels(Hud hud) {
+    static bool _isNetworkPanelEnabled = true;
+
+    static void TogglePanels() {
       _networkPanel?.DestroyPanel();
 
-      if (_isModEnabled.Value && hud) {
-        CreatePanels(hud);
+      if (_isModEnabled.Value && Hud.instance && _isNetworkPanelEnabled) {
+        CreateNetworkPanel(Hud.instance);
       }
     }
 
-    static void CreatePanels(Hud hud) {
+    static void CreateNetworkPanel(Hud hud) {
       _networkPanel =
           new TwoColumnPanel("NetworkPanel", hud.transform, hud.m_hoverName.font, _networkPanelFontSize.Value)
               .AddPanelRow("Server Host", "ServerAddress", out _serverFieldRow)
