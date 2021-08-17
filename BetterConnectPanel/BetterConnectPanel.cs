@@ -15,7 +15,7 @@ namespace BetterConnectPanel {
   public class BetterConnectPanel : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterconnectpanel";
     public const string PluginName = "BetterConnectPanel";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     Harmony _harmony;
 
@@ -83,7 +83,7 @@ namespace BetterConnectPanel {
 
     static TwoColumnPanel _networkPanel;
     static TwoColumnPanel.PanelRow _serverFieldRow;
-    static TwoColumnPanel.PanelRow _worldNameRow;
+    static TwoColumnPanel.PanelRow _serverWorldNameRow;
     static TwoColumnPanel.PanelRow _connectionPingRow;
     static TwoColumnPanel.PanelRow _connectionQualityRow;
     static TwoColumnPanel.PanelRow _connectionOutRateRow;
@@ -91,6 +91,7 @@ namespace BetterConnectPanel {
     static TwoColumnPanel.PanelRow _conectionPendingReliableRow;
     static TwoColumnPanel.PanelRow _conectionSentUnackedReliableRow;
     static TwoColumnPanel.PanelRow _connectionEstimatedSendQueueTimeRow;
+    static TwoColumnPanel.PanelRow _netTimeRow;
 
     static bool _isNetworkPanelEnabled = true;
 
@@ -106,7 +107,7 @@ namespace BetterConnectPanel {
       _networkPanel =
           new TwoColumnPanel("NetworkPanel", hud.transform, hud.m_hoverName.font, _networkPanelFontSize.Value)
               .AddPanelRow("Server Host", "ServerAddress", out _serverFieldRow)
-              .AddPanelRow("Server World", "WorldName", out _worldNameRow)
+              .AddPanelRow("Server World", "WorldName", out _serverWorldNameRow)
               .AddPanelRow("Ping", "ConnectionPing", out _connectionPingRow)
               .AddPanelRow("Quality (L/R)", "ConnectionQuality", out _connectionQualityRow)
               .AddPanelRow("Send Rate", "OutRate", out _connectionOutRateRow)
@@ -114,6 +115,7 @@ namespace BetterConnectPanel {
               .AddPanelRow("Pending Send", "PendingReliable", out _conectionPendingReliableRow)
               .AddPanelRow("Unacked Send", "SentUnackedReliable", out _conectionSentUnackedReliableRow)
               .AddPanelRow("Est. Send Queue Time", "EstimatedSendQueueTIme", out _connectionEstimatedSendQueueTimeRow)
+              .AddPanelRow("NetTime", "NetTime", out _netTimeRow)
               .SetPosition(_networkPanelPosition.Value)
               .SetBackgroundColor(_networkPanelBackgroundColor.Value)
               .SetActive(true);
@@ -142,10 +144,12 @@ namespace BetterConnectPanel {
 
       ZNet.m_serverIPAddr.ToString(out string serverAddress, true);
       _serverFieldRow.RightText.text = $"<color=#F7DC6F>{serverAddress}</color>";
-      _worldNameRow.RightText.text = $"<color=#F7DC6F>{ZNet.instance.GetWorldName()}</color>";
+      _serverWorldNameRow.RightText.text = $"<color=#F7DC6F>{ZNet.instance.GetWorldName()}</color>";
 
       while (true) {
         yield return waitInterval;
+
+        _netTimeRow.RightText.text = $"<color=#F7DC6F>{ZNet.instance.m_netTime}</color>";
 
         UpdateConnectionStatusProperties(serverSocket);
       }
