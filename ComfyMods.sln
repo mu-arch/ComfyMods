@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeLog", "BetterZeeLo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterConnectPanel", "BetterConnectPanel\BetterConnectPanel.csproj", "{5A1E27DB-61CA-4120-8809-388F3BD65329}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeDeeOhs", "BetterZeeDeeOhs\BetterZeeDeeOhs.csproj", "{AD9046E8-110B-4326-BC37-7D879DA3B3F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{5A1E27DB-61CA-4120-8809-388F3BD65329}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A1E27DB-61CA-4120-8809-388F3BD65329}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A1E27DB-61CA-4120-8809-388F3BD65329}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD9046E8-110B-4326-BC37-7D879DA3B3F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD9046E8-110B-4326-BC37-7D879DA3B3F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD9046E8-110B-4326-BC37-7D879DA3B3F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD9046E8-110B-4326-BC37-7D879DA3B3F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
