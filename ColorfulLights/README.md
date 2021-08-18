@@ -15,6 +15,11 @@
 
 # Changelog
 
+## 1.3.0
+
+  * Fixed colors not applying to the Light component in the `Point light` GameObject.
+  * Now writes the PlayerId to a new ZDO field: `LastColoredByPlayerId`.
+
 ## 1.2.0
 
   * Fixed a memory leak when caching lights/fires. Now starts a coroutine to clean-up the cache.
