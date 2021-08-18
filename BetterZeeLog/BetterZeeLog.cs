@@ -12,9 +12,10 @@ namespace BetterZeeLog {
   public class BetterZeeLog : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterzeelog";
     public const string PluginName = "BetterZeeLog";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ConfigEntry<bool> _isModEnabled;
+    static ConfigEntry<bool> _removeStackTraceForNonErrorLogType;
 
     Harmony _harmony;
       
@@ -22,8 +23,20 @@ namespace BetterZeeLog {
       _isModEnabled =
           Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
+      _removeStackTraceForNonErrorLogType =
+          Config.Bind(
+              "Logging",
+              "removeStackTraceForNonErrorLogType",
+              true,
+              "Disables the stack track for 'Info' and 'Warning' log types (restart required).");
+
       if (_isModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+
+        if (_removeStackTraceForNonErrorLogType.Value) {
+          Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+          Application.SetStackTraceLogType(LogType.Warning, StackTraceLogType.None);
+        }
       }
     }
 
