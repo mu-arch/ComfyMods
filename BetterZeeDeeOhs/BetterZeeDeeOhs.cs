@@ -28,69 +28,69 @@ namespace BetterZeeDeeOhs {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly ReaderWriterLockSlim _objectsBySectorLock = new(LockRecursionPolicy.SupportsRecursion);
+    static readonly object _objectsBySectorLock = new();
 
     [HarmonyPatch(typeof(ZDOMan))]
     class ZDOManPatch {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZDOMan.AddToSector))]
       static void AddToSectorPrefix() {
-        _objectsBySectorLock.EnterWriteLock();
+        Monitor.Enter(_objectsBySectorLock);
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(ZDOMan.AddToSector))]
       static void AddToSectorPostfix() {
-        _objectsBySectorLock.ExitWriteLock();
+        Monitor.Exit(_objectsBySectorLock);
       }
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
-      static void RemoveFromSectorPrefix() {
-        _objectsBySectorLock.EnterWriteLock();
-      }
+      //[HarmonyPrefix]
+      //[HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
+      //static void RemoveFromSectorPrefix() {
+        
+      //}
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
-      static void RemoveFromSectorPostfix() {
-        _objectsBySectorLock.ExitWriteLock();
-      }
+      //[HarmonyPostfix]
+      //[HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
+      //static void RemoveFromSectorPostfix() {
+        
+      //}
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.FindObjects))]
-      static void FindObjectsPrefix() {
-        _objectsBySectorLock.EnterUpgradeableReadLock();
-      }
+      //[HarmonyPrefix]
+      //[HarmonyPatch(nameof(ZDOMan.FindObjects))]
+      //static void FindObjectsPrefix() {
+        
+      //}
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.FindObjects))]
-      static void FindObjectsPostfix() {
-        _objectsBySectorLock.ExitUpgradeableReadLock();
-      }
+      //[HarmonyPostfix]
+      //[HarmonyPatch(nameof(ZDOMan.FindObjects))]
+      //static void FindObjectsPostfix() {
+        
+      //}
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
-      static void FindDistantObjectsPrefix() {
-        _objectsBySectorLock.EnterUpgradeableReadLock();
-      }
+      //[HarmonyPrefix]
+      //[HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
+      //static void FindDistantObjectsPrefix() {
+        
+      //}
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
-      static void FindDistantObjectsPostfix() {
-        _objectsBySectorLock.ExitUpgradeableReadLock();
-      }
+      //[HarmonyPostfix]
+      //[HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
+      //static void FindDistantObjectsPostfix() {
+        
+      //}
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
-      static void GetAllZDOsWithPrefabIterativePrefix() {
-        _objectsBySectorLock.EnterUpgradeableReadLock();
-      }
+      //[HarmonyPrefix]
+      //[HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
+      //static void GetAllZDOsWithPrefabIterativePrefix() {
+        
+      //}
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
-      static void GetAllZDOsWithPrefabIterativePostfix() {
-        _objectsBySectorLock.ExitUpgradeableReadLock();
-      }
+      //[HarmonyPostfix]
+      //[HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
+      //static void GetAllZDOsWithPrefabIterativePostfix() {
+        
+      //}
     }
 
     [HarmonyPatch(typeof(ZNet))]
@@ -141,7 +141,7 @@ namespace BetterZeeDeeOhs {
           continue;
         }
 
-        _objectsBySectorLock.EnterReadLock();
+        Monitor.Enter(_objectsBySectorLock);
 
         foreach (ZDO zdo in sectorZdos) {
           if (zdo.m_persistent) {
@@ -149,10 +149,10 @@ namespace BetterZeeDeeOhs {
           }
         }
 
-        _objectsBySectorLock.ExitReadLock();
+        Monitor.Exit(_objectsBySectorLock);
       }
 
-      _objectsBySectorLock.EnterReadLock();
+      Monitor.Enter(_objectsBySectorLock);
 
       foreach (List<ZDO> sectorZdos in zdoMan.m_objectsByOutsideSector.Values) {
         foreach (ZDO zdo in sectorZdos) {
@@ -162,7 +162,7 @@ namespace BetterZeeDeeOhs {
         }
       }
 
-      _objectsBySectorLock.ExitReadLock();
+      Monitor.Exit(_objectsBySectorLock);
 
       _logger.LogInfo($"Finished GetSaveClone() in {stopwatch.ElapsedMilliseconds} ms, {clonedZdos.Count} ZDOs.");
       return clonedZdos;
