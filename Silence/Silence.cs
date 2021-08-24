@@ -23,21 +23,26 @@ namespace Silence {
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<KeyboardShortcut> _toggleSilenceShortcut;
+    static ConfigEntry<bool> _hideChatWindow;
+    static ConfigEntry<bool> _hideInWorldTexts;
 
     Harmony _harmony;
 
     public void Awake() {
       _logger = Logger;
 
-      _isModEnabled = Config.Bind(
-          "_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+      _isModEnabled =
+          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
       _toggleSilenceShortcut =
           Config.Bind(
               "Silence",
               "toggleSilenceShortcut",
-              new KeyboardShortcut(KeyCode.S, KeyCode.RightShift),
+              new KeyboardShortcut(KeyCode.S, KeyCode.RightControl),
               "Shortcut to toggle silence.");
+
+      _hideChatWindow = Config.Bind("Silence", "hideChatWindow", true, "When silenced, chat window is hidden.");
+      _hideInWorldTexts = Config.Bind("Silence", "hideInWorldTexts", true, "When silenced, hides text in-world.");
 
       if (_isModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
@@ -49,7 +54,9 @@ namespace Silence {
     }
 
     static Chat _chat;
-    static bool _enableChat = true;
+
+    static bool _enableChatWindow = true;
+    static bool _enableInWorldTexts = true;
 
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
@@ -72,14 +79,14 @@ namespace Silence {
             .SetAndAdvance(
                 OpCodes.Call,
                 Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _enableChat && Input.GetKeyDown(keyCode)).operand)
+                    keyCode => _enableChatWindow && Input.GetKeyDown(keyCode)).operand)
             .InstructionEnumeration();
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(Chat.AddInworldText))]
       static bool AddInworldTextPrefix() {
-        return _enableChat;
+        return _enableInWorldTexts;
       }
     }
 
@@ -88,7 +95,7 @@ namespace Silence {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.TakeInput))]
       static void TakeInputPostfix(ref Player __instance, ref bool __result) {
-        if (!_toggleSilenceShortcut.Value.IsDown()) {
+        if (_isModEnabled.Value && !_toggleSilenceShortcut.Value.IsDown()) {
           return;
         }
 
@@ -100,15 +107,20 @@ namespace Silence {
     static IEnumerator ToggleSilenceCoroutine() {
       yield return null;
 
-      _enableChat = !_enableChat;
+      _enableChatWindow = !_hideChatWindow.Value || !_enableChatWindow;
+      _enableInWorldTexts = !_hideInWorldTexts.Value || !_enableInWorldTexts;
 
-      _logger.LogInfo($"Setting enableChat to: {_enableChat}");
-      MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"Setting enableChat to: {_enableChat}");
+      _logger.LogInfo($"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
 
-      if (!_enableChat) {
+      MessageHud.instance.ShowMessage(
+          MessageHud.MessageType.TopLeft, $"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
+
+      if (_chat && !_enableChatWindow) {
         _chat.m_hideTimer = _chat.m_hideDelay;
         _chat.m_wasFocused = false;
+      }
 
+      if (_chat && !_enableInWorldTexts) {
         foreach (Chat.WorldTextInstance worldText in _chat.m_worldTexts) {
           Destroy(worldText.m_gui);
         }
