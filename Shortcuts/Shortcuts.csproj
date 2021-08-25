@@ -84,6 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="Shortcuts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

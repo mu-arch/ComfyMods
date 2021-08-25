@@ -10,53 +10,19 @@ using System.Reflection.Emit;
 
 using UnityEngine;
 
+using static Shortcuts.PluginConfig;
+
 namespace Shortcuts {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Shortcuts : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.shortcuts";
     public const string PluginName = "Shortcuts";
-    public const string PluginVersion = "0.9.0";
-
-    static ConfigEntry<bool> _isModEnabled;
-
-    static ConfigEntry<KeyboardShortcut> _toggleHudShortcut;
-    static ConfigEntry<KeyboardShortcut> _toggleDebugFlyShortcut;
-    static ConfigEntry<KeyboardShortcut> _toggleDebugNoCostShortcut;
-    static ConfigEntry<KeyboardShortcut> _toggleDebugKillAllShortcut;
+    public const string PluginVersion = "0.9.1";
 
     Harmony _harmony;
 
     public void Awake() {
-      _isModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
-
-      _toggleHudShortcut =
-          Config.Bind(
-              "Hud",
-              "toggleHudShortcut",
-              new KeyboardShortcut(KeyCode.F3, KeyCode.LeftControl),
-              "Shortcut to toggle the Hud on/off.");
-
-      _toggleDebugFlyShortcut =
-          Config.Bind(
-              "Debugmode",
-              "toggleDebugFlyShortcut",
-              new KeyboardShortcut(KeyCode.Z),
-              "Shortcut to toggle flying when in debugmode.");
-
-      _toggleDebugNoCostShortcut =
-          Config.Bind(
-              "Debugmode",
-              "toggleDebugNoCostShortcut",
-              new KeyboardShortcut(KeyCode.B),
-              "Shortcut to toggle no-cost building when in debugmode.");
-
-      _toggleDebugKillAllShortcut =
-          Config.Bind(
-              "Debugmode",
-              "toggleDebugKillAllShortcut",
-              new KeyboardShortcut(KeyCode.None),
-              "Shortcut to kill/damage all mobs around player. Unbound by default.");
+      CreateConfig(Config);
 
       if (_isModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
@@ -117,7 +83,47 @@ namespace Shortcuts {
             .SetAndAdvance(
                 OpCodes.Call,
                 Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleDebugKillAllShortcut.Value.IsDown()).operand)
+                    keyCode => _debugKillAllShortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(49)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem1Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(50)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem2Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(51)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem3Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(52)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem4Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(53)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem5Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(54)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem6Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(55)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem7Shortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(56)), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem8Shortcut.Value.IsDown()).operand)
             .InstructionEnumeration();
       }
     }
