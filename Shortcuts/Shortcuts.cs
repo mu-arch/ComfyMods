@@ -16,7 +16,7 @@ namespace Shortcuts {
   public class Shortcuts : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.shortcuts";
     public const string PluginName = "Shortcuts";
-    public const string PluginVersion = "0.9.2";
+    public const string PluginVersion = "1.0.0";
 
     Harmony _harmony;
 
@@ -37,11 +37,11 @@ namespace Shortcuts {
             OpCodes.Call,
             AccessTools.Method(typeof(Input), nameof(Input.GetKeyDown), new Type[] { typeof(KeyCode) }));
 
+    static readonly CodeMatch _inputGetKeyMatch =
+        new(OpCodes.Call, AccessTools.Method(typeof(Input), nameof(Input.GetKey), new Type[] { typeof(KeyCode) }));
+
     [HarmonyPatch(typeof(Hud))]
     class HudPatch {
-      static readonly CodeMatch _inputGetKeyMatch =
-          new(OpCodes.Call, AccessTools.Method(typeof(Input), nameof(Input.GetKey), new Type[] { typeof(KeyCode) }));
-
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(Hud.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -137,6 +137,38 @@ namespace Shortcuts {
             .SetAndAdvance(
                 OpCodes.Call,
                 Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _toggleConsoleShortcut.Value.IsDown()).operand)
+            .InstructionEnumeration();
+      }
+    }
+
+    [HarmonyPatch(typeof(GameCamera))]
+    class GameCameraPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(GameCamera.LateUpdate))]
+      static IEnumerable<CodeInstruction> LateUpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x124), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
+                    keyCode => _takeScreenshotShortcut.Value.IsDown()).operand)
+            .InstructionEnumeration();
+      }
+
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(GameCamera.UpdateMouseCapture))]
+      static IEnumerable<CodeInstruction> UpdateMouseCaptureTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x132), _inputGetKeyMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
+                    keyCode => _toggleMouseCaptureShortcut.Value.IsDown()).operand)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11A), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(OpCodes.Call, Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => true).operand)
             .InstructionEnumeration();
       }
     }

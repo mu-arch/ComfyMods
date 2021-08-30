@@ -9,6 +9,9 @@ namespace Shortcuts {
     public static ConfigEntry<KeyboardShortcut> _toggleConsoleShortcut;
     public static ConfigEntry<KeyboardShortcut> _toggleHudShortcut;
 
+    public static ConfigEntry<KeyboardShortcut> _takeScreenshotShortcut;
+    public static ConfigEntry<KeyboardShortcut> _toggleMouseCaptureShortcut;
+
     public static ConfigEntry<KeyboardShortcut> _toggleDebugFlyShortcut;
     public static ConfigEntry<KeyboardShortcut> _toggleDebugNoCostShortcut;
     public static ConfigEntry<KeyboardShortcut> _debugKillAllShortcut;
@@ -39,6 +42,20 @@ namespace Shortcuts {
               "toggleHudShortcut",
               new KeyboardShortcut(KeyCode.F3, KeyCode.LeftControl),
               "Shortcut to toggle the Hud on/off.");
+
+      _takeScreenshotShortcut =
+          config.Bind(
+              "GameCamera",
+              "takeScreenshotShortcut",
+              new KeyboardShortcut(KeyCode.F11),
+              "Shortcut to take a screenshot.");
+
+      _toggleMouseCaptureShortcut =
+          config.Bind(
+              "GameCamera",
+              "toggleMouseCaptureShortcut",
+              new KeyboardShortcut(KeyCode.F1, KeyCode.LeftControl),
+              "Shortcut to toggle mouse capture from the GameCamera.");
 
       _toggleDebugFlyShortcut =
           config.Bind(
