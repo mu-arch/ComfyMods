@@ -16,7 +16,7 @@ namespace Shortcuts {
   public class Shortcuts : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.shortcuts";
     public const string PluginName = "Shortcuts";
-    public const string PluginVersion = "0.9.1";
+    public const string PluginVersion = "0.9.2";
 
     Harmony _harmony;
 
@@ -60,7 +60,6 @@ namespace Shortcuts {
 
     [HarmonyPatch(typeof(Player))]
     class PlayerPatch {
-
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(Player.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -123,6 +122,21 @@ namespace Shortcuts {
             .SetAndAdvance(
                 OpCodes.Call,
                 Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _hotbarItem8Shortcut.Value.IsDown()).operand)
+            .InstructionEnumeration();
+      }
+    }
+
+    [HarmonyPatch(typeof(Console))]
+    class ConsolePatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Console.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11E), _inputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetAndAdvance(
+                OpCodes.Call,
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _toggleConsoleShortcut.Value.IsDown()).operand)
             .InstructionEnumeration();
       }
     }

@@ -113,7 +113,7 @@ namespace Silence {
       _logger.LogInfo($"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
 
       MessageHud.instance.ShowMessage(
-          MessageHud.MessageType.TopLeft, $"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
+          MessageHud.MessageType.Center, $"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
 
       if (_chat && !_enableChatWindow) {
         _chat.m_hideTimer = _chat.m_hideDelay;

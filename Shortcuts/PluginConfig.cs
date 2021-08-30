@@ -6,6 +6,7 @@ namespace Shortcuts {
   public class PluginConfig {
     public static ConfigEntry<bool> _isModEnabled;
 
+    public static ConfigEntry<KeyboardShortcut> _toggleConsoleShortcut;
     public static ConfigEntry<KeyboardShortcut> _toggleHudShortcut;
 
     public static ConfigEntry<KeyboardShortcut> _toggleDebugFlyShortcut;
@@ -24,6 +25,13 @@ namespace Shortcuts {
     public static void CreateConfig(ConfigFile config) {
       _isModEnabled =
           config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+
+      _toggleConsoleShortcut =
+          config.Bind(
+              "Console",
+              "toggleConsoleShortcut",
+              new KeyboardShortcut(KeyCode.F5),
+              "Shortcut to toggle the Console on/off.");
 
       _toggleHudShortcut =
           config.Bind(
