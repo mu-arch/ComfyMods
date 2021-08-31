@@ -1,6 +1,26 @@
 ﻿# Shortcuts
 
   * Re-assign more keyboard shortcuts that are hard-coded/unconfigurable in vanilla.
+    * Console
+      * toggleConsoleShortcut
+    * Debugmode
+      * debugKillallShortcut
+      * toggleDebugFlyShortcut
+      * toggleDebugNoCostShortcut
+    * GameCamera
+      * takeScreenshotShorcut
+      * toggleMouseCaptureShortcut
+    * Hotbar
+      * hotbarItem1Shortcut
+      * hotbarItem2Shortcut
+      * hotbarItem3Shortcut
+      * hotbarItem4Shortcut
+      * hotbarItem5Shortcut
+      * hotbarItem6Shortcut
+      * hotbarItem7Shortcut
+      * hotbarItem8Shortcut
+    * Hud
+      * toggleHudShortcut
 
 ## Dependencies
 
