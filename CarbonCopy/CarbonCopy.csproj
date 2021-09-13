@@ -87,7 +87,7 @@
   <ItemGroup>
     <Compile Include="CarbonCopy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\Panel.cs" />
+    <Compile Include="UI\BuildPanel.cs" />
     <Compile Include="UI\UIResources.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
