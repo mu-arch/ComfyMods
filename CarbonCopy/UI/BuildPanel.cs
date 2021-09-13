@@ -28,14 +28,12 @@ namespace CarbonCopy {
       panelTransform.pivot = new Vector2(0f, 0.5f);
       panelTransform.anchoredPosition = new Vector2(10f, 0f);
 
-      VerticalLayoutGroup panelLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
-      panelLayoutGroup.childControlHeight = true;
-      panelLayoutGroup.childControlWidth = true;
-      panelLayoutGroup.childForceExpandHeight = false;
-      panelLayoutGroup.childForceExpandWidth = false;
-      panelLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
-      panelLayoutGroup.padding = new RectOffset(left: 5, right: 5, top: 10, bottom: 10);
-      panelLayoutGroup.spacing = 10f;
+      panel.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 10, bottom: 10)
+          .SetSpacing(8f);
 
       ContentSizeFitter panelFitter = panel.AddComponent<ContentSizeFitter>();
       panelFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -55,14 +53,12 @@ namespace CarbonCopy {
       headerTransform.anchorMax = new Vector2(0.5f, 0.5f);
       headerTransform.pivot = new Vector2(0.5f, 0.5f);
 
-      HorizontalLayoutGroup headerLayoutGroup = header.GetComponent<HorizontalLayoutGroup>();
-      headerLayoutGroup.childControlHeight = true;
-      headerLayoutGroup.childControlWidth = true;
-      headerLayoutGroup.childForceExpandHeight = false;
-      headerLayoutGroup.childForceExpandWidth = false;
-      headerLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
-      headerLayoutGroup.padding = new RectOffset(left: 5, right: 5, top: 0, bottom: 0);
-      headerLayoutGroup.spacing = 10f;
+      header.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
 
       CreateIndicator(header.transform, new Color32(123, 36, 28, 255));
 
@@ -112,14 +108,12 @@ namespace CarbonCopy {
       GameObject content = new("Content", typeof(RectTransform), typeof(VerticalLayoutGroup));
       content.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      VerticalLayoutGroup contentLayoutGroup = content.GetComponent<VerticalLayoutGroup>();
-      contentLayoutGroup.childControlHeight = true;
-      contentLayoutGroup.childControlWidth = true;
-      contentLayoutGroup.childForceExpandHeight = false;
-      contentLayoutGroup.childForceExpandWidth = false;
-      contentLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
-      contentLayoutGroup.padding = new RectOffset(left: 5, right: 5, top: 0, bottom: 0);
-      contentLayoutGroup.spacing = 10f;
+      content.GetComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
 
       CreateDivider(content.transform, new Color32(123, 36, 28, 255));
 
@@ -147,13 +141,11 @@ namespace CarbonCopy {
       GameObject row = new("InputFieldButtonRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
       row.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      HorizontalLayoutGroup rowLayoutGroup = row.GetComponent<HorizontalLayoutGroup>();
-      rowLayoutGroup.childControlWidth = true;
-      rowLayoutGroup.childControlHeight = false;
-      rowLayoutGroup.childForceExpandWidth = false;
-      rowLayoutGroup.childForceExpandHeight = false;
-      rowLayoutGroup.padding = new RectOffset(left: 5, right: 5, top: 0, bottom: 0);
-      rowLayoutGroup.spacing = 10f;
+      row.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
 
       GameObject label = DefaultControls.CreateText(_resources);
       label.transform.SetParent(row.transform, worldPositionStays: false);
@@ -188,13 +180,11 @@ namespace CarbonCopy {
       GameObject buttonControl = DefaultControls.CreateButton(_resources);
       buttonControl.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      HorizontalLayoutGroup buttonLayoutGroup = buttonControl.AddComponent<HorizontalLayoutGroup>();
-      buttonLayoutGroup.childControlWidth = true;
-      buttonLayoutGroup.childControlHeight = true;
-      buttonLayoutGroup.childForceExpandWidth = false;
-      buttonLayoutGroup.childForceExpandHeight = false;
-      buttonLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
-      buttonLayoutGroup.padding = new RectOffset(left: 10, right: 10, top: 5, bottom: 5);
+      buttonControl.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 10, right: 10, top: 5, bottom: 5);
 
       Text buttonText = buttonControl.GetComponentInChildren<Text>(includeInactive: false);
       buttonText.text = buttonLabel;

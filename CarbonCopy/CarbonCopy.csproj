@@ -88,7 +88,9 @@
     <Compile Include="CarbonCopy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\BuildPanel.cs" />
+    <Compile Include="UI\HorizontalLayoutGroupExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />
+    <Compile Include="UI\VerticalLayoutGroupExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Copy" AfterTargets="Build">
