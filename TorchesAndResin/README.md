@@ -8,6 +8,11 @@
 
 ## Changelog
 
+### 1.1.0
+
+  * Added braziers to list of torches supported.
+  * Use `ZNetView.m_prefabName` instead of `GameObject.name`.
+
 ### 1.0.0
 
   * Updated project template and references to use latest DLLs.

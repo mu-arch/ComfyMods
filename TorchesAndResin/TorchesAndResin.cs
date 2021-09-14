@@ -9,7 +9,7 @@ namespace TorchesAndResin {
   public class TorchesAndResin : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.torchesandresin";
     public const string PluginName = "Torches and Resin";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     private const float _torchStartingFuel = 10000f;
 
