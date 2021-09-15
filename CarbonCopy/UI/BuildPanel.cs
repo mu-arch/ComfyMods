@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace CarbonCopy {
@@ -9,12 +10,23 @@ namespace CarbonCopy {
     public GameObject Header { get; private set; }
     public GameObject Content { get; private set; }
 
+    public InputField OriginInputField { get; private set; }
+    public Button PinOriginButton { get; private set; }
+
+    public Slider RadiusSlider { get; private set; }
+    public InputField RadiusInputField { get; private set; }
+    public Toggle ShowRadiusSphereToggle { get; private set; }
+
     public BuildPanel(Transform parentTransform) {
       _resources = UIResources.CreateResources();
       Panel = CreatePanel(parentTransform);
       Header = CreateHeader(Panel.transform, "CarbonCopy");
       Content = CreateContent(Panel.transform);
-      CreateInputFieldButtonRow(Content.transform, "Filename", "Save Build");
+
+      CreateFilenameRow(Content.transform);
+      CreateOriginRow(Content.transform);
+      CreateRadiusRow(Content.transform);
+      CreateRadiusOptionsRow(Content.transform);
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -62,14 +74,11 @@ namespace CarbonCopy {
 
       CreateIndicator(header.transform, new Color32(123, 36, 28, 255));
 
-      GameObject label = DefaultControls.CreateText(_resources);
-      label.transform.SetParent(header.transform, worldPositionStays: false);
-      label.name = "Label";
-
-      Text labelText = label.GetComponent<Text>();
-      labelText.fontSize += 2;
-      labelText.alignment = TextAnchor.MiddleCenter;
-      labelText.text = headerLabel;
+      CreateLabel(header.transform)
+          .GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetFontSize(16)
+          .SetText(headerLabel);
 
       CreateSpacer(header.transform, flexibleWidth: 1f);
 
@@ -86,22 +95,11 @@ namespace CarbonCopy {
       indicatorImage.raycastTarget = true;
       indicatorImage.maskable = true;
 
-      LayoutElement indicatorLayout = indicator.AddComponent<LayoutElement>();
-      indicatorLayout.preferredWidth = 4;
-      indicatorLayout.flexibleHeight = 1;
+      indicator.AddComponent<LayoutElement>()
+          .SetPreferred(width: 4f)
+          .SetFlexible(height: 1f);
 
       return indicator;
-    }
-
-    GameObject CreateSpacer(Transform parentTransform, float flexibleWidth = 0, float flexibleHeight = 0) {
-      GameObject spacer = new("Spacer", typeof(RectTransform), typeof(LayoutElement));
-      spacer.transform.SetParent(parentTransform, worldPositionStays: false);
-
-      LayoutElement spacerLayout = spacer.GetComponent<LayoutElement>();
-      spacerLayout.flexibleWidth = flexibleWidth;
-      spacerLayout.flexibleHeight = flexibleHeight;
-
-      return spacer;
     }
 
     GameObject CreateContent(Transform parentTransform) {
@@ -118,6 +116,142 @@ namespace CarbonCopy {
       CreateDivider(content.transform, new Color32(123, 36, 28, 255));
 
       return content;
+    }
+
+    GameObject CreateFilenameRow(Transform parentTransform) {
+      GameObject row = new("FilenameRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      row.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
+
+      CreateLabel(row.transform)
+          .GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("Filename");
+
+      GameObject inputFieldControl = CreateInputField(row.transform, "carbon.build");
+
+      inputFieldControl.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      GameObject buttonControl = CreateButton(row.transform, "Save Build");
+
+      InputField inputField = inputFieldControl.GetComponent<InputField>();
+      Button button = buttonControl.GetComponent<Button>();
+
+      inputField.onValueChanged.AddListener(value => button.interactable = value.Length > 0);
+      button.interactable = false;
+
+      return row;
+    }
+
+    GameObject CreateOriginRow(Transform parentTransform) {
+      GameObject row = new("OriginRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      row.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
+
+      CreateLabel(row.transform)
+          .GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("Origin");
+
+      GameObject origin = CreateInputField(row.transform, "XYZ");
+
+      origin.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      OriginInputField = origin.GetComponent<InputField>();
+      OriginInputField.readOnly = true;
+
+      PinOriginButton = CreateButton(row.transform, "Pin").GetComponent<Button>();
+
+      return row;
+    }
+
+    GameObject CreateRadiusRow(Transform parentTransform) {
+      GameObject row = new("RadiusRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      row.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
+
+      CreateLabel(row.transform)
+          .GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("Radius");
+
+      GameObject radiusSliderControl = CreateSlider(row.transform);
+      radiusSliderControl
+          .AddComponent<LayoutElement>()
+          .SetFlexible(width: 0.75f);
+
+      GameObject radiusInputFieldControl = CreateInputField(row.transform, "10");
+      radiusInputFieldControl
+          .AddComponent<LayoutElement>()
+          .SetFlexible(width: 0.25f);
+
+      RadiusSlider = radiusSliderControl.GetComponent<Slider>();
+      RadiusSlider.value = 10f;
+      RadiusSlider.minValue = 1f;
+      RadiusSlider.maxValue = 128f;
+
+      RadiusInputField = radiusInputFieldControl.GetComponent<InputField>();
+      RadiusInputField.text = "10";
+
+      RadiusSlider.onValueChanged.AddListener(value => RadiusInputField.text = value.ToString());
+      RadiusInputField.onValueChanged.AddListener(
+          value => {
+            if (float.TryParse(value, out float radius)) {
+              RadiusSlider.SetValueWithoutNotify(Mathf.Clamp(radius, RadiusSlider.minValue, RadiusSlider.maxValue));
+            }
+          });
+
+      return row;
+    }
+
+    GameObject CreateRadiusOptionsRow(Transform parentTransform) {
+      GameObject row = new("RadiusOptionsRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      row.GetComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
+          .SetSpacing(8f);
+
+      GameObject toggleControl = CreateToggle(row.transform, "Show radius sphere");
+      toggleControl.AddComponent<LayoutElement>().SetFlexible(width: 1f);
+
+      ShowRadiusSphereToggle = toggleControl.GetComponent<Toggle>();
+      ShowRadiusSphereToggle.isOn = false;
+
+      return row;
+    }
+
+    GameObject CreateSpacer(Transform parentTransform, float flexibleWidth = 0, float flexibleHeight = 0) {
+      GameObject spacer = new("Spacer", typeof(RectTransform), typeof(LayoutElement));
+      spacer.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      LayoutElement spacerLayout = spacer.GetComponent<LayoutElement>();
+      spacerLayout.flexibleWidth = flexibleWidth;
+      spacerLayout.flexibleHeight = flexibleHeight;
+
+      return spacer;
     }
 
     GameObject CreateDivider(Transform parentTransform, Color dividerColor) {
@@ -137,43 +271,32 @@ namespace CarbonCopy {
       return divider;
     }
 
-    GameObject CreateInputFieldButtonRow(Transform parentTransform, string inputFieldLabel, string buttonLabel) {
-      GameObject row = new("InputFieldButtonRow", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-      row.transform.SetParent(parentTransform, worldPositionStays: false);
-
-      row.GetComponent<HorizontalLayoutGroup>()
-          .SetChildControl(width: true, height: false)
-          .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 5, right: 5, top: 0, bottom: 0)
-          .SetSpacing(8f);
-
-      GameObject label = DefaultControls.CreateText(_resources);
-      label.transform.SetParent(row.transform, worldPositionStays: false);
-      label.name = inputFieldLabel;
-
-      Text labelText = label.GetComponent<Text>();
-      labelText.alignment = TextAnchor.MiddleLeft;
-      labelText.text = inputFieldLabel;
-
-      CreateInputField(row.transform);
-      CreateButton(row.transform, buttonLabel);
-
-      return row;
-    }
-
-    GameObject CreateInputField(Transform parentTransform) {
+    GameObject CreateInputField(Transform parentTransform, string placeholderText) {
       GameObject inputFieldControl = DefaultControls.CreateInputField(_resources);
       inputFieldControl.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      LayoutElement inputFieldLayout = inputFieldControl.AddComponent<LayoutElement>();
-      inputFieldLayout.flexibleWidth = 1;
-
       InputField inputField = inputFieldControl.GetComponent<InputField>();
 
-      Text inputFieldPlaceholderText = inputField.placeholder.GetComponent<Text>();
-      inputFieldPlaceholderText.font = inputField.textComponent.font;
+      inputField.placeholder.GetComponent<Text>()
+        .SetFont(inputField.textComponent.font)
+        .SetText(placeholderText);
 
       return inputFieldControl;
+    }
+
+    GameObject CreateSlider(Transform parentTransform) {
+      GameObject sliderControl = DefaultControls.CreateSlider(_resources);
+      sliderControl.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      return sliderControl;
+    }
+
+    GameObject CreateToggle(Transform parentTransform, string toggleLabel) {
+      GameObject toggleControl = DefaultControls.CreateToggle(_resources);
+      toggleControl.transform.SetParent(parentTransform, worldPositionStays: false);
+      toggleControl.GetComponentInChildren<Text>(includeInactive: false)?.SetText(toggleLabel);
+
+      return toggleControl;
     }
 
     GameObject CreateButton(Transform parentTransform, string buttonLabel) {
@@ -186,10 +309,16 @@ namespace CarbonCopy {
           .SetChildAlignment(TextAnchor.MiddleCenter)
           .SetPadding(left: 10, right: 10, top: 5, bottom: 5);
 
-      Text buttonText = buttonControl.GetComponentInChildren<Text>(includeInactive: false);
-      buttonText.text = buttonLabel;
+      buttonControl.GetComponentInChildren<Text>(includeInactive: false).SetText(buttonLabel);
 
       return buttonControl;
+    }
+
+    GameObject CreateLabel(Transform parentTransform) {
+      GameObject textControl = DefaultControls.CreateText(_resources);
+      textControl.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      return textControl;
     }
   }
 }

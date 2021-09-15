@@ -77,6 +77,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -88,7 +91,10 @@
     <Compile Include="CarbonCopy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\BuildPanel.cs" />
+    <Compile Include="UI\ButtonExtensions.cs" />
     <Compile Include="UI\HorizontalLayoutGroupExtensions.cs" />
+    <Compile Include="UI\LayoutElementExtensions.cs" />
+    <Compile Include="UI\TextExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />
     <Compile Include="UI\VerticalLayoutGroupExtensions.cs" />
   </ItemGroup>
