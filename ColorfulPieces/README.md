@@ -4,7 +4,7 @@
     * Coloring is very simple at the moment and will color all materials/textures on the object (to be refined later).
     * Those without the mod installed will still see the default vanilla materials/textures.
 
-# Instructions
+## Instructions
 
   1. Unzip `ColorfulPieces.dll` to your `/Valheim/BepInEx/plugins/` folder.
   2. In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
@@ -13,9 +13,19 @@
   3. Hover over any building piece ***that you are the owner of*** and a prompt will appear.
      * Hit `LeftShift + R` to change the building piece color to the target color and emission factor.
      * Hit `LeftAlt + R` to clear any existing colors from the building piece.
+     * Hit `LeftCtrl + R` to copy the existing color from a piece.
      * This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
 
-# Changelog
+## Changelog
+
+### 1.2.0
+
+  * Fixed for Hearth & Home update.
+  * Added new action to copy the (existing) color of the hovered piece.
+    * Defaults to `LeftCtrl + R`.
+  * All keyboard shortcuts for actions (including set color and clear color) are now configurable.
+  * Increased maximum emission factor from `0.6` to `0.8` to allow for brighter colors.
+  * Added a new `LastColoredBy` long ZDO property set to the PlayerId on set or clear.
 
 ## 1.1.0
 
