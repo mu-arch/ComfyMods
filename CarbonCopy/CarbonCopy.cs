@@ -40,11 +40,11 @@ namespace CarbonCopy {
       _harmony?.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(Console))]
-    class ConsolePatch {
+    [HarmonyPatch(typeof(Terminal))]
+    class TerminalPatch {
       [HarmonyPrefix]
-      [HarmonyPatch(nameof(Console.InputText))]
-      static bool InputTextPrefix(ref Console __instance) {
+      [HarmonyPatch(nameof(Terminal.InputText))]
+      static bool InputTextPrefix(ref Terminal __instance) {
         if (_isModEnabled.Value && ParseText(__instance.m_input.text)) {
           return false;
         }
