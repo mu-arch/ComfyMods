@@ -15,8 +15,15 @@
      * Hit `LeftAlt + R` to clear any existing colors from the building piece.
      * Hit `LeftCtrl + R` to copy the existing color from a piece.
      * This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
+     * Prompt font-size can be configured with the `colorPromptFontSize` setting.
 
 ## Changelog
+
+### 1.3.0
+
+  * Fixed `PieceEmissionColorFactor` not being copied during copy color action.
+  * Renamed `LastColoredBy` to `PieceLastColoredBy` to be more consistent with other colorful mods.
+  * Added an option to change the font-size for the text prompt on hover.
 
 ### 1.2.1
 

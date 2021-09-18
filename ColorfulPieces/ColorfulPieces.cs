@@ -16,11 +16,11 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.2.1";
+    public const string PluginVersion = "1.3.0";
 
     private static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
     private static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
-    static readonly int _lastColoredByHashCode = "LastColoredBy".GetStableHashCode();
+    static readonly int _pieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
 
     private static readonly Dictionary<WearNTear, WearNTearData> _wearNTearDataCache = new();
 
@@ -109,7 +109,7 @@ namespace ColorfulPieces {
 
       wearNTear.m_nview.m_zdo.Set(_pieceColorHashCode, Utils.ColorToVec3(_targetPieceColor.Value));
       wearNTear.m_nview.m_zdo.Set(_pieceEmissionColorFactorHashCode, _targetPieceEmissionColorFactor.Value);
-      wearNTear.m_nview.m_zdo.Set(_lastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      wearNTear.m_nview.m_zdo.Set(_pieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
       if (_wearNTearDataCache.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = _targetPieceColor.Value;
@@ -130,7 +130,7 @@ namespace ColorfulPieces {
 
       if (wearNTear.m_nview.m_zdo.RemoveVec3(_pieceColorHashCode)
           || wearNTear.m_nview.m_zdo.RemoveFloat(_pieceEmissionColorFactorHashCode)) {
-        wearNTear.m_nview.m_zdo.Set(_lastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+        wearNTear.m_nview.m_zdo.Set(_pieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
         wearNTear.m_nview.m_zdo.IncreseDataRevision();
       }
 
@@ -148,18 +148,21 @@ namespace ColorfulPieces {
 
     static void CopyPieceColorAction(WearNTear wearNTear) {
       if (!wearNTear.m_nview
-          || wearNTear.m_nview.m_zdo == null
-          || wearNTear.m_nview.m_zdo.m_zdoMan == null
-          || wearNTear.m_nview.m_zdo.m_vec3 == null
-          || !wearNTear.m_nview.m_zdo.m_vec3.TryGetValue(_pieceColorHashCode, out Vector3 colorAsVector)) {
+          || !wearNTear.m_nview.IsValid()
+          || !wearNTear.m_nview.m_zdo.TryGetVec3(_pieceColorHashCode, out Vector3 colorAsVector)) {
         return;
       }
 
       _targetPieceColor.Value = Utils.Vec3ToColor(colorAsVector);
       _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(_targetPieceColor.Value)}";
 
+      if (wearNTear.m_nview.m_zdo.TryGetFloat(_pieceEmissionColorFactorHashCode, out float factor)) {
+        _targetPieceEmissionColorFactor.Value = factor;
+      }
+
       MessageHud.instance?.ShowMessage(
-          MessageHud.MessageType.TopLeft, $"Copied piece color: #{_targetPieceColorHex.Value}");
+          MessageHud.MessageType.TopLeft,
+          $"Copied piece color: {_targetPieceColorHex.Value} (f: {_targetPieceEmissionColorFactor.Value})");
     }
 
     [HarmonyPatch(typeof(WearNTear))]
@@ -218,9 +221,11 @@ namespace ColorfulPieces {
     class HudPatch {
       static readonly string _hoverNameTextTemplate =
         "{0}{1}"
+            + "<size={9}>"
             + "[<color={2}>{3}</color>] Set piece color: <color=#{4}>#{4}</color> (<color=#{4}>{5}</color>)\n"
             + "[<color={6}>{7}</color>] Clear piece color\n"
-            + "[<color={6}>{8}</color>] Copy piece color";
+            + "[<color={6}>{8}</color>] Copy piece color\n"
+            + "</size>";
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
@@ -251,7 +256,8 @@ namespace ColorfulPieces {
                 _targetPieceEmissionColorFactor.Value.ToString("N2"),
                 "#EF5350",
                 _clearPieceColorShortcut.Value,
-                _copyPieceColorShortcut.Value);
+                _copyPieceColorShortcut.Value,
+                _colorPromptFontSize.Value);
       }
     }
 
@@ -280,6 +286,24 @@ namespace ColorfulPieces {
   }
 
   public static class ZDOExtensions {
+    public static bool TryGetVec3(this ZDO zdo, int keyHashCode, out Vector3 value) {
+      if (zdo == null || zdo.m_vec3 == null) {
+        value = default;
+        return false;
+      }
+
+      return zdo.m_vec3.TryGetValue(keyHashCode, out value);
+    }
+
+    public static bool TryGetFloat(this ZDO zdo, int keyHashCode, out float value) {
+      if (zdo == null || zdo.m_floats == null) {
+        value = default;
+        return false;
+      }
+
+      return zdo.m_floats.TryGetValue(keyHashCode, out value);
+    }
+
     public static bool RemoveVec3(this ZDO zdo, int keyHashCode) {
       return zdo != null && zdo.m_vec3 != null && zdo.m_vec3.Remove(keyHashCode);
     }

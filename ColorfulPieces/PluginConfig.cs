@@ -13,43 +13,44 @@ namespace ColorfulPieces {
     public static ConfigEntry<string> _targetPieceColorHex;
     public static ConfigEntry<float> _targetPieceEmissionColorFactor;
     public static ConfigEntry<bool> _showChangeRemoveColorPrompt;
+    public static ConfigEntry<int> _colorPromptFontSize;
 
-    public static void CreateConfig(ConfigFile Config) {
-      _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+    public static void CreateConfig(ConfigFile config) {
+      _isModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       _changePieceColorShortcut =
-          Config.Bind(
+          config.Bind(
               "Hotkeys",
               "changePieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftShift),
               "Shortcut to change the color of the hovered piece.");
 
       _clearPieceColorShortcut =
-          Config.Bind(
+          config.Bind(
               "Hotkeys",
               "clearPieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftAlt),
               "Shortcut to clear the color of the hovered piece.");
 
       _copyPieceColorShortcut =
-          Config.Bind(
+          config.Bind(
               "Hotkeys",
               "copyPieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftControl),
               "Shortcut to copy the color of the hovered piece.");
 
       _targetPieceColor =
-          Config.Bind("Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
+          config.Bind("Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
 
       _targetPieceColorHex =
-          Config.Bind(
+          config.Bind(
               "Color",
               "targetPieceColorHex",
               $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
               "Target color to set the piece material to, in HTML hex form (alpha unsupported).");
 
       _targetPieceEmissionColorFactor =
-          Config.Bind(
+          config.Bind(
               "Color",
               "targetPieceEmissionColorFactor",
               0.4f,
@@ -58,7 +59,10 @@ namespace ColorfulPieces {
                   new AcceptableValueRange<float>(0f, 0.8f)));
 
       _showChangeRemoveColorPrompt =
-          Config.Bind("Hud", "showChangeRemoveColorPrompt", true, "Show the 'change/remove' color text prompt.");
+          config.Bind("Hud", "showChangeRemoveColorPrompt", true, "Show the 'change/remove/copy' color text prompt.");
+
+      _colorPromptFontSize =
+          config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
     }
   }
 }
