@@ -15,6 +15,11 @@
 
 # Changelog
 
+## 1.3.0
+
+  * Updated for Hearth & Home.
+  * Added `PortalLastColoredBy` ZDO property that is set whenever a player changes the portals color.
+
 ## 1.2.0
 
   * Fixed a memory-leak when caching TeleportWorld/Portals.
