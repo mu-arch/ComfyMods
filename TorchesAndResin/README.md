@@ -8,6 +8,11 @@
 
 ## Changelog
 
+### 1.2.0
+
+  * Updated for Hearth & Home.
+  * Added a Transpiler to the Fireplace.Awake() method to change the initial UpdateFireplace.Invoke() from 0s to 0.5s.
+
 ### 1.1.0
 
   * Added braziers to list of torches supported.
