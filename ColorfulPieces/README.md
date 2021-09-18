@@ -18,6 +18,10 @@
 
 ## Changelog
 
+### 1.2.1
+
+  * Recompiled against H&H patch.
+
 ### 1.2.0
 
   * Fixed for Hearth & Home update.
