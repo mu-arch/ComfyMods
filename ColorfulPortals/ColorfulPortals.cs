@@ -14,18 +14,21 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
-    private static ConfigEntry<bool> _isModEnabled;
-    private static ConfigEntry<Color> _targetPortalColor;
-    private static ConfigEntry<string> _targetPortalColorHex;
+    static ConfigEntry<bool> _isModEnabled;
+    static ConfigEntry<Color> _targetPortalColor;
+    static ConfigEntry<string> _targetPortalColorHex;
 
-    private static ConfigEntry<bool> _showChangeColorHoverText;
+    static ConfigEntry<bool> _showChangeColorHoverText;
+    static ConfigEntry<int> _colorPromptFontSize;
 
-    private static ManualLogSource _logger;
-    private Harmony _harmony;
+    static ManualLogSource _logger;
+    Harmony _harmony;
 
     public void Awake() {
+      _logger = Logger;
+
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       _targetPortalColor =
@@ -45,8 +48,10 @@ namespace ColorfulPortals {
           Config.Bind(
               "Hud", "showChangeColorHoverText", true, "Show the 'change color' text when hovering over a portal.");
 
-      _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+      _colorPromptFontSize =
+          Config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change color' text prompt.");
+
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
 
       StartCoroutine(RemovedDestroyedTeleportWorldsCoroutine());
     }
@@ -131,7 +136,7 @@ namespace ColorfulPortals {
       static readonly int _teleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
       static readonly int _portalLastColoredByHashCode = "PortalLastColoredBy".GetStableHashCode();
 
-      private static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
+      static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
@@ -168,11 +173,12 @@ namespace ColorfulPortals {
 
         __result =
             string.Format(
-                "{0}\n[<color={1}>{2}</color>] Change color to: <color={3}>{3}</color>",
+                "{0}\n<size={4}>[<color={1}>{2}</color>] Change color to: <color={3}>{3}</color></size>",
                 __result,
                 "#FFA726",
                 _changeColorActionShortcut,
-                _targetPortalColorHex.Value);
+                _targetPortalColorHex.Value,
+                _colorPromptFontSize.Value);
       }
 
       [HarmonyPrefix]
