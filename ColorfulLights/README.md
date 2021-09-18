@@ -15,6 +15,11 @@
 
 # Changelog
 
+## 1.4.0
+
+  * Updated for Hearth & Home.
+  * Renamed `LastColoredByPlayerId` ZDO key to `LightLastColoredBy`.
+
 ## 1.3.0
 
   * Fixed colors not applying to the Light component in the `Point light` GameObject.

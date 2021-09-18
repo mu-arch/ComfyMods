@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+
 using HarmonyLib;
 
 using System;
@@ -8,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using UnityEngine;
 
 namespace ColorfulLights {
@@ -15,7 +17,7 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     private static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
 
@@ -114,7 +116,7 @@ namespace ColorfulLights {
       private static readonly int _fuelHashCode = "fuel".GetStableHashCode();
       private static readonly int _fireplaceColorHashCode = "FireplaceColor".GetStableHashCode();
       private static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
-      private static readonly int _lastColoredByPlayerIdHashCode = "LastColoredByPlayerId".GetStableHashCode();
+      private static readonly int _lightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
 
       private static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
 
@@ -125,7 +127,7 @@ namespace ColorfulLights {
           return;
         }
 
-        _fireplaceDataCache.Add(__instance, ExtractFireplaceData(__instance));
+        _fireplaceDataCache.Add(__instance, new(__instance));
       }
 
       [HarmonyPostfix]
@@ -171,7 +173,7 @@ namespace ColorfulLights {
 
         __instance.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(_targetFireplaceColor.Value));
         __instance.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, _targetFireplaceColor.Value.a);
-        __instance.m_nview.m_zdo.Set(_lastColoredByPlayerIdHashCode, Player.m_localPlayer.GetPlayerID());
+        __instance.m_nview.m_zdo.Set(_lightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
         __instance.m_fuelAddedEffects.Create(__instance.transform.position, __instance.transform.rotation);
 
@@ -272,33 +274,12 @@ namespace ColorfulLights {
 
         SetParticleColors(
             Enumerable.Empty<Light>(),
-            fireworksClone.GetComponentsInChildren<ParticleSystem>(),
-            fireworksClone.GetComponentsInChildren<ParticleSystemRenderer>(),
+            fireworksClone.GetComponentsInChildren<ParticleSystem>(includeInactive: true),
+            fireworksClone.GetComponentsInChildren<ParticleSystemRenderer>(includeInactive: true),
             fireworksColor);
 
         return false;
       }
-    }
-
-    private static FireplaceData ExtractFireplaceData(Fireplace fireplace) {
-      FireplaceData data = new();
-
-      ExtractFireplaceData(data, fireplace.m_enabledObject);
-      ExtractFireplaceData(data, fireplace.m_enabledObjectHigh);
-      ExtractFireplaceData(data, fireplace.m_enabledObjectLow);
-      ExtractFireplaceData(data, fireplace.m_fireworks);
-
-      return data;
-    }
-
-    private static void ExtractFireplaceData(FireplaceData data, GameObject targetObject) {
-      if (!targetObject) {
-        return;
-      }
-
-      data.Lights.AddRange(targetObject.GetComponentsInChildren<Light>(includeInactive: true));
-      data.Systems.AddRange(targetObject.GetComponentsInChildren<ParticleSystem>(includeInactive: true));
-      data.Renderers.AddRange(targetObject.GetComponentsInChildren<ParticleSystemRenderer>(includeInactive: true));
     }
 
     private static void SetParticleColors(
@@ -331,14 +312,5 @@ namespace ColorfulLights {
         light.color = targetColor;
       }
     }
-  }
-
-  internal class FireplaceData {
-    public List<Light> Lights { get; } = new List<Light>();
-    public List<ParticleSystem> Systems { get; } = new List<ParticleSystem>();
-    public List<ParticleSystemRenderer> Renderers { get; } = new List<ParticleSystemRenderer>();
-    public Color TargetColor { get; set; } = Color.clear;
-
-    public FireplaceData() {}
   }
 }
