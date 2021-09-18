@@ -10,19 +10,19 @@ namespace DyeHard {
   public class DyeHard : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.dyehard";
     public const string PluginName = "DyeHard";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.1.0";
 
-    private static readonly int _hairColorHashCode = "HairColor".GetStableHashCode();
+    static readonly int _hairColorHashCode = "HairColor".GetStableHashCode();
 
-    private static ConfigEntry<Color> _playerHairColor;
-    private static ConfigEntry<string> _playerHairColorHex;
-    private static ConfigEntry<float> _playerHairGlow;
+    static ConfigEntry<Color> _playerHairColor;
+    static ConfigEntry<string> _playerHairColorHex;
+    static ConfigEntry<float> _playerHairGlow;
 
-    private static ConfigEntry<bool> _isModEnabled;
+    static ConfigEntry<bool> _isModEnabled;
 
     private Harmony _harmony;
 
-    private static Player _localPlayer;
+    static Player _localPlayer;
 
     public void Awake() {
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -54,13 +54,11 @@ namespace DyeHard {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    private void OnDestroy() {
-      if (_harmony != null) {
-        _harmony.UnpatchSelf();
-      }
+    public void OnDestroy() {
+      _harmony?.UnpatchSelf();
     }
 
-    private void UpdatePlayerHairColorHexValue() {
+    void UpdatePlayerHairColorHexValue() {
       Color color = _playerHairColor.Value;
       color.a = 1f; // Alpha transparency is unsupported.
 
@@ -70,7 +68,7 @@ namespace DyeHard {
       SetPlayerZdoHairColor();
     }
 
-    private void UpdatePlayerHairColorValue() {
+    void UpdatePlayerHairColorValue() {
       if (ColorUtility.TryParseHtmlString(_playerHairColorHex.Value, out Color color)) {
         color.a = 1f; // Alpha transparency is unsupported.
         _playerHairColor.Value = color;
@@ -79,7 +77,7 @@ namespace DyeHard {
       }
     }
 
-    private static Vector3 GetPlayerHairColorVector() {
+    static Vector3 GetPlayerHairColorVector() {
       Vector3 colorVector = Utils.ColorToVec3(_playerHairColor.Value);
 
       if (colorVector != Vector3.zero) {
@@ -90,20 +88,20 @@ namespace DyeHard {
     }
 
     [HarmonyPatch(typeof(FejdStartup))]
-    private class FejdStartupPatch {
+    class FejdStartupPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.SetupCharacterPreview))]
-      private static void FejdStartupSetupCharacterPreviewPostfix(ref FejdStartup __instance) {
+      static void FejdStartupSetupCharacterPreviewPostfix(ref FejdStartup __instance) {
         _localPlayer = __instance.m_playerInstance.GetComponent<Player>();
         SetPlayerZdoHairColor();
       }
     }
 
     [HarmonyPatch(typeof(VisEquipment))]
-    private class VisEquipmentPatch {
+    class VisEquipmentPatch {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(VisEquipment.SetHairColor))]
-      private static void VisEquipmentSetHairColorPrefix(ref VisEquipment __instance, ref Vector3 color) {
+      static void VisEquipmentSetHairColorPrefix(ref VisEquipment __instance, ref Vector3 color) {
         if (_isModEnabled.Value && __instance.TryGetComponent(out Player player) && player == _localPlayer) {
           color = GetPlayerHairColorVector();
         }
@@ -111,23 +109,23 @@ namespace DyeHard {
     }
 
     [HarmonyPatch(typeof(Player))]
-    private class PlayerPatch {
+    class PlayerPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.SetLocalPlayer))]
-      private static void PlayerSetLocalPlayerPostfix(ref Player __instance) {
+      static void PlayerSetLocalPlayerPostfix(ref Player __instance) {
         _localPlayer = __instance;
         SetPlayerZdoHairColor();
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.OnSpawned))]
-      private static void PlayerOnSpawnedPostfix(ref Player __instance) {
+      static void PlayerOnSpawnedPostfix(ref Player __instance) {
         _localPlayer = __instance;
         SetPlayerZdoHairColor();
       }
     }
 
-    private static void SetPlayerZdoHairColor() {
+    static void SetPlayerZdoHairColor() {
       if (!_localPlayer || !_localPlayer.m_visEquipment) {
         return;
       }
