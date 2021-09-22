@@ -14,7 +14,7 @@ namespace GetOffMyLawn {
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.getoffmylawn";
     public const string PluginName = "GetOffMyLawn";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.0.1";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<float> _pieceHealth;
@@ -142,6 +142,13 @@ namespace GetOffMyLawn {
         Piece.GetAllPiecesInRadius(__instance.transform.position, __instance.m_radius, _pieces);
 
         foreach (Piece piece in _pieces) {
+          if (!piece || !piece.m_nview || !piece.m_nview.IsValid()) {
+            _logger.LogWarning(
+                $"Skipping piece with invalid ZNetView: {Localization.instance.Localize(piece?.m_name ?? "null")}.");
+
+            continue;
+          }
+
           if (piece.GetComponent<Plant>()) {
             continue;
           }
@@ -149,7 +156,7 @@ namespace GetOffMyLawn {
           piece.m_nview.GetZDO().Set(_healthHashCode, _pieceHealth.Value);
 
           if (_showRepairEffectOnWardActivation.Value) {
-            piece.m_placeEffect.Create(piece.transform.position, piece.transform.rotation);
+            piece.m_placeEffect?.Create(piece.transform.position, piece.transform.rotation);
           }
 
           _pieceCount++;
@@ -185,6 +192,11 @@ namespace GetOffMyLawn {
 
         if (!PrivateArea.CheckAccess(hoveringPiece.transform.position, flash: true)) {
           _logger.LogInfo($"Unable to repair piece '{pieceName}' due to ward in range.");
+          return;
+        }
+
+        if (!hoveringPiece.m_nview || !hoveringPiece.m_nview.IsValid()) {
+          _logger.LogWarning($"Unable to repair piece '{pieceName}' due to invalid ZNetView.");
           return;
         }
 

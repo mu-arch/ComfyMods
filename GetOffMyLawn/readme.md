@@ -20,6 +20,10 @@
 
 ## Changelog
 
+### 1.0.1
+
+  * Added null-checks for Piece and Piece.ZNetView references in the ward-interaction method.
+
 ### 1.0.0
 
   * Updated for Hearth & Home.
