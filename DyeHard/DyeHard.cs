@@ -10,19 +10,34 @@ namespace DyeHard {
   public class DyeHard : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.dyehard";
     public const string PluginName = "DyeHard";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     static readonly int _hairColorHashCode = "HairColor".GetStableHashCode();
+
+    static readonly string[] _beardItems = {
+      string.Empty,
+      "BeardNone",
+      "Beard1",
+      "Beard2",
+      "Beard3",
+      "Beard4",
+      "Beard5",
+      "Beard6",
+      "Beard7",
+      "Beard8",
+      "Beard9",
+      "Beard10"
+    };
 
     static ConfigEntry<Color> _playerHairColor;
     static ConfigEntry<string> _playerHairColorHex;
     static ConfigEntry<float> _playerHairGlow;
-
+    static ConfigEntry<string> _playerBeardItem;
     static ConfigEntry<bool> _isModEnabled;
 
-    private Harmony _harmony;
-
     static Player _localPlayer;
+
+    Harmony _harmony;
 
     public void Awake() {
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -46,10 +61,20 @@ namespace DyeHard {
                   "Hair glow multiplier for the hair color. Zero removes all color.",
                   new AcceptableValueRange<float>(0f, 3f)));
 
+      _playerBeardItem =
+          Config.Bind(
+              "Beard",
+              "playerBeardItem",
+              string.Empty,
+              new ConfigDescription(
+                  "If non-empty, sets/overrides the player's beard (if any).",
+                  new AcceptableValueList<string>(_beardItems)));
+
       _isModEnabled.SettingChanged += (sender, eventArgs) => SetPlayerZdoHairColor();
       _playerHairColor.SettingChanged += (sender, eventArgs) => UpdatePlayerHairColorHexValue();
       _playerHairColorHex.SettingChanged += (sender, eventArgs) => UpdatePlayerHairColorValue();
       _playerHairGlow.SettingChanged += (sender, eventArgs) => SetPlayerZdoHairColor();
+      _playerBeardItem.SettingChanged += (sender, eventArgs) => SetPlayerBeardItem();
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
@@ -106,6 +131,14 @@ namespace DyeHard {
           color = GetPlayerHairColorVector();
         }
       }
+
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(VisEquipment.SetBeardItem))]
+      static void SetBeardItemPrefix(ref VisEquipment __instance, ref string name) {
+        if (_isModEnabled.Value && __instance.TryGetComponent(out Player player) && player == _localPlayer) {
+          name = _playerBeardItem.Value;
+        }
+      }
     }
 
     [HarmonyPatch(typeof(Player))]
@@ -115,6 +148,7 @@ namespace DyeHard {
       static void PlayerSetLocalPlayerPostfix(ref Player __instance) {
         _localPlayer = __instance;
         SetPlayerZdoHairColor();
+        SetPlayerBeardItem();
       }
 
       [HarmonyPostfix]
@@ -122,6 +156,7 @@ namespace DyeHard {
       static void PlayerOnSpawnedPostfix(ref Player __instance) {
         _localPlayer = __instance;
         SetPlayerZdoHairColor();
+        SetPlayerBeardItem();
       }
     }
 
@@ -142,6 +177,20 @@ namespace DyeHard {
           || _localPlayer.m_nview.m_zdo.m_vec3[_hairColorHashCode] != color) {
         _localPlayer.m_nview.GetZDO().Set(_hairColorHashCode, color);
       }
+    }
+
+    static void SetPlayerBeardItem() {
+      if (!_localPlayer?.m_visEquipment) {
+        return;
+      }
+
+      string beardItem = _isModEnabled.Value ? _playerBeardItem.Value : _localPlayer.m_beardItem;
+
+      if (_localPlayer.m_nview) {
+        _localPlayer.m_visEquipment.SetBeardItem(beardItem);
+      }
+
+      _localPlayer.m_visEquipment.m_beardItem = beardItem;
     }
   }
 }

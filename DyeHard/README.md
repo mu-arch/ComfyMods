@@ -1,6 +1,7 @@
 ﻿# DyeHard
 
- * Change your player hair color using RGB values or HTML color codes.
+  * Change your player hair color using RGB values or HTML color codes.
+  * Change your player beard (in-game).
 
 ## Dependencies
 
@@ -20,6 +21,10 @@ Usually there is one included with BepInEx, otherwise you can download one of th
   3. Adjust your hair color using the RGB sliders or by entering in an HTML color code in hex form.
 
 ## Changelog
+
+### 1.2.0
+
+  * Added option to override player beard (regardless of gender).
 
 ### 1.1.0
 
