@@ -259,7 +259,7 @@ namespace ConstructionDerby {
       MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, "... current Tetris building game stopped.");
       _currentGame = null;
 
-      Player.m_localPlayer?.SetPlaceMode(null);
+      Player.m_localPlayer?.HideHandItems();
     }
   }
 }
