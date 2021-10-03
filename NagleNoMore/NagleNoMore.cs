@@ -29,7 +29,12 @@ namespace NagleNoMore {
       [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
       static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_8))
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldc_I4_8),
+                new CodeMatch(OpCodes.Ldloca_S),
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Stloc_3))
             .SetAndAdvance(OpCodes.Ldc_I4, 9)
             .InstructionEnumeration();
       }
