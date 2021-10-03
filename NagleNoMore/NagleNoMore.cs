@@ -2,11 +2,9 @@
 
 using HarmonyLib;
 
-using Steamworks;
-
-using System;
+using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Reflection.Emit;
 
 namespace NagleNoMore {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
@@ -27,51 +25,13 @@ namespace NagleNoMore {
 
     [HarmonyPatch(typeof(ZSteamSocket))]
     class ZSteamSocketPatch {
-      [HarmonyPrefix]
+      [HarmonyTranspiler]
       [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
-      static bool SendQueuedPackagesPrefix(ref ZSteamSocket __instance) {
-        if (__instance.m_con == HSteamNetConnection.Invalid) {
-          return false;
-        }
-
-        while (__instance.m_sendQueue.Count > 0) {
-          byte[] array = __instance.m_sendQueue.Peek();
-
-          IntPtr intPtr = Marshal.AllocHGlobal(array.Length);
-          Marshal.Copy(source: array, startIndex: 0, destination: intPtr, length: array.Length);
-
-          // nSendFlags is: k_nSteamNetworkingSend_NoNagle = 1 | k_nSteamNetworkingSend_Reliable = 8
-          EResult result =
-              SteamNetworkingSockets.SendMessageToConnection(
-                  __instance.m_con, intPtr, (uint) array.Length, nSendFlags: 9, out _);
-
-          Marshal.FreeHGlobal(intPtr);
-
-          switch (result) {
-            case EResult.k_EResultOK:
-              break;
-
-            case EResult.k_EResultInvalidParam:
-            case EResult.k_EResultLimitExceeded:
-            case EResult.k_EResultIgnored:
-              __instance.m_sendQueue.Dequeue();
-              return false;
-
-            case EResult.k_EResultNoConnection:
-            case EResult.k_EResultInvalidState:
-              __instance.Dispose();
-              return false;
-
-            default:
-              __instance.Dispose();
-              return false;
-          }
-
-          __instance.m_totalSent += array.Length;
-          __instance.m_sendQueue.Dequeue();
-        }
-
-        return false;
+      static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_8))
+            .SetAndAdvance(OpCodes.Ldc_I4, 9)
+            .InstructionEnumeration();
       }
     }
   }
