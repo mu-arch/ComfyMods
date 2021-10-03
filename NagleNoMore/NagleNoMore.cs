@@ -5,15 +5,13 @@ using HarmonyLib;
 using Steamworks;
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 namespace NagleNoMore {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class NagleNoMore : BaseUnityPlugin {
-    public const string PluginGUID = "valheim.mod.template";
+    public const string PluginGUID = "redseiko.valheim.naglenomore";
     public const string PluginName = "NagleNoMore";
     public const string PluginVersion = "1.0.0";
 
