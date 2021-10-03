@@ -28,14 +28,17 @@ namespace NagleNoMore {
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
       static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
+        // nSendFlags:
+        //   * k_nSteamNetworkingSend_NoNagle = 1
+        //   * k_nSteamNetworkingSend_Reliable = 8
         return new CodeMatcher(instructions)
             .MatchForward(
                 useEnd: false,
-                new CodeMatch(OpCodes.Ldc_I4_8),
-                new CodeMatch(OpCodes.Ldloca_S),
-                new CodeMatch(OpCodes.Call),
-                new CodeMatch(OpCodes.Stloc_3))
-            .SetAndAdvance(OpCodes.Ldc_I4, 9)
+                new CodeMatch(OpCodes.Ldc_I4_8), // k_nSteamNetworkingSend_Reliable
+                new CodeMatch(OpCodes.Ldloca_S), // out num
+                new CodeMatch(OpCodes.Call),     // ... SteamNetworkingSockets.SendMessageToConnection(...)
+                new CodeMatch(OpCodes.Stloc_3))  // EResult result = ...
+            .SetAndAdvance(OpCodes.Ldc_I4, 9)    // k_nSteamNetworkingSend_NoNagle | k_nSteamNetworkingSend_Reliable
             .InstructionEnumeration();
       }
     }
