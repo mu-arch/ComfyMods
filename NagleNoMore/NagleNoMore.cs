@@ -14,7 +14,7 @@ namespace NagleNoMore {
   public class NagleNoMore : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.naglenomore";
     public const string PluginName = "NagleNoMore";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.3.1";
 
     Harmony _harmony;
 
@@ -24,20 +24,6 @@ namespace NagleNoMore {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    [HarmonyPatch(typeof(ZDOMan))]
-    class ZDOManPatch {
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(ZDOMan.SendZDOs))]
-      static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x2800))
-            .SetOperandAndAdvance(0xA000)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x2800))
-            .SetOperandAndAdvance(0xA000)
-            .InstructionEnumeration();
-      }
     }
 
     [HarmonyPatch(typeof(ZSteamSocket))]
@@ -70,6 +56,8 @@ namespace NagleNoMore {
                 (error, socket, result) => {
                   switch (result) {
                     case EResult.k_EResultOK:
+                    case EResult.k_EResultRateLimitExceeded:
+                    case EResult.k_EResultNoConnection:
                       return;
 
                     default:
