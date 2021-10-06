@@ -2,6 +2,9 @@
 
 using HarmonyLib;
 
+using Steamworks;
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -11,7 +14,7 @@ namespace NagleNoMore {
   public class NagleNoMore : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.naglenomore";
     public const string PluginName = "NagleNoMore";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.3.0";
 
     Harmony _harmony;
 
@@ -21,6 +24,20 @@ namespace NagleNoMore {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
+    }
+
+    [HarmonyPatch(typeof(ZDOMan))]
+    class ZDOManPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(ZDOMan.SendZDOs))]
+      static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x2800))
+            .SetOperandAndAdvance(0xA000)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x2800))
+            .SetOperandAndAdvance(0xA000)
+            .InstructionEnumeration();
+      }
     }
 
     [HarmonyPatch(typeof(ZSteamSocket))]
@@ -39,6 +56,29 @@ namespace NagleNoMore {
                 new CodeMatch(OpCodes.Call),     // ... SteamNetworkingSockets.SendMessageToConnection(...)
                 new CodeMatch(OpCodes.Stloc_3))  // EResult result = ...
             .SetAndAdvance(OpCodes.Ldc_I4, 9)    // k_nSteamNetworkingSend_NoNagle | k_nSteamNetworkingSend_Reliable
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldstr),
+                new CodeMatch(OpCodes.Ldloc_3),
+                new CodeMatch(OpCodes.Box),
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Call))
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Ldloc_3))
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Action<string, ZSteamSocket, EResult>>(
+                (error, socket, result) => {
+                  switch (result) {
+                    case EResult.k_EResultOK:
+                      return;
+
+                    default:
+                      ZLog.Log($"{socket.m_peerID.GetSteamID64()}: {result}");
+                      return;
+                  }
+                }
+              ))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
             .InstructionEnumeration();
       }
     }
