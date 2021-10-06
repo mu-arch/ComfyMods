@@ -16,16 +16,16 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
-    private static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
-    private static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
+    static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
+    static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
     static readonly int _pieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
 
-    private static readonly Dictionary<WearNTear, WearNTearData> _wearNTearDataCache = new();
+    static readonly Dictionary<ZDOID, WearNTearData> _wearNTearDataCache = new();
 
-    private static ManualLogSource _logger;
-    private Harmony _harmony;
+    static ManualLogSource _logger;
+    Harmony _harmony;
 
     public void Awake() {
       _logger = Logger;
@@ -38,7 +38,7 @@ namespace ColorfulPieces {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    void OnDestroy() {
+    public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
@@ -111,7 +111,7 @@ namespace ColorfulPieces {
       wearNTear.m_nview.m_zdo.Set(_pieceEmissionColorFactorHashCode, _targetPieceEmissionColorFactor.Value);
       wearNTear.m_nview.m_zdo.Set(_pieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
-      if (_wearNTearDataCache.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
+      if (_wearNTearDataCache.TryGetValue(wearNTear.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = _targetPieceColor.Value;
         wearNTearData.TargetEmissionColorFactor = _targetPieceEmissionColorFactor.Value;
 
@@ -134,7 +134,7 @@ namespace ColorfulPieces {
         wearNTear.m_nview.m_zdo.IncreseDataRevision();
       }
 
-      if (_wearNTearDataCache.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
+      if (_wearNTearDataCache.TryGetValue(wearNTear.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = Color.clear;
         wearNTearData.TargetEmissionColorFactor = 0f;
 
@@ -170,17 +170,27 @@ namespace ColorfulPieces {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(WearNTear.Awake))]
       static void WearNTearAwakePostfix(ref WearNTear __instance) {
-        if (!_isModEnabled.Value || !__instance) {
+        if (!_isModEnabled.Value || !__instance?.m_nview || !__instance.m_nview.IsValid()) {
           return;
         }
 
-        _wearNTearDataCache[__instance] = new WearNTearData(__instance);
+        WearNTearData wearNTearData = new(__instance);
+        ClearWearNTearColors(wearNTearData);
+
+        _wearNTearDataCache[__instance.m_nview.m_zdo.m_uid] = wearNTearData;
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(WearNTear.OnDestroy))]
       static void WearNTearOnDestroyPrefix(ref WearNTear __instance) {
-        _wearNTearDataCache.Remove(__instance);
+        if (__instance?.m_nview
+            && __instance.m_nview.IsValid()
+            && _wearNTearDataCache.TryGetValue(__instance.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
+          wearNTearData.TargetColor = Color.clear;
+          wearNTearData.TargetEmissionColorFactor = 0f;
+
+          ClearWearNTearColors(wearNTearData);
+        }
       }
 
       [HarmonyPostfix]
@@ -192,7 +202,7 @@ namespace ColorfulPieces {
             || __instance.m_nview.m_zdo == null
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
-            || !_wearNTearDataCache.TryGetValue(__instance, out WearNTearData wearNTearData)
+            || !_wearNTearDataCache.TryGetValue(__instance.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)
             || wearNTearData.LastDataRevision >= __instance.m_nview.m_zdo.m_dataRevision) {
           return;
         }

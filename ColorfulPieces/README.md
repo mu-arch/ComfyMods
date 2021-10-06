@@ -19,6 +19,11 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Use `WearNTear.m_nview.m_zdo.m_uid` as the cache key for compatibility with ValheimPerformanceOptimizations.
+  * Also call `ClearWearNTearColors()` in `WearNTear.Awake()` and `WearNTear.OnDestroy()` to assist with the above.
+
 ### 1.3.0
 
   * Fixed `PieceEmissionColorFactor` not being copied during copy color action.
