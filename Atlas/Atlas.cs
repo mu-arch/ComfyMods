@@ -2,9 +2,11 @@
 
 using HarmonyLib;
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -13,7 +15,7 @@ namespace Atlas {
   public class Atlas : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.atlas";
     public const string PluginName = "Atlas";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     Harmony _harmony;
 
@@ -39,6 +41,87 @@ namespace Atlas {
       }
     }
 
+    [HarmonyPatch(typeof(ZDOMan))]
+    class ZDOManPatch {
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZDOMan.Load))]
+      static bool LoadPrefix(ref ZDOMan __instance, ref BinaryReader reader, ref int version) {
+        reader.ReadInt64();
+        uint nextUid = reader.ReadUInt32();
+
+        LoadZdos(ref __instance, ref reader, ref version, ref nextUid);
+        LoadDeadZdos(ref __instance, ref reader, ref nextUid);
+
+        __instance.RemoveOldGeneratedZDOS();
+        __instance.m_nextUid = nextUid;
+
+        return false;
+      }
+    }
+
+    static void LoadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref int version, ref uint nextUid) {
+      ZDOPool.Release(zdoMan.m_objectsByID);
+
+      zdoMan.m_objectsByID.Clear();
+      zdoMan.ResetSectorArray();
+
+      int zdoCount = reader.ReadInt32();
+      ZLog.Log($"Loading {zdoCount} ZDOs ... myid: {zdoMan.m_myid}, version: {version}");
+
+      ZPackage package = new();
+      Stopwatch stopwatch = Stopwatch.StartNew();
+
+      for (int i = 0; i < zdoCount; i++) {
+        try {
+          ZDO zdo = ZDOPool.Create(zdoMan);
+          zdo.m_uid = new(reader);
+
+          int count = reader.ReadInt32();
+          package.Load(reader.ReadBytes(count));
+
+          zdo.Load(package, version);
+          zdo.SetOwner(0L);
+
+          if (zdoMan.m_objectsByID.ContainsKey(zdo.m_uid)) {
+            ZLog.LogWarning($"Skipping duplicate ZDO-{i}: {zdo.m_uid}");
+          } else {
+            zdoMan.m_objectsByID[zdo.m_uid] = zdo;
+            zdoMan.AddToSector(zdo, zdo.m_sector);
+          }
+
+          if (zdo.m_uid.userID == zdoMan.m_myid && zdo.m_uid.id >= nextUid) {
+            nextUid = zdo.m_uid.id + 1U;
+          }
+        } catch (Exception exception) {
+          ZLog.LogError($"Failed to load ZDO-{i}: {exception}");
+        }
+      }
+
+      stopwatch.Stop();
+      ZLog.Log($"Finished loading {zdoMan.m_objectsByID.Count} ZDOs in {stopwatch.ElapsedMilliseconds} ms.");
+    }
+
+    static void LoadDeadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref uint nextUid) {
+      zdoMan.m_deadZDOs.Clear();
+
+      int deadZdoCount = reader.ReadInt32();
+      ZLog.Log($"Loading {deadZdoCount} dead ZDOs ... ");
+
+      for (int i = 0; i < deadZdoCount; i++) {
+        ZDOID zdoid = new(reader);
+        long ticks = reader.ReadInt64();
+
+        zdoMan.m_deadZDOs[zdoid] = ticks;
+
+        if (zdoid.m_userID == zdoMan.m_myid && zdoid.m_id >= nextUid) {
+          nextUid = zdoid.m_id + 1U;
+        }
+      }
+
+      ZLog.Log($"Loaded {zdoMan.m_deadZDOs.Count} dead ZDOs.");
+      zdoMan.CapDeadZDOList();
+    }
+
     static IEnumerator SaveWorldCoroutine(ZNet zNet) {
       yield return SaveWorldAsync(zNet).ToIEnumerator();
     }
@@ -56,10 +139,17 @@ namespace Atlas {
 
     static void PrepareZDOManSave(ref ZDOMan zdoMan) {
       ZDOMan.SaveData saveData = new();
+
       saveData.m_myid = zdoMan.m_myid;
       saveData.m_nextUid = zdoMan.m_nextUid;
-      saveData.m_deadZDOs = new();
       saveData.m_zdos = CloneZdos(ref zdoMan);
+
+      try {
+        saveData.m_deadZDOs = new(zdoMan.m_deadZDOs);
+      } catch (Exception exception) {
+        ZLog.LogError($"Failed to clone dead ZDOs (skipping): {exception}");
+        saveData.m_deadZDOs = new();
+      }
 
       zdoMan.m_saveData = saveData;
 
@@ -67,7 +157,7 @@ namespace Atlas {
     static List<ZDO> CloneZdos(ref ZDOMan zdoMan) {
       List<ZDO> clonedZdos = new(capacity: zdoMan.m_objectsByID.Count);
 
-      ZLog.Log($"Start cloning {clonedZdos.Capacity} ZDOs...");
+      ZLog.Log($"Start cloning {clonedZdos.Capacity} ZDOs ...");
       Stopwatch stopwatch = Stopwatch.StartNew();
 
       for (int i = zdoMan.m_objectsBySector.Length - 1; i >= 0; i--) {

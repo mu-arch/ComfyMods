@@ -1,9 +1,11 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 
 using HarmonyLib;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -14,22 +16,34 @@ namespace TwoDayShipping {
   public class TwoDayShipping : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.twodayshipping";
     public const string PluginName = "TwoDayShipping";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
+
+    static ConfigEntry<string> _prefabNamesToPrioritize;
+    static readonly HashSet<int> _priorityPrefabHashCodes = new();
 
     Harmony _harmony;
 
     public void Awake() {
+      _prefabNamesToPrioritize =
+          Config.Bind(
+              "Priority",
+              "prefabNamesToPrioritize",
+              "guard_stone,guard_stone_test",
+              "Comma-separated list of prefab names to prioritize for sending.");
+
+      _priorityPrefabHashCodes.UnionWith(
+          _prefabNamesToPrioritize.Value
+              .Split(',')
+              .Select(p => p.Trim())
+              .Where(p => !p.IsNullOrWhiteSpace())
+              .Select(p => p.GetStableHashCode()));
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
-
-    static readonly HashSet<int> _wardPrefabHashCodes = new() {
-      "guard_stone".GetStableHashCode(),
-      "guard_stone_test".GetStableHashCode()
-    };
 
     static readonly Comparison<ZDO> _serverSendComparison = new(ServerSendCompare);
     static readonly Comparison<ZDO> _clientSendComparison = new(ClientSendCompare);
@@ -75,7 +89,7 @@ namespace TwoDayShipping {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(ZDOMan.AddToSector))]
       static void AddToSectorPostfix(ref ZDO zdo) {
-        if (zdo != null && _wardPrefabHashCodes.Contains(zdo.m_prefab)) {
+        if (zdo != null && _priorityPrefabHashCodes.Contains(zdo.m_prefab)) {
           zdo.m_type = ZDO.ObjectType.Prioritized;
         }
       }
@@ -90,7 +104,7 @@ namespace TwoDayShipping {
                 new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(13)),
                 Transpilers.EmitDelegate<Action<ZDO>>(
                     zdo => {
-                      if (_wardPrefabHashCodes.Contains(zdo.m_prefab)) {
+                      if (_priorityPrefabHashCodes.Contains(zdo.m_prefab)) {
                         zdo.m_type = ZDO.ObjectType.Prioritized;
                       }
                     }))
@@ -102,17 +116,19 @@ namespace TwoDayShipping {
       static bool ServerSortSendZDOSPrefix(
           ref ZDOMan __instance, ref List<ZDO> objects, ref Vector3 refPos, ZDOMan.ZDOPeer peer) {
         float time = Time.time;
+        float refPosSqrMagnitude = refPos.sqrMagnitude;
 
         for (int i = 0, count = objects.Count; i < count; i++) {
           ZDO zdo = objects[i];
-          zdo.m_tempSortValue = Vector3.Distance(zdo.m_position, refPos);
 
           if (peer.m_zdos.TryGetValue(zdo.m_uid, out ZDOMan.ZDOPeer.PeerZDOInfo zdoInfo)) {
             zdo.m_tempHaveRevision = true;
-            zdo.m_tempSortValue -= Mathf.Clamp(time - zdoInfo.m_syncTime, 0f, 100f) * 1.5f;
+            zdo.m_tempSortValue = Mathf.Clamp(time - zdoInfo.m_syncTime, 0f, 100f) * 1.5f;
+            zdo.m_tempSortValue =
+                zdo.m_position.sqrMagnitude - refPosSqrMagnitude - (zdo.m_tempSortValue * zdo.m_tempSortValue);
           } else {
             zdo.m_tempHaveRevision = false;
-            zdo.m_tempSortValue -= 150f;
+            zdo.m_tempSortValue = zdo.m_position.sqrMagnitude - refPosSqrMagnitude - 22500f;
           }
         }
 
