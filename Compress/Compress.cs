@@ -86,6 +86,8 @@ namespace Compress {
     static readonly MemoryStream _compressStream = new();
     static readonly MemoryStream _decompressStream = new();
 
+    static readonly int _compressedZdoDataHashCode = "CompressedZDOData".GetStableHashCode();
+
     static void SendZDOsInvokeDelegate(ZRpc rpc, string method, params object[] parameters) {
       if (_rpcCompressConfigCache.TryGetValue(rpc, out CompressConfig config) && config.CompressZdoData) {
         ZPackage package = (ZPackage) parameters[0];
@@ -110,7 +112,18 @@ namespace Compress {
         _compressStream.SetLength(0);
         LogCompressStats(config);
 
-        rpc.Invoke("CompressedZDOData", package);
+        if (!rpc.IsConnected()) {
+          return;
+        }
+
+        rpc.m_pkg.Clear();
+        rpc.m_pkg.Write(_compressedZdoDataHashCode);
+
+        int packageLength = (int) package.m_stream.Length;
+        rpc.m_pkg.m_writer.Write(packageLength);
+        rpc.m_pkg.m_writer.Write(package.m_stream.GetBuffer(), 0, packageLength);
+
+        rpc.SendPackage(rpc.m_pkg);
       } else {
         rpc.Invoke(method, parameters);
       }
