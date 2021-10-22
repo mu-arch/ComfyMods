@@ -34,13 +34,10 @@ namespace Compress {
 
     class CompressConfig {
       public bool CompressZdoData { get; set; }
-      public long UncompressedBytesSent { get; set; }
-      public long CompressedBytesSent { get; set; }
-      public long UncompressedBytesRecv { get; set; }
-      public long CompressedBytesRecv { get; set; }
     }
 
     static readonly ConcurrentDictionary<ZRpc, CompressConfig> _rpcCompressConfigCache = new();
+    static readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
     static void RPC_CompressHandshake(ZRpc rpc, bool isEnabled) {
       LogInfo($"Received CompressHandshake from: {rpc.m_socket.GetHostName()}, isEnabled: {isEnabled}");
@@ -79,22 +76,37 @@ namespace Compress {
               Transpilers.EmitDelegate<Action<ZRpc, string, object[]>>(SendZDOsInvokeDelegate).operand)
           .InstructionEnumeration();
       }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(ZDOMan.Update))]
+      static void UpdatePostfix() {
+        if (_stopwatch.ElapsedMilliseconds < 60000) {
+          return;
+        }
+
+        LogCompressStats();
+        _stopwatch.Restart();
+      }
     }
 
-    static readonly Stopwatch _stopwatch = Stopwatch.StartNew();
+    static long _compressedBytesSent;
+    static long _uncompressedBytesSent;
+    static long _compressedBytesRecv;
+    static long _uncompressedBytesRecv;
 
     static readonly MemoryStream _compressStream = new();
     static readonly MemoryStream _decompressStream = new();
 
+    static readonly int _zdoDataHashCode = "ZDOData".GetStableHashCode();
     static readonly int _compressedZdoDataHashCode = "CompressedZDOData".GetStableHashCode();
 
     static void SendZDOsInvokeDelegate(ZRpc rpc, string method, params object[] parameters) {
-      if (_rpcCompressConfigCache.TryGetValue(rpc, out CompressConfig config) && config.CompressZdoData) {
-        ZPackage package = (ZPackage) parameters[0];
-        package.m_writer.Flush();
+      ZPackage package = (ZPackage) parameters[0];
+      package.m_writer.Flush();
 
+      if (_rpcCompressConfigCache.TryGetValue(rpc, out CompressConfig config) && config.CompressZdoData) {
         int uncompressedLength = (int) package.m_stream.Length;
-        config.UncompressedBytesSent += uncompressedLength;
+        _uncompressedBytesSent += uncompressedLength;
 
         _compressStream.SetLength(0);
 
@@ -103,14 +115,7 @@ namespace Compress {
         }
 
         int compressedLength = (int) _compressStream.Length;
-        config.CompressedBytesSent += compressedLength;
-
-        package.Clear();
-        package.m_writer.Write(compressedLength);
-        package.m_writer.Write(_compressStream.GetBuffer(), 0, compressedLength);
-
-        _compressStream.SetLength(0);
-        LogCompressStats(config);
+        _compressedBytesSent += compressedLength;
 
         if (!rpc.IsConnected()) {
           return;
@@ -118,22 +123,26 @@ namespace Compress {
 
         rpc.m_pkg.Clear();
         rpc.m_pkg.Write(_compressedZdoDataHashCode);
+        rpc.m_pkg.m_writer.Write(compressedLength);
+        rpc.m_pkg.m_writer.Write(_compressStream.GetBuffer(), 0, compressedLength);
+
+        _compressStream.SetLength(0);
+        rpc.SendPackage(rpc.m_pkg);
+      } else {
+        rpc.m_pkg.Clear();
+        rpc.m_pkg.Write(_zdoDataHashCode);
 
         int packageLength = (int) package.m_stream.Length;
         rpc.m_pkg.m_writer.Write(packageLength);
         rpc.m_pkg.m_writer.Write(package.m_stream.GetBuffer(), 0, packageLength);
 
         rpc.SendPackage(rpc.m_pkg);
-      } else {
-        rpc.Invoke(method, parameters);
       }
     }
 
     static void RPC_CompressedZDOData(ZRpc rpc, ZPackage package) {
-      _rpcCompressConfigCache.TryGetValue(rpc, out CompressConfig config);
-
-      int compressedLength = package.m_reader.ReadInt32();
-      config.CompressedBytesRecv += compressedLength;
+      int compressedLength = (int) package.m_stream.Length;
+      _compressedBytesRecv += compressedLength;
 
       _decompressStream.SetLength(0);
 
@@ -142,34 +151,26 @@ namespace Compress {
       }
 
       int uncompressedLength = (int) _decompressStream.Length;
-      config.UncompressedBytesRecv += uncompressedLength;
+      _uncompressedBytesRecv += uncompressedLength;
 
       package.Clear();
       package.m_stream.Write(_decompressStream.GetBuffer(), 0, uncompressedLength);
       package.m_stream.Position = 0;
 
       _decompressStream.SetLength(0);
-      LogCompressStats(config);
-
       ZDOMan.m_instance.RPC_ZDOData(rpc, package);
     }
 
-    static void LogCompressStats(CompressConfig config) {
-      if (_stopwatch.ElapsedMilliseconds < 10000) {
-        return;
-      }
-
+    static void LogCompressStats() {
       LogInfo(
           string.Format(
-              "Compress ...\n  Sent ... C/U: {0:N} KB / {1:N} KB ({2:P})\n  Recv ... C/U: {3:N} KB / {4:N} KB ({5:P})",
-              config.CompressedBytesSent / 1024d,
-              config.UncompressedBytesSent / 1024d,
-              (double) config.CompressedBytesSent / config.UncompressedBytesSent,
-              config.CompressedBytesRecv / 1024d,
-              config.UncompressedBytesRecv / 1024d,
-              (double) config.CompressedBytesRecv / config.UncompressedBytesRecv));
-
-      _stopwatch.Restart();
+              "Sent C/U: {0:N} KB / {1:N} KB ({2:P}) ... Recv C/U: {3:N} KB / {4:N} KB ({5:P})",
+              _compressedBytesSent / 1024d,
+              _uncompressedBytesSent / 1024d,
+              (double) _compressedBytesSent / _uncompressedBytesSent,
+              _compressedBytesRecv / 1024d,
+              _uncompressedBytesRecv / 1024d,
+              (double) _compressedBytesRecv / _uncompressedBytesRecv));
     }
 
     static void LogInfo(string message) {
