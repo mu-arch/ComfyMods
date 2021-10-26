@@ -159,7 +159,11 @@ namespace Compress {
         Marshal.Copy(pkg.m_stream.GetBuffer(), 0, intPtr, packageLength);
 
         EResult result =
-            SteamNetworkingSockets.SendMessageToConnection(__instance.m_con, intPtr, (uint) packageLength, 8, out _);
+            ZNet.m_isServer
+                ? SteamGameServerNetworkingSockets.SendMessageToConnection(
+                      __instance.m_con, intPtr, (uint) packageLength, 8, out _)
+                : SteamNetworkingSockets.SendMessageToConnection(
+                      __instance.m_con, intPtr, (uint) packageLength, 8, out _);
 
         Marshal.FreeHGlobal(intPtr);
 
@@ -211,7 +215,7 @@ namespace Compress {
     static void LogCompressStats() {
       LogInfo(
           string.Format(
-              "Sent C/U: {0:N} KB / {1:N} KB ({2:P}) ... Recv C/U: {3:N} KB / {4:N} KB ({5:P})",
+              "Totals:\n  Sent C/U: {0:N} KB / {1:N} KB ({2:P})\n  Recv C/U: {3:N} KB / {4:N} KB ({5:P})",
               _compressedBytesSent / 1024d,
               _uncompressedBytesSent / 1024d,
               (double) _compressedBytesSent / _uncompressedBytesSent,
