@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
@@ -24,11 +25,19 @@ namespace Compress {
     public const string PluginVersion = "1.2.0";
 
     static ManualLogSource _logger;
+    static ConfigEntry<bool> _isModEnabled;
+
     Harmony _harmony;
 
     public void Awake() {
       _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
+
+      _isModEnabled =
+          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+
+      if (_isModEnabled.Value) {
+        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
+      }
     }
 
     public void OnDestroy() {
