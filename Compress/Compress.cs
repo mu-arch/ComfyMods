@@ -3,6 +3,8 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
+using Steamworks;
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,13 +14,14 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 namespace Compress {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Compress : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.compress";
     public const string PluginName = "Compress";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.2.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -117,7 +120,7 @@ namespace Compress {
         int compressedLength = (int) _compressStream.Length;
         _compressedBytesSent += compressedLength;
 
-        if (!rpc.IsConnected()) {
+        if (!rpc.IsConnected() || compressedLength == 0) {
           return;
         }
 
@@ -127,6 +130,7 @@ namespace Compress {
         rpc.m_pkg.m_writer.Write(_compressStream.GetBuffer(), 0, compressedLength);
 
         _compressStream.SetLength(0);
+
         rpc.SendPackage(rpc.m_pkg);
       } else {
         rpc.m_pkg.Clear();
@@ -137,6 +141,49 @@ namespace Compress {
         rpc.m_pkg.m_writer.Write(package.m_stream.GetBuffer(), 0, packageLength);
 
         rpc.SendPackage(rpc.m_pkg);
+      }
+    }
+
+    [HarmonyPatch(typeof(ZSteamSocket))]
+    class ZSteamSocketPatch {
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZSteamSocket.Send))]
+      static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
+        if (pkg.Size() <= 0 || !__instance.IsConnected()) {
+          return false;
+        }
+
+        int packageLength = (int) pkg.m_stream.Length;
+
+        IntPtr intPtr = Marshal.AllocHGlobal(packageLength);
+        Marshal.Copy(pkg.m_stream.GetBuffer(), 0, intPtr, packageLength);
+
+        EResult result =
+            SteamNetworkingSockets.SendMessageToConnection(__instance.m_con, intPtr, (uint) packageLength, 8, out _);
+
+        Marshal.FreeHGlobal(intPtr);
+
+        if (result == EResult.k_EResultOK) {
+          __instance.m_totalSent += packageLength;
+        }
+
+        return false;
+      }
+    }
+
+    [HarmonyPatch(typeof(ZPackage))]
+    class ZPackagePatch {
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZPackage.Write), typeof(ZPackage))]
+      static bool WritePrefix_ZPackage(ref ZPackage __instance, ref ZPackage pkg) {
+        pkg.m_writer.Flush();
+        pkg.m_stream.Flush();
+
+        int packageLength = (int) pkg.m_stream.Length;
+        __instance.m_writer.Write(packageLength);
+        __instance.m_writer.Write(pkg.m_stream.GetBuffer(), 0, packageLength);
+
+        return false;
       }
     }
 
