@@ -4,8 +4,6 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
-using Steamworks;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,14 +13,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 
 namespace Compress {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Compress : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.compress";
     public const string PluginName = "Compress";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     static ConfigEntry<bool> _isModEnabled;
@@ -150,37 +147,6 @@ namespace Compress {
         rpc.m_pkg.m_writer.Write(package.m_stream.GetBuffer(), 0, packageLength);
 
         rpc.SendPackage(rpc.m_pkg);
-      }
-    }
-
-    [HarmonyPatch(typeof(ZSteamSocket))]
-    class ZSteamSocketPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.Send))]
-      static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
-        if (pkg.Size() <= 0 || !__instance.IsConnected()) {
-          return false;
-        }
-
-        int packageLength = (int) pkg.m_stream.Length;
-
-        IntPtr intPtr = Marshal.AllocHGlobal(packageLength);
-        Marshal.Copy(pkg.m_stream.GetBuffer(), 0, intPtr, packageLength);
-
-        EResult result =
-            ZNet.m_isServer
-                ? SteamGameServerNetworkingSockets.SendMessageToConnection(
-                      __instance.m_con, intPtr, (uint) packageLength, 8, out _)
-                : SteamNetworkingSockets.SendMessageToConnection(
-                      __instance.m_con, intPtr, (uint) packageLength, 8, out _);
-
-        Marshal.FreeHGlobal(intPtr);
-
-        if (result == EResult.k_EResultOK) {
-          __instance.m_totalSent += packageLength;
-        }
-
-        return false;
       }
     }
 
