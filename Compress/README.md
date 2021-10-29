@@ -25,6 +25,10 @@
 
 ## Changelog
 
+### 1.3.0
+
+  * Temporarily remove the ZSteamSocket.Send patch from Compress as it does not retry on a failed send.
+
 ### 1.2.0
 
   * Added `ZPackage.Write(ZPackage)` patch that copies the passed in ZPackage buffer directly.
