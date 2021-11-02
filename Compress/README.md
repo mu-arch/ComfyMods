@@ -25,6 +25,10 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Temporary changes to parallel ZSteamSockets.UpdateAllSockets() as well as ZSteamSocket.Send().
+
 ### 1.3.0
 
   * Temporarily remove the ZSteamSocket.Send patch from Compress as it does not retry on a failed send.
