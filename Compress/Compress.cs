@@ -16,6 +16,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Compress {
@@ -154,19 +155,105 @@ namespace Compress {
       }
     }
 
-    [HarmonyPatch(typeof(ZSteamSocket))]
-    class ZSteamSocketPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.UpdateAllSockets))]
-      static bool UpdateAllSocketsPrefix(float dt) {
-        if (ZSteamSocket.m_sockets.Count <= 1) {
-          return true;
-        }
+    class AsyncSocket : IDisposable {
+      readonly ZSteamSocket _socket;
+      readonly BlockingCollection<byte[]> _sendQueue;
+      readonly CancellationTokenSource _cancellationTokenSource;
 
-        Parallel.ForEach(ZSteamSocket.m_sockets, socket => socket.Update(dt));
-        return false;
+      public AsyncSocket(ZSteamSocket socket) {
+        _socket = socket;
+        _sendQueue = new(new ConcurrentQueue<byte[]>());
+        _cancellationTokenSource = new();
+
+        new Thread(() => SendLoop(_cancellationTokenSource.Token)).Start();
       }
 
+      public void QueuePackage(byte[] data) {
+        _sendQueue.Add(data);
+      }
+
+      void SendLoop(CancellationToken cancellationToken) {
+        while (!cancellationToken.IsCancellationRequested) {
+          try {
+            byte[] data = _sendQueue.Take();
+
+            while (!cancellationToken.IsCancellationRequested && !SendPackage(data)) {
+              Thread.Sleep(millisecondsTimeout: 50);
+            }
+          } catch (OperationCanceledException) {
+            break;
+          } catch (Exception exception) {
+            LogError($"{exception}");
+          }
+        }
+      }
+
+      bool SendPackage(byte[] data) {
+        if (!_socket.IsConnected()) {
+          return false;
+        }
+
+        int dataLength = data.Length;
+
+        IntPtr intPtr = Marshal.AllocHGlobal(dataLength);
+        Marshal.Copy(data, 0, intPtr, dataLength);
+
+        EResult result =
+            ZNet.m_isServer
+                ? SteamGameServerNetworkingSockets.SendMessageToConnection(
+                      _socket.m_con, intPtr, (uint) dataLength, 8, out _)
+                : SteamNetworkingSockets.SendMessageToConnection(
+                      _socket.m_con, intPtr, (uint) dataLength, 8, out _);
+
+        Marshal.FreeHGlobal(intPtr);
+
+        if (result != EResult.k_EResultOK) {
+          return false;
+        }
+
+        _socket.m_totalSent += dataLength;
+        return true;
+      }
+
+      bool _isDisposed;
+
+      protected virtual void Dispose(bool disposing) {
+        if (_isDisposed) {
+          return;
+        }
+
+        if (disposing) {
+          _cancellationTokenSource.Cancel();
+          _cancellationTokenSource.Dispose();
+          _sendQueue.Dispose();
+        }
+
+        _isDisposed = true;
+      }
+
+      public void Dispose() {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+      }
+    }
+
+    static readonly ConcurrentDictionary<HSteamNetConnection, AsyncSocket> _asyncSocketByConnection = new();
+
+    [HarmonyPatch(typeof(ZNet))]
+    class ZNetPatch {
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZNet.OnNewConnection))]
+      static void OnNewConnectionPrefix(ref ZNet __instance, ref ZNetPeer peer) {
+        ZSteamSocket socket = (ZSteamSocket) peer.m_socket;
+
+        if (_asyncSocketByConnection.TryAdd(socket.m_con, new AsyncSocket(socket))) {
+          LogInfo($"Wrapping socket for peer {peer.m_socket.GetHostName()} into AsyncSocket...");
+        }
+      }
+    }
+
+    [HarmonyPatch(typeof(ZSteamSocket))]
+    class ZSteamSocketPatch {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.Send))]
       static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
@@ -174,47 +261,30 @@ namespace Compress {
           return false;
         }
 
-        lock (__instance.m_sendQueue) {
-          __instance.m_sendQueue.Enqueue(pkg.GetArray());
+        if (_asyncSocketByConnection.TryGetValue(__instance.m_con, out AsyncSocket socket)) {
+          socket.QueuePackage(pkg.GetArray());
+          return false;
         }
 
-        return false;
+        return true;
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
-      static bool SendQueuedPackages(ref ZSteamSocket __instance) {
-        if (!__instance.IsConnected()) {
+      static bool SendQueuedPackagesPrefix(ref ZSteamSocket __instance) {
+        if (_asyncSocketByConnection.ContainsKey(__instance.m_con)) {
           return false;
         }
 
-        lock (__instance.m_sendQueue) {
-          while (__instance.m_sendQueue.Count > 0) {
-            byte[] data = __instance.m_sendQueue.Peek();
-            int dataLength = data.Length;
+        return true;
+      }
 
-            IntPtr intPtr = Marshal.AllocHGlobal(dataLength);
-            Marshal.Copy(data, 0, intPtr, dataLength);
-
-            EResult result =
-                ZNet.m_isServer
-                    ? SteamGameServerNetworkingSockets.SendMessageToConnection(
-                          __instance.m_con, intPtr, (uint) dataLength, 8, out _)
-                    : SteamNetworkingSockets.SendMessageToConnection(
-                          __instance.m_con, intPtr, (uint) dataLength, 8, out _);
-
-            Marshal.FreeHGlobal(intPtr);
-
-            if (result != EResult.k_EResultOK) {
-              return false;
-            }
-
-            __instance.m_totalSent += dataLength;
-            __instance.m_sendQueue.Dequeue();
-          }
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZSteamSocket.Close))]
+      static void ClosePrefix(ref ZSteamSocket __instance) {
+        if (_asyncSocketByConnection.TryRemove(__instance.m_con, out AsyncSocket socket)) {
+          socket.Dispose();
         }
-
-        return false;
       }
     }
 
@@ -269,6 +339,10 @@ namespace Compress {
 
     static void LogInfo(string message) {
       _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
+    }
+
+    static void LogError(string message) {
+      _logger.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
     }
   }
 }
