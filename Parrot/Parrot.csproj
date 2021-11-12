@@ -79,6 +79,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncQueue.cs" />
+    <Compile Include="DiscordUploadClient.cs" />
     <Compile Include="Parrot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

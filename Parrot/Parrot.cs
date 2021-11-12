@@ -5,13 +5,10 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
@@ -23,18 +20,18 @@ namespace Parrot {
   public class Parrot : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.parrot";
     public const string PluginName = "Parrot";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ManualLogSource _logger;
 
     static ConfigEntry<string> _chatMessageLogFilename;
     static StreamWriter _chatMessageLogWriter;
 
-    static ConfigEntry<string> _chatMessageDiscordEndPoint;
-    static WebClient _chatMessageDiscordWebClient;
-    static Uri _discordEndPointUri;
+    static ConfigEntry<string> _chatMessageLogDiscordUrl;
+    static DiscordUploadClient _chatMessageLogDiscordClient;
 
-    static readonly ConcurrentQueue<NameValueCollection> _chatMessageUploadQueue = new();
+    static ConfigEntry<string> _chatMessageShoutDiscordUrl;
+    static DiscordUploadClient _chatMessageShoutDiscordClient;
 
     static readonly int _sayHashCode = "Say".GetStableHashCode();
     static readonly int _chatMessageHashCode = "ChatMessage".GetStableHashCode();
@@ -59,19 +56,30 @@ namespace Parrot {
         _chatMessageLogWriter = File.AppendText(logFilename);
       }
 
-      _chatMessageDiscordEndPoint =
+      _chatMessageLogDiscordUrl =
           Config.Bind(
               "ChatMessage",
-              "ChatMessageDiscordEndPoint",
+              "ChatMessageLogDiscordUrl",
               string.Empty,
-              "If set, will send ChatMessages to the target Discord WebHook end-point.");
+              "If set, will log all ChatMessages to the Discord Webhook at the specified url.");
 
-      if (!_chatMessageDiscordEndPoint.Value.IsNullOrWhiteSpace()) {
-        _discordEndPointUri = new(_chatMessageDiscordEndPoint.Value);
-        LogInfo($"Sending ChatMessages to Discord WebHook at: {_discordEndPointUri}");
+      if (!_chatMessageLogDiscordUrl.Value.IsNullOrWhiteSpace()) {
+        LogInfo($"Logging all ChatMessages to Discord Webhook at: {_chatMessageLogDiscordUrl.Value}");
+        _chatMessageLogDiscordClient = new(_chatMessageLogDiscordUrl.Value);
+        _chatMessageLogDiscordClient.Start();
+      }
 
-        _chatMessageDiscordWebClient = new();
-        StartCoroutine(SendChatMessagesToDiscordCoroutine());
+      _chatMessageShoutDiscordUrl =
+          Config.Bind(
+              "ChatMessage",
+              "ChatMessageShoutDiscordUrl",
+              string.Empty,
+              "If set, will log only Shout-type ChatMessages to the Discord Webhook at the specified url.");
+
+      if (!_chatMessageShoutDiscordUrl.Value.IsNullOrWhiteSpace()) {
+        LogInfo($"Logging Shout-type ChatMessages to Discord Webhook at: {_chatMessageShoutDiscordUrl.Value}");
+        _chatMessageShoutDiscordClient = new(_chatMessageShoutDiscordUrl.Value);
+        _chatMessageShoutDiscordClient.Start();
       }
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
@@ -79,7 +87,10 @@ namespace Parrot {
 
     public void OnDestroy() {
       _chatMessageLogWriter?.Dispose();
-      _chatMessageDiscordWebClient?.Dispose();
+
+      _chatMessageLogDiscordClient?.Stop();
+      _chatMessageShoutDiscordClient?.Stop();
+
       _harmony?.UnpatchSelf();
     }
 
@@ -131,23 +142,11 @@ namespace Parrot {
 
     static void ProcessChatMessage(
         long senderId, string playerName, Talker.Type messageType, string messageText, Vector3 targetPosition) {
-      string logText;
-
-      switch (messageType) {
-        case Talker.Type.Normal:
-        case Talker.Type.Shout:
-        case Talker.Type.Whisper:
-          logText = $"{senderId} | {playerName} ({messageType}): {messageText}";
-          break;
-
-        case Talker.Type.Ping:
-          logText = $"{senderId} | {playerName} ({messageType}): {targetPosition}";
-          break;
-
-        default:
-          LogError($"Unexpected Talker.Type: {messageType}");
-          return;
-      }
+      string logText =
+          messageType switch {
+            Talker.Type.Ping => $"{playerName} ({senderId}) {messageType}: {targetPosition}",
+            _ => $"{playerName} ({senderId}) {messageType}: {messageText}",
+          };
 
       LogInfo(logText);
 
@@ -156,57 +155,39 @@ namespace Parrot {
         _chatMessageLogWriter.Flush();
       }
 
-      if (_chatMessageDiscordWebClient != null) {
+      if (_chatMessageLogDiscordClient != null) {
         SendChatMessageToDiscord(senderId, playerName, messageType, messageText, targetPosition);
+      }
+
+      if (messageType == Talker.Type.Shout && _chatMessageShoutDiscordClient != null) {
+        SendShoutChatMessageToDiscord(senderId, playerName, messageText);
       }
     }
 
     static void SendChatMessageToDiscord(
         long senderId, string playerName, Talker.Type messageType, string messageText, Vector3 targetPosition) {
-      NameValueCollection values = new();
-      values["username"] = $"{playerName} ({senderId})";
+      string contentText =
+          messageType switch {
+            Talker.Type.Normal => $":speech_balloon:  {messageText}",
+            Talker.Type.Shout => $":loudspeaker:  {messageText}",
+            Talker.Type.Whisper => $":eye_in_speech_bubble:  {messageText}",
+            Talker.Type.Ping => $":dart:  {targetPosition}",
+            _ => $":question:  {messageText}",
+          };
 
-      switch (messageType) {
-        case Talker.Type.Normal:
-          values["content"] = $":speech_balloon:  {messageText}";
-          break;
-
-        case Talker.Type.Shout:
-          values["content"] = $":loudspeaker: {messageText}";
-          break;
-
-        case Talker.Type.Whisper:
-          values["content"] = $":eye_in_speech_bubble: {messageText}";
-          break;
-
-        case Talker.Type.Ping:
-          values["content"] = $":dart: {targetPosition}";
-          break;
-
-        default:
-          LogError($"Unexpected Talker.Type: {messageType}");
-          return;
-      }
-
-      _chatMessageUploadQueue.Enqueue(values);
+      _chatMessageLogDiscordClient.Upload(
+          new NameValueCollection() {
+            { "username", $"{playerName} ({senderId})" },
+            { "content", contentText },
+          });
     }
 
-    static IEnumerator SendChatMessagesToDiscordCoroutine() {
-      WaitForSeconds waitInterval = new(seconds: 0.25f);
-
-      while (true) {
-        yield return waitInterval;
-
-        if (!_chatMessageUploadQueue.TryDequeue(out NameValueCollection values)) {
-          continue;
-        }
-
-        try {
-          _chatMessageDiscordWebClient.UploadValues(_discordEndPointUri, values);
-        } catch (WebException exception) {
-          LogError($"Failed to upload ChatMessage to Discord: {exception}");
-        }
-      }
+    static void SendShoutChatMessageToDiscord(long senderId, string playerName, string messageText) {
+      _chatMessageShoutDiscordClient.Upload(
+          new NameValueCollection() {
+            { "username", $"{playerName} ({senderId})" },
+            { "content", messageText },
+          });
     }
 
     static void LogInfo(string message) {
