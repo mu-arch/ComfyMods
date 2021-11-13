@@ -5,14 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Parrot {
-  public class DiscordUploadClient {
+  public class DiscordWebhookClient {
     readonly WebClient _webClient = new();
     readonly Uri _webhookUri;
 
     readonly AsyncQueue<NameValueCollection> _uploadQueue = new();
     readonly CancellationTokenSource _uploadLoopCancellation = new();
 
-    public DiscordUploadClient(string webhookUrl) {
+    public DiscordWebhookClient(string webhookUrl) {
       _webhookUri = new(webhookUrl);
     }
 

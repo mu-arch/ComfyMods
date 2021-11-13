@@ -28,10 +28,10 @@ namespace Parrot {
     static StreamWriter _chatMessageLogWriter;
 
     static ConfigEntry<string> _chatMessageLogDiscordUrl;
-    static DiscordUploadClient _chatMessageLogDiscordClient;
+    static DiscordWebhookClient _chatMessageLogDiscordClient;
 
     static ConfigEntry<string> _chatMessageShoutDiscordUrl;
-    static DiscordUploadClient _chatMessageShoutDiscordClient;
+    static DiscordWebhookClient _chatMessageShoutDiscordClient;
 
     static readonly int _sayHashCode = "Say".GetStableHashCode();
     static readonly int _chatMessageHashCode = "ChatMessage".GetStableHashCode();
