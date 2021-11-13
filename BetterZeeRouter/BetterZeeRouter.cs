@@ -5,6 +5,8 @@ using HarmonyLib;
 using System.Collections.Concurrent;
 using System.Reflection;
 
+using UnityEngine;
+
 namespace BetterZeeRouter {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class BetterZeeRouter : BaseUnityPlugin {
@@ -29,22 +31,22 @@ namespace BetterZeeRouter {
     static readonly ZPackage _rpcDataPackage = new();
 
     static bool ShouldUsePeerSqrDistance(
-        ref ZRoutedRpc.RoutedRPCData rpcData, out float originSqr, out float rangeSqr) {
+        ref ZRoutedRpc.RoutedRPCData rpcData, out Vector3 origin, out float rangeSqr) {
       if (_netPeerByUidCache.TryGetValue(rpcData.m_senderPeerID, out ZNetPeer netPeer)) {
-        originSqr = netPeer.m_refPos.sqrMagnitude;
+        origin = netPeer.m_refPos;
 
         if (rpcData.m_methodHash == _damageTextHashCode) {
-          rangeSqr = 900f; // 30 * 30
+          rangeSqr = 5000f;
           return true;
         }
 
         if (rpcData.m_methodHash == _sayHashCode) {
-          rangeSqr = 4900f; // 70 * 70
+          rangeSqr = 5000f;
           return true;
         }
       }
 
-      originSqr = 0f;
+      origin = Vector3.zero;
       rangeSqr = 0f;
 
       return false;
@@ -82,12 +84,12 @@ namespace BetterZeeRouter {
         rpcData.Serialize(_rpcDataPackage);
 
         if (rpcData.m_targetPeerID == 0L) {
-          bool usePeerSqrDistance = ShouldUsePeerSqrDistance(ref rpcData, out float originSqr, out float rangeSqr);
+          bool usePeerSqrDistance = ShouldUsePeerSqrDistance(ref rpcData, out Vector3 origin, out float rangeSqr);
 
           foreach (ZNetPeer netPeer in __instance.m_peers) {
             if (netPeer.m_uid == rpcData.m_senderPeerID
                 || !netPeer.IsReady()
-                || (usePeerSqrDistance && netPeer.m_refPos.sqrMagnitude - originSqr > rangeSqr)) {
+                || (usePeerSqrDistance && (netPeer.m_refPos - origin).sqrMagnitude > rangeSqr)) {
               continue;
             }
 
