@@ -30,8 +30,8 @@ namespace Parrot {
 
     async Task UploadLoopAsync() {
       while (true) {
-        NameValueCollection values = await _uploadQueue.Dequeue();
-        await _webClient.UploadValuesTaskAsync(_webhookUri, values);
+        NameValueCollection values = await _uploadQueue.Dequeue().ConfigureAwait(false);
+        await _webClient.UploadValuesTaskAsync(_webhookUri, values).ConfigureAwait(false);
       }
     }
   }

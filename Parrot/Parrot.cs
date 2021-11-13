@@ -20,7 +20,7 @@ namespace Parrot {
   public class Parrot : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.parrot";
     public const string PluginName = "Parrot";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     static ManualLogSource _logger;
 
