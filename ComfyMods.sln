@@ -55,6 +55,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas", "Atlas\Atlas.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Parrot", "Parrot\Parrot.csproj", "{A3ED1DE2-B56D-40B5-B6FD-9674E72A481F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CriticalDice", "CriticalDice\CriticalDice.csproj", "{B787459D-F732-4D28-99F8-26AF265F13DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeRouter", "BetterZeeRouter\BetterZeeRouter.csproj", "{873B7232-9B17-440C-8CCD-86B9113C9E61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +157,14 @@ Global
 		{A3ED1DE2-B56D-40B5-B6FD-9674E72A481F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3ED1DE2-B56D-40B5-B6FD-9674E72A481F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3ED1DE2-B56D-40B5-B6FD-9674E72A481F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B787459D-F732-4D28-99F8-26AF265F13DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B787459D-F732-4D28-99F8-26AF265F13DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B787459D-F732-4D28-99F8-26AF265F13DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B787459D-F732-4D28-99F8-26AF265F13DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
