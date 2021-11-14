@@ -17,7 +17,7 @@ namespace Parrot {
     }
 
     public void Start() {
-      Task.Run(UploadLoopAsync, _uploadLoopCancellation.Token).ConfigureAwait(false);
+      Task.Run(UploadLoopAsync, _uploadLoopCancellation.Token);
     }
 
     public void Stop() {
@@ -30,8 +30,8 @@ namespace Parrot {
 
     async Task UploadLoopAsync() {
       while (true) {
-        NameValueCollection values = await _uploadQueue.Dequeue().ConfigureAwait(false);
-        await _webClient.UploadValuesTaskAsync(_webhookUri, values).ConfigureAwait(false);
+        NameValueCollection values = await _uploadQueue.Dequeue().ConfigureAwait(continueOnCapturedContext: false);
+        _webClient.UploadValues(_webhookUri, values);
       }
     }
   }

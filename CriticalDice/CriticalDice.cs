@@ -66,19 +66,16 @@ namespace CriticalDice {
       routedRpcData.m_parameters.SetPos(0);
 
       if (messageText.StartsWith("!roll")) {
-        ProcessDiceRollRpcData(playerName, messageText, routedRpcData);
+        _plugin.StartCoroutine(
+            ParseDiceRollCoroutine(playerName, routedRpcData.m_senderPeerID, messageText, routedRpcData.m_targetZDO));
       }
     }
 
-    static void ProcessDiceRollRpcData(string playerName, string messageText, ZRoutedRpc.RoutedRPCData routedRpcData) {
-      if (!ParseDiceRoll(messageText, out long result)) {
-        return;
-      }
+    static IEnumerator ParseDiceRollCoroutine(string playerName, long senderPeerId, string input,  ZDOID targetZdo) {
+      yield return null;
 
-      MatchCollection matches = _diceRollRegex.Matches(messageText);
-
-      if (matches.Count <= 0) {
-        return;
+      if (!ParseDiceRoll(input, out long result)) {
+        yield break;
       }
 
       ZRoutedRpc routedRpc = ZRoutedRpc.m_instance;
@@ -93,12 +90,12 @@ namespace CriticalDice {
         m_msgID = routedRpc.m_id + routedRpc.m_rpcMsgID,
         m_senderPeerID = routedRpc.m_id,
         m_targetPeerID = ZRoutedRpc.Everybody,
-        m_targetZDO = routedRpcData.m_targetZDO,
+        m_targetZDO = targetZdo,
         m_methodHash = _sayHashCode,
         m_parameters = parameters,
       };
 
-      _plugin.StartCoroutine(SendDiceRollResponse(response));
+      routedRpc.RouteRPC(response);
     }
 
     static readonly Regex _diceRollRegex =
@@ -144,17 +141,6 @@ namespace CriticalDice {
       }
 
       return true;
-    }
-
-    static readonly WaitForSeconds _waitInterval = new(seconds: 0.25f);
-
-    static IEnumerator SendDiceRollResponse(ZRoutedRpc.RoutedRPCData response) {
-      // Rewrite this so that only those players in range will actually be routed the RPC. Let's us position the text
-      // to be in front of the player at the cost of having to calculate all peers within range.
-      // ZNetPeer does have m_refPos so we can just do a simple sqrMagnitude calculation (as usual).
-      // Will need to modifiy the transpiler delegate to also include the ZRpc parameter for the client invoking it.
-      yield return _waitInterval;
-      ZRoutedRpc.m_instance.RouteRPC(response);
     }
   }
 }
