@@ -14,7 +14,7 @@ namespace NagleNoMore {
   public class NagleNoMore : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.naglenomore";
     public const string PluginName = "NagleNoMore";
-    public const string PluginVersion = "1.3.1";
+    public const string PluginVersion = "1.3.3";
 
     Harmony _harmony;
 
@@ -35,13 +35,13 @@ namespace NagleNoMore {
         //   * k_nSteamNetworkingSend_NoNagle = 1
         //   * k_nSteamNetworkingSend_Reliable = 8
         return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Ldc_I4_8), // k_nSteamNetworkingSend_Reliable
-                new CodeMatch(OpCodes.Ldloca_S), // out num
-                new CodeMatch(OpCodes.Call),     // ... SteamNetworkingSockets.SendMessageToConnection(...)
-                new CodeMatch(OpCodes.Stloc_3))  // EResult result = ...
-            .SetAndAdvance(OpCodes.Ldc_I4, 9)    // k_nSteamNetworkingSend_NoNagle | k_nSteamNetworkingSend_Reliable
+            //.MatchForward(
+            //    useEnd: false,
+            //    new CodeMatch(OpCodes.Ldc_I4_8), // k_nSteamNetworkingSend_Reliable
+            //    new CodeMatch(OpCodes.Ldloca_S), // out num
+            //    new CodeMatch(OpCodes.Call),     // ... SteamNetworkingSockets.SendMessageToConnection(...)
+            //    new CodeMatch(OpCodes.Stloc_3))  // EResult result = ...
+            //.SetAndAdvance(OpCodes.Ldc_I4, 9)    // k_nSteamNetworkingSend_NoNagle | k_nSteamNetworkingSend_Reliable
             .MatchForward(
                 useEnd: false,
                 new CodeMatch(OpCodes.Ldstr),
@@ -57,6 +57,7 @@ namespace NagleNoMore {
                   switch (result) {
                     case EResult.k_EResultOK:
                     case EResult.k_EResultRateLimitExceeded:
+                    case EResult.k_EResultLimitExceeded:
                     case EResult.k_EResultNoConnection:
                       return;
 
