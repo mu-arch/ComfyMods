@@ -12,52 +12,23 @@ using System.Reflection;
 
 using UnityEngine;
 
+using static ColorfulLights.PluginConfig;
+
 namespace ColorfulLights {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.5.0";
-
-    static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
-
-    static ConfigEntry<bool> _isModEnabled;
-    static ConfigEntry<Color> _targetFireplaceColor;
-    static ConfigEntry<string> _targetFireplaceColorHex;
-
-    static ConfigEntry<bool> _showChangeColorHoverText;
-    static ConfigEntry<int> _colorPromptFontSize;
+    public const string PluginVersion = "1.6.0";
 
     static ManualLogSource _logger;
+    static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
+
     Harmony _harmony;
 
     public void Awake() {
       _logger = Logger;
-
-      _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
-
-      _targetFireplaceColor =
-          Config.Bind("Color", "targetFireplaceColor", Color.cyan, "Target color to set any torch/fire to.");
-
-      _targetFireplaceColorHex =
-          Config.Bind(
-              "Color",
-              "targetFireplaceColorHex",
-              $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
-              "Target color to set torch/fire to, in HTML hex-form.");
-
-      _targetFireplaceColor.SettingChanged += UpdateColorHexValue;
-      _targetFireplaceColorHex.SettingChanged += UpdateColorValue;
-
-      _showChangeColorHoverText =
-          Config.Bind(
-              "Hud",
-              "showChangeColorHoverText",
-              true,
-              "Show the 'change color' text when hovering over a lightsoure.");
-
-      _colorPromptFontSize =
-          Config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change color' text prompt.");
+      Configure(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
 
@@ -66,22 +37,6 @@ namespace ColorfulLights {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      _targetFireplaceColorHex.Value = $"{GetColorHtmlString(_targetFireplaceColor.Value)}";
-    }
-
-    void UpdateColorValue(object sender, EventArgs eventArgs) {
-      if (ColorUtility.TryParseHtmlString(_targetFireplaceColorHex.Value, out Color color)) {
-        _targetFireplaceColor.Value = color;
-      }
-    }
-
-    static string GetColorHtmlString(Color color) {
-      return color.a == 1.0f
-          ? ColorUtility.ToHtmlStringRGB(color)
-          : ColorUtility.ToHtmlStringRGBA(color);
     }
 
     static IEnumerator RemoveDestroyedFireplacesCoroutine() {
@@ -124,39 +79,51 @@ namespace ColorfulLights {
       static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
       static readonly int _lightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
 
-      static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
-
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Fireplace.Awake))]
       static void FireplaceAwakePostfix(ref Fireplace __instance) {
-        if (!_isModEnabled.Value || !__instance) {
+        if (!IsModEnabled.Value || !__instance) {
           return;
         }
 
         _fireplaceDataCache.Add(__instance, new(__instance));
       }
 
+      static readonly string _changeColorHoverTextTemplate =
+          "{0}\n<size={4}>[<color={1}>{2}</color>] Change fire color to: <color=#{3}>#{3}</color></size>";
+
+      static readonly string _clearColorHoverTextTemplate =
+          "{0}\n<size={3}>[<color={1}>{2}</color>] Clear existing fire color</size>";
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Fireplace.GetHoverText))]
       static void FireplaceGetHoverTextPostfix(ref Fireplace __instance, ref string __result) {
-        if (!_isModEnabled.Value || !_showChangeColorHoverText.Value || !__instance) {
+        if (!IsModEnabled.Value || !ShowChangeColorHoverText.Value || !__instance) {
           return;
         }
 
-        __result = Localization.instance.Localize(
-            string.Format(
-                "{0}\n<size={4}>[<color={1}>{2}</color>] Change fire color to: <color=#{3}>#{3}</color></size>",
-                __result,
-                "#FFA726",
-                _changeColorActionShortcut,
-                GetColorHtmlString(_targetFireplaceColor.Value),
-                _colorPromptFontSize.Value));
+        __result =
+            Localization.instance.Localize(
+                ClearExistingFireplaceColor.Value
+                    ? string.Format(
+                          _clearColorHoverTextTemplate,
+                          __result,
+                          "#FFA726",
+                          ChangeColorActionShortcut.Value,
+                          ColorPromptFontSize.Value)
+                    : string.Format(
+                          _changeColorHoverTextTemplate,
+                          __result,
+                          "#FFA726",
+                          ChangeColorActionShortcut.Value,
+                          TargetFireplaceColor.Value.GetColorHtmlString(),
+                          ColorPromptFontSize.Value));
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(Fireplace.Interact))]
       static bool FireplaceInteractPrefix(ref Fireplace __instance, ref bool __result, bool hold) {
-        if (!_isModEnabled.Value || hold || !_changeColorActionShortcut.IsDown()) {
+        if (!IsModEnabled.Value || hold || !ChangeColorActionShortcut.Value.IsDown()) {
           return true;
         }
 
@@ -178,17 +145,17 @@ namespace ColorfulLights {
           __instance.m_nview.ClaimOwnership();
         }
 
-        __instance.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(_targetFireplaceColor.Value));
-        __instance.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, _targetFireplaceColor.Value.a);
+        __instance.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(TargetFireplaceColor.Value));
+        __instance.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, TargetFireplaceColor.Value.a);
         __instance.m_nview.m_zdo.Set(_lightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
         __instance.m_fuelAddedEffects.Create(__instance.transform.position, __instance.transform.rotation);
 
         if (TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
           SetParticleColors(
-              fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, _targetFireplaceColor.Value);
+              fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, TargetFireplaceColor.Value);
 
-          fireplaceData.TargetColor = _targetFireplaceColor.Value;
+          fireplaceData.TargetColor = TargetFireplaceColor.Value;
         }
 
         __result = true;
@@ -199,7 +166,7 @@ namespace ColorfulLights {
       [HarmonyPatch(nameof(Fireplace.UseItem))]
       static bool FireplaceUseItemPrefix(
           ref Fireplace __instance, ref bool __result, Humanoid user, ItemDrop.ItemData item) {
-        if (!_isModEnabled.Value
+        if (!IsModEnabled.Value
             || !__instance.m_fireworks
             || item.m_shared.m_name != __instance.m_fireworkItem.m_itemData.m_shared.m_name
             || !TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
@@ -244,7 +211,7 @@ namespace ColorfulLights {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Fireplace.UpdateFireplace))]
       static void FireplaceUpdateFireplacePostfix(ref Fireplace __instance) {
-        if (!_isModEnabled.Value
+        if (!IsModEnabled.Value
             || !__instance.m_nview
             || __instance.m_nview.m_zdo == null
             || __instance.m_nview.m_zdo.m_zdoMan == null
@@ -270,7 +237,7 @@ namespace ColorfulLights {
       [HarmonyPatch(nameof(ZNetScene.RPC_SpawnObject))]
       static bool ZNetSceneRPC_SpawnObjectPrefix(
           ref ZNetScene __instance, Vector3 pos, Quaternion rot, int prefabHash) {
-        if (!_isModEnabled.Value || prefabHash != _vfxFireWorkTestHashCode || rot == Quaternion.identity) {
+        if (!IsModEnabled.Value || prefabHash != _vfxFireWorkTestHashCode || rot == Quaternion.identity) {
           return true;
         }
 

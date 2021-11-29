@@ -83,8 +83,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColorExtensions.cs" />
     <Compile Include="ColorfulLights.cs" />
     <Compile Include="FireplaceData.cs" />
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
