@@ -18,7 +18,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.5.1";
 
     static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
     static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -325,7 +325,7 @@ namespace ColorfulPieces {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
       static void HudUpdateCrosshairPostfix(ref Hud __instance, ref Player player) {
-        if (!Player.m_localPlayer?.m_hovering) {
+        if (!_isModEnabled.Value || !_showChangeRemoveColorPrompt.Value || !Player.m_localPlayer?.m_hovering) {
           return;
         }
 
