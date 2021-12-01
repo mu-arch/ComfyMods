@@ -91,6 +91,7 @@
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WearNTearData.cs" />
+    <Compile Include="ZdoExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

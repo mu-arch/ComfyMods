@@ -4,8 +4,10 @@ using BepInEx.Logging;
 using HarmonyLib;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 
 using UnityEngine;
 
@@ -16,7 +18,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
     static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -29,11 +31,7 @@ namespace ColorfulPieces {
 
     public void Awake() {
       _logger = Logger;
-
       CreateConfig(Config);
-
-      _targetPieceColor.SettingChanged += UpdateColorHexValue;
-      _targetPieceColorHex.SettingChanged += UpdateColorValue;
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
@@ -42,53 +40,88 @@ namespace ColorfulPieces {
       _harmony?.UnpatchSelf();
     }
 
-    void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      Color color = _targetPieceColor.Value;
-      color.a = 1.0f; // Alpha transparency is unsupported.
+    [HarmonyPatch(typeof(Terminal))]
+    class TerminalPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Terminal.InitTerminal))]
+      static void InitTerminalPostfix() {
+        new Terminal.ConsoleCommand(
+            "clearcolor",
+            "ColorfulPieces: Clears all colors applied to all pieces within radius of player.",
+            args => {
+              if (args.Length < 2 || !float.TryParse(args.Args[1], out float radius) || !Player.m_localPlayer) {
+                return;
+              }
 
-      _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
-      _targetPieceColor.Value = color;
-    }
+              args.Context.StartCoroutine(
+                  ClearColorsInRadiusCoroutine(Player.m_localPlayer.transform.position, radius));
+            });
 
-    void UpdateColorValue(object sender, EventArgs eventArgs) {
-      if (ColorUtility.TryParseHtmlString(_targetPieceColorHex.Value, out Color color)) {
-        color.a = 1.0f; // Alpha transparency is unsupported.
-        _targetPieceColor.Value = color;
+        new Terminal.ConsoleCommand(
+            "changecolor",
+            "ColorfulPieces: Changes the color of all pieces within radius of player to the currently set color.",
+            args => {
+              if (args.Length < 2 || !float.TryParse(args.Args[1], out float radius) || !Player.m_localPlayer) {
+                return;
+              }
+
+              args.Context.StartCoroutine(
+                  ChangeColorsInRadiusCoroutine(Player.m_localPlayer.transform.position, radius));
+            });
       }
     }
 
     [HarmonyPatch(typeof(Player))]
     class PlayerPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Player.TakeInput))]
-      static void TakeInputPostfix(ref bool __result) {
-        if (_isModEnabled.Value
-            && Player.m_localPlayer
-            && Player.m_localPlayer.m_hovering 
-            && ProcessColorAction(Player.m_localPlayer.m_hovering)) {
-          __result = false;
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Player.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
+                new CodeMatch(OpCodes.Stloc_0))
+            .Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
+            .InstructionEnumeration();
+      }
+
+      static GameObject _hoverObject;
+
+      static bool TakeInputDelegate(bool takeInputResult) {
+        if (!_isModEnabled.Value) {
+          return takeInputResult;
         }
-      }
-    }
 
-    static bool ProcessColorAction(GameObject hoveringObj) {
-      if (_changePieceColorShortcut.Value.IsDown()) {
-        ChangePieceColorAction(hoveringObj.GetComponentInParent<WearNTear>());
-        return true;
-      } else if (_clearPieceColorShortcut.Value.IsDown()) {
-        ClearPieceColorAction(hoveringObj.GetComponentInParent<WearNTear>());
-        return true;
-      } else if (_copyPieceColorShortcut.Value.IsDown()) {
-        CopyPieceColorAction(hoveringObj.GetComponentInParent<WearNTear>());
-        return true;
-      }
+        _hoverObject = Player.m_localPlayer?.m_hovering;
 
-      return false;
+        if (!_hoverObject) {
+          return takeInputResult;
+        }
+
+        if (_changePieceColorShortcut.Value.IsDown()) {
+          Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(_hoverObject));
+          return false;
+        }
+
+        if (_clearPieceColorShortcut.Value.IsDown()) {
+          Player.m_localPlayer.StartCoroutine(ClearPieceColorCoroutine(_hoverObject));
+          return false;
+        }
+
+        if (_copyPieceColorShortcut.Value.IsDown()) {
+          Player.m_localPlayer.StartCoroutine(CopyPieceColorCoroutine(_hoverObject));
+          return false;
+        }
+
+        return takeInputResult;
+      }
     }
 
     static bool ClaimOwnership(WearNTear wearNTear) {
-      if (!wearNTear
-          || !wearNTear.m_nview
+      if (!wearNTear?.m_nview
           || !wearNTear.m_nview.IsValid()
           || !PrivateArea.CheckAccess(wearNTear.transform.position, flash: true)) {
         _logger.LogWarning("Piece does not have a valid ZNetView or is in a PrivateArea.");
@@ -100,6 +133,11 @@ namespace ColorfulPieces {
       }
 
       return true;
+    }
+
+    static IEnumerator ChangePieceColorCoroutine(GameObject target) {
+      yield return null;
+      ChangePieceColorAction(target?.GetComponentInParent<WearNTear>());
     }
 
     static void ChangePieceColorAction(WearNTear wearNTear) {
@@ -118,9 +156,32 @@ namespace ColorfulPieces {
         SetWearNTearColors(wearNTearData);
       }
 
-      if (wearNTear.m_piece) {
-        wearNTear.m_piece.m_placeEffect.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+      wearNTear.m_piece?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+    }
+
+    static readonly List<Piece> _piecesCache = new();
+
+    static IEnumerator ChangeColorsInRadiusCoroutine(Vector3 position, float radius) {
+      yield return null;
+
+      _piecesCache.Clear();
+      Piece.GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
+
+      long changeColorCount = 0L;
+
+      foreach (Piece piece in _piecesCache) {
+        if (piece && piece.TryGetComponent(out WearNTear wearNTear)) {
+          ChangePieceColorAction(wearNTear);
+          changeColorCount++;
+        }
       }
+
+      _logger.LogInfo($"Changed color of {changeColorCount} pieces.");
+    }
+
+    static IEnumerator ClearPieceColorCoroutine(GameObject target) {
+      yield return null;
+      ClearPieceColorAction(target?.GetComponentInParent<WearNTear>());
     }
 
     static void ClearPieceColorAction(WearNTear wearNTear) {
@@ -141,13 +202,38 @@ namespace ColorfulPieces {
         ClearWearNTearColors(wearNTearData);
       }
 
-      if (wearNTear.m_piece) {
-        wearNTear.m_piece.m_placeEffect.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+      wearNTear.m_piece?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+    }
+
+    static IEnumerator ClearColorsInRadiusCoroutine(Vector3 position, float radius) {
+      yield return null;
+
+      _piecesCache.Clear();
+      Piece.GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
+
+      long clearColorCount = 0L;
+
+      foreach (Piece piece in _piecesCache) {
+        if (clearColorCount % 5 == 0) {
+          yield return null;
+        }
+
+        if (piece && piece.TryGetComponent(out WearNTear wearNTear)) {
+          ClearPieceColorAction(wearNTear);
+          clearColorCount++;
+        }
       }
+
+      _logger.LogInfo($"Cleared colors from {clearColorCount} pieces.");
+    }
+
+    static IEnumerator CopyPieceColorCoroutine(GameObject target) {
+      yield return null;
+      CopyPieceColorAction(target?.GetComponentInParent<WearNTear>());
     }
 
     static void CopyPieceColorAction(WearNTear wearNTear) {
-      if (!wearNTear.m_nview
+      if (!wearNTear?.m_nview
           || !wearNTear.m_nview.IsValid()
           || !wearNTear.m_nview.m_zdo.TryGetVec3(_pieceColorHashCode, out Vector3 colorAsVector)) {
         return;
@@ -197,8 +283,7 @@ namespace ColorfulPieces {
       [HarmonyPatch(nameof(WearNTear.UpdateWear))]
       static void WearNTearUpdateWearPostfix(ref WearNTear __instance) {
         if (!_isModEnabled.Value
-            || !__instance
-            || !__instance.m_nview
+            || !__instance?.m_nview
             || __instance.m_nview.m_zdo == null
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
@@ -240,18 +325,13 @@ namespace ColorfulPieces {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
       static void HudUpdateCrosshairPostfix(ref Hud __instance, ref Player player) {
-        if (!_isModEnabled.Value
-            || !_showChangeRemoveColorPrompt.Value
-            || !__instance
-            || !player
-            || player != Player.m_localPlayer
-            || !player.m_hovering) {
+        if (!Player.m_localPlayer?.m_hovering) {
           return;
         }
 
         WearNTear wearNTear = player.m_hovering.GetComponentInParent<WearNTear>();
 
-        if (!wearNTear || !wearNTear.m_nview || !wearNTear.m_nview.IsValid()) {
+        if (!wearNTear?.m_nview || !wearNTear.m_nview.IsValid()) {
           return;
         }
 
@@ -292,34 +372,6 @@ namespace ColorfulPieces {
           material.color = material.GetColor("_SavedColor");
         }
       }
-    }
-  }
-
-  public static class ZDOExtensions {
-    public static bool TryGetVec3(this ZDO zdo, int keyHashCode, out Vector3 value) {
-      if (zdo == null || zdo.m_vec3 == null) {
-        value = default;
-        return false;
-      }
-
-      return zdo.m_vec3.TryGetValue(keyHashCode, out value);
-    }
-
-    public static bool TryGetFloat(this ZDO zdo, int keyHashCode, out float value) {
-      if (zdo == null || zdo.m_floats == null) {
-        value = default;
-        return false;
-      }
-
-      return zdo.m_floats.TryGetValue(keyHashCode, out value);
-    }
-
-    public static bool RemoveVec3(this ZDO zdo, int keyHashCode) {
-      return zdo != null && zdo.m_vec3 != null && zdo.m_vec3.Remove(keyHashCode);
-    }
-
-    public static bool RemoveFloat(this ZDO zdo, int keyHashCode) {
-      return zdo != null && zdo.m_floats != null && zdo.m_floats.Remove(keyHashCode);
     }
   }
 }

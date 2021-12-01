@@ -1,4 +1,6 @@
 ﻿using BepInEx.Configuration;
+using System;
+
 using UnityEngine;
 
 namespace ColorfulPieces {
@@ -49,6 +51,9 @@ namespace ColorfulPieces {
               $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
               "Target color to set the piece material to, in HTML hex form (alpha unsupported).");
 
+      _targetPieceColor.SettingChanged += (s, e) => UpdateColorHexValue();
+      _targetPieceColorHex.SettingChanged += (s, e) => UpdateColorValue();
+
       _targetPieceEmissionColorFactor =
           config.Bind(
               "Color",
@@ -63,6 +68,21 @@ namespace ColorfulPieces {
 
       _colorPromptFontSize =
           config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
+    }
+
+    static void UpdateColorHexValue() {
+      Color color = _targetPieceColor.Value;
+      color.a = 1.0f;
+
+      _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
+      _targetPieceColor.Value = color;
+    }
+
+    static void UpdateColorValue() {
+      if (ColorUtility.TryParseHtmlString(_targetPieceColorHex.Value, out Color color)) {
+        color.a = 1.0f;
+        _targetPieceColor.Value = color;
+      }
     }
   }
 }
