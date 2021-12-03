@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CriticalDice", "CriticalDic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeRouter", "BetterZeeRouter\BetterZeeRouter.csproj", "{873B7232-9B17-440C-8CCD-86B9113C9E61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PotteryBarn", "PotteryBarn\PotteryBarn.csproj", "{CDA4D928-01D6-4D77-AF0D-9CAFF7369336}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{873B7232-9B17-440C-8CCD-86B9113C9E61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDA4D928-01D6-4D77-AF0D-9CAFF7369336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDA4D928-01D6-4D77-AF0D-9CAFF7369336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDA4D928-01D6-4D77-AF0D-9CAFF7369336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDA4D928-01D6-4D77-AF0D-9CAFF7369336}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
