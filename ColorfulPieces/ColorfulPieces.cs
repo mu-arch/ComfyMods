@@ -18,7 +18,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.5.1";
+    public const string PluginVersion = "1.5.2";
 
     static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
     static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -170,6 +170,10 @@ namespace ColorfulPieces {
       long changeColorCount = 0L;
 
       foreach (Piece piece in _piecesCache) {
+        if (changeColorCount % 5 == 0) {
+          yield return null;
+        }
+
         if (piece && piece.TryGetComponent(out WearNTear wearNTear)) {
           ChangePieceColorAction(wearNTear);
           changeColorCount++;
