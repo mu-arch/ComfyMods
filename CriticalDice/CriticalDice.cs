@@ -75,8 +75,12 @@ namespace CriticalDice {
       string messageText = routedRpcData.m_parameters.ReadString();
       routedRpcData.m_parameters.SetPos(0);
 
+      if (!messageText.StartsWith("!roll")) {
+        yield break;
+      }
+
       long result = 0L;
-      Task<bool> task = Task.Run(() => messageText.StartsWith("!roll") && ParseDiceRoll(messageText, out result));
+      Task<bool> task = Task.Run(() => ParseDiceRoll(messageText, out result));
 
       while (!task.IsCompleted) {
         yield return null;
@@ -129,7 +133,7 @@ namespace CriticalDice {
     }
 
     static readonly Regex _diceRollRegex =
-        new(@"^!roll\s+(?:(?<simple>\d+)\s*$|(?<count>\d*)d(?<faces>\d+)\s*(?<modifier>[\+-]\d+)?.*$)");
+        new(@"^!roll\s+(?:(?<simple>\d+)(?:\s+.*)$|(?<count>\d*)d(?<faces>\d+)\s*(?<modifier>[\+-]\d+)?(?:\s+.*)?$)");
 
     static bool ParseDiceRoll(string input, out long result) {
       result = 0;
