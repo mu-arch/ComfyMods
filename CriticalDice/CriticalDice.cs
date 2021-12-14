@@ -18,7 +18,7 @@ namespace CriticalDice {
   public class CriticalDice : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.criticaldice";
     public const string PluginName = "CriticalDice";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     static readonly int _rpcRoutedRpcHashCode = "RoutedRPC".GetStableHashCode();
     static readonly int _rpcSayHashCode = "Say".GetStableHashCode();
@@ -133,7 +133,7 @@ namespace CriticalDice {
     }
 
     static readonly Regex _diceRollRegex =
-        new(@"^!roll\s+(?:(?<simple>\d+)(?:\s+.*)$|(?<count>\d*)d(?<faces>\d+)\s*(?<modifier>[\+-]\d+)?(?:\s+.*)?$)");
+        new(@"^!roll\s+(?:(?<simple>\d+)(?:\s+.*)?$|(?<count>\d*)d(?<faces>\d+)\s*(?<modifier>[\+-]\d+)?(?:\s+.*)?$)");
 
     static bool ParseDiceRoll(string input, out long result) {
       result = 0;
