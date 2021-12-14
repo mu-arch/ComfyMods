@@ -2,31 +2,32 @@
 
 using HarmonyLib;
 
-using System.Collections.Generic;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
-using UnityEngine;
-using System.Collections;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using UnityEngine;
 
 namespace CriticalDice {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class CriticalDice : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.criticaldice";
     public const string PluginName = "CriticalDice";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
-    static readonly int _sayHashCode = "Say".GetStableHashCode();
+    static readonly int _rpcRoutedRpcHashCode = "RoutedRPC".GetStableHashCode();
+    static readonly int _rpcSayHashCode = "Say".GetStableHashCode();
     static readonly Regex _htmlTagsRegex = new("<.*?>");
-
     static readonly System.Random _random = new();
 
-    static MonoBehaviour _plugin;
     Harmony _harmony;
 
     public void Awake() {
-      _plugin = this;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
@@ -54,48 +55,77 @@ namespace CriticalDice {
     }
 
     static void ProcessRoutedRpcData(ZRoutedRpc.RoutedRPCData routedRpcData) {
-      if (routedRpcData.m_methodHash == _sayHashCode) {
-        ProcessRpcSayData(routedRpcData);
+      if (routedRpcData.m_methodHash == _rpcSayHashCode) {
+        ZNet.m_instance.StartCoroutine(ParseRpcSayDataCoroutine(routedRpcData));
       }
     }
 
-    static void ProcessRpcSayData(ZRoutedRpc.RoutedRPCData routedRpcData) {
+    static readonly int _intSize = sizeof(int);
+    static readonly WaitForSeconds _waitInterval = new(seconds: 0.5f);
+
+    static readonly ZPackage _package = new();
+    static readonly ZRoutedRpc.RoutedRPCData _routedRpcData = new();
+
+    static IEnumerator ParseRpcSayDataCoroutine(ZRoutedRpc.RoutedRPCData routedRpcData) {
+      yield return _waitInterval;
+
+      routedRpcData.m_parameters.SetPos(0);
       routedRpcData.m_parameters.ReadInt();
-      string playerName = _htmlTagsRegex.Replace(routedRpcData.m_parameters.ReadString(), string.Empty);
+      string playerName = routedRpcData.m_parameters.ReadString();
       string messageText = routedRpcData.m_parameters.ReadString();
       routedRpcData.m_parameters.SetPos(0);
 
-      if (messageText.StartsWith("!roll")) {
-        _plugin.StartCoroutine(
-            ParseDiceRollCoroutine(playerName, routedRpcData.m_senderPeerID, messageText, routedRpcData.m_targetZDO));
+      long result = 0L;
+      Task<bool> task = Task.Run(() => messageText.StartsWith("!roll") && ParseDiceRoll(messageText, out result));
+
+      while (!task.IsCompleted) {
+        yield return null;
       }
-    }
 
-    static IEnumerator ParseDiceRollCoroutine(string playerName, long senderPeerId, string input,  ZDOID targetZdo) {
-      yield return null;
-
-      if (!ParseDiceRoll(input, out long result)) {
+      if (task.IsFaulted || !task.Result) {
         yield break;
       }
 
-      ZRoutedRpc routedRpc = ZRoutedRpc.m_instance;
+      SendDiceRollResponse(
+          ZRoutedRpc.m_instance, routedRpcData, _htmlTagsRegex.Replace(playerName, string.Empty), result);
+    }
+
+    static void SendDiceRollResponse(
+        ZRoutedRpc routedRpc, ZRoutedRpc.RoutedRPCData routedRpcData, string playerName, long result) {
       routedRpc.m_rpcMsgID++;
 
-      ZPackage parameters = new();
-      parameters.Write((int) Talker.Type.Normal);
-      parameters.Write("<color=#AEC6D3><b>Server</b></color>");
-      parameters.Write($"{playerName} rolled... {result}");
+      _routedRpcData.m_msgID = routedRpc.m_id + routedRpc.m_rpcMsgID;
+      _routedRpcData.m_senderPeerID = routedRpc.m_id;
+      _routedRpcData.m_targetPeerID = ZRoutedRpc.Everybody;
+      _routedRpcData.m_targetZDO = routedRpcData.m_targetZDO;
+      _routedRpcData.m_methodHash = _rpcSayHashCode;
 
-      ZRoutedRpc.RoutedRPCData response = new() {
-        m_msgID = routedRpc.m_id + routedRpc.m_rpcMsgID,
-        m_senderPeerID = routedRpc.m_id,
-        m_targetPeerID = ZRoutedRpc.Everybody,
-        m_targetZDO = targetZdo,
-        m_methodHash = _sayHashCode,
-        m_parameters = parameters,
-      };
+      _routedRpcData.m_parameters.Clear();
+      _routedRpcData.m_parameters.Write((int) Talker.Type.Normal);
+      _routedRpcData.m_parameters.Write("<color=#AEC6D3><b>Server</b></color>");
+      _routedRpcData.m_parameters.Write($"{playerName} rolled... {result}");
 
-      routedRpc.RouteRPC(response);
+      _package.Clear();
+      _package.Write(_rpcRoutedRpcHashCode);
+      _package.Write(0);
+
+      _routedRpcData.Serialize(_package);
+
+      int size = _package.Size() - _intSize - _intSize;
+      _package.m_writer.Seek(_intSize, SeekOrigin.Begin);
+      _package.Write(size);
+      _package.m_writer.Flush();
+
+      byte[] packageData = _package.GetArray();
+
+      foreach (ZNetPeer netPeer in routedRpc.m_peers) {
+        if (netPeer.IsReady() && netPeer.m_rpc.IsConnected()) {
+          netPeer.m_rpc.m_sentPackages++;
+          netPeer.m_rpc.m_sentData += packageData.Length;
+
+          ((ZSteamSocket) netPeer.m_rpc.m_socket).m_sendQueue.Enqueue(packageData);
+        }
+      }
     }
 
     static readonly Regex _diceRollRegex =
