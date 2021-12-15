@@ -11,13 +11,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Insightful {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Insightful : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.insightful";
     public const string PluginName = "Insightful";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<KeyboardShortcut> _readHiddenTextShortcut;
@@ -34,7 +35,7 @@ namespace Insightful {
               "Hotkeys",
               "readHiddenTextShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftShift),
-              "Shortcut to read hidden text embedded within RuneStones.");
+              "Shortcut to read hidden text inscriptions embedded within objects.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
@@ -60,23 +61,25 @@ namespace Insightful {
             .InstructionEnumeration();
       }
 
+      static GameObject _hoverObject;
+
       static bool TakeInputDelegate(bool takeInputResult) {
         if (!_isModEnabled.Value || !_readHiddenTextShortcut.Value.IsDown()) {
           return takeInputResult;
         }
 
-        RuneStone runeStone = Player.m_localPlayer?.m_hovering?.GetComponentInParent<RuneStone>();
+        _hoverObject = Player.m_localPlayer?.m_hovering;
 
-        if (!runeStone) {
+        if (!_hoverObject) {
           return takeInputResult;
         }
 
-        runeStone.StartCoroutine(ReadHiddenTextCoroutine(runeStone));
+        Player.m_localPlayer?.StartCoroutine(ReadHiddenTextCoroutine(_hoverObject));
         return false;
       }
     }
 
-    static IEnumerator ReadHiddenTextCoroutine(RuneStone runeStone) {
+    static IEnumerator ReadHiddenTextCoroutine(GameObject runeStone) {
       yield return null;
 
       ZDO zdo = runeStone?.GetComponentInParent<ZNetView>()?.GetZDO();
@@ -105,24 +108,22 @@ namespace Insightful {
     static readonly int _inscriptionTextHashCode = "InscriptionText".GetStableHashCode();
     static readonly int _inscriptionStyleHashCode = "InscriptionStyle".GetStableHashCode();
 
-    [HarmonyPatch(typeof(RuneStone))]
-    class RuneStonePatch {
-      static readonly string _shortcutTemplate =
-          "{0}\n[<color=yellow><b>{1}</b></color>] Read Inscription";
-
+    [HarmonyPatch(typeof(Hud))]
+    class HudPatch {
       [HarmonyPostfix]
-      [HarmonyPatch(nameof(RuneStone.GetHoverText))]
-      static void GetHoverTextPostfix(ref RuneStone __instance, ref string __result) {
+      [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
+      static void UpdateCrosshairPostfix(ref Hud __instance, ref Player player) {
         if (!_isModEnabled.Value) {
           return;
         }
 
-        ZDO zdo = __instance?.GetComponentInParent<ZNetView>()?.GetZDO();
+        ZDO zdo = player?.m_hovering?.GetComponentInParent<ZNetView>()?.GetZDO();
 
         if (zdo?.m_strings != null
             && zdo.m_strings.ContainsKey(_inscriptionTopicHashCode)
             && zdo.m_strings.ContainsKey(_inscriptionTextHashCode)) {
-          __result = string.Format(_shortcutTemplate, __result, _readHiddenTextShortcut.Value);
+          __instance.m_hoverName.Append(
+              $"[<color=yellow><b>{_readHiddenTextShortcut.Value}</b></color>] Read Inscription");
         }
       }
     }
@@ -148,12 +149,9 @@ namespace Insightful {
       return false;
     }
 
-    public static RuneStone.RandomRuneText Clear(this RuneStone.RandomRuneText runeText) {
-      runeText.m_label = string.Empty;
-      runeText.m_topic = string.Empty;
-      runeText.m_text = string.Empty;
-
-      return runeText;
+    public static Text Append(this Text unityText, string value) {
+      unityText.text = unityText.text.Length == 0 ? value : $"{unityText.text}\n{value}";
+      return unityText;
     }
   }
 }
