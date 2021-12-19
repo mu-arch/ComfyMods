@@ -6,6 +6,7 @@ using HarmonyLib;
 using Steamworks;
 
 using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -14,7 +15,7 @@ namespace BetterZeeNet {
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -33,39 +34,51 @@ namespace BetterZeeNet {
       _harmony?.UnpatchSelf();
     }
 
+    class SocketWrapper {
+      static Func<HSteamNetConnection, IntPtr[], int, int> _receiveFunc;
+
+      public static SocketWrapper Create(ZSteamSocket socket) {
+        _receiveFunc ??=
+            ZNet.m_isServer
+                ? SteamGameServerNetworkingSockets.ReceiveMessagesOnConnection
+                : SteamNetworkingSockets.ReceiveMessagesOnConnection;
+
+        return new SocketWrapper();
+      }
+
+      public readonly IntPtr[] MessagePtr = new IntPtr[1];
+      public readonly ZPackage Package = new();
+
+      public bool TryReceiveMessage(ZSteamSocket socket) {
+        if (socket.m_con == HSteamNetConnection.Invalid || _receiveFunc(socket.m_con, MessagePtr, 1) != 1) {
+          return false;
+        }
+
+        SteamNetworkingMessage_t messageT = Marshal.PtrToStructure<SteamNetworkingMessage_t>(MessagePtr[0]);
+
+        Package.m_writer.Flush();
+        Package.m_stream.SetLength(messageT.m_cbSize);
+        Package.m_stream.Position = 0L;
+
+        Marshal.Copy(messageT.m_pData, Package.m_stream.GetBuffer(), 0, messageT.m_cbSize);
+
+        messageT.m_pfnRelease = MessagePtr[0];
+        messageT.Release();
+
+        return true;
+      }
+    }
+
+    static readonly ConcurrentDictionary<ZSteamSocket, SocketWrapper> _socketWrapperCache = new();
+
     [HarmonyPatch(typeof(ZSteamSocket))]
     class ZSteamSocketPatch {
-      static readonly IntPtr[] _messagePtr = new IntPtr[1];
-      static readonly ZPackage _package = new();
-
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.Recv))]
       static bool RecvPrefix(ref ZSteamSocket __instance, ref ZPackage __result) {
-        if (!__instance.IsConnected()) {
-          __result = null;
-          return false;
-        }
+        SocketWrapper socket = _socketWrapperCache.GetOrAdd(__instance, SocketWrapper.Create);
+        __result = socket.TryReceiveMessage(__instance) ? socket.Package : null;
 
-        if (SteamNetworkingSockets.ReceiveMessagesOnConnection(__instance.m_con, _messagePtr, 1) != 1) {
-          __result = null;
-          return false;
-        }
-
-        SteamNetworkingMessage_t message = Marshal.PtrToStructure<SteamNetworkingMessage_t>(_messagePtr[0]);
-
-        _package.m_writer.Flush();
-        _package.m_stream.SetLength(message.m_cbSize);
-        _package.m_stream.Position = 0L;
-
-        Marshal.Copy(message.m_pData, _package.m_stream.GetBuffer(), 0, message.m_cbSize);
-
-        message.m_pfnRelease = _messagePtr[0];
-        message.Release();
-
-        __instance.m_totalRecv += _package.Size();
-        __instance.m_gotData = true;
-
-        __result = _package;
         return false;
       }
     }
