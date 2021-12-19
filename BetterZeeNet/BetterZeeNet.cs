@@ -81,6 +81,17 @@ namespace BetterZeeNet {
 
         return false;
       }
+
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZSteamSocket.Send))]
+      static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
+        if (pkg.Size() == 0 || !__instance.IsConnected()) {
+          return false;
+        }
+
+        __instance.m_sendQueue.Enqueue(pkg.GetArray());
+        return false;
+      }
     }
   }
 }
