@@ -17,7 +17,7 @@ namespace OdinSaves {
   [BepInPlugin(Package, ModName, Version)]
   public class OdinSaves : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.odinsaves";
-    public const string Version = "1.1.0";
+    public const string Version = "1.1.1";
     public const string ModName = "OdinSaves";
 
     static ConfigEntry<bool> _isModEnabled;
@@ -127,7 +127,6 @@ namespace OdinSaves {
       [HarmonyPatch(nameof(FejdStartup.Awake))]
       static void FejdStartupAwakePostfix(ref FejdStartup __instance) {
         _profileCompressionRoot = CreateCompressionRoot(__instance.m_selectCharacterPanel.transform);
-
         _compressMapDataButton = CreateCompressMapDataButton(__instance, _profileCompressionRoot.transform);
         _profileCompressionText = CreateProfileCompressionText(__instance, _profileCompressionRoot.transform);
       }
@@ -148,14 +147,16 @@ namespace OdinSaves {
         compressionRoot.transform.SetParent(parent);
 
         RectTransform transform = compressionRoot.GetComponent<RectTransform>();
-        transform.anchorMin = new Vector2(0.5f, 0f);
-        transform.anchorMax = new Vector2(0.5f, 0f);
-        transform.pivot = new Vector2(0.5f, 0.5f);
-        transform.anchoredPosition = new Vector2(410f, 141f);
+        transform.anchorMin = new(0.5f, 0f);
+        transform.anchorMax = new(0.5f, 0f);
+        transform.pivot = new(0.5f, 0f);
+        transform.anchoredPosition = new(410f, 74f);
 
         VerticalLayoutGroup layoutGroup = compressionRoot.GetComponent<VerticalLayoutGroup>();
         layoutGroup.childControlHeight = false;
         layoutGroup.childControlWidth = false;
+        layoutGroup.childForceExpandHeight = false;
+        layoutGroup.childForceExpandWidth = false;
         layoutGroup.childAlignment = TextAnchor.UpperCenter;
 
         compressionRoot.SetActive(true);
@@ -175,7 +176,7 @@ namespace OdinSaves {
         text.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
         text.text = "Compression";
 
-        compressMapDataButton.gameObject.name = "CompressMapDataButton";
+        compressMapDataButton.gameObject.name = "CompressMapData.Button";
         compressMapDataButton.gameObject.SetActive(false);
 
         return compressMapDataButton;
@@ -183,8 +184,16 @@ namespace OdinSaves {
 
       static Text CreateProfileCompressionText(FejdStartup fejdStartup, Transform parent) {
         Text profileCompressionText = Instantiate(fejdStartup.m_csName, parent);
-        profileCompressionText.gameObject.name = "ProfileCompressionText";
-        profileCompressionText.text = "<size=20>Profile Compression Text</size>";
+        profileCompressionText.fontSize = 20;
+        profileCompressionText.gameObject.name = "ProfileCompression.Text";
+        profileCompressionText.text = "Profile Compression Text";
+
+        RectTransform rectTransform = profileCompressionText.GetComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.zero;
+        rectTransform.pivot = Vector2.zero;
+        rectTransform.anchoredPosition = new(-146f, -89f);
+        rectTransform.ForceUpdateRectTransforms();
 
         return profileCompressionText;
       }
@@ -207,11 +216,17 @@ namespace OdinSaves {
         float mapDataBytes =
             profile.m_worldData.Values.Select(value => value.m_mapData?.Length ?? 0).Sum();
 
+        int compressedCount =
+            profile.m_worldData.Values
+                .Select(value => (value.m_mapData == null || IsCompressedMapData(value.m_mapData)) ? 1 : 0)
+                .Sum();
+
         _profileCompressionText.text =
             string.Format(
-                "<size=20>Worlds: <color={0}>{1}</color>   MapData: <color={0}>{2}</color> KB</size>",
+                "Worlds: <color={0}>{1}</color>/<color={0}>{2}</color> compressed   MapData: <color={0}>{3}</color> KB",
                 "orange",
                 profile.m_worldData.Count,
+                compressedCount,
                 (mapDataBytes / 1024).ToString("N0"));
       }
 
