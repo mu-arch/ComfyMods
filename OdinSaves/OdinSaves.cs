@@ -226,13 +226,9 @@ namespace OdinSaves {
         long count = 0;
         Text buttonText = _compressMapDataButton.GetComponentInChildren<Text>();
 
-        foreach (long worldUid in profile.m_worldData.Keys) {
-          count++;
-          buttonText.text = $"Compressing... {count}/{profile.m_worldData.Count}";
-
-          PlayerProfile.WorldPlayerData worldPlayerData = profile.m_worldData[worldUid];
+        foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
+          buttonText.text = $"Compressing... {++count}/{profile.m_worldData.Count}";
           worldPlayerData.m_mapData = CompressMapData(ref worldPlayerData.m_mapData);
-
           yield return null;
         }
 
@@ -240,6 +236,7 @@ namespace OdinSaves {
           selectable.interactable = true;
         }
 
+        profile.SavePlayerToDisk();
         fejdStartup.UpdateCharacterList();
       }
     }
