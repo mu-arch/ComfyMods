@@ -4,9 +4,8 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
+using System;
 using System.Collections;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -18,18 +17,18 @@ namespace OdinSaves {
   [BepInPlugin(Package, ModName, Version)]
   public class OdinSaves : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.odinsaves";
-    public const string Version = "1.0.1";
+    public const string Version = "1.1.0";
     public const string ModName = "OdinSaves";
 
-    private static ConfigEntry<bool> _isModEnabled;
-    private static ConfigEntry<int> savePlayerProfileInterval;
-    private static ConfigEntry<bool> setLogoutPointOnSave;
-    private static ConfigEntry<bool> showMessageOnModSave;
+    static ConfigEntry<bool> _isModEnabled;
+    static ConfigEntry<int> savePlayerProfileInterval;
+    static ConfigEntry<bool> setLogoutPointOnSave;
+    static ConfigEntry<bool> showMessageOnModSave;
 
-    private static ManualLogSource _logger;
-    private Harmony _harmony;
+    static ManualLogSource _logger;
+    Harmony _harmony;
 
-    private void Awake() {
+    public void Awake() {
       _isModEnabled = Config.Bind("Global", "isModEnabled", true, "Whether the mod should be enabled.");
 
       savePlayerProfileInterval = Config.Bind(
@@ -51,20 +50,18 @@ namespace OdinSaves {
         "Show a message (in the middle of your screen) when the mod tries to save.");
 
       _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: Package);
     }
 
-    private void OnDestroy() {
-      if (_harmony != null) {
-        _harmony.UnpatchAll(null);
-      }
+    public void OnDestroy() {
+      _harmony?.UnpatchAll(null);
     }
 
     [HarmonyPatch(typeof(Game))]
-    private class GamePatch {
+    class GamePatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Game.UpdateSaving))]
-      private static void UpdateSavingPostfix(ref Game __instance) {
+      static void UpdateSavingPostfix(ref Game __instance) {
         if (!_isModEnabled.Value) {
           return;
         }
@@ -78,109 +75,75 @@ namespace OdinSaves {
         }
 
         __instance.m_saveTimer = 0f;
-
         __instance.StartCoroutine(GameSavePlayerProfileAsync(__instance, setLogoutPointOnSave.Value).AsIEnumerator());
 
-        if (ZNet.instance) {
-          ZNet.instance.Save(sync: false);
-        }
+        ZNet.instance?.Save(sync: false);
       }
     }
 
-    private static async Task GameSavePlayerProfileAsync(Game game, bool setLogoutPointOnSave) {
+    static async Task GameSavePlayerProfileAsync(Game game, bool setLogoutPointOnSave) {
       _logger.LogInfo("Saving player profile asynchronously...");
       await Task.Run(() => game.SavePlayerProfile(setLogoutPointOnSave)).ConfigureAwait(false);
     }
 
     [HarmonyPatch(typeof(Player))]
-    private class PlayerPatch {
+    class PlayerPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.OnDeath))]
-      private static void PlayerOnDeathPostfix(ref Player __instance) {
+      static void PlayerOnDeathPostfix(ref Player __instance) {
         Game.instance.m_playerProfile.ClearLoguoutPoint();
       }
     }
 
-    [HarmonyPatch(typeof(PlayerProfile))]
-    private class PlayerProfilePatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PlayerProfile.GetMapData))]
-      private static void PlayerProfileGetMapDataPostfix(ref PlayerProfile __instance, ref byte[] __result) {
-        __result = DecompressMapData(ref __result);
-      }
+    static readonly ZPackage _mapPackage = new();
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(PlayerProfile.SetMapData))]
-      private static void PlayerProfileSetMapDataPrefix(ref PlayerProfile __instance, ref byte[] data) {
-        if (!_isModEnabled.Value || HasUncompressedData(__instance)) {
-          return;
-        }
-
-        data = CompressMapData(ref data);
-      }
-    }
-
-    private static byte[] CompressMapData(ref byte[] mapData) {
-      if (mapData == null || IsGZipData(mapData)) {
+    static byte[] CompressMapData(ref byte[] mapData) {
+      if (mapData == null || IsCompressedMapData(mapData)) {
         return mapData;
       }
 
-      using MemoryStream outStream = new(capacity: mapData.Length);
-      using (GZipStream deflateStream = new(outStream, CompressionMode.Compress)) {
-        deflateStream.Write(mapData, 0, mapData.Length);
-      }
+      _mapPackage.Clear();
+      _mapPackage.Write(Minimap.MAPVERSION);
+      _mapPackage.Write(Utils.Compress(mapData));
 
-      return outStream.ToArray();
+      return _mapPackage.GetArray();
     }
 
-    private static byte[] DecompressMapData(ref byte[] mapData) {
-      if (mapData == null || !IsGZipData(mapData)) {
-        return mapData;
-      }
-
-      using var inStream = new MemoryStream(mapData);
-      using var inflateStream = new GZipStream(inStream, CompressionMode.Decompress);
-      using var outStream = new MemoryStream(capacity: 1024 * 1024 * 4);
-
-      inflateStream.CopyTo(outStream);
-      return outStream.ToArray();
+    static bool IsCompressedMapData(byte[] data) {
+      return data != null && data.Length >= 4 && BitConverter.ToInt32(data, startIndex: 0) >= 7;
     }
 
-    private static bool IsGZipData(byte[] data) {
-      return data != null && data.Length >= 3 && data[0] == 0x1f && data[1] == 0x8b && data[2] == 0x08;
+    static bool HasUncompressedData(PlayerProfile profile) {
+      return profile.m_worldData.Values.Any(value => value.m_mapData != null && !IsCompressedMapData(value.m_mapData));
     }
 
-    private static bool HasUncompressedData(PlayerProfile profile) {
-      return profile.m_worldData.Values.All(value => value.m_mapData == null || !IsGZipData(value.m_mapData));
-    }
-
-    private static GameObject _profileCompressionRoot;
-    private static Button _compressDecompressButton;
-    private static Text _profileCompressionText;
+    static GameObject _profileCompressionRoot;
+    static Button _compressMapDataButton;
+    static Text _profileCompressionText;
 
     [HarmonyPatch(typeof(FejdStartup))]
-    private class FejdStartupPatch {
+    class FejdStartupPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.Awake))]
-      private static void FejdStartupAwakePostfix(ref FejdStartup __instance) {
+      static void FejdStartupAwakePostfix(ref FejdStartup __instance) {
         _profileCompressionRoot = CreateCompressionRoot(__instance.m_selectCharacterPanel.transform);
 
-        _compressDecompressButton = CreateCompressDecompressButton(__instance, _profileCompressionRoot.transform);
+        _compressMapDataButton = CreateCompressMapDataButton(__instance, _profileCompressionRoot.transform);
         _profileCompressionText = CreateProfileCompressionText(__instance, _profileCompressionRoot.transform);
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.UpdateCharacterList))]
-      private static void FejdStartupUpdateCharacterListPostfix(ref FejdStartup __instance) {
+      static void FejdStartupUpdateCharacterListPostfix(ref FejdStartup __instance) {
         if (__instance.m_profileIndex >= 0 && __instance.m_profileIndex < __instance.m_profiles.Count) {
           PlayerProfile profile = __instance.m_profiles[__instance.m_profileIndex];
 
-          UpdateCompressDecompressButton(__instance, profile);
+          UpdateCompressMapDataButton(__instance, profile);
           UpdateProfileCompressionText(profile);
         }
       }
 
-      private static GameObject CreateCompressionRoot(Transform parent) {
+      static GameObject CreateCompressionRoot(Transform parent) {
         GameObject compressionRoot = new("CompressionRoot", typeof(RectTransform), typeof(VerticalLayoutGroup));
         compressionRoot.transform.SetParent(parent);
 
@@ -200,50 +163,49 @@ namespace OdinSaves {
         return compressionRoot;
       }
 
-      private static Button CreateCompressDecompressButton(FejdStartup fejdStartup, Transform parent) {
-        Button compressDecompressButton = Instantiate(fejdStartup.m_csNewButton, parent);
-        compressDecompressButton.onClick.RemoveAllListeners();
-        compressDecompressButton.onClick = new Button.ButtonClickedEvent();
+      static Button CreateCompressMapDataButton(FejdStartup fejdStartup, Transform parent) {
+        Button compressMapDataButton = Instantiate(fejdStartup.m_csNewButton, parent);
+        compressMapDataButton.onClick.RemoveAllListeners();
+        compressMapDataButton.onClick = new Button.ButtonClickedEvent();
 
-        RectTransform transform = compressDecompressButton.GetComponent<RectTransform>();
+        RectTransform transform = compressMapDataButton.GetComponent<RectTransform>();
         transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
 
-        Text text = compressDecompressButton.GetComponentInChildren<Text>();
+        Text text = compressMapDataButton.GetComponentInChildren<Text>();
         text.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
         text.text = "Compression";
 
-        compressDecompressButton.gameObject.name = "CompressDecompressButton";
-        compressDecompressButton.gameObject.SetActive(false);
+        compressMapDataButton.gameObject.name = "CompressMapDataButton";
+        compressMapDataButton.gameObject.SetActive(false);
 
-        return compressDecompressButton;
+        return compressMapDataButton;
       }
 
-      private static Text CreateProfileCompressionText(FejdStartup fejdStartup, Transform parent) {
+      static Text CreateProfileCompressionText(FejdStartup fejdStartup, Transform parent) {
         Text profileCompressionText = Instantiate(fejdStartup.m_csName, parent);
-        profileCompressionText.gameObject.name = "ProfileCompressiontext";
+        profileCompressionText.gameObject.name = "ProfileCompressionText";
         profileCompressionText.text = "<size=20>Profile Compression Text</size>";
 
         return profileCompressionText;
       }
 
-      private static void UpdateCompressDecompressButton(FejdStartup fejdStartup, PlayerProfile profile) {
+      static void UpdateCompressMapDataButton(FejdStartup fejdStartup, PlayerProfile profile) {
         bool hasUncompressedData = HasUncompressedData(profile);
 
-        _compressDecompressButton.GetComponentInChildren<Text>().text =
-            hasUncompressedData ? "Compress Profile" : "Decompress Profile";
+        _compressMapDataButton.GetComponentInChildren<Text>().text =
+            hasUncompressedData ? "Compress MapData" : "Compressed!";
 
-        _compressDecompressButton.onClick.RemoveAllListeners();
-        _compressDecompressButton.onClick.AddListener(
-            () =>
-              fejdStartup.StartCoroutine(
-                  CompressDecompressProfileCoroutine(fejdStartup, profile, hasUncompressedData)));
+        _compressMapDataButton.onClick.RemoveAllListeners();
+        _compressMapDataButton.onClick.AddListener(
+            () => fejdStartup.StartCoroutine(CompressProfileMapDataCoroutine(fejdStartup, profile)));
 
-        _compressDecompressButton.gameObject.SetActive(true);
+        _compressMapDataButton.interactable = hasUncompressedData;
+        _compressMapDataButton.gameObject.SetActive(true);
       }
 
-      private static void UpdateProfileCompressionText(PlayerProfile profile) {
+      static void UpdateProfileCompressionText(PlayerProfile profile) {
         float mapDataBytes =
-            profile.m_worldData.Values.Select(value => value.m_mapData == null ? 0 : value.m_mapData.Length).Sum();
+            profile.m_worldData.Values.Select(value => value.m_mapData?.Length ?? 0).Sum();
 
         _profileCompressionText.text =
             string.Format(
@@ -253,37 +215,32 @@ namespace OdinSaves {
                 (mapDataBytes / 1024).ToString("N0"));
       }
 
-      private static IEnumerator CompressDecompressProfileCoroutine(
-          FejdStartup fejdStartup, PlayerProfile profile, bool hasUncompressedData) {
+      static IEnumerator CompressProfileMapDataCoroutine(
+          FejdStartup fejdStartup, PlayerProfile profile) {
         Selectable[] selectables = FindObjectsOfType<Selectable>();
 
         foreach (Selectable selectable in selectables) {
           selectable.interactable = false;
         }
 
-        _compressDecompressButton.GetComponentInChildren<Text>().text =
-            hasUncompressedData ? "Compressing..." : "Decompressing...";
+        long count = 0;
+        Text buttonText = _compressMapDataButton.GetComponentInChildren<Text>();
 
-        yield return CompressDecompressProfileAsync(profile, hasUncompressedData).AsIEnumerator();
+        foreach (long worldUid in profile.m_worldData.Keys) {
+          count++;
+          buttonText.text = $"Compressing... {count}/{profile.m_worldData.Count}";
+
+          PlayerProfile.WorldPlayerData worldPlayerData = profile.m_worldData[worldUid];
+          worldPlayerData.m_mapData = CompressMapData(ref worldPlayerData.m_mapData);
+
+          yield return null;
+        }
 
         foreach (Selectable selectable in selectables) {
           selectable.interactable = true;
         }
 
         fejdStartup.UpdateCharacterList();
-      }
-
-      private static async Task CompressDecompressProfileAsync(PlayerProfile profile, bool hasUncompressedData) {
-        await Task.Run(() => {
-          foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
-            worldPlayerData.m_mapData =
-                hasUncompressedData
-                    ? CompressMapData(ref worldPlayerData.m_mapData)
-                    : DecompressMapData(ref worldPlayerData.m_mapData);
-          }
-
-          profile.Save();
-        }).ConfigureAwait(false);
       }
     }
   }
