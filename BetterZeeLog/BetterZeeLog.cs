@@ -3,8 +3,11 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using System.Reflection.Emit;
+
 using UnityEngine;
 
 namespace BetterZeeLog {
@@ -12,7 +15,7 @@ namespace BetterZeeLog {
   public class BetterZeeLog : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterzeelog";
     public const string PluginName = "BetterZeeLog";
-    public const string PluginVersion = "1.1.1";
+    public const string PluginVersion = "1.2.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<bool> _removeStackTraceForNonErrorLogType;
@@ -78,6 +81,28 @@ namespace BetterZeeLog {
         }
 
         return false;
+      }
+    }
+
+    [HarmonyPatch(typeof(ZSteamSocket))]
+    class ZSteamSocketPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
+      static IEnumerable<CodeInstruction> SendQueuedPackagesTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldstr),
+                new CodeMatch(OpCodes.Ldloc_3),
+                new CodeMatch(OpCodes.Box),
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Call))
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Pop))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
+            .InstructionEnumeration();
       }
     }
   }
