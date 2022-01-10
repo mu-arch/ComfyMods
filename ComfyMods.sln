@@ -65,6 +65,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeNet", "BetterZeeNe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insightful", "Insightful\Insightful.csproj", "{197294CB-EA96-44CF-A334-A10ECCF84459}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeadsUp", "HeadsUp\HeadsUp.csproj", "{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +185,10 @@ Global
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
