@@ -16,15 +16,44 @@ namespace BetterZeeNet {
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     static ConfigEntry<bool> _isModEnabled;
+
+    static ConfigEntry<bool> _useCustomPrecomputedPings;
+    static ConfigEntry<float> _customPingInterval;
+    static ConfigEntry<float> _customPingTimeout;
 
     Harmony _harmony;
 
     public void Awake() {
       _isModEnabled =
           Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+
+      _useCustomPrecomputedPings =
+          Config.Bind(
+              "ZRpc.Ping",
+              "useCustomPrecomputedPings",
+              true,
+              "Override ReceivePing/UpdatePing methods use custom ping interval/timeout and precomputed data.");
+
+      _customPingInterval =
+          Config.Bind(
+              "ZRpc.Ping",
+              "customPingInterval",
+              ZRpc.m_pingInterval,
+              new ConfigDescription(
+                  "Override the minimum interval (in seconds) before a ping is sent per connection.",
+                  new AcceptableValueRange<float>(0.1f, 3f)));
+
+      _customPingTimeout =
+          Config.Bind(
+              "ZRpc.Ping",
+              "customPingTimeout",
+              ZRpc.m_timeout,
+              new ConfigDescription(
+                  "Override the time (in seconds) since last ping received for timeout and to close the connection.",
+                  new AcceptableValueRange<float>(15f, 120f)));
 
       if (_isModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
@@ -57,7 +86,6 @@ namespace BetterZeeNet {
       }
 
       public readonly IntPtr[] MessagePtr = new IntPtr[1];
-      public readonly ZPackage Package = new();
       public readonly ZSteamSocket Socket;
 
       SocketWrapper(ZSteamSocket socket) {
@@ -65,18 +93,18 @@ namespace BetterZeeNet {
         new Thread(() => SendMessageLoop(Cancellation.Token)).Start();
       }
 
-      public bool TryReceiveMessage(ref ZSteamSocket socket) {
+      public bool TryReceiveMessage(ref ZSteamSocket socket, out ZPackage package) {
         if (socket.m_con == HSteamNetConnection.Invalid || _receiveFunc(socket.m_con, MessagePtr, 1) != 1) {
+          package = null;
           return false;
         }
 
         SteamNetworkingMessage_t messageT = Marshal.PtrToStructure<SteamNetworkingMessage_t>(MessagePtr[0]);
 
-        Package.m_writer.Flush();
-        Package.m_stream.SetLength(messageT.m_cbSize);
-        Package.m_stream.Position = 0L;
+        package = new();
+        package.m_stream.SetLength(messageT.m_cbSize);
 
-        Marshal.Copy(messageT.m_pData, Package.m_stream.GetBuffer(), 0, messageT.m_cbSize);
+        Marshal.Copy(messageT.m_pData, package.m_stream.GetBuffer(), 0, messageT.m_cbSize);
 
         socket.m_totalRecv += messageT.m_cbSize;
         socket.m_gotData = true;
@@ -128,8 +156,9 @@ namespace BetterZeeNet {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.Recv))]
       static bool RecvPrefix(ref ZSteamSocket __instance, ref ZPackage __result) {
-        SocketWrapper socket = _socketWrapperCache.GetOrAdd(__instance, SocketWrapper.Create);
-        __result = socket.TryReceiveMessage(ref __instance) ? socket.Package : null;
+        _socketWrapperCache
+            .GetOrAdd(__instance, SocketWrapper.Create)
+            .TryReceiveMessage(ref __instance, out __result);
 
         return false;
       }
@@ -181,9 +210,13 @@ namespace BetterZeeNet {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZRpc.UpdatePing))]
       static bool UpdatePingPrefix(ref ZRpc __instance, ref float dt) {
+        if (!_useCustomPrecomputedPings.Value) {
+          return true;
+        }
+
         __instance.m_pingTimer += dt;
 
-        if (__instance.m_pingTimer > ZRpc.m_pingInterval) {
+        if (__instance.m_pingTimer > _customPingInterval.Value) {
           __instance.m_pingTimer = 0f;
 
           __instance.m_sentPackages++;
@@ -193,7 +226,7 @@ namespace BetterZeeNet {
 
         __instance.m_timeSinceLastPing += dt;
 
-        if (__instance.m_timeSinceLastPing > ZRpc.m_timeout) {
+        if (__instance.m_timeSinceLastPing > _customPingTimeout.Value) {
           ZLog.LogWarning("ZRpc timeout detected!");
           __instance.m_socket.Close();
         }
@@ -204,6 +237,10 @@ namespace BetterZeeNet {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZRpc.ReceivePing))]
       static bool ReceivePingPrefix(ref ZRpc __instance, ref ZPackage package) {
+        if (!_useCustomPrecomputedPings.Value) {
+          return true;
+        }
+
         if (package.ReadBool()) {
           __instance.m_sentPackages++;
           __instance.m_sentData += _pingResponse.Length;

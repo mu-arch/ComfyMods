@@ -80,6 +80,12 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BetterZeeNet.cs" />
