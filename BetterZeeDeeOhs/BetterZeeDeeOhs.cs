@@ -1,12 +1,14 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+
 using HarmonyLib;
-using System.Collections;
+
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BetterZeeDeeOhs {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
@@ -28,152 +30,71 @@ namespace BetterZeeDeeOhs {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly object _objectsBySectorLock = new();
+    static readonly ConcurrentDictionary<ZNetPeer, ZDOMan.ZDOPeer> _zdoPeerByNetPeerCache = new();
+    static readonly ConcurrentDictionary<ZRpc, ZDOMan.ZDOPeer> _zdoPeerByRpcCache = new();
+    static readonly ConcurrentDictionary<long, ZDOMan.ZDOPeer> _zdoPeerByUidCache = new();
 
     [HarmonyPatch(typeof(ZDOMan))]
     class ZDOManPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(ZDOMan.AddPeer))]
+      static IEnumerable<CodeInstruction> AddPeerTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldloc_0),
+                new CodeMatch(OpCodes.Ldfld, typeof(ZDOMan.ZDOPeer).GetField(nameof(ZDOMan.ZDOPeer.m_peer))),
+                new CodeMatch(OpCodes.Ldfld, typeof(ZNetPeer).GetField(nameof(ZNetPeer.m_rpc))),
+                new CodeMatch(OpCodes.Ldstr, "ZDOData"))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Action<ZDOMan.ZDOPeer>>(AddPeerDelegate))
+            .InstructionEnumeration();
+      }
+
+      static void AddPeerDelegate(ZDOMan.ZDOPeer zdoPeer) {
+        _zdoPeerByNetPeerCache.AddOrUpdate(zdoPeer.m_peer, zdoPeer, (_, _) => zdoPeer);
+        _zdoPeerByRpcCache.AddOrUpdate(zdoPeer.m_peer.m_rpc, zdoPeer, (_, _) => zdoPeer);
+        _zdoPeerByUidCache.AddOrUpdate(zdoPeer.m_peer.m_uid, zdoPeer, (_, _) => zdoPeer);
+      }
+
       [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.AddToSector))]
-      static void AddToSectorPrefix() {
-        Monitor.Enter(_objectsBySectorLock);
+      [HarmonyPatch(nameof(ZDOMan.FindPeer), typeof(ZNetPeer))]
+      static bool FindPeerByZNetPeerPrefix(ref ZDOMan.ZDOPeer __result, ref ZNetPeer netPeer) {
+        return !_zdoPeerByNetPeerCache.TryGetValue(netPeer, out __result);
       }
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.AddToSector))]
-      static void AddToSectorPostfix() {
-        Monitor.Exit(_objectsBySectorLock);
-      }
-
-      //[HarmonyPrefix]
-      //[HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
-      //static void RemoveFromSectorPrefix() {
-        
-      //}
-
-      //[HarmonyPostfix]
-      //[HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
-      //static void RemoveFromSectorPostfix() {
-        
-      //}
-
-      //[HarmonyPrefix]
-      //[HarmonyPatch(nameof(ZDOMan.FindObjects))]
-      //static void FindObjectsPrefix() {
-        
-      //}
-
-      //[HarmonyPostfix]
-      //[HarmonyPatch(nameof(ZDOMan.FindObjects))]
-      //static void FindObjectsPostfix() {
-        
-      //}
-
-      //[HarmonyPrefix]
-      //[HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
-      //static void FindDistantObjectsPrefix() {
-        
-      //}
-
-      //[HarmonyPostfix]
-      //[HarmonyPatch(nameof(ZDOMan.FindDistantObjects))]
-      //static void FindDistantObjectsPostfix() {
-        
-      //}
-
-      //[HarmonyPrefix]
-      //[HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
-      //static void GetAllZDOsWithPrefabIterativePrefix() {
-        
-      //}
-
-      //[HarmonyPostfix]
-      //[HarmonyPatch(nameof(ZDOMan.GetAllZDOsWithPrefabIterative))]
-      //static void GetAllZDOsWithPrefabIterativePostfix() {
-        
-      //}
-    }
-
-    [HarmonyPatch(typeof(ZNet))]
-    class ZNetPatch {
       [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZNet.SaveWorld))]
-      static bool SaveWorldPrefix(ref ZNet __instance) {
-        __instance.StartCoroutine(SaveWorldCoroutine(__instance));
-        return false;
-      }
-    }
-
-    static IEnumerator SaveWorldCoroutine(ZNet zNet) {
-      _logger.LogInfo("Starting SaveWorldCoroutine()...");
-      Stopwatch stopwatch = Stopwatch.StartNew();
-
-      yield return PrepareSaveAsync(zNet.m_zdoMan, ZoneSystem.instance, RandEventSystem.instance).ToIEnumerator();
-      yield return SaveWorldThreadAsync(zNet).ToIEnumerator();
-
-      _logger.LogInfo($"Finished SaveWorldCoroutine() in {stopwatch.ElapsedMilliseconds} ms.");
-    }
-
-    static async Task PrepareSaveAsync(ZDOMan zdoMan, ZoneSystem zoneSystem, RandEventSystem randEventSystem) {
-      await Task.Run(() => {
-        ZDOMan.SaveData saveData = new();
-        saveData.m_myid = zdoMan.m_myid;
-        saveData.m_nextUid = zdoMan.m_nextUid;
-        saveData.m_zdos = GetSaveClone(zdoMan);
-        saveData.m_deadZDOs = new();
-
-        zdoMan.m_saveData = saveData;
-
-        zoneSystem.PrepareSave();
-        randEventSystem.PrepareSave();
-      });
-    }
-
-    static List<ZDO> GetSaveClone(ZDOMan zdoMan) {
-      _logger.LogInfo("Starting GetSaveClone()...");
-      Stopwatch stopwatch = Stopwatch.StartNew();
-
-      List<ZDO> clonedZdos = new(capacity: zdoMan.m_objectsByID.Count + 1024);
-
-      for (int i = 0; i < zdoMan.m_objectsBySector.Length; i++) {
-        List<ZDO> sectorZdos = zdoMan.m_objectsBySector[i];
-
-        if (sectorZdos == null) {
-          continue;
-        }
-
-        Monitor.Enter(_objectsBySectorLock);
-
-        foreach (ZDO zdo in sectorZdos) {
-          if (zdo.m_persistent) {
-            clonedZdos.Add(zdo.Clone());
-          }
-        }
-
-        Monitor.Exit(_objectsBySectorLock);
+      [HarmonyPatch(nameof(ZDOMan.FindPeer), typeof(ZRpc))]
+      static bool FindPeerByZRpcPrefix(ref ZDOMan.ZDOPeer __result, ref ZRpc rpc) {
+        return !_zdoPeerByRpcCache.TryGetValue(rpc, out __result);
       }
 
-      Monitor.Enter(_objectsBySectorLock);
-
-      foreach (List<ZDO> sectorZdos in zdoMan.m_objectsByOutsideSector.Values) {
-        foreach (ZDO zdo in sectorZdos) {
-          if (zdo.m_persistent) {
-            clonedZdos.Add(zdo.Clone());
-          }
-        }
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZDOMan.GetPeer))]
+      static bool GetPeer(ref ZDOMan.ZDOPeer __result, ref long uid) {
+        return !_zdoPeerByUidCache.TryGetValue(uid, out __result);
       }
 
-      Monitor.Exit(_objectsBySectorLock);
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(ZDOMan.RemovePeer))]
+      static IEnumerable<CodeInstruction> RemovePeerTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, typeof(ZDOMan).GetField(nameof(ZDOMan.m_peers))),
+                new CodeMatch(OpCodes.Ldloc_0),
+                new CodeMatch(OpCodes.Callvirt))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_1))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Action<ZNetPeer>>(RemovePeerDelegate))
+            .InstructionEnumeration();
+      }
 
-      _logger.LogInfo($"Finished GetSaveClone() in {stopwatch.ElapsedMilliseconds} ms, {clonedZdos.Count} ZDOs.");
-      return clonedZdos;
-    }
-
-    static async Task SaveWorldThreadAsync(ZNet zNet) {
-      await Task.Run(() => {
-        _logger.LogInfo("Starting SaveWorldThreadAsync()...");
-        zNet.SaveWorldThread();
-        _logger.LogInfo("Finished SaveWorldThreadAsync()!");
-      });
+      static void RemovePeerDelegate(ZNetPeer netPeer) {
+        _zdoPeerByNetPeerCache.TryRemove(netPeer, out _);
+        _zdoPeerByRpcCache.TryRemove(netPeer.m_rpc, out _);
+        _zdoPeerByUidCache.TryRemove(netPeer.m_uid, out _);
+      }
     }
   }
 }
