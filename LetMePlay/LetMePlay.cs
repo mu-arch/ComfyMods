@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 using UnityEngine;
 
@@ -15,12 +16,15 @@ namespace LetMePlay {
   public class LetMePlay : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.letmeplay";
     public const string PluginName = "LetMePlay";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<bool> _disableWardShieldFlash;
     static ConfigEntry<bool> _disableCameraSwayWhileSitting;
     static ConfigEntry<bool> _disableBuildPlacementMarker;
+
+    static ConfigEntry<bool> _disableWeatherSnowParticles;
+    static ConfigEntry<bool> _disableWeatherAshParticles;
 
     private Harmony _harmony;
 
@@ -39,6 +43,20 @@ namespace LetMePlay {
               "disableBuildPlacementMarker",
               false,
               "Disables the yellow placement marker (and gizmo indicator) when building.");
+
+      _disableWeatherSnowParticles =
+          Config.Bind(
+              "Weather",
+              "disableWeatherSnowParticles",
+              false,
+              "Disables ALL snow particles during snow/snowstorm weather.");
+
+      _disableWeatherAshParticles =
+          Config.Bind(
+              "Weather",
+              "disableWeatherAshParticles",
+              false,
+              "Disables ALL ash particles during ash rain weather.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
@@ -117,6 +135,41 @@ namespace LetMePlay {
             && _disableBuildPlacementMarker.Value) {
           __instance.m_placementMarkerInstance.SetActive(false);
         }
+      }
+    }
+
+    [HarmonyPatch(typeof(EnvMan))]
+    class EnvManPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(EnvMan.SetEnv))]
+      static IEnumerable<CodeInstruction> SetEnvTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Stfld),
+                new CodeMatch(OpCodes.Ldarg_1),
+                new CodeMatch(OpCodes.Ldfld, typeof(EnvSetup).GetField(nameof(EnvSetup.m_psystems))))
+            .Advance(offset: 2)
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<EnvSetup, bool>>(SetEnvDelegate))
+            .InstructionEnumeration();
+      }
+
+      static bool SetEnvDelegate(EnvSetup envSetup) {
+        if (_isModEnabled.Value) {
+          if (_disableWeatherSnowParticles.Value
+              && (envSetup.m_name == "Snow"
+                  || envSetup.m_name == "SnowStorm"
+                  || envSetup.m_name == "Twilight_Snow"
+                  || envSetup.m_name == "Twilight_SnowStorm")) {
+            return false;
+          }
+
+          if (_disableWeatherAshParticles.Value && envSetup.m_name == "Ashrain") {
+            return false;
+          }
+        }
+
+        return envSetup.m_psystems != null;
       }
     }
   }

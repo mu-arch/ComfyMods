@@ -31,6 +31,11 @@
 
 ## Changelog
 
+### 1.2.0
+
+  * Added two toggles `disableWeatherSnowParticles` and `disableWeatherAshParticles`.
+    * These disable the snow particles during Snow/SnowStorm weather and the ash particles during Ashrain weather.
+
 ### 1.1.0
 
   * Updated for Hearth and Home.
