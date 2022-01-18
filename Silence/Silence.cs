@@ -18,7 +18,7 @@ namespace Silence {
   public class Silence : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.silence";
     public const string PluginName = "Silence";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     public static ManualLogSource _logger;
 
@@ -101,13 +101,33 @@ namespace Silence {
 
     [HarmonyPatch(typeof(Player))]
     class PlayerPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Player.TakeInput))]
-      static void TakeInputPostfix(ref Player __instance, ref bool __result) {
-        if (_toggleSilenceShortcut.Value.IsDown()) {
-          __instance.StartCoroutine(ToggleSilenceCoroutine());
-          __result = false;
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Player.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
+                new CodeMatch(OpCodes.Stloc_0))
+            .Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<Player, bool, bool>>(TakeInputDelegate))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
+            .InstructionEnumeration();
+      }
+
+      static bool TakeInputDelegate(Player player, bool takeInputResult) {
+        if (!_isModEnabled.Value || player != Player.m_localPlayer) {
+          return takeInputResult;
         }
+
+        if (_toggleSilenceShortcut.Value.IsDown()) {
+          player.StartCoroutine(ToggleSilenceCoroutine());
+          return false;
+        }
+
+        return takeInputResult;
       }
     }
 

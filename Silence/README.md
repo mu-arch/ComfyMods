@@ -20,6 +20,10 @@
 
 ## Changelog
 
+### 1.2.0
+
+  * Modified the check for the keyboard shortcut to use a transpiler on `Player.Update()` instead of `TakeInput()`.
+
 ### 1.1.0
 
   * Updated for Hearth & Home.
