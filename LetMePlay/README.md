@@ -1,4 +1,4 @@
-﻿# Let Me Play
+﻿# LetMePlay
 
   * Collection of tweaks and mods to improve player experience and accessibility.
 
@@ -20,6 +20,11 @@
 
   * Disables the yellow placement indicator when building.
     * If you are using gizmo, the gizmo indicator will also be disabled.
+
+## Weather
+
+  * Disable snow particles during Snow/SnowStorm weather.
+  * Disable ash particles during Ashrain weather.
 
 ## Instructions
 
