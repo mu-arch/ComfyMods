@@ -170,6 +170,7 @@ namespace CarbonCopy {
         _radiusSphere.transform.localPosition = Vector3.zero;
       }
 
+      radius *= 2;
       _radiusSphere.transform.localScale = new Vector3(radius, radius, radius);
 
       MeshRenderer renderer = _radiusSphere.GetComponent<MeshRenderer>();
