@@ -7,6 +7,7 @@ using Steamworks;
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace BetterZeeNet {
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -90,7 +91,6 @@ namespace BetterZeeNet {
 
       SocketWrapper(ZSteamSocket socket) {
         Socket = socket;
-        new Thread(() => SendMessageLoop(Cancellation.Token)).Start();
       }
 
       public bool TryReceiveMessage(ref ZSteamSocket socket, out ZPackage package) {
@@ -115,20 +115,9 @@ namespace BetterZeeNet {
         return true;
       }
 
-      public readonly CancellationTokenSource Cancellation = new();
       public readonly ConcurrentQueue<byte[]> SendQueue = new();
 
-      void SendMessageLoop(CancellationToken token) {
-        while (!token.IsCancellationRequested) {
-          if (SendQueue.TryPeek(out byte[] data) && SendPackage(data, data.Length)) {
-            SendQueue.TryDequeue(out _);
-          } else {
-            Thread.Yield();
-          }
-        }
-      }
-
-      bool SendPackage(byte[] data, int length) {
+      public bool SendPackage(byte[] data, int length) {
         if (!Socket.IsConnected()) {
           return false;
         }
@@ -140,12 +129,48 @@ namespace BetterZeeNet {
         Marshal.FreeHGlobal(messageOutPtr);
 
         if (result != EResult.k_EResultOK) {
-          ZLog.LogError($"Failed to send data: {result}");
           return false;
         }
 
         Socket.m_totalSent += length;
         return true;
+      }
+    }
+
+    static CancellationTokenSource _cancellationTokenSource;
+
+    static void SendQueuedPackagesLoop(CancellationToken cancellationToken) {
+      ZLog.Log("Starting SendQueuedPackagesLoop...");
+
+      while (!_cancellationTokenSource.IsCancellationRequested) {
+        foreach (KeyValuePair<ZSteamSocket, SocketWrapper> pair in _socketWrapperCache) {
+          SendQueuedPackages(pair.Value);
+        }
+      }
+
+      ZLog.Log("Stopping SendQueuedPackagesLoop...");
+    }
+
+    static void SendQueuedPackages(SocketWrapper wrapper) {
+      while (wrapper.SendQueue.TryPeek(out byte[] data) && wrapper.SendPackage(data, data.Length)) {
+        wrapper.SendQueue.TryDequeue(out _);
+      }
+    }
+
+    [HarmonyPatch(typeof(ZNet))]
+    class ZNetPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(ZNet.Start))]
+      static void StartPostfix(ref ZNet __instance) {
+        _cancellationTokenSource = new();
+        new Thread(() => SendQueuedPackagesLoop(_cancellationTokenSource.Token)).Start();
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(ZNet.StopAll))]
+      static void StopAllPostfix(ref ZNet __instance) {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
       }
     }
 
@@ -170,7 +195,10 @@ namespace BetterZeeNet {
           return false;
         }
 
-        __instance.m_sendQueue.Enqueue(pkg.GetArray());
+        lock (__instance.m_sendQueue) {
+          __instance.m_sendQueue.Enqueue(pkg.GetArray());
+        }
+        
         return false;
       }
 
@@ -179,8 +207,10 @@ namespace BetterZeeNet {
       static bool SendQueuedPackagesPrefix(ref ZSteamSocket __instance) {
         SocketWrapper socket = _socketWrapperCache.GetOrAdd(__instance, SocketWrapper.Create);
 
-        for (int i = 0, count = __instance.m_sendQueue.Count; i < count;  i++) {
-          socket.SendQueue.Enqueue(__instance.m_sendQueue.Dequeue());
+        lock (__instance.m_sendQueue) {
+          for (int i = 0, count = __instance.m_sendQueue.Count; i < count; i++) {
+            socket.SendQueue.Enqueue(__instance.m_sendQueue.Dequeue());
+          }
         }
 
         return false;
@@ -195,10 +225,7 @@ namespace BetterZeeNet {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.Close))]
       static void ClosePrefix(ref ZSteamSocket __instance) {
-        if (_socketWrapperCache.TryRemove(__instance, out SocketWrapper socket)) {
-          socket.Cancellation.Cancel();
-          socket.Cancellation.Dispose();
-        }
+        _socketWrapperCache.TryRemove(__instance, out SocketWrapper _);
       }
     }
 
@@ -221,7 +248,12 @@ namespace BetterZeeNet {
 
           __instance.m_sentPackages++;
           __instance.m_sentData += _pingRequest.Length;
-          ((ZSteamSocket)__instance.m_socket).m_sendQueue.Enqueue(_pingRequest);
+
+          ZSteamSocket socket = (ZSteamSocket) __instance.m_socket;
+
+          lock (socket.m_sendQueue) {
+            socket.m_sendQueue.Enqueue(_pingRequest);
+          }
         }
 
         __instance.m_timeSinceLastPing += dt;
@@ -244,7 +276,12 @@ namespace BetterZeeNet {
         if (package.ReadBool()) {
           __instance.m_sentPackages++;
           __instance.m_sentData += _pingResponse.Length;
-          ((ZSteamSocket)__instance.m_socket).m_sendQueue.Enqueue(_pingResponse);
+
+          ZSteamSocket socket = (ZSteamSocket) __instance.m_socket;
+
+          lock (socket.m_sendQueue) {
+            socket.m_sendQueue.Enqueue(_pingResponse);
+          }
         } else {
           __instance.m_timeSinceLastPing = 0f;
         }
