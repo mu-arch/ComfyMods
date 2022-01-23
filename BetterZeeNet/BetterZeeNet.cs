@@ -11,14 +11,13 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BetterZeeNet {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -143,22 +142,17 @@ namespace BetterZeeNet {
     static void SendQueuedPackagesLoop(CancellationToken cancellationToken) {
       ZLog.Log("Starting SendQueuedPackagesLoop...");
 
-      ParallelOptions parallelOptions = new() {
-        CancellationToken = cancellationToken,
-        MaxDegreeOfParallelism = 3,
-      };
-
       while (!_cancellationTokenSource.IsCancellationRequested) {
-        Parallel.ForEach(_socketWrapperCache, parallelOptions, SendQueuedPackages);
+        if (TryGetNextSocketWrapper(out SocketWrapper wrapper)) {
+          while (wrapper.SendQueue.TryPeek(out byte[] data) && wrapper.SendPackage(data, data.Length)) {
+            wrapper.SendQueue.TryDequeue(out _);
+          }
+        }
+
+        Thread.Yield();
       }
 
       ZLog.Log("Stopping SendQueuedPackagesLoop...");
-    }
-
-    static void SendQueuedPackages(KeyValuePair<ZSteamSocket, SocketWrapper> pair) {
-      while (pair.Value.SendQueue.TryPeek(out byte[] data) && pair.Value.SendPackage(data, data.Length)) {
-        pair.Value.SendQueue.TryDequeue(out _);
-      }
     }
 
     [HarmonyPatch(typeof(ZNet))]
@@ -167,6 +161,9 @@ namespace BetterZeeNet {
       [HarmonyPatch(nameof(ZNet.Start))]
       static void StartPostfix(ref ZNet __instance) {
         _cancellationTokenSource = new();
+        _cacheEnumerator = _socketWrapperCache.GetEnumerator();
+
+        new Thread(() => SendQueuedPackagesLoop(_cancellationTokenSource.Token)).Start();
         new Thread(() => SendQueuedPackagesLoop(_cancellationTokenSource.Token)).Start();
       }
 
@@ -179,6 +176,21 @@ namespace BetterZeeNet {
     }
 
     static readonly ConcurrentDictionary<ZSteamSocket, SocketWrapper> _socketWrapperCache = new();
+    static IEnumerator<KeyValuePair<ZSteamSocket, SocketWrapper>> _cacheEnumerator;
+
+    static bool TryGetNextSocketWrapper(out SocketWrapper wrapper) {
+      lock (_cacheEnumerator) {
+        if (_cacheEnumerator.MoveNext()) {
+          wrapper = _cacheEnumerator.Current.Value;
+          return true;
+        }
+
+        _cacheEnumerator = _socketWrapperCache.GetEnumerator();
+
+        wrapper = default;
+        return false;
+      }
+    }
 
     [HarmonyPatch(typeof(ZSteamSocket))]
     class ZSteamSocketPatch {
