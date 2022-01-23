@@ -11,13 +11,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BetterZeeNet {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -142,18 +143,21 @@ namespace BetterZeeNet {
     static void SendQueuedPackagesLoop(CancellationToken cancellationToken) {
       ZLog.Log("Starting SendQueuedPackagesLoop...");
 
+      ParallelOptions parallelOptions = new() {
+        CancellationToken = cancellationToken,
+        MaxDegreeOfParallelism = 3,
+      };
+
       while (!_cancellationTokenSource.IsCancellationRequested) {
-        foreach (KeyValuePair<ZSteamSocket, SocketWrapper> pair in _socketWrapperCache) {
-          SendQueuedPackages(pair.Value);
-        }
+        Parallel.ForEach(_socketWrapperCache, parallelOptions, SendQueuedPackages);
       }
 
       ZLog.Log("Stopping SendQueuedPackagesLoop...");
     }
 
-    static void SendQueuedPackages(SocketWrapper wrapper) {
-      while (wrapper.SendQueue.TryPeek(out byte[] data) && wrapper.SendPackage(data, data.Length)) {
-        wrapper.SendQueue.TryDequeue(out _);
+    static void SendQueuedPackages(KeyValuePair<ZSteamSocket, SocketWrapper> pair) {
+      while (pair.Value.SendQueue.TryPeek(out byte[] data) && pair.Value.SendPackage(data, data.Length)) {
+        pair.Value.SendQueue.TryDequeue(out _);
       }
     }
 
