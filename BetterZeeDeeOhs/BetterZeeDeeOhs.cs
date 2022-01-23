@@ -151,12 +151,6 @@ namespace BetterZeeDeeOhs {
       }
 
       [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.SendZDOToPeers))]
-      static bool SendZDOToPeers(ref ZDOMan __instance, ref float dt) {
-        return false;
-      }
-
-      [HarmonyPrefix]
       [HarmonyPatch(nameof(ZDOMan.SendZDOs))]
       static bool SendZdosPrefix(ref ZDOMan __instance, ref bool __result, ref ZDOMan.ZDOPeer peer, ref bool flush) {
         __result = SendZdos(__instance, peer, flush);
