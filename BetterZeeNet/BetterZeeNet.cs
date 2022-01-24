@@ -17,7 +17,7 @@ namespace BetterZeeNet {
   public class BetterZeeNet : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeenet";
     public const string PluginName = "BetterZeeNet";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.6.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -65,12 +65,15 @@ namespace BetterZeeNet {
       _harmony?.UnpatchSelf();
     }
 
+    public delegate TResult OutFunc<in T1, T2, out TResult>(T1 arg1, out T2 arg2);
+
     public delegate TResult OutFunc<in T1, in T2, in T3, in T4, T5, out TResult>(
         T1 arg1, T2 arg2, T3 arg3, T4 arg4, out T5 arg5);
 
     class SocketWrapper {
       static OutFunc<HSteamNetConnection, IntPtr, uint, int, long, EResult> _sendFunc;
       static Func<HSteamNetConnection, IntPtr[], int, int> _receiveFunc;
+      static OutFunc<HSteamNetConnection, SteamNetworkingQuickConnectionStatus, bool> _connectionStatusFunc;
 
       public static SocketWrapper Create(ZSteamSocket socket) {
         _receiveFunc ??=
@@ -82,6 +85,11 @@ namespace BetterZeeNet {
             ZNet.m_isServer
                 ? SteamGameServerNetworkingSockets.SendMessageToConnection
                 : SteamNetworkingSockets.SendMessageToConnection;
+
+        _connectionStatusFunc ??=
+            ZNet.m_isServer
+                ? SteamGameServerNetworkingSockets.GetQuickConnectionStatus
+                : SteamNetworkingSockets.GetQuickConnectionStatus;
 
         return new SocketWrapper(socket);
       }
@@ -116,6 +124,7 @@ namespace BetterZeeNet {
       }
 
       public readonly ConcurrentQueue<byte[]> SendQueue = new();
+      public int SendQueueSize = 0;
 
       public bool SendPackage(byte[] data, int length) {
         if (!Socket.IsConnected()) {
@@ -135,6 +144,41 @@ namespace BetterZeeNet {
         Socket.m_totalSent += length;
         return true;
       }
+
+      public void Enqueue(byte[] data) {
+        lock (SendQueue) {
+          SendQueue.Enqueue(data);
+          SendQueueSize += data.Length;
+        }
+      }
+
+      public void Dequeue() {
+        lock (SendQueue) {
+          if (SendQueue.TryDequeue(out byte[] data)) {
+            SendQueueSize -= data.Length;
+          }
+        }
+      }
+
+      public int GetSendQueueSize() {
+        if (!Socket.IsConnected()) {
+          return 0;
+        }
+
+        int queueSize = SendQueueSize;
+
+        lock (Socket.m_sendQueue) {
+          foreach (byte[] data in Socket.m_sendQueue) {
+            queueSize += data.Length;
+          }
+        }
+
+        if (_connectionStatusFunc(Socket.m_con, out SteamNetworkingQuickConnectionStatus status)) {
+          queueSize += status.m_cbPendingReliable + status.m_cbPendingUnreliable + status.m_cbSentUnackedReliable;
+        }
+
+        return queueSize;
+      }
     }
 
     static CancellationTokenSource _cancellationTokenSource;
@@ -145,7 +189,7 @@ namespace BetterZeeNet {
       while (!_cancellationTokenSource.IsCancellationRequested) {
         if (TryGetNextSocketWrapper(out SocketWrapper wrapper)) {
           while (wrapper.SendQueue.TryPeek(out byte[] data) && wrapper.SendPackage(data, data.Length)) {
-            wrapper.SendQueue.TryDequeue(out _);
+            wrapper.Dequeue();
           }
         }
 
@@ -211,10 +255,14 @@ namespace BetterZeeNet {
           return false;
         }
 
-        lock (__instance.m_sendQueue) {
-          __instance.m_sendQueue.Enqueue(pkg.GetArray());
+        if (_socketWrapperCache.TryGetValue(__instance, out SocketWrapper socket)) {
+          socket.Enqueue(pkg.GetArray());
+        } else {
+          lock (__instance.m_sendQueue) {
+            __instance.m_sendQueue.Enqueue(pkg.GetArray());
+          }
         }
-        
+
         return false;
       }
 
@@ -225,23 +273,37 @@ namespace BetterZeeNet {
 
         lock (__instance.m_sendQueue) {
           for (int i = 0, count = __instance.m_sendQueue.Count; i < count; i++) {
-            socket.SendQueue.Enqueue(__instance.m_sendQueue.Dequeue());
+            socket.Enqueue(__instance.m_sendQueue.Dequeue());
           }
         }
 
         return false;
       }
 
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZSteamSocket.GetSendQueueSize))]
+      static bool GetSendQueueSizePrefix(ref ZSteamSocket __instance, ref int __result) {
+        if (_socketWrapperCache.TryGetValue(__instance, out SocketWrapper wrapper)) {
+          __result = wrapper.GetSendQueueSize();
+          return false;
+        }
+
+        return true;
+      }
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(ZSteamSocket.OnNewConnection))]
       static void OnNewConnectionPostfix(ref ZSteamSocket __instance) {
-        _socketWrapperCache.GetOrAdd(__instance, SocketWrapper.Create);
+        _socketWrapperCache.AddOrUpdate(
+            __instance, SocketWrapper.Create, (socket, wrapper) => SocketWrapper.Create(socket));
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZSteamSocket.Close))]
       static void ClosePrefix(ref ZSteamSocket __instance) {
-        _socketWrapperCache.TryRemove(__instance, out SocketWrapper _);
+        if (_socketWrapperCache.TryRemove(__instance, out SocketWrapper wrapper)) {
+          ZLog.Log($"Closing socket: {__instance.GetEndPointString()}, SendQueueSize: {wrapper.GetSendQueueSize()} B");
+        }
       }
     }
 
@@ -265,11 +327,8 @@ namespace BetterZeeNet {
           __instance.m_sentPackages++;
           __instance.m_sentData += _pingRequest.Length;
 
-          ZSteamSocket socket = (ZSteamSocket) __instance.m_socket;
-
-          lock (socket.m_sendQueue) {
-            socket.m_sendQueue.Enqueue(_pingRequest);
-          }
+          SocketWrapper wrapper = _socketWrapperCache.GetOrAdd((ZSteamSocket)__instance.m_socket, SocketWrapper.Create);
+          wrapper.Enqueue(_pingRequest);
         }
 
         __instance.m_timeSinceLastPing += dt;
@@ -293,11 +352,8 @@ namespace BetterZeeNet {
           __instance.m_sentPackages++;
           __instance.m_sentData += _pingResponse.Length;
 
-          ZSteamSocket socket = (ZSteamSocket) __instance.m_socket;
-
-          lock (socket.m_sendQueue) {
-            socket.m_sendQueue.Enqueue(_pingResponse);
-          }
+          SocketWrapper wrapper = _socketWrapperCache.GetOrAdd((ZSteamSocket)__instance.m_socket, SocketWrapper.Create);
+          wrapper.Enqueue(_pingResponse);
         } else {
           __instance.m_timeSinceLastPing = 0f;
         }

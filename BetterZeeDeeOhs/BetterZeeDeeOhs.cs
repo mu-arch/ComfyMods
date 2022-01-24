@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 
 using HarmonyLib;
 
@@ -7,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 
 using UnityEngine;
 
@@ -15,11 +17,21 @@ namespace BetterZeeDeeOhs {
   public class BetterZeeDeeOhs : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterzeedeeohs";
     public const string PluginName = "BetterZeeDeeOhs";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.2.0";
+
+    static ConfigEntry<float> _sendZdosWaitInterval;
 
     Harmony _harmony;
 
     public void Awake() {
+      _sendZdosWaitInterval = Config.Bind(
+          "SendZdos",
+          "sendZdosWaitInterval",
+          0.05f,
+          new ConfigDescription(
+              "Minimum interval (in seconds) to wait between sending ZDOs to all peers.",
+              new AcceptableValueRange<float>(0.01f, 1f)));
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
@@ -150,6 +162,25 @@ namespace BetterZeeDeeOhs {
         _zdoPeerByUidCache.TryRemove(netPeer.m_uid, out _);
       }
 
+      static readonly ParallelOptions _parallelOptions = new() {
+        MaxDegreeOfParallelism = 3,
+      };
+
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(ZDOMan.SendZDOToPeers))]
+      static bool SendZdosToPeersPrefix(ref ZDOMan __instance, ref float dt) {
+        __instance.m_sendTimer += dt;
+
+        if (__instance.m_sendTimer <= _sendZdosWaitInterval.Value) {
+          return false;
+        }
+
+        __instance.m_sendTimer = 0f;
+        Parallel.ForEach(__instance.m_peers, _parallelOptions, peer => SendZdos(ZDOMan.m_instance, peer, false));
+
+        return false;
+      }
+
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZDOMan.SendZDOs))]
       static bool SendZdosPrefix(ref ZDOMan __instance, ref bool __result, ref ZDOMan.ZDOPeer peer, ref bool flush) {
@@ -158,7 +189,11 @@ namespace BetterZeeDeeOhs {
       }
 
       static bool SendZdos(ZDOMan zdoMan, ZDOMan.ZDOPeer peer, bool flush) {
-        int sendQueueSize = peer.m_peer.m_socket.GetSendQueueSize();
+        if (!peer.m_peer.m_socket.IsConnected()) {
+          return false;
+        }
+
+        int sendQueueSize = ((ZSteamSocket) peer.m_peer.m_socket).GetSendQueueSize();
 
         if (!flush && sendQueueSize > 10240) {
           return false;
@@ -257,10 +292,7 @@ namespace BetterZeeDeeOhs {
         rpc.m_sentData += package.Size();
 
         ZSteamSocket socket = (ZSteamSocket) rpc.m_socket;
-
-        lock (socket.m_sendQueue) {
-          socket.m_sendQueue.Enqueue(rpc.m_pkg.GetArray());
-        }
+        socket.Send(rpc.m_pkg);
       }
 
       static void CreateServerSyncList(
