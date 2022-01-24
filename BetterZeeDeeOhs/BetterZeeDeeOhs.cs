@@ -202,7 +202,7 @@ namespace BetterZeeDeeOhs {
         bool isSendingZdos = false;
 
         for (int i = 0, count = wrapper.TempToSync.Count; i < count; i++) {
-          if (wrapper.SendPackage.Size() <= sendQueueFreeSize) {
+          if (wrapper.SendPackage.Size() > sendQueueFreeSize) {
             break;
           }
 
@@ -256,7 +256,7 @@ namespace BetterZeeDeeOhs {
         rpc.m_sentPackages++;
         rpc.m_sentData += package.Size();
 
-        ZSteamSocket socket = (ZSteamSocket)rpc.m_socket;
+        ZSteamSocket socket = (ZSteamSocket) rpc.m_socket;
 
         lock (socket.m_sendQueue) {
           socket.m_sendQueue.Enqueue(rpc.m_pkg.GetArray());
