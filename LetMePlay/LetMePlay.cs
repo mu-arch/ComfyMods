@@ -16,7 +16,7 @@ namespace LetMePlay {
   public class LetMePlay : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.letmeplay";
     public const string PluginName = "LetMePlay";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<bool> _disableWardShieldFlash;
@@ -170,6 +170,19 @@ namespace LetMePlay {
         }
 
         return envSetup.m_psystems != null;
+      }
+    }
+
+    [HarmonyPatch(typeof(SpawnArea))]
+    class SpawnareaPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(SpawnArea.Awake))]
+      static void AwakePostfix(ref SpawnArea __instance) {
+        if (!_isModEnabled.Value) {
+          return;
+        }
+
+        __instance.m_prefabs.RemoveAll(spawnData => !spawnData.m_prefab);
       }
     }
   }

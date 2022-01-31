@@ -36,6 +36,11 @@
 
 ## Changelog
 
+### 1.3.0
+
+  * Added patch to `SpawnArea.Awake()` where it will check if there are any null prefabs in its `m_prefabs` list and if
+    so, remove them.
+
 ### 1.2.0
 
   * Added two toggles `disableWeatherSnowParticles` and `disableWeatherAshParticles`.
