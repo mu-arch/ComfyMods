@@ -20,6 +20,14 @@
 
 ## Changelog
 
+### 1.2.0
+
+  * Added new optimization/configuration option `enablePieceHealthDamageThreshold`.
+    * Pieces with health that exceed 100K **will not** execute `WearNTear.ApplyDamage()` meaning they will not
+      take any piece damage. Subsequently, they **will not** send a `WNTHealthChanged` message to the server.
+    * This reduces the overall send and receive rates for every player on the server as they will no longer receive
+      the message used only for syncing the visual condition of pieces across clients.
+
 ### 1.0.1
 
   * Added null-checks for Piece and Piece.ZNetView references in the ward-interaction method.

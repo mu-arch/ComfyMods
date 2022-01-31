@@ -4,6 +4,7 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -14,10 +15,12 @@ namespace GetOffMyLawn {
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.getoffmylawn";
     public const string PluginName = "GetOffMyLawn";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.2.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<float> _pieceHealth;
+
+    static ConfigEntry<bool> _enablePieceHealthDamageThreshold;
 
     static ConfigEntry<bool> _showTopLeftMessageOnPieceRepair;
     static ConfigEntry<bool> _showRepairEffectOnWardActivation;
@@ -34,6 +37,13 @@ namespace GetOffMyLawn {
               "targetPieceHealth",
               100_000_000f,
               "Target value to set piece health to when creating and repairing.");
+
+      _enablePieceHealthDamageThreshold =
+          Config.Bind(
+              "Optimization",
+              "enablePieceHealthDamageThreshold",
+              true,
+              "If piece health exceeds 100K, DO NOT execute ApplyDamage() or send WNTHealthChanged messages.");
 
       _showTopLeftMessageOnPieceRepair =
           Config.Bind(
@@ -208,6 +218,81 @@ namespace GetOffMyLawn {
               MessageHud.MessageType.TopLeft, $"Repaired piece '{pieceName}' to health: {_pieceHealth.Value}");
         }
       }
+    }
+
+    static readonly int _healthHashCode = "health".GetStableHashCode();
+    static readonly long _pieceHealthDamageThreshold = 100_000L;
+
+    static long _applyDamageCount = 0L;
+    static long _applyDamageCountLastMin = 0L;
+
+    [HarmonyPatch(typeof(WearNTear))]
+    class WearNTearPatch {
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(WearNTear.ApplyDamage))]
+      static bool ApplyDamagePrefix(ref WearNTear __instance, ref bool __result, ref float damage) {
+        if (!_isModEnabled.Value) {
+          return true;
+        }
+
+        float health = __instance.m_nview.m_zdo.GetFloat(_healthHashCode, __instance.m_health);
+
+        if (health <= 0f) {
+          __result = false;
+          return false;
+        } else if (health >= _pieceHealthDamageThreshold) {
+          _applyDamageCount++;
+          _applyDamageCountLastMin++;
+
+          __result = false;
+          return false;
+        }
+
+        health -= damage;
+        __instance.m_nview.m_zdo.Set(_healthHashCode, health);
+
+        if (health <= 0f) {
+          __instance.Destroy();
+        } else {
+          __instance.m_nview.InvokeRPC(ZNetView.Everybody, "WNTHealthChanged", health);
+        }
+
+        __result = true;
+        return false;
+      }
+    }
+
+    [HarmonyPatch(typeof(WearNTearUpdater))]
+    class WearNTearUpdaterPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Awake))]
+      static void AwakePostfix(ref WearNTearUpdater __instance) {
+        if (!_isModEnabled.Value) {
+          return;
+        }
+
+        __instance.StartCoroutine(LogCountersCoroutine());
+      }
+    }
+
+    static IEnumerator LogCountersCoroutine() {
+      WaitForSeconds _waitInterval = new(seconds: 60f);
+
+      while (true) {
+        yield return _waitInterval;
+
+        if (_isModEnabled.Value) {
+          _logger.LogInfo(
+              $"WearNTear.ApplyDamage() ignored count: {_applyDamageCountLastMin} (Total: {_applyDamageCount})");
+
+          _applyDamageCountLastMin = 0L;
+        }
+      }
+    }
+
+    internal sealed class ConfigurationManagerAttributes {
+      public string DispName;
+      public bool? ReadOnly;
     }
   }
 }
