@@ -15,7 +15,7 @@ namespace GetOffMyLawn {
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.getoffmylawn";
     public const string PluginName = "GetOffMyLawn";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.2.1";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<float> _pieceHealth;
@@ -231,7 +231,7 @@ namespace GetOffMyLawn {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(WearNTear.ApplyDamage))]
       static bool ApplyDamagePrefix(ref WearNTear __instance, ref bool __result, ref float damage) {
-        if (!_isModEnabled.Value) {
+        if (!_isModEnabled.Value || !_enablePieceHealthDamageThreshold.Value) {
           return true;
         }
 
@@ -281,18 +281,13 @@ namespace GetOffMyLawn {
       while (true) {
         yield return _waitInterval;
 
-        if (_isModEnabled.Value) {
+        if (_isModEnabled.Value && _enablePieceHealthDamageThreshold.Value) {
           _logger.LogInfo(
-              $"WearNTear.ApplyDamage() ignored count: {_applyDamageCountLastMin} (Total: {_applyDamageCount})");
+              $"WearNTear.ApplyDamage() ignored... 60s: {_applyDamageCountLastMin} (Total: {_applyDamageCount})");
 
           _applyDamageCountLastMin = 0L;
         }
       }
-    }
-
-    internal sealed class ConfigurationManagerAttributes {
-      public string DispName;
-      public bool? ReadOnly;
     }
   }
 }

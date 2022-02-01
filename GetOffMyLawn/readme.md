@@ -20,6 +20,10 @@
 
 ## Changelog
 
+### 1.2.1
+
+  * Actually check the `enablePieceHealthDamageThreshold` config value for the WearNTear.ApplyDamage() patch.
+
 ### 1.2.0
 
   * Added new optimization/configuration option `enablePieceHealthDamageThreshold`.
