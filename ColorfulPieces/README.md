@@ -18,6 +18,26 @@
      * Prompt font-size can be configured with the `colorPromptFontSize` setting.
 
 ## Changelog
+### 1.5.2
+* Changed how hotkeys are detected from Player.TakeInput() prefix to better Player.Update() transpiler.
+  * This eliminates the double hot-key firing when in debugfly mode.
+* Moved more config-related logic into PluginConfig class.
+* Moved ZDO extensions to a new ZdoExtensions class.
+* Added two new Terminal.ConsoleCommand:
+
+  * /clearcolor <radius> (in chatbox)
+  * clearcolor <radius> (in console)
+    * Clears any colors from all pieces in the specified radius from the player.
+
+  * /changecolor <radius> (in chatbox)
+  * changecolor <radius> (in console)
+    * Changes the color of all pieces in the specified radius from the player to the currently set target color in configuration.
+
+  * These two commands still call the same action as the hotkey and so will obey all ward permissions.
+
+Update:
+  * Fixed a bug where I forgot to check for isModEnabled and showChangeRemoveColorPrompt flags in Hud.UpdateCrosshair() postfix.
+  * Fixed a bug where I forgot to add a yield return null condition in ChangeColorsInRadiusCoroutine().
 
 ### 1.4.0
 
