@@ -1,13 +1,13 @@
 ﻿using BepInEx;
 
+using BetterZeeRouter;
+
 using HarmonyLib;
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -15,13 +15,16 @@ using UnityEngine;
 
 namespace CriticalDice {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+  [BepInDependency(BetterZeeRouter.BetterZeeRouter.PluginGuid, BepInDependency.DependencyFlags.HardDependency)]
   public class CriticalDice : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.criticaldice";
     public const string PluginName = "CriticalDice";
-    public const string PluginVersion = "1.1.1";
+    public const string PluginVersion = "1.2.0";
 
     static readonly int _rpcRoutedRpcHashCode = "RoutedRPC".GetStableHashCode();
     static readonly int _rpcSayHashCode = "Say".GetStableHashCode();
+    static readonly SayHandler _sayHandler = new();
+
     static readonly Regex _htmlTagsRegex = new("<.*?>");
     static readonly System.Random _random = new();
 
@@ -29,34 +32,29 @@ namespace CriticalDice {
 
     public void Awake() {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
+      RoutedRpcManager.Instance.AddHandler(_rpcSayHashCode, _sayHandler);
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(ZRoutedRpc))]
-    class ZRoutedRpcPatch {
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(ZRoutedRpc.RPC_RoutedRPC))]
-      static IEnumerable<CodeInstruction> RPC_RoutedRPCTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(
-                    OpCodes.Callvirt,
-                    AccessTools.Method(
-                        typeof(ZRoutedRpc.RoutedRPCData), nameof(ZRoutedRpc.RoutedRPCData.Deserialize))))
-            .Advance(offset: 1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Action<ZRoutedRpc.RoutedRPCData>>(ProcessRoutedRpcData))
-            .InstructionEnumeration();
-      }
-    }
+    class SayHandler : RpcMethodHandler {
+      const string _rollPrefix = "!roll";
 
-    static void ProcessRoutedRpcData(ZRoutedRpc.RoutedRPCData routedRpcData) {
-      if (routedRpcData.m_methodHash == _rpcSayHashCode) {
-        ZNet.m_instance.StartCoroutine(ParseRpcSayDataCoroutine(routedRpcData));
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        routedRpcData.m_parameters.SetPos(0);
+
+        routedRpcData.m_parameters.ReadInt();
+        string playerName = routedRpcData.m_parameters.ReadString();
+        string messageText = routedRpcData.m_parameters.ReadString();
+        routedRpcData.m_parameters.SetPos(0);
+
+        if (messageText.StartsWith(_rollPrefix, StringComparison.Ordinal)) {
+          ZNet.m_instance.StartCoroutine(ParseRpcSayDataCoroutine(playerName, messageText, routedRpcData.m_targetZDO));
+        }
+
+        return true;
       }
     }
 
@@ -66,18 +64,8 @@ namespace CriticalDice {
     static readonly ZPackage _package = new();
     static readonly ZRoutedRpc.RoutedRPCData _routedRpcData = new();
 
-    static IEnumerator ParseRpcSayDataCoroutine(ZRoutedRpc.RoutedRPCData routedRpcData) {
+    static IEnumerator ParseRpcSayDataCoroutine(string playerName, string messageText, ZDOID targetZdo) {
       yield return _waitInterval;
-
-      routedRpcData.m_parameters.SetPos(0);
-      routedRpcData.m_parameters.ReadInt();
-      string playerName = routedRpcData.m_parameters.ReadString();
-      string messageText = routedRpcData.m_parameters.ReadString();
-      routedRpcData.m_parameters.SetPos(0);
-
-      if (!messageText.StartsWith("!roll")) {
-        yield break;
-      }
 
       long result = 0L;
       Task<bool> task = Task.Run(() => ParseDiceRoll(messageText, out result));
@@ -90,18 +78,17 @@ namespace CriticalDice {
         yield break;
       }
 
-      SendDiceRollResponse(
-          ZRoutedRpc.m_instance, routedRpcData, _htmlTagsRegex.Replace(playerName, string.Empty), result);
+      SendDiceRollResponse(ZRoutedRpc.m_instance, _htmlTagsRegex.Replace(playerName, string.Empty), targetZdo, result);
     }
 
     static void SendDiceRollResponse(
-        ZRoutedRpc routedRpc, ZRoutedRpc.RoutedRPCData routedRpcData, string playerName, long result) {
+        ZRoutedRpc routedRpc, string playerName, ZDOID targetZdo, long result) {
       routedRpc.m_rpcMsgID++;
 
       _routedRpcData.m_msgID = routedRpc.m_id + routedRpc.m_rpcMsgID;
       _routedRpcData.m_senderPeerID = routedRpc.m_id;
       _routedRpcData.m_targetPeerID = ZRoutedRpc.Everybody;
-      _routedRpcData.m_targetZDO = routedRpcData.m_targetZDO;
+      _routedRpcData.m_targetZDO = targetZdo;
       _routedRpcData.m_methodHash = _rpcSayHashCode;
 
       _routedRpcData.m_parameters.Clear();

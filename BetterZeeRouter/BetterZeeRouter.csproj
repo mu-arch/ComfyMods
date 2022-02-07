@@ -81,6 +81,10 @@
   <ItemGroup>
     <Compile Include="BetterZeeRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RoutedRpcDataExtensions.cs" />
+    <Compile Include="RpcMethodHandler.cs" />
+    <Compile Include="RoutedRpcManager.cs" />
+    <Compile Include="ZPackageExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Copy" AfterTargets="Build">

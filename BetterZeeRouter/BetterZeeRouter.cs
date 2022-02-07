@@ -10,10 +10,9 @@ namespace BetterZeeRouter {
   public class BetterZeeRouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeerouter";
     public const string PluginName = "BetterZeeRouter";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ConfigEntry<bool> _isModEnabled;
-
     Harmony _harmony;
 
     public void Awake() {
@@ -22,6 +21,9 @@ namespace BetterZeeRouter {
 
       if (_isModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+
+        _routedRpcManager.AddHandler(_rpcWntHealthChangedHashCode, _wntHealthChangedHandler);
+        _routedRpcManager.AddHandler(_rpcDamageTextHashCode, _damageTextHandler);
       }
     }
 
@@ -29,11 +31,30 @@ namespace BetterZeeRouter {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly int _wntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
-    static readonly int _damageTextHashCode = "DamageText".GetStableHashCode();
+    static readonly int _rpcWntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
+    static readonly int _rpcDamageTextHashCode = "DamageText".GetStableHashCode();
 
-    static long _wntHealthChangedCount = 0L;
-    static long _damageTextCount = 0L;
+    static readonly RoutedRpcManager _routedRpcManager = RoutedRpcManager.Instance;
+    static readonly WntHealthChangedHandler _wntHealthChangedHandler = new();
+    static readonly DamageTextHandler _damageTextHandler = new();
+
+    class WntHealthChangedHandler : RpcMethodHandler {
+      public long WntHealthChangedCount { get; private set; }
+
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        WntHealthChangedCount++;
+        return false;
+      }
+    }
+
+    class DamageTextHandler : RpcMethodHandler {
+      public long DamageTextCount { get; private set; }
+
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        DamageTextCount++;
+        return false;
+      }
+    }
 
     [HarmonyPatch(typeof(ZRoutedRpc))]
     class ZRoutedRpcPatch {
@@ -42,64 +63,36 @@ namespace BetterZeeRouter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(ZRoutedRpc.AddPeer))]
       static void AddPeerPostfix() {
-        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedCount}");
-        ZLog.Log($"DamageText count: {_damageTextCount}");
+        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedHandler.WntHealthChangedCount}");
+        ZLog.Log($"DamageText count: {_damageTextHandler.DamageTextCount}");
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(ZRoutedRpc.RemovePeer))]
       static void RemovePeerPostfix() {
-        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedCount}");
-        ZLog.Log($"DamageText count: {_damageTextCount}");
+        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedHandler.WntHealthChangedCount}");
+        ZLog.Log($"DamageText count: {_damageTextHandler.DamageTextCount}");
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZRoutedRpc.RPC_RoutedRPC))]
       static bool RPC_RoutedRPCPrefix(ref ZRoutedRpc __instance, ref ZRpc rpc, ref ZPackage pkg) {
-        _routedRpcData.Clear();
-        _routedRpcData.Deserialize(ref pkg);
+        _routedRpcData.DeserializeFrom(ref pkg);
 
         if (_routedRpcData.m_targetPeerID == __instance.m_id || _routedRpcData.m_targetPeerID == 0L) {
           __instance.HandleRoutedRPC(_routedRpcData);
         }
 
-        if (__instance.m_server && _routedRpcData.m_targetPeerID != __instance.m_id) {
-          if (_routedRpcData.m_methodHash == _wntHealthChangedHashCode) {
-            _wntHealthChangedCount++;
-            return false;
-          }
+        if (!__instance.m_server || _routedRpcData.m_targetPeerID == __instance.m_id) {
+          return false;
+        }
 
-          if (_routedRpcData.m_methodHash == _damageTextHashCode) {
-            _damageTextCount++;
-            return false;
-          }
-
+        if (_routedRpcManager.Process(_routedRpcData)) {
           __instance.RouteRPC(_routedRpcData);
         }
 
         return false;
       }
-    }
-  }
-
-  public static class RoutedRpcDataExtensions {
-    public static void Deserialize(this ZRoutedRpc.RoutedRPCData routedRpcData, ref ZPackage package) {
-      routedRpcData.m_msgID = package.ReadLong();
-      routedRpcData.m_senderPeerID = package.ReadLong();
-      routedRpcData.m_targetPeerID = package.ReadLong();
-      routedRpcData.m_targetZDO = package.ReadZDOID();
-      routedRpcData.m_methodHash = package.ReadInt();
-
-      package.ReadPackage(ref routedRpcData.m_parameters);
-    }
-
-    public static void Clear(this ZRoutedRpc.RoutedRPCData routedRpcData) {
-      routedRpcData.m_msgID = default;
-      routedRpcData.m_senderPeerID = default;
-      routedRpcData.m_targetPeerID = default;
-      routedRpcData.m_targetZDO = default;
-      routedRpcData.m_methodHash = default;
-      routedRpcData.m_parameters?.Clear();
     }
   }
 }
