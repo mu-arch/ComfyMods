@@ -17,7 +17,7 @@ namespace GetOffMyLawn {
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.getoffmylawn";
     public const string PluginName = "GetOffMyLawn";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.3.1";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<float> _pieceHealth;
@@ -27,7 +27,7 @@ namespace GetOffMyLawn {
     static ConfigEntry<bool> _showTopLeftMessageOnPieceRepair;
     static ConfigEntry<bool> _showRepairEffectOnWardActivation;
 
-    static List<string> _removablePieceOverrides = new List<string>() {
+    static readonly List<string> _removablePieceOverrides = new() {
       "$tool_cart",
       "$ship_longship",
       "$ship_raft",
@@ -232,16 +232,15 @@ namespace GetOffMyLawn {
       [HarmonyPatch(nameof(Player.RemovePiece))]
       static IEnumerable<CodeInstruction> RemovePieceTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-          .MatchForward(
-            useEnd: false,
-            new CodeMatch(OpCodes.Ldfld, typeof(Piece).GetField(nameof(Piece.m_canBeRemoved)))
-          )
-          .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<Piece, bool>>(CanBeRemovedDelegate))
-          .InstructionEnumeration();
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldfld, typeof(Piece).GetField(nameof(Piece.m_canBeRemoved))))
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<Piece, bool>>(CanBeRemovedDelegate))
+            .InstructionEnumeration();
       }
 
       static bool CanBeRemovedDelegate(Piece piece) {
-        return piece.m_canBeRemoved || _removablePieceOverrides.Contains(piece.m_name);
+        return piece.m_canBeRemoved || (_isModEnabled.Value && _removablePieceOverrides.Contains(piece.m_name));
       }
     }
 
