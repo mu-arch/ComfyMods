@@ -2,25 +2,26 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 
+using BetterZeeRouter;
+
 using HarmonyLib;
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
 
 namespace Parrot {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+  [BepInDependency(BetterZeeRouter.BetterZeeRouter.PluginGuid, BepInDependency.DependencyFlags.HardDependency)]
   public class Parrot : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.parrot";
     public const string PluginName = "Parrot";
-    public const string PluginVersion = "1.1.2";
+    public const string PluginVersion = "1.2.0";
 
     static ManualLogSource _logger;
 
@@ -36,6 +37,9 @@ namespace Parrot {
     static readonly int _sayHashCode = "Say".GetStableHashCode();
     static readonly int _chatMessageHashCode = "ChatMessage".GetStableHashCode();
     static readonly Regex _htmlTagsRegex = new("<.*?>");
+
+    static readonly SayHandler _sayHandler = new();
+    static readonly ChatMessageHandler _chatMessageHandler = new();
 
     Harmony _harmony;
 
@@ -83,6 +87,9 @@ namespace Parrot {
       }
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
+
+      RoutedRpcManager.Instance.AddHandler(_sayHashCode, _sayHandler);
+      RoutedRpcManager.Instance.AddHandler(_chatMessageHashCode, _chatMessageHandler);
     }
 
     public void OnDestroy() {
@@ -94,50 +101,35 @@ namespace Parrot {
       _harmony?.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(ZRoutedRpc))]
-    class ZRoutedRpcPatch {
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(ZRoutedRpc.RPC_RoutedRPC))]
-      static IEnumerable<CodeInstruction> RPC_RoutedRPCTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(
-                    OpCodes.Callvirt,
-                    AccessTools.Method(
-                        typeof(ZRoutedRpc.RoutedRPCData), nameof(ZRoutedRpc.RoutedRPCData.Deserialize))))
-            .Advance(offset: 1)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Action<ZRoutedRpc.RoutedRPCData>>(ProcessRoutedRpcData))
-            .InstructionEnumeration();
+    class SayHandler : RpcMethodHandler {
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        routedRpcData.m_parameters.SetPos(0);
+
+        Talker.Type messageType = (Talker.Type) routedRpcData.m_parameters.ReadInt();
+        string playerName = _htmlTagsRegex.Replace(routedRpcData.m_parameters.ReadString(), string.Empty);
+        string messageText = routedRpcData.m_parameters.ReadString();
+
+        routedRpcData.m_parameters.SetPos(0);
+        ProcessChatMessage(routedRpcData.m_senderPeerID, playerName, messageType, messageText, Vector3.zero);
+
+        return true;
       }
     }
 
-    static void ProcessRoutedRpcData(ZRoutedRpc.RoutedRPCData routedRpcData) {
-      if (routedRpcData.m_methodHash == _sayHashCode) {
-        ProcessRpcSayData(routedRpcData);
-      } else if (routedRpcData.m_methodHash == _chatMessageHashCode) {
-        ProcessRpcChatMessageData(routedRpcData);
+    class ChatMessageHandler : RpcMethodHandler {
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        routedRpcData.m_parameters.SetPos(0);
+
+        Vector3 targetPosition = routedRpcData.m_parameters.ReadVector3();
+        Talker.Type messageType = (Talker.Type) routedRpcData.m_parameters.ReadInt();
+        string playerName = _htmlTagsRegex.Replace(routedRpcData.m_parameters.ReadString(), string.Empty);
+        string messageText = routedRpcData.m_parameters.ReadString();
+
+        routedRpcData.m_parameters.SetPos(0);
+        ProcessChatMessage(routedRpcData.m_senderPeerID, playerName, messageType, messageText, targetPosition);
+
+        return true;
       }
-    }
-
-    static void ProcessRpcSayData(ZRoutedRpc.RoutedRPCData routedRpcData) {
-      Talker.Type messageType = (Talker.Type) routedRpcData.m_parameters.ReadInt();
-      string playerName = _htmlTagsRegex.Replace(routedRpcData.m_parameters.ReadString(), string.Empty);
-      string messageText = routedRpcData.m_parameters.ReadString();
-      routedRpcData.m_parameters.SetPos(0);
-
-      ProcessChatMessage(routedRpcData.m_senderPeerID, playerName, messageType, messageText, Vector3.zero);
-    }
-
-    static void ProcessRpcChatMessageData(ZRoutedRpc.RoutedRPCData routedRpcData) {
-      Vector3 targetPosition = routedRpcData.m_parameters.ReadVector3();
-      Talker.Type messageType = (Talker.Type) routedRpcData.m_parameters.ReadInt();
-      string playerName = _htmlTagsRegex.Replace(routedRpcData.m_parameters.ReadString(), string.Empty);
-      string messageText = routedRpcData.m_parameters.ReadString();
-      routedRpcData.m_parameters.SetPos(0);
-
-      ProcessChatMessage(routedRpcData.m_senderPeerID, playerName, messageType, messageText, targetPosition);
     }
 
     static void ProcessChatMessage(

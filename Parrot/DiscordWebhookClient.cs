@@ -32,6 +32,8 @@ namespace Parrot {
       while (true) {
         NameValueCollection values = await _uploadQueue.Dequeue().ConfigureAwait(continueOnCapturedContext: false);
         _webClient.UploadValues(_webhookUri, values);
+
+        await Task.Delay(millisecondsDelay: 250);
       }
     }
   }
