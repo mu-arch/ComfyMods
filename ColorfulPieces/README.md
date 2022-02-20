@@ -18,12 +18,21 @@
      * Prompt font-size can be configured with the `colorPromptFontSize` setting.
 
 ## Changelog
+
+### 1.6.0
+
+  * Fixed crashes related to the VPO-compatibiity introduced in v1.4.0.
+    * Reverted to original-caching behaviour that uses `WearNTear` instance itself as the key tied to Awake/Destroy.
+    * Moved the SaveMaterialColor/ClearMaterialColor logic to WearNTearData.
+    * Added a cache for Utils.Vector3ToColor() method calls.
+    * Added a cache variable for Utils.ColorToVector3() method calls.
+
 ### 1.5.2
-* Changed how hotkeys are detected from Player.TakeInput() prefix to better Player.Update() transpiler.
-  * This eliminates the double hot-key firing when in debugfly mode.
-* Moved more config-related logic into PluginConfig class.
-* Moved ZDO extensions to a new ZdoExtensions class.
-* Added two new Terminal.ConsoleCommand:
+  * Changed how hotkeys are detected from Player.TakeInput() prefix to better Player.Update() transpiler.
+    * This eliminates the double hot-key firing when in debugfly mode.
+  * Moved more config-related logic into PluginConfig class.
+  * Moved ZDO extensions to a new ZdoExtensions class.
+  * Added two new Terminal.ConsoleCommand:
 
   * /clearcolor <radius> (in chatbox)
   * clearcolor <radius> (in console)
@@ -35,9 +44,9 @@
 
   * These two commands still call the same action as the hotkey and so will obey all ward permissions.
 
-Update:
-  * Fixed a bug where I forgot to check for isModEnabled and showChangeRemoveColorPrompt flags in Hud.UpdateCrosshair() postfix.
-  * Fixed a bug where I forgot to add a yield return null condition in ChangeColorsInRadiusCoroutine().
+  * Update:
+    * Fixed a bug where I forgot to check for isModEnabled and showChangeRemoveColorPrompt flags in Hud.UpdateCrosshair() postfix.
+    * Fixed a bug where I forgot to add a yield return null condition in ChangeColorsInRadiusCoroutine().
 
 ### 1.4.0
 

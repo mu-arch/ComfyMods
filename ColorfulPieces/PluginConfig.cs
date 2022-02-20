@@ -17,6 +17,8 @@ namespace ColorfulPieces {
     public static ConfigEntry<bool> _showChangeRemoveColorPrompt;
     public static ConfigEntry<int> _colorPromptFontSize;
 
+    internal static Vector3 _targetPieceColorAsVec3 = Vector3.zero;
+
     public static void CreateConfig(ConfigFile config) {
       _isModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
@@ -43,6 +45,8 @@ namespace ColorfulPieces {
 
       _targetPieceColor =
           config.Bind("Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
+
+      _targetPieceColorAsVec3 = Utils.ColorToVec3(_targetPieceColor.Value);
 
       _targetPieceColorHex =
           config.Bind(
@@ -76,12 +80,15 @@ namespace ColorfulPieces {
 
       _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
       _targetPieceColor.Value = color;
+      _targetPieceColorAsVec3 = Utils.ColorToVec3(color);
     }
 
     static void UpdateColorValue() {
       if (ColorUtility.TryParseHtmlString(_targetPieceColorHex.Value, out Color color)) {
         color.a = 1.0f;
+
         _targetPieceColor.Value = color;
+        _targetPieceColorAsVec3 = Utils.ColorToVec3(color);
       }
     }
   }

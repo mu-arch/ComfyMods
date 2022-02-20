@@ -5,6 +5,7 @@ using HarmonyLib;
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -18,13 +19,14 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.5.2";
+    public const string PluginVersion = "1.6.0";
 
     static readonly int _pieceColorHashCode = "PieceColor".GetStableHashCode();
     static readonly int _pieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
     static readonly int _pieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
 
-    static readonly Dictionary<ZDOID, WearNTearData> _wearNTearDataCache = new();
+    static readonly Dictionary<WearNTear, WearNTearData> _wearNTearDataCache = new();
+    static readonly ConcurrentDictionary<Vector3, Color> _vectorToColorCache = new();
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -145,11 +147,11 @@ namespace ColorfulPieces {
         return;
       }
 
-      wearNTear.m_nview.m_zdo.Set(_pieceColorHashCode, Utils.ColorToVec3(_targetPieceColor.Value));
+      wearNTear.m_nview.m_zdo.Set(_pieceColorHashCode, _targetPieceColorAsVec3);
       wearNTear.m_nview.m_zdo.Set(_pieceEmissionColorFactorHashCode, _targetPieceEmissionColorFactor.Value);
       wearNTear.m_nview.m_zdo.Set(_pieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
-      if (_wearNTearDataCache.TryGetValue(wearNTear.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
+      if (_wearNTearDataCache.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = _targetPieceColor.Value;
         wearNTearData.TargetEmissionColorFactor = _targetPieceEmissionColorFactor.Value;
 
@@ -181,6 +183,7 @@ namespace ColorfulPieces {
       }
 
       _logger.LogInfo($"Changed color of {changeColorCount} pieces.");
+      _piecesCache.Clear();
     }
 
     static IEnumerator ClearPieceColorCoroutine(GameObject target) {
@@ -199,11 +202,10 @@ namespace ColorfulPieces {
         wearNTear.m_nview.m_zdo.IncreseDataRevision();
       }
 
-      if (_wearNTearDataCache.TryGetValue(wearNTear.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
+      if (_wearNTearDataCache.TryGetValue(wearNTear, out WearNTearData wearNTearData)) {
         wearNTearData.TargetColor = Color.clear;
         wearNTearData.TargetEmissionColorFactor = 0f;
-
-        ClearWearNTearColors(wearNTearData);
+        wearNTearData.ClearMaterialColors();
       }
 
       wearNTear.m_piece?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
@@ -243,7 +245,7 @@ namespace ColorfulPieces {
         return;
       }
 
-      _targetPieceColor.Value = Utils.Vec3ToColor(colorAsVector);
+      _targetPieceColor.Value = _vectorToColorCache.GetOrAdd(colorAsVector, Utils.Vec3ToColor);
       _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(_targetPieceColor.Value)}";
 
       if (wearNTear.m_nview.m_zdo.TryGetFloat(_pieceEmissionColorFactorHashCode, out float factor)) {
@@ -264,23 +266,18 @@ namespace ColorfulPieces {
           return;
         }
 
-        WearNTearData wearNTearData = new(__instance);
-        ClearWearNTearColors(wearNTearData);
+        if (!_wearNTearDataCache.TryGetValue(__instance, out WearNTearData wearNTearData)) {
+          wearNTearData = new(__instance);
+          _wearNTearDataCache[__instance] = wearNTearData;
+        }
 
-        _wearNTearDataCache[__instance.m_nview.m_zdo.m_uid] = wearNTearData;
+        wearNTearData.ClearMaterialColors();
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(WearNTear.OnDestroy))]
       static void WearNTearOnDestroyPrefix(ref WearNTear __instance) {
-        if (__instance?.m_nview
-            && __instance.m_nview.IsValid()
-            && _wearNTearDataCache.TryGetValue(__instance.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)) {
-          wearNTearData.TargetColor = Color.clear;
-          wearNTearData.TargetEmissionColorFactor = 0f;
-
-          ClearWearNTearColors(wearNTearData);
-        }
+        _wearNTearDataCache.Remove(__instance);
       }
 
       [HarmonyPostfix]
@@ -291,13 +288,13 @@ namespace ColorfulPieces {
             || __instance.m_nview.m_zdo == null
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
-            || !_wearNTearDataCache.TryGetValue(__instance.m_nview.m_zdo.m_uid, out WearNTearData wearNTearData)
+            || !_wearNTearDataCache.TryGetValue(__instance, out WearNTearData wearNTearData)
             || wearNTearData.LastDataRevision >= __instance.m_nview.m_zdo.m_dataRevision) {
           return;
         }
 
         if (__instance.m_nview.m_zdo.m_vec3.TryGetValue(_pieceColorHashCode, out Vector3 colorAsVector)) {
-          wearNTearData.TargetColor = Utils.Vec3ToColor(colorAsVector);
+          wearNTearData.TargetColor = _vectorToColorCache.GetOrAdd(colorAsVector, Utils.Vec3ToColor);
 
           if (__instance.m_nview.m_zdo.m_floats != null
               && __instance.m_nview.m_zdo.m_floats.TryGetValue(_pieceEmissionColorFactorHashCode, out float factor)) {
@@ -308,11 +305,30 @@ namespace ColorfulPieces {
         } else if (wearNTearData.TargetColor != Color.clear) {
           wearNTearData.TargetColor = Color.clear;
           wearNTearData.TargetEmissionColorFactor = 0f;
-
-          ClearWearNTearColors(wearNTearData);
+          wearNTearData.ClearMaterialColors();
         }
 
         wearNTearData.LastDataRevision = __instance.m_nview.m_zdo.m_dataRevision;
+      }
+    }
+
+    [HarmonyPatch(typeof(WearNTearUpdater))]
+    class WearNTearUpdaterPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(WearNTearUpdater.Awake))]
+      static void AwakePostfix(ref WearNTearUpdater __instance) {
+        if (_isModEnabled.Value) {
+          __instance.StartCoroutine(LogCacheInfoCoroutine());
+        }
+      }
+
+      static IEnumerator LogCacheInfoCoroutine() {
+        WaitForSeconds waitInterval = new(seconds: 60f);
+
+        while (true) {
+          yield return waitInterval;
+          _logger.LogInfo($"WearNTearData cache size: {_wearNTearDataCache.Count}");
+        }
       }
     }
 
@@ -362,19 +378,6 @@ namespace ColorfulPieces {
         }
 
         material.color = wearNTearData.TargetColor;
-      }
-    }
-
-    static void ClearWearNTearColors(WearNTearData wearNTearData) {
-      foreach (Material material in wearNTearData.Materials) {
-        if (material.HasProperty("_SavedEmissionColor")) {
-          material.SetColor("_EmissionColor", material.GetColor("_SavedEmissionColor"));
-        }
-
-        if (material.HasProperty("_SavedColor")) {
-          material.SetColor("_Color", material.GetColor("_SavedColor"));
-          material.color = material.GetColor("_SavedColor");
-        }
       }
     }
   }
