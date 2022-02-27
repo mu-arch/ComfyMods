@@ -19,8 +19,11 @@ namespace ContentsWithin {
     public const string PluginVersion = "1.0.0";
 
     static ConfigEntry<bool> _isModEnabled;
+    static ConfigEntry<KeyboardShortcut> _toggleShowContentsShortcut;
 
-    static bool _showContainerContent = true;
+    static bool _showContainerContents = true;
+    static bool _isInventoryInUse = false;
+
     static Container _lastHoverContainer = null;
     static GameObject _lastHoverObject = null;
 
@@ -36,6 +39,17 @@ namespace ContentsWithin {
     public void Awake() {
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      _isModEnabled.SettingChanged +=
+          (s, ea) =>
+              Player.m_localPlayer?.StartCoroutine(ToggleShowContainerContents(_isModEnabled.Value));
+
+      _toggleShowContentsShortcut =
+          Config.Bind(
+              "Hotkeys",
+              "toggleShowContentsShortcut",
+              new KeyboardShortcut(KeyCode.P, KeyCode.RightShift),
+              "Shortcut to toggle on/off the 'show container contents' feature.");
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
@@ -45,6 +59,30 @@ namespace ContentsWithin {
 
     [HarmonyPatch(typeof(Player))]
     class PlayerPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Player.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
+                new CodeMatch(OpCodes.Stloc_0))
+            .Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
+            .InstructionEnumeration();
+      }
+
+      static bool TakeInputDelegate(bool takeInputResult) {
+        if (!_isModEnabled.Value || !_toggleShowContentsShortcut.Value.IsDown()) {
+          return takeInputResult;
+        }
+
+        Player.m_localPlayer?.StartCoroutine(ToggleShowContainerContents(!_showContainerContents));
+        return false;
+      }
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Player.UpdateHover))]
       static void UpdateHoverPostfix(ref Player __instance) {
@@ -53,23 +91,41 @@ namespace ContentsWithin {
         }
 
         _lastHoverObject = __instance.m_hovering;
-        Player.m_localPlayer?.StartCoroutine(ToggleShowContainerContents(_lastHoverObject));
+        Player.m_localPlayer?.StartCoroutine(ShowContainerContents(_lastHoverObject));
       }
     }
 
-    static IEnumerator ToggleShowContainerContents(GameObject hoverObject) {
+    static IEnumerator ToggleShowContainerContents(bool toggle) {
+      yield return null;
+
+      _showContainerContents = toggle;
+
+      MessageHud.m_instance.ShowMessage(
+          MessageHud.MessageType.Center, $"ShowContainerContents: {_showContainerContents}");
+
+      if (_showContainerContents) {
+        _isInventoryInUse = _inventoryPanel.activeInHierarchy;
+        yield return ShowContainerContents(Player.m_localPlayer?.m_hovering);
+      } else {
+        if (_containerPanel.activeInHierarchy && !_isInventoryInUse && !_inventoryPanel.activeSelf) {
+          _inventoryGui.Hide();
+        }
+      }
+    }
+
+    static IEnumerator ShowContainerContents(GameObject hoverObject) {
       yield return null;
 
       Container container = hoverObject?.GetComponentInParent<Container>();
       _lastHoverContainer = container;
 
-      if (!_showContainerContent) {
+      if (!_showContainerContents || _isInventoryInUse) {
         yield break;
       }
 
       if (container && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)) {
         _inventoryGui.Show(container);
-      } else if (_containerPanel && _containerPanel.activeSelf) {
+      } else if (_containerPanel.activeSelf) {
         _inventoryGui.Hide();
       }
     }
@@ -90,7 +146,7 @@ namespace ContentsWithin {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(InventoryGui.IsVisible))]
       static void IsVisiblePostfix(ref bool __result) {
-        if (_isModEnabled.Value && _lastHoverContainer && _showContainerContent) {
+        if (_isModEnabled.Value && _lastHoverContainer && _showContainerContents && !_isInventoryInUse) {
           __result = false;
         }
       }
@@ -100,10 +156,10 @@ namespace ContentsWithin {
       [HarmonyAfter(new string[] { "virtuacode.valheim.trashitem" })]
       static void ShowPostfix(ref InventoryGui __instance, ref Container container) {
         if (_isModEnabled.Value) {
-          _inventoryPanel?.SetActive(!_showContainerContent || !container);
+          _inventoryPanel?.SetActive(!_showContainerContents || _isInventoryInUse || !container);
           _craftingPanel?.SetActive(container ? false : true);
           _infoPanel?.SetActive(container ? false : true);
-          _takeAllButton?.SetActive(!_showContainerContent);
+          _takeAllButton?.SetActive(!_showContainerContents || _isInventoryInUse);
         }
       }
 
@@ -135,22 +191,21 @@ namespace ContentsWithin {
           return;
         }
 
-        if (_showContainerContent) {
-          _showContainerContent = false;
+        if (_showContainerContents && !_isInventoryInUse) {
+          _isInventoryInUse = true;
           inventoryGui.Show(_lastHoverContainer);
         } else {
           inventoryGui.Hide();
-          _showContainerContent = true;
+          _isInventoryInUse = false;
         }
       }
 
       static void UpdateShowTranspiler(InventoryGui inventoryGui, Container container) {
-        if (_isModEnabled.Value && _showContainerContent) {
-          _showContainerContent = false;
+        if (_isModEnabled.Value) {
+          _isInventoryInUse = true;
         }
 
         inventoryGui.Show(container);
-        InventoryGui.m_instance.m_takeAllButton.gameObject.SetActive(true);
       }
 
       [HarmonyTranspiler]
@@ -171,7 +226,7 @@ namespace ContentsWithin {
       }
 
       static bool UpdateContainerIsOwnerDelegate(Container container) {
-        if (_isModEnabled.Value && _showContainerContent) {
+        if (_isModEnabled.Value && _showContainerContents && !_isInventoryInUse) {
           return true;
         }
         
@@ -184,7 +239,7 @@ namespace ContentsWithin {
       [HarmonyPrefix]
       [HarmonyPatch(nameof(Container.SetInUse))]
       static bool SetInUsePrefix() {
-        if (_isModEnabled.Value && _lastHoverContainer && _showContainerContent) {
+        if (_isModEnabled.Value && _lastHoverContainer && _showContainerContents && !_isInventoryInUse) {
           return false;
         }
 
