@@ -24,10 +24,12 @@ namespace ContentsWithin {
     static Container _lastHoverContainer = null;
     static GameObject _lastHoverObject = null;
 
+    static InventoryGui _inventoryGui;
     static GameObject _inventoryPanel;
     static GameObject _containerPanel;
     static GameObject _infoPanel;
     static GameObject _craftingPanel;
+    static GameObject _takeAllButton;
 
     Harmony _harmony;
 
@@ -65,12 +67,10 @@ namespace ContentsWithin {
         yield break;
       }
 
-      if (container
-          && container.m_checkGuardStone
-          && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)) {
-        InventoryGui.m_instance.Show(container);
+      if (container && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)) {
+        _inventoryGui.Show(container);
       } else if (_containerPanel && _containerPanel.activeSelf) {
-        InventoryGui.m_instance.Hide();
+        _inventoryGui.Hide();
       }
     }
 
@@ -79,10 +79,12 @@ namespace ContentsWithin {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(InventoryGui.Awake))]
       static void AwakePostfix(ref InventoryGui __instance) {
+        _inventoryGui = __instance;
         _inventoryPanel = __instance.m_player?.gameObject;
         _containerPanel = __instance.m_container?.gameObject;
         _infoPanel = __instance.m_infoPanel?.gameObject;
         _craftingPanel = __instance.m_inventoryRoot.Find("Crafting")?.gameObject;
+        _takeAllButton = __instance.m_takeAllButton?.gameObject;
       }
 
       [HarmonyPostfix]
@@ -101,6 +103,7 @@ namespace ContentsWithin {
           _inventoryPanel?.SetActive(!_showContainerContent || !container);
           _craftingPanel?.SetActive(container ? false : true);
           _infoPanel?.SetActive(container ? false : true);
+          _takeAllButton?.SetActive(!_showContainerContent);
         }
       }
 
@@ -147,6 +150,7 @@ namespace ContentsWithin {
         }
 
         inventoryGui.Show(container);
+        InventoryGui.m_instance.m_takeAllButton.gameObject.SetActive(true);
       }
 
       [HarmonyTranspiler]
