@@ -136,7 +136,6 @@ namespace ContentsWithin {
           _showContainerContent = false;
           inventoryGui.Show(_lastHoverContainer);
         } else {
-          _showContainerContent = true;
           inventoryGui.Hide();
           _showContainerContent = true;
         }
