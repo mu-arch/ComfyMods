@@ -107,7 +107,7 @@ namespace ContentsWithin {
         _isInventoryInUse = _inventoryPanel.activeInHierarchy;
         yield return ShowContainerContents(Player.m_localPlayer?.m_hovering);
       } else {
-        if (_containerPanel.activeInHierarchy && !_isInventoryInUse && !_inventoryPanel.activeSelf) {
+        if (_containerPanel.activeInHierarchy && !_isInventoryInUse && !_inventoryPanel.activeInHierarchy) {
           _inventoryGui.Hide();
         }
       }
@@ -118,6 +118,8 @@ namespace ContentsWithin {
 
       Container container = hoverObject?.GetComponentInParent<Container>();
       _lastHoverContainer = container;
+
+      ZLog.Log($"_showContainerContents: {_showContainerContents}, _isInventoryInuse: {_isInventoryInUse}, _lastHoverContainer: {_lastHoverContainer?.name}");
 
       if (!_showContainerContents || _isInventoryInUse) {
         yield break;
@@ -191,9 +193,13 @@ namespace ContentsWithin {
           return;
         }
 
-        if (_showContainerContents && !_isInventoryInUse) {
-          _isInventoryInUse = true;
-          inventoryGui.Show(_lastHoverContainer);
+        if (_showContainerContents && !_isInventoryInUse && _lastHoverContainer) {
+          if (_lastHoverContainer.IsOwner()) {
+            _isInventoryInUse = true;
+            inventoryGui.Show(_lastHoverContainer);
+          } else {
+            _lastHoverContainer.Interact(Player.m_localPlayer, false, false);
+          }
         } else {
           inventoryGui.Hide();
           _isInventoryInUse = false;
@@ -244,6 +250,14 @@ namespace ContentsWithin {
         }
 
         return true;
+      }
+
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(Container.RPC_OpenRespons))]
+      static void RpcOpenResponse(ref bool granted) {
+        if (_isModEnabled.Value && Player.m_localPlayer) {
+          _isInventoryInUse = granted;
+        }
       }
     }
   }
