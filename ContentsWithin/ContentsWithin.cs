@@ -138,6 +138,7 @@ namespace ContentsWithin {
         } else {
           _showContainerContent = true;
           inventoryGui.Hide();
+          _showContainerContent = true;
         }
       }
 
