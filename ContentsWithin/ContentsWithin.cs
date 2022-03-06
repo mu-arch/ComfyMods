@@ -40,8 +40,7 @@ namespace ContentsWithin {
       _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       _isModEnabled.SettingChanged +=
-          (s, ea) =>
-              Player.m_localPlayer?.StartCoroutine(ToggleShowContainerContents(_isModEnabled.Value));
+          (_, _) => Player.m_localPlayer.Ref()?.StartCoroutine(ToggleShowContainerContents(_isModEnabled.Value));
 
       _toggleShowContentsShortcut =
           Config.Bind(
@@ -79,7 +78,7 @@ namespace ContentsWithin {
           return takeInputResult;
         }
 
-        Player.m_localPlayer?.StartCoroutine(ToggleShowContainerContents(!_showContainerContents));
+        Player.m_localPlayer.Ref()?.StartCoroutine(ToggleShowContainerContents(!_showContainerContents));
         return false;
       }
 
@@ -91,7 +90,7 @@ namespace ContentsWithin {
         }
 
         _lastHoverObject = __instance.m_hovering;
-        Player.m_localPlayer?.StartCoroutine(ShowContainerContents(_lastHoverObject));
+        Player.m_localPlayer.Ref()?.StartCoroutine(ShowContainerContents(_lastHoverObject));
       }
     }
 
@@ -116,10 +115,9 @@ namespace ContentsWithin {
     static IEnumerator ShowContainerContents(GameObject hoverObject) {
       yield return null;
 
-      Container container = hoverObject?.GetComponentInParent<Container>();
+      Container container = hoverObject.Ref()?.GetComponentInParent<Container>();
       _lastHoverContainer = container;
 
-      ZLog.Log($"_showContainerContents: {_showContainerContents}, _isInventoryInuse: {_isInventoryInUse}, _lastHoverContainer: {_lastHoverContainer?.name}");
 
       if (!_showContainerContents || _isInventoryInUse) {
         yield break;
@@ -127,7 +125,7 @@ namespace ContentsWithin {
 
       if (container && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)) {
         _inventoryGui.Show(container);
-      } else if (_containerPanel.activeSelf) {
+      } else if (_containerPanel && _containerPanel.activeSelf) {
         _inventoryGui.Hide();
       }
     }
@@ -138,11 +136,11 @@ namespace ContentsWithin {
       [HarmonyPatch(nameof(InventoryGui.Awake))]
       static void AwakePostfix(ref InventoryGui __instance) {
         _inventoryGui = __instance;
-        _inventoryPanel = __instance.m_player?.gameObject;
-        _containerPanel = __instance.m_container?.gameObject;
-        _infoPanel = __instance.m_infoPanel?.gameObject;
-        _craftingPanel = __instance.m_inventoryRoot.Find("Crafting")?.gameObject;
-        _takeAllButton = __instance.m_takeAllButton?.gameObject;
+        _inventoryPanel = __instance.m_player.Ref()?.gameObject;
+        _containerPanel = __instance.m_container.Ref()?.gameObject;
+        _infoPanel = __instance.m_infoPanel.Ref()?.gameObject;
+        _craftingPanel = __instance.m_inventoryRoot.Find("Crafting").Ref()?.gameObject;
+        _takeAllButton = __instance.m_takeAllButton.Ref()?.gameObject;
       }
 
       [HarmonyPostfix]
@@ -155,13 +153,12 @@ namespace ContentsWithin {
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(InventoryGui.Show))]
-      [HarmonyAfter(new string[] { "virtuacode.valheim.trashitem" })]
       static void ShowPostfix(ref InventoryGui __instance, ref Container container) {
         if (_isModEnabled.Value) {
-          _inventoryPanel?.SetActive(!_showContainerContents || _isInventoryInUse || !container);
-          _craftingPanel?.SetActive(container ? false : true);
-          _infoPanel?.SetActive(container ? false : true);
-          _takeAllButton?.SetActive(!_showContainerContents || _isInventoryInUse);
+          _inventoryPanel.Ref()?.SetActive(!_showContainerContents || _isInventoryInUse || !container);
+          _craftingPanel.Ref()?.SetActive(container ? false : true);
+          _infoPanel.Ref()?.SetActive(container ? false : true);
+          _takeAllButton.Ref()?.SetActive(!_showContainerContents || _isInventoryInUse);
         }
       }
 
@@ -235,7 +232,7 @@ namespace ContentsWithin {
         if (_isModEnabled.Value && _showContainerContents && !_isInventoryInUse) {
           return true;
         }
-        
+
         return container.IsOwner();
       }
     }
@@ -259,6 +256,12 @@ namespace ContentsWithin {
           _isInventoryInUse = granted;
         }
       }
+    }
+  }
+
+  public static class ObjectExtensions {
+    public static T Ref<T>(this T o) where T : UnityEngine.Object {
+      return o ? o : null;
     }
   }
 }
