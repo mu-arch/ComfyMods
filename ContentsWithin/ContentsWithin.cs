@@ -16,7 +16,7 @@ namespace ContentsWithin {
   public class ContentsWithin : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.contentswithin";
     public const string PluginName = "ContentsWithin";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.0.1";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<KeyboardShortcut> _toggleShowContentsShortcut;
@@ -123,7 +123,9 @@ namespace ContentsWithin {
         yield break;
       }
 
-      if (container && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)) {
+      if (container
+          && PrivateArea.CheckAccess(container.transform.position, 0f, false, false)
+          && container.CheckAccess(Game.m_instance.m_playerProfile.m_playerID)) {
         _inventoryGui.Show(container);
       } else if (_containerPanel && _containerPanel.activeSelf) {
         _inventoryGui.Hide();

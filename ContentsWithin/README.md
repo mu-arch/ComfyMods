@@ -11,7 +11,7 @@
 ### Thunderstore (manual install)
 
   * **Uninstall** any older versions of `ContentsWithin`.
-  * Go to Settings > Import local mod > Select `ContentsWithin_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ContentsWithin_v1.0.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -31,6 +31,10 @@
     take a moment to activate.
 
 ## Changelog
+
+### 1.0.1
+
+  * Add a check for the `Container.CheckAccess()` during hover.
 
 ### 1.0.0
 
