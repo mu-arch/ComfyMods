@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 using UnityEngine;
 
@@ -19,7 +20,11 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.6.0";
+    public const string PluginVersion = "1.7.0";
+
+    static readonly int _fireplaceColorHashCode = "FireplaceColor".GetStableHashCode();
+    static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
+    static readonly int _lightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
 
     static ManualLogSource _logger;
     static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
@@ -72,12 +77,84 @@ namespace ColorfulLights {
       return false;
     }
 
+    [HarmonyPatch(typeof(Player))]
+    class PlayerPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Player.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
+                new CodeMatch(OpCodes.Stloc_0))
+            .Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
+            .InstructionEnumeration();
+      }
+
+      static GameObject _hoverObject;
+
+      static bool TakeInputDelegate(bool takeInputResult) {
+        if (!IsModEnabled.Value) {
+          return takeInputResult;
+        }
+
+        _hoverObject = Player.m_localPlayer.Ref()?.m_hovering;
+
+        if (!_hoverObject) {
+          return takeInputResult;
+        }
+
+        if (ChangeColorActionShortcut.Value.IsDown()) {
+          Player.m_localPlayer.StartCoroutine(ChangeFireplaceColorCoroutine(_hoverObject));
+          return false;
+        }
+
+        return takeInputResult;
+      }
+    }
+
+    static IEnumerator ChangeFireplaceColorCoroutine(GameObject target) {
+      yield return null;
+
+      Fireplace targetFireplace = target.Ref()?.GetComponentInParent<Fireplace>();
+
+      if (!targetFireplace) {
+        yield break;
+      }
+
+      if (!targetFireplace.m_nview || !targetFireplace.m_nview.IsValid()) {
+        _logger.LogWarning("Fireplace does not have a valid ZNetView.");
+        yield break;
+      }
+
+      if (!PrivateArea.CheckAccess(targetFireplace.transform.position, radius: 0f, flash: true, wardCheck: false)) {
+        _logger.LogWarning("Fireplace is within private area with no access.");
+        yield break;
+      }
+
+      targetFireplace.m_nview.ClaimOwnership();
+
+      targetFireplace.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(TargetFireplaceColor.Value));
+      targetFireplace.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, TargetFireplaceColor.Value.a);
+      targetFireplace.m_nview.m_zdo.Set(_lightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+
+      targetFireplace.m_fuelAddedEffects?.Create(
+          targetFireplace.transform.position, targetFireplace.transform.rotation);
+
+      if (TryGetFireplace(targetFireplace, out FireplaceData fireplaceData)) {
+        SetParticleColors(
+            fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, TargetFireplaceColor.Value);
+
+        fireplaceData.TargetColor = TargetFireplaceColor.Value;
+      }
+    }
+
     [HarmonyPatch(typeof(Fireplace))]
     class FireplacePatch {
-      static readonly int _fuelHashCode = "fuel".GetStableHashCode();
-      static readonly int _fireplaceColorHashCode = "FireplaceColor".GetStableHashCode();
-      static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
-      static readonly int _lightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
+
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Fireplace.Awake))]
@@ -120,92 +197,34 @@ namespace ColorfulLights {
                           ColorPromptFontSize.Value));
       }
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(Fireplace.Interact))]
-      static bool FireplaceInteractPrefix(ref Fireplace __instance, ref bool __result, bool hold) {
-        if (!IsModEnabled.Value || hold || !ChangeColorActionShortcut.Value.IsDown()) {
-          return true;
-        }
-
-        if (!__instance.m_nview && !__instance.m_nview.IsValid()) {
-          _logger.LogWarning("Fireplace does not have a valid ZNetView.");
-
-          __result = false;
-          return false;
-        }
-
-        if (!PrivateArea.CheckAccess(__instance.transform.position, radius: 0f, flash: true, wardCheck: false)) {
-          _logger.LogWarning("Fireplace is within a private area.");
-
-          __result = false;
-          return false;
-        }
-
-        if (!__instance.m_nview.IsOwner()) {
-          __instance.m_nview.ClaimOwnership();
-        }
-
-        __instance.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(TargetFireplaceColor.Value));
-        __instance.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, TargetFireplaceColor.Value.a);
-        __instance.m_nview.m_zdo.Set(_lightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
-
-        __instance.m_fuelAddedEffects.Create(__instance.transform.position, __instance.transform.rotation);
-
-        if (TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
-          SetParticleColors(
-              fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, TargetFireplaceColor.Value);
-
-          fireplaceData.TargetColor = TargetFireplaceColor.Value;
-        }
-
-        __result = true;
-        return false;
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Fireplace.UseItem))]
+      static IEnumerable<CodeInstruction> UseItemTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Call, typeof(Component).GetProperty(nameof(transform))),
+                new CodeMatch(OpCodes.Callvirt, typeof(Transform).GetProperty(nameof(Transform.position))),
+                new CodeMatch(OpCodes.Call, typeof(Quaternion).GetProperty(nameof(Quaternion.identity))),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, typeof(Fireplace).GetField(nameof(Fireplace.m_fireworks))),
+                new CodeMatch(OpCodes.Callvirt, typeof(ZNetScene).GetMethod(nameof(ZNetScene.SpawnObject))))
+            .Advance(offset: 3)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(
+                Transpilers.EmitDelegate<Func<Quaternion, Fireplace, Quaternion>>(SpawnObjectQuaternionDelegate))
+            .InstructionEnumeration();
       }
 
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(Fireplace.UseItem))]
-      static bool FireplaceUseItemPrefix(
-          ref Fireplace __instance, ref bool __result, Humanoid user, ItemDrop.ItemData item) {
-        if (!IsModEnabled.Value
-            || !__instance.m_fireworks
-            || item.m_shared.m_name != __instance.m_fireworkItem.m_itemData.m_shared.m_name
-            || !TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
-          return true;
+      static Quaternion SpawnObjectQuaternionDelegate(Quaternion rotation, Fireplace fireplace) {
+        if (IsModEnabled.Value && TryGetFireplace(fireplace, out FireplaceData fireplaceData)) {
+          rotation = fireplace.transform.rotation;
+          rotation.x = fireplaceData.TargetColor.r;
+          rotation.y = fireplaceData.TargetColor.g;
+          rotation.z = fireplaceData.TargetColor.b;
         }
 
-        if (!__instance.IsBurning()) {
-          user.Message(MessageHud.MessageType.Center, "$msg_firenotburning");
-
-          __result = true;
-          return false;
-        }
-
-        if (user.GetInventory().CountItems(item.m_shared.m_name) < __instance.m_fireworkItems) {
-          user.Message(MessageHud.MessageType.Center, $"$msg_toofew {item.m_shared.m_name}");
-
-          __result = true;
-          return false;
-        }
-
-        user.GetInventory().RemoveItem(item.m_shared.m_name, __instance.m_fireworkItems);
-        user.Message(
-            MessageHud.MessageType.Center, Localization.instance.Localize("$msg_throwinfire", item.m_shared.m_name));
-
-        SetParticleColors(
-            fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, fireplaceData.TargetColor);
-
-        Quaternion colorToRotation = __instance.transform.rotation;
-        colorToRotation.x = fireplaceData.TargetColor.r;
-        colorToRotation.y = fireplaceData.TargetColor.g;
-        colorToRotation.z = fireplaceData.TargetColor.b;
-
-        _logger.LogInfo($"Sending fireworks to spawn with color: {fireplaceData.TargetColor}");
-        ZNetScene.instance.SpawnObject(__instance.transform.position, colorToRotation, __instance.m_fireworks);
-
-        __instance.m_fuelAddedEffects.Create(__instance.transform.position, __instance.transform.rotation);
-
-        __result = true;
-        return false;
+        return rotation;
       }
 
       [HarmonyPostfix]
@@ -285,6 +304,12 @@ namespace ColorfulLights {
       foreach (Light light in lights) {
         light.color = targetColor;
       }
+    }
+  }
+
+  public static class ObjectExtensions {
+    public static T Ref<T>(this T o) where T : UnityEngine.Object {
+      return o ? o : null;
     }
   }
 }
