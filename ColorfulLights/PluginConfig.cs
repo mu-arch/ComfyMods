@@ -12,8 +12,6 @@ namespace ColorfulLights {
     public static ConfigEntry<Color> TargetFireplaceColor { get; private set; }
     public static ConfigEntry<string> TargetFireplaceColorHex { get; private set; }
 
-    public static ConfigEntry<bool> ClearExistingFireplaceColor { get; private set; }
-
     public static ConfigEntry<bool> ShowChangeColorHoverText { get; private set; }
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
@@ -36,13 +34,6 @@ namespace ColorfulLights {
               "targetFireplaceColorHex",
               $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
               "Target color to set torch/fire to, in HTML hex-form.");
-
-      ClearExistingFireplaceColor =
-          config.Bind(
-              "Color",
-              "clearExistingFireplaceColor",
-              false,
-              "If set, will clear any existing color for the hovered torch/fire when using the hotkey.");
 
       TargetFireplaceColor.SettingChanged += UpdateColorHexValue;
       TargetFireplaceColorHex.SettingChanged += UpdateColorValue;

@@ -16,6 +16,11 @@
 
 ## Changelog
 
+### 1.6.0
+
+  * Move action check from `Fireplace.Interact()` prefix to Player.TakeInput() transpiler delegate.
+  * Convert spawn colored fireworks code from `Fireplace.UseItem()` prefix to a transpiler.
+
 ### 1.5.0
 
   * Added an option to change the font-size for the text prompt on hover.
