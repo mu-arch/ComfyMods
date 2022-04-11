@@ -1,0 +1,8 @@
+﻿{
+    "name": "ColorfulLights",
+    "version_number": "1.6.0",
+    "author": "ComfyMods",
+    "description": "Color any torch, firepit, stone hearth and bonfire using RGB and HTML color codes.",
+    "website_url": "https://github.com/redseiko/ComfyMods/tree/main/ColorfulLights",
+    "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1900" ]
+}
