@@ -145,7 +145,7 @@ namespace Chatter {
           messageText.transform.SetParent(_chatMessages.transform, worldPositionStays: false);
           messageText.name = "ChatPanel.Message.Text";
 
-          _chatPanelScroll.verticalNormalizedPosition = 0f;
+          // _chatPanelScroll.verticalNormalizedPosition = 0f;
         }
       }
 
@@ -175,6 +175,17 @@ namespace Chatter {
         layout.preferredWidth = _maxWidth;
 
         return prefab;
+      }
+    }
+
+    [HarmonyPatch(typeof(Terminal))]
+    class TerminalPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Terminal.SendInput))]
+      static void SendInputPostfix(ref Terminal __instance) {
+        if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanelScroll) {
+          _chatPanelScroll.verticalNormalizedPosition = 0f;
+        }
       }
     }
   }
