@@ -61,6 +61,7 @@ namespace Chatter {
       static void HidePostfix() {
         if (IsModEnabled.Value && _chatPanel && _chatPanel.activeSelf) {
           _chatPanel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
+          _chatPanelScroll.verticalNormalizedPosition = 0f;
           Chat.m_instance.m_hideDelay = 8;
         }
       }
@@ -115,7 +116,7 @@ namespace Chatter {
         _maxWidth = _chatPanelSize.x - 20f;
 
         RectMask2D panelRectMask = _chatPanel.AddComponent<RectMask2D>();
-        panelRectMask.softness = new(25, 25);
+        panelRectMask.softness = new(20, 20);
 
         _chatViewport = new("ChatPanel.Viewport", typeof(RectTransform));
         _chatViewport.transform.SetParent(_chatPanel.transform, worldPositionStays: false);
@@ -238,7 +239,7 @@ namespace Chatter {
         rowLayoutGroup.childForceExpandWidth = false;
         rowLayoutGroup.childForceExpandHeight = false;
         rowLayoutGroup.padding = new(0, 0, 0, 0);
-        rowLayoutGroup.spacing = 0f;
+        rowLayoutGroup.spacing = 5f;
 
         ContentSizeFitter rowFitter = row.AddComponent<ContentSizeFitter>();
         rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -262,6 +263,7 @@ namespace Chatter {
         headerLayoutGroup.childControlHeight = true;
         headerLayoutGroup.childForceExpandWidth = false;
         headerLayoutGroup.childForceExpandHeight = false;
+        headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: -5); // Balance out the row spacing.
 
         GameObject username = Instantiate(_textPrefab);
         username.name = "Username";
