@@ -24,7 +24,7 @@ namespace Chatter {
     public void Awake() {
       BindConfig(Config);
 
-      IsModEnabled.SettingChanged += (s, ea) => ToggleChat(IsModEnabled.Value);
+      IsModEnabled.SettingChanged += (s, ea) => ToggleChatPanel(IsModEnabled.Value);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -36,22 +36,18 @@ namespace Chatter {
     static readonly List<ChatMessage> MessageHistory = new();
     static readonly CircularQueue<GameObject> MessageRows = new(50, row => Destroy(row));
 
-    static GameObject _chatPanel;
-    static GameObject _chatViewport;
-    static GameObject _chatMessages;
-    static GameObject _textPrefab;
-
     static Vector2 _chatPanelSize;
-    static ScrollRect _chatPanelScroll;
     static float _maxWidth = 0f;
+
+    static ChatPanel _chatPanel;
 
     [HarmonyPatch(typeof(Menu))]
     class MenuPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
-        if (IsModEnabled.Value && _chatPanel && _chatPanel.activeSelf) {
-          _chatPanel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize + new Vector2(0, 400f);
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize + new Vector2(0, 400f);
           Chat.m_instance.m_hideDelay = 600;
         }
       }
@@ -59,26 +55,31 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
-        if (IsModEnabled.Value && _chatPanel && _chatPanel.activeSelf) {
-          _chatPanel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
-          _chatPanelScroll.verticalNormalizedPosition = 0f;
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
+          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
           Chat.m_instance.m_hideDelay = 8;
         }
       }
     }
 
-    static void ToggleChat(bool toggle) {
-      if (Chat.m_instance) {
-        Chat.m_instance.m_output.gameObject.SetActive(!toggle);
-        Chat.m_instance.m_chatWindow.GetComponent<RectMask2D>().enabled = !toggle;
+    static void ToggleChatPanel(bool toggle) {
+      if (!Chat.m_instance) {
+        return;
       }
 
-      if (toggle && !_chatPanel) {
-        ChatPatch.CreateChatPanel(ref Chat.m_instance);
-      }
+      Chat.m_instance.m_chatWindow.GetComponent<RectMask2D>().enabled = !toggle;
+      Chat.m_instance.m_output.gameObject.SetActive(!toggle);
 
-      if (_chatPanel) {
-        _chatPanel.SetActive(toggle);
+      _chatPanel ??= new(Chat.m_instance.m_chatWindow.transform, Chat.m_instance.m_output);
+      _chatPanel.Panel.SetActive(toggle);
+
+      if (toggle) {
+        _chatPanelSize = Chat.m_instance.m_chatWindow.sizeDelta;
+        _chatPanelSize.x -= 30f;
+
+        _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
+        _maxWidth = _chatPanelSize.x - 50f;
       }
     }
 
@@ -92,73 +93,10 @@ namespace Chatter {
         }
 
         __instance.m_maxVisibleBufferLength = 80;
-        __instance.m_hideDelay = 8; //600;
+        __instance.m_hideDelay = 600;
         __instance.m_chatWindow.SetAsFirstSibling();
-        //__instance.m_chatWindow.GetComponent<RectMask2D>().enabled = false;
-        //__instance.m_output.gameObject.SetActive(false);
 
-        ToggleChat(IsModEnabled.Value);
-      }
-
-      public static void CreateChatPanel(ref Chat __instance) {
-        _chatPanel = new("ChatPanel", typeof(RectTransform));
-        _chatPanel.transform.SetParent(__instance.m_chatWindow.transform, worldPositionStays: false);
-
-        RectTransform panelRectTransform = _chatPanel.GetComponent<RectTransform>();
-        panelRectTransform.anchorMin = Vector2.zero;
-        panelRectTransform.anchorMax = Vector2.zero;
-        panelRectTransform.pivot = Vector2.zero;
-        panelRectTransform.anchoredPosition = new Vector2(0f, 30f);
-
-        _chatPanelSize = __instance.m_chatWindow.sizeDelta;
-        _chatPanelSize.x -= 30f;
-        panelRectTransform.sizeDelta = _chatPanelSize;
-        _maxWidth = _chatPanelSize.x - 20f;
-
-        RectMask2D panelRectMask = _chatPanel.AddComponent<RectMask2D>();
-        panelRectMask.softness = new(20, 20);
-
-        _chatViewport = new("ChatPanel.Viewport", typeof(RectTransform));
-        _chatViewport.transform.SetParent(_chatPanel.transform, worldPositionStays: false);
-
-        RectTransform viewportRectTransform = _chatViewport.GetComponent<RectTransform>();
-        viewportRectTransform.anchorMin = Vector2.zero;
-        viewportRectTransform.anchorMax = new(1f, 0f);
-        viewportRectTransform.pivot = Vector2.zero;
-        viewportRectTransform.anchoredPosition = Vector2.zero;
-
-        _chatMessages = new("ChatPanel.Content", typeof(RectTransform));
-        _chatMessages.transform.SetParent(_chatViewport.transform, worldPositionStays: false);
-
-        RectTransform messagesRectTransform = _chatMessages.GetComponent<RectTransform>();
-        messagesRectTransform.anchorMin = Vector2.zero;
-        messagesRectTransform.anchorMax = new(1f, 0f);
-        messagesRectTransform.pivot = Vector2.zero;
-        messagesRectTransform.anchoredPosition = Vector2.zero;
-
-        Image messagesImage = _chatMessages.AddComponent<Image>();
-        messagesImage.color = Color.clear;
-
-        VerticalLayoutGroup messagesLayoutGroup = _chatMessages.AddComponent<VerticalLayoutGroup>();
-        messagesLayoutGroup.childControlWidth = true;
-        messagesLayoutGroup.childControlHeight = true;
-        messagesLayoutGroup.childForceExpandWidth = false;
-        messagesLayoutGroup.childForceExpandHeight = false;
-        messagesLayoutGroup.spacing = 8f;
-        messagesLayoutGroup.padding = new(10, 10, 10, 10);
-
-        ContentSizeFitter messagesFitter = _chatMessages.AddComponent<ContentSizeFitter>();
-        messagesFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        messagesFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        _chatPanelScroll = _chatPanel.AddComponent<ScrollRect>();
-        _chatPanelScroll.content = messagesRectTransform;
-        _chatPanelScroll.viewport = viewportRectTransform;
-        _chatPanelScroll.horizontal = false;
-        _chatPanelScroll.vertical = true;
-        _chatPanelScroll.scrollSensitivity = 30f;
-
-        _textPrefab = CreateTextPrefab(__instance.m_output);
+        ToggleChatPanel(IsModEnabled.Value);
       }
 
       static GameObject CreateTextPrefab(Text sourceText) {
@@ -199,11 +137,11 @@ namespace Chatter {
 
         if (_lastMessage?.SenderId != message.SenderId || _lastMessage?.Type != message.Type) {
           GameObject divider = CreateDivider();
-          divider.transform.SetParent(_chatMessages.transform, worldPositionStays: false);
+          divider.transform.SetParent(_chatPanel.Content.transform, worldPositionStays: false);
           MessageRows.Enqueue(divider);
 
           GameObject messageRow = CreateChatMessageRow(message);
-          messageRow.transform.SetParent(_chatMessages.transform, worldPositionStays: false);
+          messageRow.transform.SetParent(_chatPanel.Content.transform, worldPositionStays: false);
           MessageRows.Enqueue(messageRow);
 
           _lastMessage = message;
@@ -265,7 +203,7 @@ namespace Chatter {
         headerLayoutGroup.childForceExpandHeight = false;
         headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: -5); // Balance out the row spacing.
 
-        GameObject username = Instantiate(_textPrefab);
+        GameObject username = Instantiate(_chatPanel.TextPrefab.gameObject);
         username.name = "Username";
         username.transform.SetParent(header.transform, worldPositionStays: false);
         username.GetComponent<Text>().text = message.User;
@@ -278,7 +216,7 @@ namespace Chatter {
 
         spacer.AddComponent<LayoutElement>().flexibleWidth = 1f;
 
-        GameObject timestamp = Instantiate(_textPrefab);
+        GameObject timestamp = Instantiate(_chatPanel.TextPrefab.gameObject);
         timestamp.name = "Timestamp";
         timestamp.transform.SetParent(header.transform, worldPositionStays: false);
         timestamp.GetComponent<Text>().text = message.Timestamp.ToShortTimeString();
@@ -290,27 +228,23 @@ namespace Chatter {
       }
 
       static GameObject CreateChatMessageText(ChatMessage message) {
-        GameObject prefab = Instantiate(_textPrefab);
+        GameObject prefab = Instantiate(_chatPanel.TextPrefab.gameObject);
         Text text = prefab.GetComponent<Text>();
 
         switch (message.Type) {
           case Talker.Type.Normal:
-            //text.text = $"{message.User} > {message.Text}";
             text.text = $"{message.Text}";
             break;
 
           case Talker.Type.Shout:
-            //text.text = $"{message.User} > <color=yellow>{message.Text}</color>";
             text.text = $"<color=yellow>{message.Text}</color>";
             break;
 
           case Talker.Type.Whisper:
-            //text.text = $"{message.User} > <color=purple>{message.Text}</color>";
             text.text = $"<color=purple>{message.Text}</color>";
             break;
 
           case Talker.Type.Ping:
-            //text.text = $"{message.User} > Ping! <color=cyan>{message.Position}</color>";
             text.text = $"Ping! <color=cyan>{message.Position}</color>";
             break;
         }
@@ -327,8 +261,8 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Terminal.SendInput))]
       static void SendInputPostfix(ref Terminal __instance) {
-        if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanelScroll) {
-          _chatPanelScroll.verticalNormalizedPosition = 0f;
+        if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanel?.ScrollRect) {
+          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
         }
       }
     }
