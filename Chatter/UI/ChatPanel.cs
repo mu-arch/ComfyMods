@@ -28,7 +28,7 @@ namespace Chatter {
       panelRectTransform.anchoredPosition = Vector2.zero;
 
       RectMask2D panelRectMask = panel.AddComponent<RectMask2D>();
-      panelRectMask.softness = new(50, 50);
+      panelRectMask.softness = new(25, 25);
 
       return panel;
     }

@@ -78,8 +78,11 @@ namespace Chatter {
         _chatPanelSize = Chat.m_instance.m_chatWindow.sizeDelta;
         _chatPanelSize.x -= 30f;
 
-        _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
-        _maxWidth = _chatPanelSize.x - 50f;
+        RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
+        panelRectTransform.sizeDelta = _chatPanelSize;
+        panelRectTransform.anchoredPosition = new(0, 30f);
+
+        _maxWidth = _chatPanelSize.x;
       }
     }
 
@@ -97,22 +100,6 @@ namespace Chatter {
         __instance.m_chatWindow.SetAsFirstSibling();
 
         ToggleChatPanel(IsModEnabled.Value);
-      }
-
-      static GameObject CreateTextPrefab(Text sourceText) {
-        GameObject textPrefab = new("Text", typeof(RectTransform));
-
-        Text text = textPrefab.AddComponent<Text>();
-        text.font = sourceText.font;
-        text.fontSize = sourceText.fontSize;
-
-        if (sourceText.TryGetComponent(out Outline sourceOutline)) {
-          Outline outline = textPrefab.AddComponent<Outline>();
-          outline.effectColor = sourceOutline.effectColor;
-          outline.effectDistance = sourceOutline.effectDistance;
-        }
-
-        return textPrefab;
       }
 
       static ChatMessage _lastMessage = null;
@@ -250,7 +237,7 @@ namespace Chatter {
         }
 
         LayoutElement layout = prefab.AddComponent<LayoutElement>();
-        layout.preferredWidth = _maxWidth;
+        layout.preferredWidth = _chatPanelSize.x - 20f;
 
         return prefab;
       }
