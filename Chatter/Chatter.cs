@@ -86,6 +86,9 @@ namespace Chatter {
       }
     }
 
+    static ChatMessage _lastMessage = null;
+    static GameObject _lastMessageRow;
+
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
       [HarmonyPostfix]
@@ -101,9 +104,6 @@ namespace Chatter {
 
         ToggleChatPanel(IsModEnabled.Value);
       }
-
-      static ChatMessage _lastMessage = null;
-      static GameObject _lastMessageRow;
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
@@ -122,38 +122,40 @@ namespace Chatter {
           return;
         }
 
-        if (_lastMessage?.SenderId != message.SenderId || _lastMessage?.Type != message.Type) {
-          GameObject divider = CreateDivider();
-          divider.transform.SetParent(_chatPanel.Content.transform, worldPositionStays: false);
+        if (_lastMessage == null
+            || _lastMessage.SenderId != message.SenderId
+            || _lastMessage.Type != message.Type
+            || !_lastMessageRow) {
+          GameObject divider = CreateDivider(_chatPanel.Content.transform);
           MessageRows.Enqueue(divider);
 
           GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
           _chatPanel.CreateChatMessageRowHeader(row.transform, message);
-          _chatPanel.CreateChatMessageRowBody(row.transform, ChatPanel.GetMessageText(message));
 
           MessageRows.Enqueue(row);
 
-          _lastMessage = message;
           _lastMessageRow = row;
-        } else if (_lastMessageRow) {
-          _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
+          _lastMessage = message;
         }
+
+        _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
       }
+    }
 
-      static GameObject CreateDivider() {
-        GameObject divider = new("Message.Divider", typeof(RectTransform));
+    static GameObject CreateDivider(Transform parentTransform) {
+      GameObject divider = new("Message.Divider", typeof(RectTransform));
+      divider.transform.SetParent(parentTransform, worldPositionStays: false);
 
-        Image image = divider.AddComponent<Image>();
-        image.color = new Color32(255, 255, 255, 16);
-        image.raycastTarget = true;
-        image.maskable = true;
+      Image image = divider.AddComponent<Image>();
+      image.color = new Color32(255, 255, 255, 16);
+      image.raycastTarget = true;
+      image.maskable = true;
 
-        LayoutElement layout = divider.AddComponent<LayoutElement>();
-        layout.flexibleWidth = 0.5f;
-        layout.preferredHeight = 1;
+      LayoutElement layout = divider.AddComponent<LayoutElement>();
+      layout.flexibleWidth = 0.5f;
+      layout.preferredHeight = 1;
 
-        return divider;
-      }
+      return divider;
     }
 
     [HarmonyPatch(typeof(Terminal))]
@@ -164,6 +166,43 @@ namespace Chatter {
         if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanel?.ScrollRect) {
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
         }
+      }
+
+      static bool _addingChatMessageText = false;
+
+      [HarmonyPrefix]
+      [HarmonyPatch(nameof(Terminal.AddString), typeof(string), typeof(string), typeof(Talker.Type), typeof(bool))]
+      static void AddStringPrefix(ref Terminal __instance) {
+        if (IsModEnabled.Value) {
+          _addingChatMessageText = true;
+        }
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Terminal.AddString), typeof(string), typeof(string), typeof(Talker.Type), typeof(bool))]
+      static void AddStringPostfix(ref Terminal __instance) {
+        if (IsModEnabled.Value) {
+          _addingChatMessageText = false;
+        }
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Terminal.AddString), typeof(string))]
+      static void AddStringFinalPostfix(ref Terminal __instance, ref string text) {
+        if (_addingChatMessageText || !IsModEnabled.Value || __instance != Chat.m_instance || _chatPanel == null) {
+          return;
+        }
+
+        if (_lastMessage != null || !_lastMessageRow) {
+          GameObject divider = CreateDivider(_chatPanel.Content.transform);
+          MessageRows.Enqueue(divider);
+
+          _lastMessageRow = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
+          MessageRows.Enqueue(_lastMessageRow);
+        }
+
+        _lastMessage = null;
+        _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, text);
       }
     }
   }
