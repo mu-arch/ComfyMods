@@ -5,6 +5,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
@@ -36,9 +37,22 @@ namespace Chatter {
     static readonly List<ChatMessage> MessageHistory = new();
     static readonly CircularQueue<GameObject> MessageRows = new(50, row => Destroy(row));
 
-    static Vector2 _chatPanelSize;
-    static float _maxWidth = 0f;
+    static void SetMessageFont(Font font, int fontSize) {
+      Text textPrefabText = _chatPanel.TextPrefab.GetComponent<Text>();
+      int fontSizeDelta = fontSize - textPrefabText.fontSize;
 
+      IEnumerable<Text> texts =
+          MessageRows
+              .SelectMany(row => row.GetComponentsInChildren<Text>())
+              .Append(textPrefabText);
+
+      foreach (Text text in texts) {
+        text.font = font;
+        text.fontSize += fontSizeDelta;
+      }
+    }
+
+    static Vector2 _chatPanelSize;
     static ChatPanel _chatPanel;
 
     [HarmonyPatch(typeof(Menu))]
@@ -70,19 +84,18 @@ namespace Chatter {
 
       Chat.m_instance.m_chatWindow.GetComponent<RectMask2D>().enabled = !toggle;
       Chat.m_instance.m_output.gameObject.SetActive(!toggle);
+      Chat.m_instance.m_chatWindow.Find("bkg").gameObject.SetActive(!toggle);
 
       _chatPanel ??= new(Chat.m_instance.m_chatWindow.transform, Chat.m_instance.m_output);
       _chatPanel.Panel.SetActive(toggle);
 
       if (toggle) {
         _chatPanelSize = Chat.m_instance.m_chatWindow.sizeDelta;
-        _chatPanelSize.x -= 30f;
+        _chatPanelSize.x -= 10f;
 
         RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
         panelRectTransform.sizeDelta = _chatPanelSize;
         panelRectTransform.anchoredPosition = new(0, 30f);
-
-        _maxWidth = _chatPanelSize.x;
       }
     }
 
@@ -97,6 +110,18 @@ namespace Chatter {
         if (!IsModEnabled.Value) {
           return;
         }
+
+        BindChatMessageFont(__instance.m_output.font);
+        ChatMessageFont.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
+        ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
+
+        ChatPanelBackgroundColor.SettingChanged +=
+            (s, ea) => _chatPanel.ContentImage.color = ChatPanelBackgroundColor.Value;
+
+        ChatPanelRectMaskSoftness.SettingChanged +=
+            (s, ea) =>
+                _chatPanel.Panel.GetComponent<RectMask2D>().softness =
+                    Vector2Int.RoundToInt(ChatPanelRectMaskSoftness.Value);
 
         __instance.m_maxVisibleBufferLength = 80;
         __instance.m_hideDelay = 600;
@@ -126,13 +151,13 @@ namespace Chatter {
             || _lastMessage.SenderId != message.SenderId
             || _lastMessage.Type != message.Type
             || !_lastMessageRow) {
-          GameObject divider = CreateDivider(_chatPanel.Content.transform);
-          MessageRows.Enqueue(divider);
+          GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
+          MessageRows.EnqueueItem(divider);
 
           GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
           _chatPanel.CreateChatMessageRowHeader(row.transform, message);
 
-          MessageRows.Enqueue(row);
+          MessageRows.EnqueueItem(row);
 
           _lastMessageRow = row;
           _lastMessage = message;
@@ -140,22 +165,6 @@ namespace Chatter {
 
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
       }
-    }
-
-    static GameObject CreateDivider(Transform parentTransform) {
-      GameObject divider = new("Message.Divider", typeof(RectTransform));
-      divider.transform.SetParent(parentTransform, worldPositionStays: false);
-
-      Image image = divider.AddComponent<Image>();
-      image.color = new Color32(255, 255, 255, 16);
-      image.raycastTarget = true;
-      image.maskable = true;
-
-      LayoutElement layout = divider.AddComponent<LayoutElement>();
-      layout.flexibleWidth = 0.5f;
-      layout.preferredHeight = 1;
-
-      return divider;
     }
 
     [HarmonyPatch(typeof(Terminal))]
@@ -194,11 +203,11 @@ namespace Chatter {
         }
 
         if (_lastMessage != null || !_lastMessageRow) {
-          GameObject divider = CreateDivider(_chatPanel.Content.transform);
-          MessageRows.Enqueue(divider);
+          GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
+          MessageRows.EnqueueItem(divider);
 
           _lastMessageRow = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-          MessageRows.Enqueue(_lastMessageRow);
+          MessageRows.EnqueueItem(_lastMessageRow);
         }
 
         _lastMessage = null;
@@ -207,8 +216,8 @@ namespace Chatter {
     }
   }
 
-  public class CircularQueue<T> {
-    readonly ConcurrentQueue<T> _queue = new();
+  public class CircularQueue<T> : ConcurrentQueue<T> {
+    // readonly ConcurrentQueue<T> _queue = new();
     readonly Action<T> _dequeueFunc;
     readonly int _capacity;
 
@@ -217,18 +226,20 @@ namespace Chatter {
       _dequeueFunc = dequeueFunc;
     }
 
-    public void Enqueue(T item) {
-      while (_queue.Count + 1 > _capacity) {
-        if (!_queue.TryDequeue(out T itemToDequeue)) {
+    public void EnqueueItem(T item) {
+      while (Count + 1 > _capacity) {
+        if (!TryDequeue(out T itemToDequeue)) {
           throw new Exception("Unable to dequeue!");
         }
 
         _dequeueFunc(itemToDequeue);
       }
+
+      Enqueue(item);
     }
 
-    public T Dequeue() {
-      return _queue.TryDequeue(out T result) ? result : default;
+    public T DequeueItem() {
+      return TryDequeue(out T result) ? result : default;
     }
   }
 }

@@ -8,15 +8,15 @@ namespace Chatter {
     public GameObject Panel { get; private set; }
     public GameObject Viewport { get; private set; }
     public GameObject Content { get; private set; }
-    public GameObject TextPrefab { get; private set; }
+    public Image ContentImage { get; private set; }
     public ScrollRect ScrollRect { get; private set; }
-
-    readonly ConcurrentQueue<GameObject> _contentRowsCache = new();
+    public GameObject TextPrefab { get; private set; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
       Viewport = CreateViewport(Panel.transform);
       Content = CreateContent(Viewport.transform);
+      ContentImage = Content.GetComponent<Image>();
       ScrollRect = CreateScrollRect(Panel, Viewport, Content);
       TextPrefab = CreateTextPrefab(parentText);
     }
@@ -32,7 +32,7 @@ namespace Chatter {
       panelRectTransform.anchoredPosition = Vector2.zero;
 
       RectMask2D panelRectMask = panel.AddComponent<RectMask2D>();
-      panelRectMask.softness = new(25, 25);
+      panelRectMask.softness = Vector2Int.RoundToInt(PluginConfig.ChatPanelRectMaskSoftness.Value);
 
       return panel;
     }
@@ -70,7 +70,7 @@ namespace Chatter {
       contentLayoutGroup.childForceExpandWidth = false;
       contentLayoutGroup.childForceExpandHeight = false;
       contentLayoutGroup.spacing = 10f;
-      contentLayoutGroup.padding = new(10, 10, 10, 10);
+      contentLayoutGroup.padding = new(20, 20, 20, 20);
 
       ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
       contentFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -94,8 +94,8 @@ namespace Chatter {
       GameObject textPrefab = new("Text", typeof(RectTransform));
 
       Text text = textPrefab.AddComponent<Text>();
-      text.font = parentText.font;
-      text.fontSize = parentText.fontSize;
+      text.font = PluginConfig.MessageFont; // parentText.font;
+      text.fontSize = PluginConfig.MessageFontSize; // parentText.fontSize;
 
       if (parentText.TryGetComponent(out Outline parentTextOutline)) {
         Outline textOutline = textPrefab.AddComponent<Outline>();
@@ -124,6 +124,24 @@ namespace Chatter {
       };
     }
 
+    public GameObject CreateMessageDivider(Transform parentTransform) {
+      GameObject divider = new("Message.Divider", typeof(RectTransform));
+      divider.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      Image image = divider.AddComponent<Image>();
+      image.color = new Color32(255, 255, 255, 16);
+      image.raycastTarget = true;
+      image.maskable = true;
+
+      LayoutElement layout = divider.AddComponent<LayoutElement>();
+      layout.flexibleWidth = 1f;
+      layout.preferredHeight = 1;
+
+      return divider;
+    }
+
+    // TODO: get the script from here and attach it to each child element instead of the content-size fitter?
+    // https://sushanta1991.blogspot.com/2019/09/force-expand-child-width-in-vertical.html
     public GameObject CreateChatMessageRow(Transform parentTransform) {
       GameObject row = new("Message.Row", typeof(RectTransform));
       row.transform.SetParent(parentTransform, worldPositionStays: false);
@@ -134,7 +152,7 @@ namespace Chatter {
       rowLayoutGroup.childForceExpandWidth = false;
       rowLayoutGroup.childForceExpandHeight = false;
       rowLayoutGroup.padding = new(0, 0, 0, 0);
-      rowLayoutGroup.spacing = 3f;
+      rowLayoutGroup.spacing = 5f;
 
       ContentSizeFitter rowFitter = row.AddComponent<ContentSizeFitter>();
       rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -152,7 +170,7 @@ namespace Chatter {
       headerLayoutGroup.childControlHeight = true;
       headerLayoutGroup.childForceExpandWidth = false;
       headerLayoutGroup.childForceExpandHeight = false;
-      headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: -5); // Balance out the row spacing.
+      headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: 0); // Balance out the row spacing.
 
       GameObject username = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
       username.name = "Header.Username";
@@ -192,7 +210,7 @@ namespace Chatter {
       bodyText.alignment = TextAnchor.MiddleLeft;
 
       LayoutElement bodyLayout = body.AddComponent<LayoutElement>();
-      bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 20f;
+      bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 50f;
 
       return body;
     }
