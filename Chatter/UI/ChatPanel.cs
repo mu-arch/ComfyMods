@@ -7,6 +7,7 @@ namespace Chatter {
   public class ChatPanel {
     public GameObject Panel { get; private set; }
     public GameObject Viewport { get; private set; }
+    public Image ViewportImage { get; private set; }
     public GameObject Content { get; private set; }
     public Image ContentImage { get; private set; }
     public ScrollRect ScrollRect { get; private set; }
@@ -15,6 +16,7 @@ namespace Chatter {
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
       Viewport = CreateViewport(Panel.transform);
+      ViewportImage = Viewport.GetComponent<Image>();
       Content = CreateContent(Viewport.transform);
       ContentImage = Content.GetComponent<Image>();
       ScrollRect = CreateScrollRect(Panel, Viewport, Content);
@@ -47,6 +49,11 @@ namespace Chatter {
       viewportRectTransform.pivot = Vector2.zero;
       viewportRectTransform.anchoredPosition = Vector2.zero;
 
+      Image viewportImage = viewport.AddComponent<Image>();
+      viewportImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
+      viewportImage.sprite = CreateGradientSprite();
+      viewportImage.raycastTarget = false;
+
       return viewport;
     }
 
@@ -61,6 +68,8 @@ namespace Chatter {
       contentRectTransform.anchoredPosition = Vector2.zero;
 
       Image contentImage = content.AddComponent<Image>();
+      //contentImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
+      //contentImage.sprite = CreateGradientSprite();
       contentImage.color = Color.clear;
       contentImage.raycastTarget = true;
 
@@ -77,6 +86,16 @@ namespace Chatter {
       contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
       return content;
+    }
+
+    static Sprite CreateGradientSprite() {
+      Texture2D texture = new(width: 1, height: 2);
+      texture.wrapMode = TextureWrapMode.Clamp;
+      texture.SetPixel(0, 0, Color.white);
+      texture.SetPixel(0, 1, Color.clear);
+      texture.Apply();
+
+      return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
     }
 
     static ScrollRect CreateScrollRect(GameObject panel, GameObject viewport, GameObject content) {
@@ -210,7 +229,9 @@ namespace Chatter {
       bodyText.alignment = TextAnchor.MiddleLeft;
 
       LayoutElement bodyLayout = body.AddComponent<LayoutElement>();
-      bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 50f;
+      //bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 50f;
+      bodyLayout.preferredWidth =
+          Panel.GetComponent<RectTransform>().sizeDelta.x + PluginConfig.ChatMessageWidthOffset.Value;
 
       return body;
     }

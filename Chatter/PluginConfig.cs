@@ -16,6 +16,11 @@ namespace Chatter {
     public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
 
+    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; }
+    public static ConfigEntry<float> ChatMessageWidthOffset { get; private set; }
+
+    public static ConfigEntry<Vector2> ChatWindowPositionOffset { get; private set; }
+
     public static void BindConfig(ConfigFile config) {
       Config = config;
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -68,6 +73,31 @@ namespace Chatter {
               "chatMessageFontSize",
               defaultFont.fontSize,
               new ConfigDescription("The font size to use for chat messages.", new AcceptableValueRange<int>(8, 64)));
+    }
+
+    public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {
+      ChatWindowPositionOffset =
+          Config.Bind(
+              "Window", "chatWindowPositionOffset", chatWindowRectTransform.anchoredPosition, "Offset the default chat window position.");
+
+      ChatPanelSize =
+          Config.Bind(
+              "Style",
+              "chatPanelSize",
+              chatWindowRectTransform.sizeDelta - new Vector2(10f, 0f),
+              "The size (width, height) of the ChatPanel.");
+
+      ChatMessageWidthOffset =
+          Config.Bind(
+              "Style",
+              "chatMessageWidthOffset",
+              -50f,
+              new ConfigDescription(
+                  "Offsets the width of a ChatMessage row in the ChatPanel.",
+                  new AcceptableValueRange<float>(-400, 400)));
+
+      ZLog.Log($"ChatPanelSize at bind is: {ChatPanelSize.Value}");
+      ZLog.Log($"ChatMessageWidthOffset at bind is: {ChatMessageWidthOffset.Value}");
     }
   }
 }

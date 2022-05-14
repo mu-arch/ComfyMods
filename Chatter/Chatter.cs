@@ -52,7 +52,7 @@ namespace Chatter {
       }
     }
 
-    static Vector2 _chatPanelSize;
+    static Vector2 _chatWindowPosition = Vector2.zero;
     static ChatPanel _chatPanel;
 
     [HarmonyPatch(typeof(Menu))]
@@ -61,7 +61,7 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize + new Vector2(0, 400f);
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 400f);
           Chat.m_instance.m_hideDelay = 600;
         }
       }
@@ -70,7 +70,7 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = _chatPanelSize;
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
           Chat.m_instance.m_hideDelay = 8;
         }
@@ -90,13 +90,38 @@ namespace Chatter {
       _chatPanel.Panel.SetActive(toggle);
 
       if (toggle) {
-        _chatPanelSize = Chat.m_instance.m_chatWindow.sizeDelta;
-        _chatPanelSize.x -= 10f;
-
-        RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
-        panelRectTransform.sizeDelta = _chatPanelSize;
-        panelRectTransform.anchoredPosition = new(0, 30f);
+        SetChatPanelSize(ChatPanelSize.Value);
+        SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
       }
+
+      SetChatWindowPositionOffset();
+    }
+
+    static void SetChatPanelSize(Vector2 sizeDelta) {
+      RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
+      panelRectTransform.sizeDelta = sizeDelta;
+      panelRectTransform.anchoredPosition = new(0, 30f);
+
+      _chatPanel.Viewport.GetComponent<RectTransform>().sizeDelta = sizeDelta;
+      SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
+    }
+
+    static void SetChatMessageRowWidth(float widthoffset) {
+      float preferredWidth = _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta.x + widthoffset;
+
+      foreach (
+          LayoutElement layout
+              in MessageRows
+                  .SelectMany(row => row.GetComponentsInChildren<LayoutElement>())
+                  .Where(layout => layout.name == "Message.Row.Text")) {
+        layout.preferredWidth = preferredWidth;
+      }
+    }
+
+    static void SetChatWindowPositionOffset() {
+      Chat.m_instance.m_chatWindow.GetComponent<RectTransform>().anchoredPosition =
+          IsModEnabled.Value ? ChatWindowPositionOffset.Value : _chatWindowPosition;
+              
     }
 
     static ChatMessage _lastMessage = null;
@@ -116,12 +141,19 @@ namespace Chatter {
         ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
 
         ChatPanelBackgroundColor.SettingChanged +=
-            (s, ea) => _chatPanel.ContentImage.color = ChatPanelBackgroundColor.Value;
+            (s, ea) => _chatPanel.ViewportImage.color = ChatPanelBackgroundColor.Value;
 
         ChatPanelRectMaskSoftness.SettingChanged +=
             (s, ea) =>
                 _chatPanel.Panel.GetComponent<RectMask2D>().softness =
                     Vector2Int.RoundToInt(ChatPanelRectMaskSoftness.Value);
+
+        _chatWindowPosition = __instance.m_chatWindow.GetComponent<RectTransform>().anchoredPosition;
+        BindChatPanelSize(__instance.m_chatWindow);
+
+        ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);
+        ChatMessageWidthOffset.SettingChanged += (s, ea) => SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
+        ChatWindowPositionOffset.SettingChanged += (s, ea) => SetChatWindowPositionOffset();
 
         __instance.m_maxVisibleBufferLength = 80;
         __instance.m_hideDelay = 600;
