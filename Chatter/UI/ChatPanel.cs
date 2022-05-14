@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Concurrent;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Chatter {
@@ -6,8 +8,10 @@ namespace Chatter {
     public GameObject Panel { get; private set; }
     public GameObject Viewport { get; private set; }
     public GameObject Content { get; private set; }
+    public GameObject TextPrefab { get; private set; }
     public ScrollRect ScrollRect { get; private set; }
-    public Text TextPrefab { get; private set; }
+
+    readonly ConcurrentQueue<GameObject> _contentRowsCache = new();
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
@@ -17,7 +21,7 @@ namespace Chatter {
       TextPrefab = CreateTextPrefab(parentText);
     }
 
-    GameObject CreatePanel(Transform parentTransform) {
+    static GameObject CreatePanel(Transform parentTransform) {
       GameObject panel = new("ChatPanel", typeof(RectTransform));
       panel.transform.SetParent(parentTransform, worldPositionStays: false);
 
@@ -33,7 +37,7 @@ namespace Chatter {
       return panel;
     }
 
-    GameObject CreateViewport(Transform parentTransform) {
+    static GameObject CreateViewport(Transform parentTransform) {
       GameObject viewport = new("ChatPanel.Viewport", typeof(RectTransform));
       viewport.transform.SetParent(parentTransform, worldPositionStays: false);
 
@@ -46,7 +50,7 @@ namespace Chatter {
       return viewport;
     }
 
-    GameObject CreateContent(Transform parentTransform) {
+    static GameObject CreateContent(Transform parentTransform) {
       GameObject content = new("ChatPanel.Content", typeof(RectTransform));
       content.transform.SetParent(parentTransform, worldPositionStays: false);
 
@@ -75,7 +79,7 @@ namespace Chatter {
       return content;
     }
 
-    ScrollRect CreateScrollRect(GameObject panel, GameObject viewport, GameObject content) {
+    static ScrollRect CreateScrollRect(GameObject panel, GameObject viewport, GameObject content) {
       ScrollRect panelScroll = panel.AddComponent<ScrollRect>();
       panelScroll.viewport = viewport.GetComponent<RectTransform>();
       panelScroll.content = content.GetComponent<RectTransform>();
@@ -86,7 +90,7 @@ namespace Chatter {
       return panelScroll;
     }
 
-    Text CreateTextPrefab(Text parentText) {
+    static GameObject CreateTextPrefab(Text parentText) {
       GameObject textPrefab = new("Text", typeof(RectTransform));
 
       Text text = textPrefab.AddComponent<Text>();
@@ -99,7 +103,98 @@ namespace Chatter {
         textOutline.effectDistance = parentTextOutline.effectDistance;
       }
 
-      return text;
+      return textPrefab;
+    }
+
+    public GameObject AddChatMessage(ChatMessage message) {
+      GameObject row = CreateChatMessageRow(Content.transform);
+      CreateChatMessageRowHeader(row.transform, message);
+      CreateChatMessageRowBody(row.transform, GetMessageText(message));
+
+      return row;
+    }
+
+    public static string GetMessageText(ChatMessage message) {
+      return message.Type switch {
+        Talker.Type.Normal => $"{message.Text}",
+        Talker.Type.Shout => $"<color=yellow>{message.Text}</color>",
+        Talker.Type.Whisper => $"<color=purple>{message.Text}</color>",
+        Talker.Type.Ping => $"Ping! <color=cyan>{message.Position}</color>",
+        _ => string.Empty,
+      };
+    }
+
+    public GameObject CreateChatMessageRow(Transform parentTransform) {
+      GameObject row = new("Message.Row", typeof(RectTransform));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      VerticalLayoutGroup rowLayoutGroup = row.AddComponent<VerticalLayoutGroup>();
+      rowLayoutGroup.childControlWidth = true;
+      rowLayoutGroup.childControlHeight = true;
+      rowLayoutGroup.childForceExpandWidth = false;
+      rowLayoutGroup.childForceExpandHeight = false;
+      rowLayoutGroup.padding = new(0, 0, 0, 0);
+      rowLayoutGroup.spacing = 3f;
+
+      ContentSizeFitter rowFitter = row.AddComponent<ContentSizeFitter>();
+      rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+      rowFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+      return row;
+    }
+
+    public GameObject CreateChatMessageRowHeader(Transform parentTransform, ChatMessage message) {
+      GameObject header = new("Message.Row.Header", typeof(RectTransform));
+      header.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      HorizontalLayoutGroup headerLayoutGroup = header.AddComponent<HorizontalLayoutGroup>();
+      headerLayoutGroup.childControlWidth = true;
+      headerLayoutGroup.childControlHeight = true;
+      headerLayoutGroup.childForceExpandWidth = false;
+      headerLayoutGroup.childForceExpandHeight = false;
+      headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: -5); // Balance out the row spacing.
+
+      GameObject username = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      username.name = "Header.Username";
+
+      Text usernameText = username.GetComponent<Text>();
+      usernameText.text = message.User;
+      usernameText.alignment = TextAnchor.MiddleLeft;
+      usernameText.fontSize -= 2;
+
+      username.AddComponent<LayoutElement>();
+
+      GameObject spacer = new("Header.Spacer", typeof(RectTransform));
+      spacer.transform.SetParent(header.transform, worldPositionStays: false);
+
+      LayoutElement spacerLayout = spacer.AddComponent<LayoutElement>();
+      spacerLayout.flexibleWidth = 1f;
+
+      GameObject timestamp = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      timestamp.name = "Header.Timestamp";
+
+      Text timestampText = timestamp.GetComponent<Text>();
+      timestampText.text = message.Timestamp.ToShortTimeString();
+      timestampText.alignment = TextAnchor.MiddleRight;
+      timestampText.fontSize -= 2;
+
+      timestamp.AddComponent<LayoutElement>();
+
+      return header;
+    }
+
+    public GameObject CreateChatMessageRowBody(Transform parentTransform, string text) {
+      GameObject body = Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
+      body.name = "Message.Row.Text";
+
+      Text bodyText = body.GetComponent<Text>();
+      bodyText.text = text;
+      bodyText.alignment = TextAnchor.MiddleLeft;
+
+      LayoutElement bodyLayout = body.AddComponent<LayoutElement>();
+      bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 20f;
+
+      return body;
     }
   }
 }

@@ -127,16 +127,16 @@ namespace Chatter {
           divider.transform.SetParent(_chatPanel.Content.transform, worldPositionStays: false);
           MessageRows.Enqueue(divider);
 
-          GameObject messageRow = CreateChatMessageRow(message);
-          messageRow.transform.SetParent(_chatPanel.Content.transform, worldPositionStays: false);
-          MessageRows.Enqueue(messageRow);
+          GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
+          _chatPanel.CreateChatMessageRowHeader(row.transform, message);
+          _chatPanel.CreateChatMessageRowBody(row.transform, ChatPanel.GetMessageText(message));
+
+          MessageRows.Enqueue(row);
 
           _lastMessage = message;
-          _lastMessageRow = messageRow;
+          _lastMessageRow = row;
         } else if (_lastMessageRow) {
-          GameObject rowText = CreateChatMessageText(message);
-          rowText.name = "Message.Row.Text";
-          rowText.transform.SetParent(_lastMessageRow.transform, worldPositionStays: false);
+          _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
         }
       }
 
@@ -153,93 +153,6 @@ namespace Chatter {
         layout.preferredHeight = 1;
 
         return divider;
-      }
-
-      static GameObject CreateChatMessageRow(ChatMessage message) {
-        GameObject row = new("Message.Row", typeof(RectTransform));
-
-        VerticalLayoutGroup rowLayoutGroup = row.AddComponent<VerticalLayoutGroup>();
-        rowLayoutGroup.childControlWidth = true;
-        rowLayoutGroup.childControlHeight = true;
-        rowLayoutGroup.childForceExpandWidth = false;
-        rowLayoutGroup.childForceExpandHeight = false;
-        rowLayoutGroup.padding = new(0, 0, 0, 0);
-        rowLayoutGroup.spacing = 5f;
-
-        ContentSizeFitter rowFitter = row.AddComponent<ContentSizeFitter>();
-        rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        rowFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        GameObject rowHeader = CreateMessageRowHeader(message);
-        rowHeader.transform.SetParent(row.transform, worldPositionStays: false);
-
-        GameObject rowText = CreateChatMessageText(message);
-        rowText.name = "Message.Row.Text";
-        rowText.transform.SetParent(row.transform, worldPositionStays: false);
-
-        return row;
-      }
-
-      static GameObject CreateMessageRowHeader(ChatMessage message) {
-        GameObject header = new("Message.Row.Header", typeof(RectTransform));
-
-        HorizontalLayoutGroup headerLayoutGroup = header.AddComponent<HorizontalLayoutGroup>();
-        headerLayoutGroup.childControlWidth = true;
-        headerLayoutGroup.childControlHeight = true;
-        headerLayoutGroup.childForceExpandWidth = false;
-        headerLayoutGroup.childForceExpandHeight = false;
-        headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: -5); // Balance out the row spacing.
-
-        GameObject username = Instantiate(_chatPanel.TextPrefab.gameObject);
-        username.name = "Username";
-        username.transform.SetParent(header.transform, worldPositionStays: false);
-        username.GetComponent<Text>().text = message.User;
-        username.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
-        username.GetComponent<Text>().fontSize -= 2;
-        username.AddComponent<LayoutElement>();
-
-        GameObject spacer = new("Spacer", typeof(RectTransform));
-        spacer.transform.SetParent(header.transform, worldPositionStays: false);
-
-        spacer.AddComponent<LayoutElement>().flexibleWidth = 1f;
-
-        GameObject timestamp = Instantiate(_chatPanel.TextPrefab.gameObject);
-        timestamp.name = "Timestamp";
-        timestamp.transform.SetParent(header.transform, worldPositionStays: false);
-        timestamp.GetComponent<Text>().text = message.Timestamp.ToShortTimeString();
-        timestamp.GetComponent<Text>().alignment = TextAnchor.MiddleRight;
-        timestamp.GetComponent<Text>().fontSize -= 2;
-        timestamp.AddComponent<LayoutElement>();
-
-        return header;
-      }
-
-      static GameObject CreateChatMessageText(ChatMessage message) {
-        GameObject prefab = Instantiate(_chatPanel.TextPrefab.gameObject);
-        Text text = prefab.GetComponent<Text>();
-
-        switch (message.Type) {
-          case Talker.Type.Normal:
-            text.text = $"{message.Text}";
-            break;
-
-          case Talker.Type.Shout:
-            text.text = $"<color=yellow>{message.Text}</color>";
-            break;
-
-          case Talker.Type.Whisper:
-            text.text = $"<color=purple>{message.Text}</color>";
-            break;
-
-          case Talker.Type.Ping:
-            text.text = $"Ping! <color=cyan>{message.Position}</color>";
-            break;
-        }
-
-        LayoutElement layout = prefab.AddComponent<LayoutElement>();
-        layout.preferredWidth = _chatPanelSize.x - 20f;
-
-        return prefab;
       }
     }
 
