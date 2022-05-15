@@ -15,11 +15,11 @@ namespace Chatter {
     public ScrollRect ScrollRect { get; private set; }
     public GameObject TextPrefab { get; private set; }
 
+    public Image InputFieldImage { get; private set; }
     public InputField InputField { get; private set; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
-      Grabber = CreateGrabber(Panel.transform);
       Viewport = CreateViewport(Panel.transform);
       ViewportImage = Viewport.GetComponent<Image>();
       Content = CreateContent(Viewport.transform);
@@ -27,6 +27,8 @@ namespace Chatter {
       ScrollRect = CreateScrollRect(Panel, Viewport, Content);
       TextPrefab = CreateTextPrefab(parentText);
       InputField = CreateChatInputField(Panel.transform);
+      InputFieldImage = InputField.transform.parent.GetComponent<Image>();
+      Grabber = CreateGrabber(Panel.transform);
     }
 
     static GameObject CreatePanel(Transform parentTransform) {
@@ -60,10 +62,10 @@ namespace Chatter {
 
       LayoutElement grabberLayout = grabber.AddComponent<LayoutElement>();
       grabberLayout.flexibleWidth = 1f;
-      grabberLayout.preferredHeight = 15f;
+      grabberLayout.preferredHeight = 5f;
 
       Image grabberImage = grabber.AddComponent<Image>();
-      grabberImage.color = new Color32(255, 255, 255, 64);
+      grabberImage.color = new Color32(255, 255, 255, 32);
       grabberImage.raycastTarget = true;
 
       return grabber;
@@ -110,10 +112,11 @@ namespace Chatter {
       rowLayoutGroup.childForceExpandWidth = true;
       rowLayoutGroup.childForceExpandHeight = false;
       rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
-      rowLayoutGroup.padding = new(left: 10, right: 10, top: 10, bottom: 10);
+      rowLayoutGroup.padding = new(left: 10, right: 10, top: 8, bottom: 8);
 
       Image rowImage = row.AddComponent<Image>();
-      rowImage.color = new Color32(255, 255, 255, 32);
+      Color color = PluginConfig.ChatPanelBackgroundColor.Value;
+      rowImage.color = color;
 
       InputField inputField = CreateInputField(row.transform);
       inputField.targetGraphic = rowImage;
@@ -151,7 +154,7 @@ namespace Chatter {
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
 
-      LayoutElement textLayout = inputFieldText.AddComponent<LayoutElement>();
+      LayoutElement textLayout = inputFieldRow.AddComponent<LayoutElement>();
       textLayout.flexibleWidth = 1f;
 
       return inputField;
@@ -178,7 +181,7 @@ namespace Chatter {
       contentLayoutGroup.childControlHeight = true;
       contentLayoutGroup.childForceExpandWidth = false;
       contentLayoutGroup.childForceExpandHeight = false;
-      contentLayoutGroup.spacing = 10f;
+      contentLayoutGroup.spacing = PluginConfig.ChatMessageBlockSpacing.Value;
       contentLayoutGroup.padding = new(20, 20, 20, 20);
 
       ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
@@ -311,7 +314,7 @@ namespace Chatter {
       timestamp.name = "Header.Timestamp";
 
       Text timestampText = timestamp.GetComponent<Text>();
-      timestampText.text = message.Timestamp.ToShortTimeString();
+      timestampText.text = message.Timestamp.ToString("T");
       timestampText.alignment = TextAnchor.MiddleRight;
       timestampText.fontSize -= 2;
 

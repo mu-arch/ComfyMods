@@ -3,10 +3,12 @@
 using HarmonyLib;
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -60,7 +62,7 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
-          _chatPanel.Grabber.SetActive(true);
+          ToggleGrabber(true);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
           Chat.m_instance.m_hideDelay = 600;
         }
@@ -70,11 +72,20 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
-          _chatPanel.Grabber.SetActive(false);
+          ToggleGrabber(false);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
           Chat.m_instance.m_hideDelay = 8;
         }
+      }
+    }
+
+    static void ToggleGrabber(bool toggle) {
+      if (_chatPanel != null && _chatPanel.Grabber && _chatPanel.Grabber.TryGetComponent(out Image image)) {
+        image.raycastTarget = toggle;
+        Color color = image.color;
+        color.a = toggle ? 0.1f : 0;
+        image.color = color;
       }
     }
 
@@ -87,7 +98,12 @@ namespace Chatter {
       Chat.m_instance.m_output.gameObject.SetActive(!toggle);
       Chat.m_instance.m_chatWindow.Find("bkg").gameObject.SetActive(!toggle);
 
-      _chatPanel ??= new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
+      
+      if (_chatPanel == null || !_chatPanel.Panel) {
+        _chatPanel = new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
+        _chatPanel.Panel.GetComponent<RectTransform>().SetAsFirstSibling();
+      }
+
       _chatPanel.Panel.SetActive(toggle);
 
       if (toggle) {
@@ -96,7 +112,7 @@ namespace Chatter {
       }
 
       if (!_chatPanel.Grabber.TryGetComponent(out PanelDragger panelDragger)) {
-        _chatPanel.Grabber.SetActive(false);
+        ToggleGrabber(false);
         panelDragger = _chatPanel.Grabber.AddComponent<PanelDragger>();
         panelDragger.TargetTransform = _chatPanel.Panel.GetComponent<RectTransform>();
         panelDragger.EndDragAction =
@@ -132,6 +148,15 @@ namespace Chatter {
       _chatPanel.Panel.GetComponent<RectTransform>().anchoredPosition = ChatWindowPositionOffset.Value;             
     }
 
+    static void SetChatWindowBackgroundColor(Color targetColor) {
+      if (_chatPanel == null || !_chatPanel.Panel) {
+        return;
+      }
+
+      _chatPanel.ViewportImage.color = targetColor;
+      _chatPanel.InputFieldImage.color = targetColor;
+    }
+
     static ChatMessage _lastMessage = null;
     static GameObject _lastMessageRow;
     static InputField _vanillaInputField;
@@ -152,7 +177,7 @@ namespace Chatter {
         ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
 
         ChatPanelBackgroundColor.SettingChanged +=
-            (s, ea) => _chatPanel.ViewportImage.color = ChatPanelBackgroundColor.Value;
+            (s, ea) => SetChatWindowBackgroundColor(ChatPanelBackgroundColor.Value);
 
         ChatPanelRectMaskSoftness.SettingChanged +=
             (s, ea) =>
@@ -164,6 +189,9 @@ namespace Chatter {
         ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);
         ChatMessageWidthOffset.SettingChanged += (s, ea) => SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
         ChatWindowPositionOffset.SettingChanged += (s, ea) => SetChatWindowPositionOffset();
+
+        ChatMessageBlockSpacing.SettingChanged +=
+            (s, ea) => _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
 
         __instance.m_maxVisibleBufferLength = 80;
         __instance.m_hideDelay = 600;
@@ -189,6 +217,10 @@ namespace Chatter {
           return;
         }
 
+        if (_chatPanel == null || !_chatPanel.Panel) {
+          ZLog.LogError($"ChatPanel not yet created.");
+        }
+
         if (_lastMessage == null
             || _lastMessage.SenderId != message.SenderId
             || _lastMessage.Type != message.Type
@@ -207,10 +239,92 @@ namespace Chatter {
 
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
       }
+
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Chat.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, typeof(InputField).GetMethod(nameof(InputField.ActivateInputField))))
+            //.Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Action<Chat>>(ActivateInputFieldDelegate))
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, typeof(Component).GetMethod("get_gameObject")),
+                new CodeMatch(OpCodes.Ldc_I4_0),
+                new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldc_I4_0),
+                new CodeMatch(
+                    OpCodes.Stfld, typeof(Terminal).GetField(nameof(Terminal.m_focused), BindingFlags.NonPublic)))
+            .Advance(offset: 3)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, Chat, bool>>(SetActiveDelegate))
+            .InstructionEnumeration();
+      }
+
+      static void ActivateInputFieldDelegate(Chat chat) {
+        ZLog.Log("ACTIVATIN");
+        Chat.m_instance.m_input.enabled = true;
+      }
+
+      static bool SetActiveDelegate(bool active, Chat chat) {
+        if (IsModEnabled.Value) {
+          ZLog.Log("RED: turning off chat way");
+          //chat.m_input.gameObject.SetActive(true);
+          //chat.m_input.interactable = false;
+          //chat.m_input.DeactivateInputField();
+          Chat.m_instance.m_input.enabled = false;
+          return true;
+        } else {
+          ZLog.Log("RED: not turning off chat way");
+          return false;
+        }
+      }
     }
 
     [HarmonyPatch(typeof(Terminal))]
     class TerminalPatch {
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Terminal.UpdateInput))]
+      static IEnumerable<CodeInstruction> UpdateInputTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Ldnull),
+                new CodeMatch(OpCodes.Callvirt),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, typeof(Component).GetMethod("get_gameObject")),
+                new CodeMatch(OpCodes.Ldc_I4_0),
+                new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
+                new CodeMatch(OpCodes.Ret))
+            .Advance(offset: 6)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, Terminal, bool>>(SetActiveDelegateA))
+            .InstructionEnumeration();
+      }
+
+      static bool SetActiveDelegateA(bool active, Terminal terminal) {
+        
+        if (terminal == Chat.m_instance && IsModEnabled.Value) {
+          //chat.m_input.interactable = false;
+          //chat.m_focused = false;
+          ZLog.Log($"RED: Turning off this way. {Chat.m_instance.m_wasFocused} | {Chat.m_instance.m_focused}");
+          //Chat.m_instance.m_wasFocused = false;
+          //Chat.m_instance.m_focused = false;
+          Chat.m_instance.m_input.enabled = false;
+          return true;
+        } else {
+          ZLog.Log("RED: Not turning off this way.");
+          return false;
+        }
+      }
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Terminal.SendInput))]
       static void SendInputPostfix(ref Terminal __instance) {

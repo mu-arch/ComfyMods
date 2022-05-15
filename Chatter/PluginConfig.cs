@@ -13,6 +13,8 @@ namespace Chatter {
     public static ConfigEntry<string> ChatMessageFont { get; private set; }
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
 
+    public static ConfigEntry<float> ChatMessageBlockSpacing { get; private set; }
+
     public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
 
@@ -35,6 +37,15 @@ namespace Chatter {
       ChatPanelRectMaskSoftness =
           config.Bind(
               "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
+
+      ChatMessageBlockSpacing =
+          config.Bind(
+              "Style",
+              "chatMessageBlockSpacing",
+              10f,
+              new ConfigDescription(
+                  "The spacing (in pixels) between blocks of chat messages.",
+                  new AcceptableValueRange<float>(-100, 100)));
     }
 
     static readonly Dictionary<string, Font> _fontCache = new();
