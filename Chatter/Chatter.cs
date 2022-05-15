@@ -52,7 +52,6 @@ namespace Chatter {
       }
     }
 
-    static Vector2 _chatWindowPosition = Vector2.zero;
     static ChatPanel _chatPanel;
 
     [HarmonyPatch(typeof(Menu))]
@@ -61,7 +60,8 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 400f);
+          _chatPanel.Grabber.SetActive(true);
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
           Chat.m_instance.m_hideDelay = 600;
         }
       }
@@ -70,6 +70,7 @@ namespace Chatter {
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
+          _chatPanel.Grabber.SetActive(false);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
           Chat.m_instance.m_hideDelay = 8;
@@ -86,12 +87,20 @@ namespace Chatter {
       Chat.m_instance.m_output.gameObject.SetActive(!toggle);
       Chat.m_instance.m_chatWindow.Find("bkg").gameObject.SetActive(!toggle);
 
-      _chatPanel ??= new(Chat.m_instance.m_chatWindow.transform, Chat.m_instance.m_output);
+      _chatPanel ??= new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
       _chatPanel.Panel.SetActive(toggle);
 
       if (toggle) {
         SetChatPanelSize(ChatPanelSize.Value);
         SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
+      }
+
+      if (!_chatPanel.Grabber.TryGetComponent(out PanelDragger panelDragger)) {
+        _chatPanel.Grabber.SetActive(false);
+        panelDragger = _chatPanel.Grabber.AddComponent<PanelDragger>();
+        panelDragger.TargetTransform = _chatPanel.Panel.GetComponent<RectTransform>();
+        panelDragger.EndDragAction =
+            () => ChatWindowPositionOffset.Value = panelDragger.TargetTransform.anchoredPosition;
       }
 
       SetChatWindowPositionOffset();
@@ -119,9 +128,7 @@ namespace Chatter {
     }
 
     static void SetChatWindowPositionOffset() {
-      Chat.m_instance.m_chatWindow.GetComponent<RectTransform>().anchoredPosition =
-          IsModEnabled.Value ? ChatWindowPositionOffset.Value : _chatWindowPosition;
-              
+      _chatPanel.Panel.GetComponent<RectTransform>().anchoredPosition = ChatWindowPositionOffset.Value;             
     }
 
     static ChatMessage _lastMessage = null;
@@ -148,7 +155,6 @@ namespace Chatter {
                 _chatPanel.Panel.GetComponent<RectMask2D>().softness =
                     Vector2Int.RoundToInt(ChatPanelRectMaskSoftness.Value);
 
-        _chatWindowPosition = __instance.m_chatWindow.GetComponent<RectTransform>().anchoredPosition;
         BindChatPanelSize(__instance.m_chatWindow);
 
         ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);

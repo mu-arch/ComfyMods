@@ -78,7 +78,10 @@ namespace Chatter {
     public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {
       ChatWindowPositionOffset =
           Config.Bind(
-              "Window", "chatWindowPositionOffset", chatWindowRectTransform.anchoredPosition, "Offset the default chat window position.");
+              "Window",
+              "chatWindowPositionOffset",
+              chatWindowRectTransform.anchoredPosition,
+              "Offset the default chat window position.");
 
       ChatPanelSize =
           Config.Bind(

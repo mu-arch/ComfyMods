@@ -6,6 +6,7 @@ using UnityEngine.UI;
 namespace Chatter {
   public class ChatPanel {
     public GameObject Panel { get; private set; }
+    public GameObject Grabber { get; private set; }
     public GameObject Viewport { get; private set; }
     public Image ViewportImage { get; private set; }
     public GameObject Content { get; private set; }
@@ -15,6 +16,7 @@ namespace Chatter {
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
+      Grabber = CreateGrabber(Panel.transform);
       Viewport = CreateViewport(Panel.transform);
       ViewportImage = Viewport.GetComponent<Image>();
       Content = CreateContent(Viewport.transform);
@@ -28,15 +30,39 @@ namespace Chatter {
       panel.transform.SetParent(parentTransform, worldPositionStays: false);
 
       RectTransform panelRectTransform = panel.GetComponent<RectTransform>();
-      panelRectTransform.anchorMin = Vector2.zero;
-      panelRectTransform.anchorMax = Vector2.zero;
-      panelRectTransform.pivot = Vector2.zero;
+      panelRectTransform.anchorMin = new(1f, 0f);
+      panelRectTransform.anchorMax = new(1f, 0f);
+      panelRectTransform.pivot = new(1f, 0f);
       panelRectTransform.anchoredPosition = Vector2.zero;
 
-      RectMask2D panelRectMask = panel.AddComponent<RectMask2D>();
-      panelRectMask.softness = Vector2Int.RoundToInt(PluginConfig.ChatPanelRectMaskSoftness.Value);
+      VerticalLayoutGroup panelLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
+      panelLayoutGroup.childControlWidth = true;
+      panelLayoutGroup.childControlHeight = true;
+      panelLayoutGroup.childForceExpandWidth = false;
+      panelLayoutGroup.childForceExpandHeight = false;
 
       return panel;
+    }
+
+    static GameObject CreateGrabber(Transform parentTransform) {
+      GameObject grabber = new("ChatPanel.Grabber", typeof(RectTransform));
+      grabber.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      RectTransform grabberRectransform = grabber.GetComponent<RectTransform>();
+      grabberRectransform.anchorMin = Vector2.zero;
+      grabberRectransform.anchorMax = Vector2.zero;
+      grabberRectransform.pivot = Vector2.zero;
+      grabberRectransform.anchoredPosition = Vector2.zero;
+
+      LayoutElement grabberLayout = grabber.AddComponent<LayoutElement>();
+      grabberLayout.flexibleWidth = 1f;
+      grabberLayout.preferredHeight = 15f;
+
+      Image grabberImage = grabber.AddComponent<Image>();
+      grabberImage.color = new Color32(255, 255, 255, 64);
+      grabberImage.raycastTarget = true;
+
+      return grabber;
     }
 
     static GameObject CreateViewport(Transform parentTransform) {
@@ -45,7 +71,7 @@ namespace Chatter {
 
       RectTransform viewportRectTransform = viewport.GetComponent<RectTransform>();
       viewportRectTransform.anchorMin = Vector2.zero;
-      viewportRectTransform.anchorMax = new(1f, 0f);
+      viewportRectTransform.anchorMax = Vector2.zero;
       viewportRectTransform.pivot = Vector2.zero;
       viewportRectTransform.anchoredPosition = Vector2.zero;
 
@@ -53,6 +79,13 @@ namespace Chatter {
       viewportImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
       viewportImage.sprite = CreateGradientSprite();
       viewportImage.raycastTarget = false;
+
+      RectMask2D viewportRectMask = viewport.AddComponent<RectMask2D>();
+      viewportRectMask.softness = Vector2Int.RoundToInt(PluginConfig.ChatPanelRectMaskSoftness.Value);
+
+      LayoutElement viewportLayout = viewport.AddComponent<LayoutElement>();
+      viewportLayout.flexibleWidth = 1f;
+      viewportLayout.flexibleHeight = 1f;
 
       return viewport;
     }
