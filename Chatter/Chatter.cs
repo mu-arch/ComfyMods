@@ -42,9 +42,9 @@ namespace Chatter {
       int fontSizeDelta = fontSize - textPrefabText.fontSize;
 
       IEnumerable<Text> texts =
-          MessageRows
+          _chatPanel.Panel.GetComponentsInChildren<Text>()
               .SelectMany(row => row.GetComponentsInChildren<Text>())
-              .Append(textPrefabText);
+                  .Append(textPrefabText);
 
       foreach (Text text in texts) {
         text.font = font;
@@ -104,6 +104,7 @@ namespace Chatter {
       }
 
       SetChatWindowPositionOffset();
+      Chat.m_instance.m_input = toggle ? _chatPanel.InputField : _vanillaInputField;
     }
 
     static void SetChatPanelSize(Vector2 sizeDelta) {
@@ -133,6 +134,7 @@ namespace Chatter {
 
     static ChatMessage _lastMessage = null;
     static GameObject _lastMessageRow;
+    static InputField _vanillaInputField;
 
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
@@ -142,6 +144,8 @@ namespace Chatter {
         if (!IsModEnabled.Value) {
           return;
         }
+
+        _vanillaInputField = __instance.m_input;
 
         BindChatMessageFont(__instance.m_output.font);
         ChatMessageFont.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);

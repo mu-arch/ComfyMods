@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Runtime.Remoting.Messaging;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,8 @@ namespace Chatter {
     public ScrollRect ScrollRect { get; private set; }
     public GameObject TextPrefab { get; private set; }
 
+    public InputField InputField { get; private set; }
+
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
       Grabber = CreateGrabber(Panel.transform);
@@ -23,6 +26,7 @@ namespace Chatter {
       ContentImage = Content.GetComponent<Image>();
       ScrollRect = CreateScrollRect(Panel, Viewport, Content);
       TextPrefab = CreateTextPrefab(parentText);
+      InputField = CreateChatInputField(Panel.transform);
     }
 
     static GameObject CreatePanel(Transform parentTransform) {
@@ -88,6 +92,69 @@ namespace Chatter {
       viewportLayout.flexibleHeight = 1f;
 
       return viewport;
+    }
+
+    InputField CreateChatInputField(Transform parentTransform) {
+      GameObject row = new("ChatPanel.InputField", typeof(RectTransform));
+      row.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      RectTransform rowRectTransform = row.GetComponent<RectTransform>();
+      rowRectTransform.anchorMin = Vector2.zero;
+      rowRectTransform.anchorMax = Vector2.zero;
+      rowRectTransform.pivot = Vector2.zero;
+      rowRectTransform.anchoredPosition = Vector2.zero;
+
+      HorizontalLayoutGroup rowLayoutGroup = row.AddComponent<HorizontalLayoutGroup>();
+      rowLayoutGroup.childControlWidth = true;
+      rowLayoutGroup.childControlHeight = true;
+      rowLayoutGroup.childForceExpandWidth = true;
+      rowLayoutGroup.childForceExpandHeight = false;
+      rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
+      rowLayoutGroup.padding = new(left: 10, right: 10, top: 10, bottom: 10);
+
+      Image rowImage = row.AddComponent<Image>();
+      rowImage.color = new Color32(255, 255, 255, 32);
+
+      InputField inputField = CreateInputField(row.transform);
+      inputField.targetGraphic = rowImage;
+      inputField.transition = Selectable.Transition.ColorTint;
+
+      return inputField;
+    }
+
+    InputField CreateInputField(Transform parentTransform) {
+      GameObject inputFieldRow = new("ChatPanel.InputField.Row", typeof(RectTransform));
+      inputFieldRow.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      RectTransform rowRectTransform = inputFieldRow.GetComponent<RectTransform>();
+      rowRectTransform.anchorMin = Vector2.zero;
+      rowRectTransform.anchorMax = Vector2.zero;
+      rowRectTransform.pivot = Vector2.zero;
+      rowRectTransform.anchoredPosition = Vector2.zero;
+
+      HorizontalLayoutGroup rowLayoutGroup = inputFieldRow.AddComponent<HorizontalLayoutGroup>();
+      rowLayoutGroup.childControlWidth = true;
+      rowLayoutGroup.childControlHeight = true;
+      rowLayoutGroup.childForceExpandWidth = true;
+      rowLayoutGroup.childForceExpandHeight = false;
+      rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
+
+      GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
+      inputFieldText.name = "ChatPanel.InputField.Row.Text";
+
+      RectTransform textRectTransform = inputFieldText.GetComponent<RectTransform>();
+      textRectTransform.anchorMin = Vector2.zero;
+      textRectTransform.anchorMax = Vector2.zero;
+      textRectTransform.pivot = Vector2.zero;
+      textRectTransform.anchoredPosition = Vector2.zero;
+
+      InputField inputField = inputFieldRow.AddComponent<InputField>();
+      inputField.textComponent = inputFieldText.GetComponent<Text>();
+
+      LayoutElement textLayout = inputFieldText.AddComponent<LayoutElement>();
+      textLayout.flexibleWidth = 1f;
+
+      return inputField;
     }
 
     static GameObject CreateContent(Transform parentTransform) {
