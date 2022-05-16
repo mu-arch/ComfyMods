@@ -3,7 +3,6 @@
 using HarmonyLib;
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +63,6 @@ namespace Chatter {
         if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
           ToggleGrabber(true);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
-          Chat.m_instance.m_hideDelay = 600;
         }
       }
 
@@ -75,7 +73,6 @@ namespace Chatter {
           ToggleGrabber(false);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
-          Chat.m_instance.m_hideDelay = 8;
         }
       }
     }
@@ -160,6 +157,8 @@ namespace Chatter {
     static GameObject _lastMessageRow;
     static InputField _vanillaInputField;
 
+    static bool _isCreatingChatMessage = false;
+
     static void HideChatPanelDelegate(float hideTimer) {
       if (IsModEnabled.Value && _chatPanel?.Panel) {
         if (hideTimer < HideChatPanelDelay || Menu.IsVisible()) {
@@ -196,6 +195,10 @@ namespace Chatter {
           return;
         }
 
+        //__instance.m_maxVisibleBufferLength = 80;
+        //__instance.m_hideDelay = 600;
+        //__instance.m_chatWindow.SetAsFirstSibling();
+
         _vanillaInputField = __instance.m_input;
 
         BindChatMessageFont(__instance.m_output.font);
@@ -219,19 +222,18 @@ namespace Chatter {
         ChatMessageBlockSpacing.SettingChanged +=
             (s, ea) => _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
 
-        __instance.m_maxVisibleBufferLength = 80;
-        __instance.m_hideDelay = 600;
-        __instance.m_chatWindow.SetAsFirstSibling();
-
         ToggleChatPanel(IsModEnabled.Value);
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
-      static void ChatPrefix(Chat __instance, long senderID, Vector3 pos, Talker.Type type, string user, string text) {
+      static void OnNewChatMessagePrefix(
+          ref long senderID, ref Vector3 pos, ref Talker.Type type, ref string user, ref string text) {
         if (!IsModEnabled.Value) {
           return;
         }
+
+        _isCreatingChatMessage = true;
 
         ChatMessage message = new() {
             Timestamp = DateTime.Now, SenderId = senderID, Position = pos, Type = type, User = user, Text = text };
@@ -264,6 +266,14 @@ namespace Chatter {
         }
 
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
+      static void OnNewChatMessagePostfix() {
+        if (IsModEnabled.Value) {
+          _isCreatingChatMessage = false;
+        }
       }
 
       [HarmonyTranspiler]
@@ -336,28 +346,10 @@ namespace Chatter {
         }
       }
 
-      static bool _addingChatMessageText = false;
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(Terminal.AddString), typeof(string), typeof(string), typeof(Talker.Type), typeof(bool))]
-      static void AddStringPrefix(ref Terminal __instance) {
-        if (IsModEnabled.Value) {
-          _addingChatMessageText = true;
-        }
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Terminal.AddString), typeof(string), typeof(string), typeof(Talker.Type), typeof(bool))]
-      static void AddStringPostfix(ref Terminal __instance) {
-        if (IsModEnabled.Value) {
-          _addingChatMessageText = false;
-        }
-      }
-
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Terminal.AddString), typeof(string))]
       static void AddStringFinalPostfix(ref Terminal __instance, ref string text) {
-        if (_addingChatMessageText || !IsModEnabled.Value || __instance != Chat.m_instance || _chatPanel == null) {
+        if (_isCreatingChatMessage || !IsModEnabled.Value || __instance != Chat.m_instance || _chatPanel == null) {
           return;
         }
 
@@ -376,7 +368,6 @@ namespace Chatter {
   }
 
   public class CircularQueue<T> : ConcurrentQueue<T> {
-    // readonly ConcurrentQueue<T> _queue = new();
     readonly Action<T> _dequeueFunc;
     readonly int _capacity;
 

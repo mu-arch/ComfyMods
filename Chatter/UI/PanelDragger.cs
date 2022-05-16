@@ -6,10 +6,7 @@ namespace Chatter {
   public class PanelDragger : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     Vector2 _lastMousePosition;
 
-    [SerializeField]
     public RectTransform TargetTransform { get; set; }
-
-    [SerializeField]
     public Action EndDragAction { get; set; }
 
     public void OnBeginDrag(PointerEventData eventData) {
