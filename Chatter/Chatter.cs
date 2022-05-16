@@ -160,6 +160,33 @@ namespace Chatter {
     static GameObject _lastMessageRow;
     static InputField _vanillaInputField;
 
+    static void HideChatPanelDelegate(float hideTimer) {
+      if (IsModEnabled.Value && _chatPanel?.Panel) {
+        if (hideTimer < HideChatPanelDelay || Menu.IsVisible()) {
+          _chatPanel.CanvasGroup.alpha = 1f;
+          _chatPanel.CanvasGroup.blocksRaycasts = true;
+        } else {
+          _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha;
+          _chatPanel.CanvasGroup.blocksRaycasts = false;
+        }
+      }
+    }
+
+    static void EnableChatPanelDelegate() {
+      if (IsModEnabled.Value && _chatPanel?.Panel) {
+        _chatPanel.InputField.enabled = true;
+      }
+    }
+
+    static bool DisableChatPanelDelegate(bool active) {
+      if (IsModEnabled.Value && _chatPanel?.Panel) {
+        _chatPanel.InputField.enabled = false;
+        return true;
+      }
+
+      return active;
+    }
+
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
       [HarmonyPostfix]
@@ -239,24 +266,6 @@ namespace Chatter {
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
       }
 
-      static void HideChatPanelDelegate(float hideTimer) {
-        if (IsModEnabled.Value && _chatPanel?.Panel) {
-          if (hideTimer < HideChatPanelAlpha || Menu.IsVisible()) {
-            _chatPanel.CanvasGroup.alpha = 1f;
-            _chatPanel.CanvasGroup.blocksRaycasts = true;
-          } else {
-            _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha;
-            _chatPanel.CanvasGroup.blocksRaycasts = false;
-          }
-        }
-      }
-
-      static void ShowChatPanelDelegate(Chat chat) {
-        if (IsModEnabled.Value && _chatPanel?.InputField) {
-          _chatPanel.InputField.enabled = true;
-        }
-      }
-
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(Chat.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -284,41 +293,19 @@ namespace Chatter {
                 new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
                 new CodeMatch(
                     OpCodes.Callvirt, AccessTools.Method(typeof(InputField), nameof(InputField.ActivateInputField))))
-            .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0), Transpilers.EmitDelegate<Action<Chat>>(ShowChatPanelDelegate))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Action>(EnableChatPanelDelegate))
             .MatchForward(
                 useEnd: false,
-                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, typeof(Component).GetMethod("get_gameObject")),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
                 new CodeMatch(OpCodes.Ldc_I4_0),
-                new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))),
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldc_I4_0),
-                new CodeMatch(
-                    OpCodes.Stfld, typeof(Terminal).GetField(nameof(Terminal.m_focused), BindingFlags.NonPublic)))
+                new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_focused))))
             .Advance(offset: 3)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, Chat, bool>>(SetActiveDelegate))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
             .InstructionEnumeration();
-      }
-
-      static void ActivateInputFieldDelegate(Chat chat) {
-        ZLog.Log("ACTIVATIN");
-        Chat.m_instance.m_input.enabled = true;
-      }
-
-      static bool SetActiveDelegate(bool active, Chat chat) {
-        if (IsModEnabled.Value) {
-          ZLog.Log("RED: turning off chat way");
-          //chat.m_input.gameObject.SetActive(true);
-          //chat.m_input.interactable = false;
-          //chat.m_input.DeactivateInputField();
-          Chat.m_instance.m_input.enabled = false;
-          return true;
-        } else {
-          ZLog.Log("RED: not turning off chat way");
-          return false;
-        }
       }
     }
 
@@ -330,34 +317,15 @@ namespace Chatter {
         return new CodeMatcher(instructions)
             .MatchForward(
                 useEnd: false,
-                new CodeMatch(OpCodes.Ldnull),
-                new CodeMatch(OpCodes.Callvirt),
                 new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, typeof(Component).GetMethod("get_gameObject")),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
                 new CodeMatch(OpCodes.Ldc_I4_0),
                 new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
                 new CodeMatch(OpCodes.Ret))
-            .Advance(offset: 6)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, Terminal, bool>>(SetActiveDelegateA))
+            .Advance(offset: 4)
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
             .InstructionEnumeration();
-      }
-
-      static bool SetActiveDelegateA(bool active, Terminal terminal) {
-        
-        if (terminal == Chat.m_instance && IsModEnabled.Value) {
-          //chat.m_input.interactable = false;
-          //chat.m_focused = false;
-          ZLog.Log($"RED: Turning off this way. {Chat.m_instance.m_wasFocused} | {Chat.m_instance.m_focused}");
-          //Chat.m_instance.m_wasFocused = false;
-          //Chat.m_instance.m_focused = false;
-          Chat.m_instance.m_input.enabled = false;
-          return true;
-        } else {
-          ZLog.Log("RED: Not turning off this way.");
-          return false;
-        }
       }
 
       [HarmonyPostfix]
