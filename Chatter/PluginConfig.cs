@@ -22,6 +22,12 @@ namespace Chatter {
       get => _hideChatPanelAlpha.Value;
     }
 
+    static ConfigEntry<bool> _showMessageHudCenterMessages;
+
+    public static bool ShowMessageHudCenterMessages {
+      get => _showMessageHudCenterMessages.Value;
+    }
+
     public static ConfigEntry<string> ChatMessageFont { get; private set; }
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
 
@@ -54,6 +60,13 @@ namespace Chatter {
               defaultValue: 0.2f,
               new ConfigDescription(
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
+
+      _showMessageHudCenterMessages =
+          config.Bind(
+              "Content",
+              "showMessageHudCenterMessages",
+              defaultValue: true,
+              "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
       ChatPanelBackgroundColor =
           config.Bind(

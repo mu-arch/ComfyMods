@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Chatter {
@@ -53,34 +55,34 @@ namespace Chatter {
 
     static GameObject CreateGrabber(Transform parentTransform) {
       GameObject grabber = new("ChatPanel.Grabber", typeof(RectTransform));
-      grabber.transform.SetParent(parentTransform, worldPositionStays: false);
+      grabber.SetParent(parentTransform);
 
-      RectTransform grabberRectransform = grabber.GetComponent<RectTransform>();
-      grabberRectransform.anchorMin = Vector2.zero;
-      grabberRectransform.anchorMax = Vector2.zero;
-      grabberRectransform.pivot = Vector2.zero;
-      grabberRectransform.anchoredPosition = Vector2.zero;
+      grabber.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
-      LayoutElement grabberLayout = grabber.AddComponent<LayoutElement>();
-      grabberLayout.flexibleWidth = 1f;
-      grabberLayout.preferredHeight = 5f;
+      grabber.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
+          .SetPreferred(height: 5f);
 
-      Image grabberImage = grabber.AddComponent<Image>();
-      grabberImage.color = new Color32(255, 255, 255, 32);
-      grabberImage.raycastTarget = true;
+      grabber.AddComponent<Image>()
+          .SetColor(new Color32(255, 255, 255, 32))
+          .SetRaycastTarget(true);
 
       return grabber;
     }
 
     static GameObject CreateViewport(Transform parentTransform) {
       GameObject viewport = new("ChatPanel.Viewport", typeof(RectTransform));
-      viewport.transform.SetParent(parentTransform, worldPositionStays: false);
+      viewport.SetParent(parentTransform);
 
-      RectTransform viewportRectTransform = viewport.GetComponent<RectTransform>();
-      viewportRectTransform.anchorMin = Vector2.zero;
-      viewportRectTransform.anchorMax = Vector2.zero;
-      viewportRectTransform.pivot = Vector2.zero;
-      viewportRectTransform.anchoredPosition = Vector2.zero;
+      viewport.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
       Image viewportImage = viewport.AddComponent<Image>();
       viewportImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
@@ -90,9 +92,8 @@ namespace Chatter {
       RectMask2D viewportRectMask = viewport.AddComponent<RectMask2D>();
       viewportRectMask.softness = Vector2Int.RoundToInt(PluginConfig.ChatPanelRectMaskSoftness.Value);
 
-      LayoutElement viewportLayout = viewport.AddComponent<LayoutElement>();
-      viewportLayout.flexibleWidth = 1f;
-      viewportLayout.flexibleHeight = 1f;
+      viewport.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f, height: 1f);
 
       return viewport;
     }
@@ -143,7 +144,8 @@ namespace Chatter {
       rowLayoutGroup.childForceExpandHeight = false;
       rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
 
-      GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
+      GameObject inputFieldText =
+          UnityEngine.Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
       inputFieldText.name = "ChatPanel.InputField.Row.Text";
 
       RectTransform textRectTransform = inputFieldText.GetComponent<RectTransform>();
@@ -285,57 +287,56 @@ namespace Chatter {
     }
 
     public GameObject CreateChatMessageRowHeader(Transform parentTransform, ChatMessage message) {
+      return CreateChatMessageRowHeader(parentTransform, message.User, message.Timestamp.ToString("T"));
+    }
+
+    public GameObject CreateChatMessageRowHeader(Transform parentTransform, string leftText, string rightText) {
       GameObject header = new("Message.Row.Header", typeof(RectTransform));
       header.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      HorizontalLayoutGroup headerLayoutGroup = header.AddComponent<HorizontalLayoutGroup>();
-      headerLayoutGroup.childControlWidth = true;
-      headerLayoutGroup.childControlHeight = true;
-      headerLayoutGroup.childForceExpandWidth = false;
-      headerLayoutGroup.childForceExpandHeight = false;
-      headerLayoutGroup.padding = new(left: 0, right: 0, top: 0, bottom: 0); // Balance out the row spacing.
+      header.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 0, right: 0, top: 0, bottom: 0);
 
-      GameObject username = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      username.name = "Header.Username";
+      GameObject leftCell = UnityEngine.Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      leftCell.name = "Header.LeftCell";
 
-      Text usernameText = username.GetComponent<Text>();
-      usernameText.text = message.User;
-      usernameText.alignment = TextAnchor.MiddleLeft;
-      usernameText.fontSize -= 2;
+      Text leftCellText = leftCell.GetComponent<Text>();
+      leftCellText.text = leftText;
+      leftCellText.alignment = TextAnchor.MiddleLeft;
+      leftCellText.fontSize -= 2;
 
-      username.AddComponent<LayoutElement>();
+      leftCell.AddComponent<LayoutElement>();
 
       GameObject spacer = new("Header.Spacer", typeof(RectTransform));
-      spacer.transform.SetParent(header.transform, worldPositionStays: false);
+      spacer.SetParent(header.transform);
+      spacer.AddComponent<LayoutElement>().SetFlexible(width: 1f);
 
-      LayoutElement spacerLayout = spacer.AddComponent<LayoutElement>();
-      spacerLayout.flexibleWidth = 1f;
+      GameObject rightCell = UnityEngine.Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      rightCell.name = "Header.RightCell";
 
-      GameObject timestamp = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      timestamp.name = "Header.Timestamp";
+      Text rightCellText = rightCell.GetComponent<Text>();
+      rightCellText.text = rightText;
+      rightCellText.alignment = TextAnchor.MiddleRight;
+      rightCellText.fontSize -= 2;
 
-      Text timestampText = timestamp.GetComponent<Text>();
-      timestampText.text = message.Timestamp.ToString("T");
-      timestampText.alignment = TextAnchor.MiddleRight;
-      timestampText.fontSize -= 2;
-
-      timestamp.AddComponent<LayoutElement>();
+      rightCell.AddComponent<LayoutElement>();
 
       return header;
     }
 
     public GameObject CreateChatMessageRowBody(Transform parentTransform, string text) {
-      GameObject body = Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
+      GameObject body = UnityEngine.Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
       body.name = "Message.Row.Text";
 
-      Text bodyText = body.GetComponent<Text>();
-      bodyText.text = text;
-      bodyText.alignment = TextAnchor.MiddleLeft;
+      body.GetComponent<Text>()
+          .SetText(text)
+          .SetAlignment(TextAnchor.MiddleLeft);
 
-      LayoutElement bodyLayout = body.AddComponent<LayoutElement>();
-      //bodyLayout.preferredWidth = Panel.GetComponent<RectTransform>().sizeDelta.x - 50f;
-      bodyLayout.preferredWidth =
-          Panel.GetComponent<RectTransform>().sizeDelta.x + PluginConfig.ChatMessageWidthOffset.Value;
+      body.AddComponent<LayoutElement>()
+          .SetPreferred(
+              width: Panel.GetComponent<RectTransform>().sizeDelta.x + PluginConfig.ChatMessageWidthOffset.Value);
 
       return body;
     }

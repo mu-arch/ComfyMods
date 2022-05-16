@@ -253,8 +253,7 @@ namespace Chatter {
             || _lastMessage.SenderId != message.SenderId
             || _lastMessage.Type != message.Type
             || !_lastMessageRow) {
-          GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
-          MessageRows.EnqueueItem(divider);
+          AddDivider();
 
           GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
           _chatPanel.CreateChatMessageRowHeader(row.transform, message);
@@ -354,8 +353,7 @@ namespace Chatter {
         }
 
         if (_lastMessage != null || !_lastMessageRow) {
-          GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
-          MessageRows.EnqueueItem(divider);
+          AddDivider();
 
           _lastMessageRow = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
           MessageRows.EnqueueItem(_lastMessageRow);
@@ -364,6 +362,38 @@ namespace Chatter {
         _lastMessage = null;
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, text);
       }
+    }
+
+    [HarmonyPatch(typeof(MessageHud))]
+    class MessageHudPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(MessageHud.ShowMessage))]
+      static void ShowMessagePostfix(ref MessageHud.MessageType type, ref string text) {
+        if (IsModEnabled.Value
+            && type == MessageHud.MessageType.Center
+            && ShowMessageHudCenterMessages
+            && _chatPanel?.Panel) {
+          AddDivider();
+
+          GameObject row = AddRow();
+          _chatPanel.CreateChatMessageRowHeader(row.transform, string.Empty, DateTime.Now.ToString("T"));
+          _chatPanel.CreateChatMessageRowBody(row.transform, $"<color=orange>{text}</color>");
+
+          _lastMessage = null;
+          _lastMessageRow = null;
+        }
+      }
+    }
+
+    static void AddDivider() {
+      GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
+      MessageRows.EnqueueItem(divider);
+    }
+
+    static GameObject AddRow() {
+      GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
+      MessageRows.EnqueueItem(row);
+      return row;
     }
   }
 
