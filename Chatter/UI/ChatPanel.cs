@@ -1,12 +1,11 @@
-﻿using System.Collections.Concurrent;
-using System.Runtime.Remoting.Messaging;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Chatter {
   public class ChatPanel {
     public GameObject Panel { get; private set; }
+    public CanvasGroup CanvasGroup { get; private set; }
+
     public GameObject Grabber { get; private set; }
     public GameObject Viewport { get; private set; }
     public Image ViewportImage { get; private set; }
@@ -20,6 +19,8 @@ namespace Chatter {
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
+      CanvasGroup = Panel.GetComponent<CanvasGroup>();
+
       Viewport = CreateViewport(Panel.transform);
       ViewportImage = Viewport.GetComponent<Image>();
       Content = CreateContent(Viewport.transform);
@@ -31,21 +32,21 @@ namespace Chatter {
       Grabber = CreateGrabber(Panel.transform);
     }
 
-    static GameObject CreatePanel(Transform parentTransform) {
+    GameObject CreatePanel(Transform parentTransform) {
       GameObject panel = new("ChatPanel", typeof(RectTransform));
-      panel.transform.SetParent(parentTransform, worldPositionStays: false);
+      panel.SetParent(parentTransform);
 
-      RectTransform panelRectTransform = panel.GetComponent<RectTransform>();
-      panelRectTransform.anchorMin = new(1f, 0f);
-      panelRectTransform.anchorMax = new(1f, 0f);
-      panelRectTransform.pivot = new(1f, 0f);
-      panelRectTransform.anchoredPosition = Vector2.zero;
+      panel.GetComponent<RectTransform>()
+          .SetAnchorMin(new(1f, 0f))
+          .SetAnchorMax(new(1f, 0f))
+          .SetPivot(new(1f, 0f))
+          .SetPosition(Vector2.zero);
 
-      VerticalLayoutGroup panelLayoutGroup = panel.AddComponent<VerticalLayoutGroup>();
-      panelLayoutGroup.childControlWidth = true;
-      panelLayoutGroup.childControlHeight = true;
-      panelLayoutGroup.childForceExpandWidth = false;
-      panelLayoutGroup.childForceExpandHeight = false;
+      panel.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false);
+
+      panel.AddComponent<CanvasGroup>();
 
       return panel;
     }

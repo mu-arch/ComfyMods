@@ -10,6 +10,18 @@ namespace Chatter {
     public static ConfigFile Config { get; private set; }
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
+    static ConfigEntry<int> _hideChatPanelDelay;
+
+    public static int HideChatPanelDelay {
+      get => _hideChatPanelDelay.Value;
+    }
+
+    static ConfigEntry<float> _hideChatPanelAlpha;
+
+    public static float HideChatPanelAlpha {
+      get => _hideChatPanelAlpha.Value;
+    }
+
     public static ConfigEntry<string> ChatMessageFont { get; private set; }
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
 
@@ -26,6 +38,22 @@ namespace Chatter {
     public static void BindConfig(ConfigFile config) {
       Config = config;
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      _hideChatPanelDelay =
+          config.Bind(
+              "Behaviour",
+              "hideChatPanelDelay",
+              defaultValue: 10,
+              new ConfigDescription(
+                  "Delay (in seconds) before hiding the ChatPanel.", new AcceptableValueRange<int>(1, 180)));
+
+      _hideChatPanelAlpha =
+          config.Bind(
+              "Behaviour",
+              "hideChatPanelAlpha",
+              defaultValue: 0.2f,
+              new ConfigDescription(
+                  "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
       ChatPanelBackgroundColor =
           config.Bind(

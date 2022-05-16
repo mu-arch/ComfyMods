@@ -61,7 +61,7 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
           ToggleGrabber(true);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
           Chat.m_instance.m_hideDelay = 600;
@@ -71,7 +71,7 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel.activeSelf) {
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
           ToggleGrabber(false);
           _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
           _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
@@ -97,7 +97,6 @@ namespace Chatter {
       Chat.m_instance.m_chatWindow.GetComponent<RectMask2D>().enabled = !toggle;
       Chat.m_instance.m_output.gameObject.SetActive(!toggle);
       Chat.m_instance.m_chatWindow.Find("bkg").gameObject.SetActive(!toggle);
-
       
       if (_chatPanel == null || !_chatPanel.Panel) {
         _chatPanel = new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
@@ -240,17 +239,53 @@ namespace Chatter {
         _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
       }
 
+      static void HideChatPanelDelegate(float hideTimer) {
+        if (IsModEnabled.Value && _chatPanel?.Panel) {
+          if (hideTimer < HideChatPanelAlpha || Menu.IsVisible()) {
+            _chatPanel.CanvasGroup.alpha = 1f;
+            _chatPanel.CanvasGroup.blocksRaycasts = true;
+          } else {
+            _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha;
+            _chatPanel.CanvasGroup.blocksRaycasts = false;
+          }
+        }
+      }
+
+      static void ShowChatPanelDelegate(Chat chat) {
+        if (IsModEnabled.Value && _chatPanel?.InputField) {
+          _chatPanel.InputField.enabled = true;
+        }
+      }
+
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(Chat.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
             .MatchForward(
+                useEnd: true,
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideTimer))),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideDelay))),
+                new CodeMatch(OpCodes.Clt),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideTimer))),
+                Transpilers.EmitDelegate<Action<float>>(HideChatPanelDelegate))
+            .MatchForward(
                 useEnd: false,
-                new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, typeof(InputField).GetMethod(nameof(InputField.ActivateInputField))))
-            //.Advance(offset: 2)
-            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Action<Chat>>(ActivateInputFieldDelegate))
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
+                new CodeMatch(OpCodes.Ldc_I4_1),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
+                new CodeMatch(
+                    OpCodes.Callvirt, AccessTools.Method(typeof(InputField), nameof(InputField.ActivateInputField))))
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0), Transpilers.EmitDelegate<Action<Chat>>(ShowChatPanelDelegate))
             .MatchForward(
                 useEnd: false,
                 new CodeMatch(OpCodes.Ldfld, typeof(Terminal).GetField(nameof(Terminal.m_input))),
