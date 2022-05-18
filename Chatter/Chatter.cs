@@ -38,63 +38,17 @@ namespace Chatter {
     static readonly List<ChatMessage> MessageHistory = new();
     static readonly CircularQueue<GameObject> MessageRows = new(50, row => Destroy(row));
 
-    static void SetMessageFont(Font font, int fontSize) {
-      Text textPrefabText = _chatPanel.TextPrefab.GetComponent<Text>();
-      int fontSizeDelta = fontSize - textPrefabText.fontSize;
-
-      IEnumerable<Text> texts =
-          _chatPanel.Panel.GetComponentsInChildren<Text>()
-              .SelectMany(row => row.GetComponentsInChildren<Text>())
-                  .Append(textPrefabText);
-
-      foreach (Text text in texts) {
-        text.font = font;
-        text.fontSize += fontSizeDelta;
-      }
-    }
-
     static ChatPanel _chatPanel;
 
-    [HarmonyPatch(typeof(Menu))]
-    class MenuPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Menu.Show))]
-      static void ShowPostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
-          ToggleGrabber(true);
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
-        }
-      }
+    static ChatMessage _lastMessage = null;
+    static GameObject _lastMessageRow;
+    static InputField _vanillaInputField;
 
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Menu.Hide))]
-      static void HidePostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
-          ToggleGrabber(false);
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
-          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
-        }
-      }
-    }
-
-    static void ToggleGrabber(bool toggle) {
-      if (_chatPanel != null && _chatPanel.Grabber && _chatPanel.Grabber.TryGetComponent(out Image image)) {
-        image.raycastTarget = toggle;
-        Color color = image.color;
-        color.a = toggle ? 0.1f : 0;
-        image.color = color;
-      }
-    }
+    static bool _isCreatingChatMessage = false;
 
     static void ToggleChatPanel(bool toggle) {
-      if (!Chat.m_instance) {
-        return;
-      }
+      ToggleVanillaChat(Chat.m_instance, !toggle);
 
-      Chat.m_instance.m_chatWindow.GetComponent<RectMask2D>().enabled = !toggle;
-      Chat.m_instance.m_output.gameObject.SetActive(!toggle);
-      Chat.m_instance.m_chatWindow.Find("bkg").gameObject.SetActive(!toggle);
-      
       if (_chatPanel == null || !_chatPanel.Panel) {
         _chatPanel = new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
         _chatPanel.Panel.GetComponent<RectTransform>().SetAsFirstSibling();
@@ -115,49 +69,21 @@ namespace Chatter {
             () => ChatWindowPositionOffset.Value = panelDragger.TargetTransform.anchoredPosition;
       }
 
-      SetChatWindowPositionOffset();
+      SetChatPanelPositionOffset(sender: null, args: null);
       Chat.m_instance.m_input = toggle ? _chatPanel.InputField : _vanillaInputField;
     }
 
-    static void SetChatPanelSize(Vector2 sizeDelta) {
-      RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
-      panelRectTransform.sizeDelta = sizeDelta;
-      panelRectTransform.anchoredPosition = new(0, 30f);
+    static void ToggleVanillaChat(Chat chat, bool toggle) {
+      if (chat) {
+        chat.m_chatWindow.GetComponent<RectMask2D>().enabled = toggle;
 
-      _chatPanel.Viewport.GetComponent<RectTransform>().sizeDelta = sizeDelta;
-      SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
-    }
+        foreach (Image image in chat.m_chatWindow.GetComponentsInChildren<Image>(includeInactive: true)) {
+          image.gameObject.SetActive(toggle);
+        }
 
-    static void SetChatMessageRowWidth(float widthoffset) {
-      float preferredWidth = _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta.x + widthoffset;
-
-      foreach (
-          LayoutElement layout
-              in MessageRows
-                  .SelectMany(row => row.GetComponentsInChildren<LayoutElement>())
-                  .Where(layout => layout.name == "Message.Row.Text")) {
-        layout.preferredWidth = preferredWidth;
+        chat.m_output.gameObject.SetActive(toggle);
       }
     }
-
-    static void SetChatWindowPositionOffset() {
-      _chatPanel.Panel.GetComponent<RectTransform>().anchoredPosition = ChatWindowPositionOffset.Value;             
-    }
-
-    static void SetChatWindowBackgroundColor(Color targetColor) {
-      if (_chatPanel == null || !_chatPanel.Panel) {
-        return;
-      }
-
-      _chatPanel.ViewportImage.color = targetColor;
-      _chatPanel.InputFieldImage.color = targetColor;
-    }
-
-    static ChatMessage _lastMessage = null;
-    static GameObject _lastMessageRow;
-    static InputField _vanillaInputField;
-
-    static bool _isCreatingChatMessage = false;
 
     static void HideChatPanelDelegate(float hideTimer) {
       if (IsModEnabled.Value && _chatPanel?.Panel) {
@@ -186,42 +112,37 @@ namespace Chatter {
       return active;
     }
 
+    static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
+      BindChatMessageFont(chat.Ref()?.m_output.font);
+      BindChatPanelSize(chat.Ref()?.m_chatWindow);
+
+      ChatMessageFont.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
+      ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
+
+      ChatPanelBackgroundColor.SettingChanged -= SetChatPanelBackgroundColor;
+      ChatPanelBackgroundColor.SettingChanged += SetChatPanelBackgroundColor;
+
+      ChatPanelRectMaskSoftness.SettingChanged -= SetChatPanelRectMaskSoftness;
+      ChatPanelRectMaskSoftness.SettingChanged += SetChatPanelRectMaskSoftness;
+
+      ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);
+      ChatMessageWidthOffset.SettingChanged += (s, ea) => SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
+
+      ChatWindowPositionOffset.SettingChanged -= SetChatPanelPositionOffset;
+      ChatWindowPositionOffset.SettingChanged += SetChatPanelPositionOffset;
+
+      ChatMessageBlockSpacing.SettingChanged +=
+          (s, ea) => _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
+    }
+
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Chat.Awake))]
       static void AwakePostfix(ref Chat __instance) {
-        if (!IsModEnabled.Value) {
-          return;
-        }
-
-        //__instance.m_maxVisibleBufferLength = 80;
-        //__instance.m_hideDelay = 600;
-        //__instance.m_chatWindow.SetAsFirstSibling();
-
         _vanillaInputField = __instance.m_input;
 
-        BindChatMessageFont(__instance.m_output.font);
-        ChatMessageFont.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
-        ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
-
-        ChatPanelBackgroundColor.SettingChanged +=
-            (s, ea) => SetChatWindowBackgroundColor(ChatPanelBackgroundColor.Value);
-
-        ChatPanelRectMaskSoftness.SettingChanged +=
-            (s, ea) =>
-                _chatPanel.Panel.GetComponent<RectMask2D>().softness =
-                    Vector2Int.RoundToInt(ChatPanelRectMaskSoftness.Value);
-
-        BindChatPanelSize(__instance.m_chatWindow);
-
-        ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);
-        ChatMessageWidthOffset.SettingChanged += (s, ea) => SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
-        ChatWindowPositionOffset.SettingChanged += (s, ea) => SetChatWindowPositionOffset();
-
-        ChatMessageBlockSpacing.SettingChanged +=
-            (s, ea) => _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
-
+        BindChatConfig(__instance, _chatPanel);
         ToggleChatPanel(IsModEnabled.Value);
       }
 
@@ -316,6 +237,21 @@ namespace Chatter {
             .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
             .InstructionEnumeration();
       }
+
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Chat.AddInworldText))]
+      static IEnumerable<CodeInstruction> AddInworldTextTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(string), nameof(string.ToUpper))))
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(ToUpperDelegate))
+            .InstructionEnumeration();
+      }
+
+      static string ToUpperDelegate(string text) {
+        return IsModEnabled.Value ? text : text.ToUpper();
+      }
     }
 
     [HarmonyPatch(typeof(Terminal))]
@@ -364,6 +300,37 @@ namespace Chatter {
       }
     }
 
+    [HarmonyPatch(typeof(Menu))]
+    class MenuPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Menu.Show))]
+      static void ShowPostfix() {
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
+          ToggleGrabber(true);
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
+        }
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Menu.Hide))]
+      static void HidePostfix() {
+        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
+          ToggleGrabber(false);
+          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
+          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
+        }
+      }
+    }
+
+    static void ToggleGrabber(bool toggle) {
+      if (_chatPanel != null && _chatPanel.Grabber && _chatPanel.Grabber.TryGetComponent(out Image image)) {
+        image.raycastTarget = toggle;
+        Color color = image.color;
+        color.a = toggle ? 0.1f : 0;
+        image.color = color;
+      }
+    }
+
     [HarmonyPatch(typeof(MessageHud))]
     class MessageHudPatch {
       [HarmonyPostfix]
@@ -395,31 +362,72 @@ namespace Chatter {
       MessageRows.EnqueueItem(row);
       return row;
     }
-  }
 
-  public class CircularQueue<T> : ConcurrentQueue<T> {
-    readonly Action<T> _dequeueFunc;
-    readonly int _capacity;
+    static void SetChatPanelSize(Vector2 sizeDelta) {
+      RectTransform panelRectTransform = _chatPanel.Panel.GetComponent<RectTransform>();
+      panelRectTransform.sizeDelta = sizeDelta;
+      panelRectTransform.anchoredPosition = new(0, 30f);
 
-    public CircularQueue(int capacity, Action<T> dequeueFunc) {
-      _capacity = capacity;
-      _dequeueFunc = dequeueFunc;
+      _chatPanel.Viewport.GetComponent<RectTransform>().sizeDelta = sizeDelta;
+      SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
     }
 
-    public void EnqueueItem(T item) {
-      while (Count + 1 > _capacity) {
-        if (!TryDequeue(out T itemToDequeue)) {
-          throw new Exception("Unable to dequeue!");
-        }
+    static void SetChatMessageRowWidth(float widthoffset) {
+      float preferredWidth = _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta.x + widthoffset;
 
-        _dequeueFunc(itemToDequeue);
+      foreach (
+          LayoutElement layout
+              in MessageRows
+                  .SelectMany(row => row.GetComponentsInChildren<LayoutElement>())
+                  .Where(layout => layout.name == "Message.Row.Text")) {
+        layout.preferredWidth = preferredWidth;
+      }
+    }
+
+    static void SetChatPanelPositionOffset(object sender, EventArgs args) {
+      if (_chatPanel == null
+          || !_chatPanel.Panel
+          || !_chatPanel.Panel.TryGetComponent(out RectTransform rectTransform)) {
+        return;
       }
 
-      Enqueue(item);
+      rectTransform.anchoredPosition = ChatWindowPositionOffset.Value;
     }
 
-    public T DequeueItem() {
-      return TryDequeue(out T result) ? result : default;
+    static void SetChatPanelBackgroundColor(object sender, EventArgs args) {
+      if (_chatPanel == null || !_chatPanel.Panel || !_chatPanel.ViewportImage || !_chatPanel.InputFieldImage) {
+        return;
+      }
+
+      _chatPanel.ViewportImage.color = ChatPanelBackgroundColor.Value;
+      _chatPanel.InputFieldImage.color = ChatPanelBackgroundColor.Value;
+    }
+
+    static void SetChatPanelRectMaskSoftness(object sender, EventArgs args) {
+      if (_chatPanel == null || !_chatPanel.Panel || !_chatPanel.Panel.TryGetComponent(out RectMask2D rectMask)) {
+        return;
+      }
+
+      rectMask.softness = Vector2Int.RoundToInt(ChatPanelRectMaskSoftness.Value);
+    }
+
+    static void SetMessageFont(Font font, int fontSize) {
+      if (_chatPanel == null || !_chatPanel.Panel) {
+        return;
+      }
+
+      Text textPrefabText = _chatPanel.TextPrefab.GetComponent<Text>();
+      int fontSizeDelta = fontSize - textPrefabText.fontSize;
+
+      IEnumerable<Text> texts =
+          _chatPanel.Panel.GetComponentsInChildren<Text>()
+              .SelectMany(row => row.GetComponentsInChildren<Text>())
+                  .Append(textPrefabText);
+
+      foreach (Text text in texts) {
+        text.font = font;
+        text.fontSize += fontSizeDelta;
+      }
     }
   }
 }
