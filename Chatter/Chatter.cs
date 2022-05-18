@@ -35,18 +35,35 @@ namespace Chatter {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly List<ChatMessage> MessageHistory = new();
-    static readonly CircularQueue<GameObject> MessageRows = new(50, row => Destroy(row));
+    public class MessageRow {
+      public enum MessageType {
+        Text,
+        Chat,
+        Divider,
+        CenterText
+      }
 
-    static ChatPanel _chatPanel;
+      public MessageType RowType { get; }
+      public GameObject Row { get; }
 
-    static ChatMessage _lastMessage = null;
-    static GameObject _lastMessageRow;
-    static InputField _vanillaInputField;
+      public MessageRow(MessageType type, GameObject row) {
+        RowType = type;
+        Row = row;
+      }
+    }
 
-    static bool _isCreatingChatMessage = false;
+    internal static readonly List<ChatMessage> MessageHistory = new();
+    internal static readonly CircularQueue<MessageRow> MessageRows = new(50, row => Destroy(row.Row));
 
-    static void ToggleChatPanel(bool toggle) {
+    internal static bool _isPluginConfigBound = false;
+
+    internal static ChatPanel _chatPanel;
+    internal static ChatMessage _lastMessage = null;
+    internal static InputField _vanillaInputField;
+
+    internal static bool _isCreatingChatMessage = false;
+
+    internal static void ToggleChatPanel(bool toggle) {
       ToggleVanillaChat(Chat.m_instance, !toggle);
 
       if (_chatPanel == null || !_chatPanel.Panel) {
@@ -85,7 +102,7 @@ namespace Chatter {
       }
     }
 
-    static void HideChatPanelDelegate(float hideTimer) {
+    internal static void HideChatPanelDelegate(float hideTimer) {
       if (IsModEnabled.Value && _chatPanel?.Panel) {
         if (hideTimer < HideChatPanelDelay || Menu.IsVisible()) {
           _chatPanel.CanvasGroup.alpha = 1f;
@@ -97,13 +114,13 @@ namespace Chatter {
       }
     }
 
-    static void EnableChatPanelDelegate() {
+    internal static void EnableChatPanelDelegate() {
       if (IsModEnabled.Value && _chatPanel?.Panel) {
         _chatPanel.InputField.enabled = true;
       }
     }
 
-    static bool DisableChatPanelDelegate(bool active) {
+    internal static bool DisableChatPanelDelegate(bool active) {
       if (IsModEnabled.Value && _chatPanel?.Panel) {
         _chatPanel.InputField.enabled = false;
         return true;
@@ -112,146 +129,41 @@ namespace Chatter {
       return active;
     }
 
-    static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
+    internal static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
+      if (_isPluginConfigBound) {
+        ZLog.Log($"PluginConfig already bound, skipping.");
+        return;
+      }
+
+      ZLog.Log($"Binding PluginConfig...");
+      _isPluginConfigBound = true;
+
       BindChatMessageFont(chat.Ref()?.m_output.font);
       BindChatPanelSize(chat.Ref()?.m_chatWindow);
 
       ChatMessageFont.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
       ChatMessageFontSize.SettingChanged += (s, ea) => SetMessageFont(MessageFont, MessageFontSize);
 
-      ChatPanelBackgroundColor.SettingChanged -= SetChatPanelBackgroundColor;
       ChatPanelBackgroundColor.SettingChanged += SetChatPanelBackgroundColor;
-
-      ChatPanelRectMaskSoftness.SettingChanged -= SetChatPanelRectMaskSoftness;
       ChatPanelRectMaskSoftness.SettingChanged += SetChatPanelRectMaskSoftness;
 
       ChatPanelSize.SettingChanged += (s, ea) => SetChatPanelSize(ChatPanelSize.Value);
       ChatMessageWidthOffset.SettingChanged += (s, ea) => SetChatMessageRowWidth(ChatMessageWidthOffset.Value);
-
-      ChatWindowPositionOffset.SettingChanged -= SetChatPanelPositionOffset;
       ChatWindowPositionOffset.SettingChanged += SetChatPanelPositionOffset;
 
       ChatMessageBlockSpacing.SettingChanged +=
-          (s, ea) => _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
-    }
+          (s, ea) => {
+            if (_chatPanel?.Panel) {
+              _chatPanel.Content.GetComponent<VerticalLayoutGroup>().spacing = ChatMessageBlockSpacing.Value;
+            }
+          };
 
-    [HarmonyPatch(typeof(Chat))]
-    class ChatPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Chat.Awake))]
-      static void AwakePostfix(ref Chat __instance) {
-        _vanillaInputField = __instance.m_input;
-
-        BindChatConfig(__instance, _chatPanel);
-        ToggleChatPanel(IsModEnabled.Value);
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
-      static void OnNewChatMessagePrefix(
-          ref long senderID, ref Vector3 pos, ref Talker.Type type, ref string user, ref string text) {
-        if (!IsModEnabled.Value) {
-          return;
-        }
-
-        _isCreatingChatMessage = true;
-
-        ChatMessage message = new() {
-            Timestamp = DateTime.Now, SenderId = senderID, Position = pos, Type = type, User = user, Text = text };
-
-        MessageHistory.Add(message);
-
-        if (type == Talker.Type.Ping) {
-          // Ignore pings.
-          return;
-        }
-
-        if (_chatPanel == null || !_chatPanel.Panel) {
-          ZLog.LogError($"ChatPanel not yet created.");
-        }
-
-        if (_lastMessage == null
-            || _lastMessage.SenderId != message.SenderId
-            || _lastMessage.Type != message.Type
-            || !_lastMessageRow) {
-          AddDivider();
-
-          GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-          _chatPanel.CreateChatMessageRowHeader(row.transform, message);
-
-          MessageRows.EnqueueItem(row);
-
-          _lastMessageRow = row;
-          _lastMessage = message;
-        }
-
-        _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, ChatPanel.GetMessageText(message));
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
-      static void OnNewChatMessagePostfix() {
-        if (IsModEnabled.Value) {
-          _isCreatingChatMessage = false;
-        }
-      }
-
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(Chat.Update))]
-      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: true,
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideTimer))),
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideDelay))),
-                new CodeMatch(OpCodes.Clt),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
-            .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideTimer))),
-                Transpilers.EmitDelegate<Action<float>>(HideChatPanelDelegate))
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
-                new CodeMatch(OpCodes.Ldc_I4_1),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))),
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
-                new CodeMatch(
-                    OpCodes.Callvirt, AccessTools.Method(typeof(InputField), nameof(InputField.ActivateInputField))))
-            .InsertAndAdvance(Transpilers.EmitDelegate<Action>(EnableChatPanelDelegate))
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
-                new CodeMatch(OpCodes.Ldc_I4_0),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))),
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldc_I4_0),
-                new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_focused))))
-            .Advance(offset: 3)
-            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
-            .InstructionEnumeration();
-      }
-
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(Chat.AddInworldText))]
-      static IEnumerable<CodeInstruction> AddInworldTextTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(string), nameof(string.ToUpper))))
-            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(ToUpperDelegate))
-            .InstructionEnumeration();
-      }
-
-      static string ToUpperDelegate(string text) {
-        return IsModEnabled.Value ? text : text.ToUpper();
-      }
+      _showChatPanelMessageDividers.SettingChanged +=
+          (s, ea) => {
+            foreach (MessageRow row in MessageRows.Where(row => row.RowType == MessageRow.MessageType.Divider)) {
+              row.Row.SetActive(ShowChatPanelMessageDividers);
+            }
+          };
     }
 
     [HarmonyPatch(typeof(Terminal))]
@@ -284,19 +196,18 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Terminal.AddString), typeof(string))]
       static void AddStringFinalPostfix(ref Terminal __instance, ref string text) {
-        if (_isCreatingChatMessage || !IsModEnabled.Value || __instance != Chat.m_instance || _chatPanel == null) {
+        if (!IsModEnabled.Value || __instance != Chat.m_instance || !_chatPanel?.Panel || _isCreatingChatMessage) {
           return;
         }
 
-        if (_lastMessage != null || !_lastMessageRow) {
+        if (MessageRows.IsEmpty || MessageRows.LastItem.RowType != MessageRow.MessageType.Text) {
           AddDivider();
 
-          _lastMessageRow = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-          MessageRows.EnqueueItem(_lastMessageRow);
+          MessageRows.EnqueueItem(
+            new(MessageRow.MessageType.Text, _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform)));
         }
 
-        _lastMessage = null;
-        _chatPanel.CreateChatMessageRowBody(_lastMessageRow.transform, text);
+        _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text);
       }
     }
 
@@ -336,31 +247,31 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(MessageHud.ShowMessage))]
       static void ShowMessagePostfix(ref MessageHud.MessageType type, ref string text) {
-        if (IsModEnabled.Value
-            && type == MessageHud.MessageType.Center
-            && ShowMessageHudCenterMessages
-            && _chatPanel?.Panel) {
+        if (!IsModEnabled.Value || type != MessageHud.MessageType.Center || !_chatPanel?.Panel) {
+          return;
+        }
+
+        if (MessageRows.IsEmpty || MessageRows.LastItem.RowType != MessageRow.MessageType.CenterText) {
           AddDivider();
 
-          GameObject row = AddRow();
-          _chatPanel.CreateChatMessageRowHeader(row.transform, string.Empty, DateTime.Now.ToString("T"));
-          _chatPanel.CreateChatMessageRowBody(row.transform, $"<color=orange>{text}</color>");
+          GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
+          MessageRows.EnqueueItem(new(MessageRow.MessageType.Text, row));
 
-          _lastMessage = null;
-          _lastMessageRow = null;
+          _chatPanel.CreateChatMessageRowHeader(row.transform, string.Empty, DateTime.Now.ToString("T"));
         }
+
+        _chatPanel.CreateChatMessageRowBody(
+            MessageRows.LastItem.Row.transform.transform, $"<color=orange>{text}</color>");
       }
     }
 
-    static void AddDivider() {
-      GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
-      MessageRows.EnqueueItem(divider);
-    }
+    internal static void AddDivider() {
+      if (_chatPanel?.Panel) {
+        GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
+        divider.SetActive(ShowChatPanelMessageDividers);
 
-    static GameObject AddRow() {
-      GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-      MessageRows.EnqueueItem(row);
-      return row;
+        MessageRows.EnqueueItem(new(MessageRow.MessageType.Divider, divider));
+      }
     }
 
     static void SetChatPanelSize(Vector2 sizeDelta) {
@@ -378,7 +289,7 @@ namespace Chatter {
       foreach (
           LayoutElement layout
               in MessageRows
-                  .SelectMany(row => row.GetComponentsInChildren<LayoutElement>())
+                  .SelectMany(row => row.Row.GetComponentsInChildren<LayoutElement>())
                   .Where(layout => layout.name == "Message.Row.Text")) {
         layout.preferredWidth = preferredWidth;
       }

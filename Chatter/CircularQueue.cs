@@ -11,6 +11,11 @@ namespace Chatter {
       _dequeueFunc = dequeueFunc;
     }
 
+    T _lastItem = default;
+    public T LastItem {
+      get => _lastItem;
+    }
+
     public void EnqueueItem(T item) {
       while (Count + 1 > _capacity) {
         if (TryDequeue(out T itemToDequeue)) {
@@ -19,6 +24,13 @@ namespace Chatter {
       }
 
       Enqueue(item);
+      _lastItem = item;
+    }
+
+    public void ClearItems() {
+      while (TryDequeue(out T itemToDequeue)) {
+        _dequeueFunc(itemToDequeue);
+      }
     }
   }
 }

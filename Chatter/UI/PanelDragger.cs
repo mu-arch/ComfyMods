@@ -6,8 +6,8 @@ namespace Chatter {
   public class PanelDragger : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     Vector2 _lastMousePosition;
 
-    public RectTransform TargetTransform { get; set; }
-    public Action EndDragAction { get; set; }
+    public RectTransform TargetTransform { get; set; } = default!;
+    public Action EndDragAction { get; set; } = default!;
 
     public void OnBeginDrag(PointerEventData eventData) {
       _lastMousePosition = eventData.position;

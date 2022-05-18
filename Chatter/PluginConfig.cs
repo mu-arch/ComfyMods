@@ -8,26 +8,33 @@ using UnityEngine;
 namespace Chatter {
   public class PluginConfig {
     public static ConfigFile Config { get; private set; }
+
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
-    static ConfigEntry<int> _hideChatPanelDelay;
+    // Behaviour
 
+    static ConfigEntry<int> _hideChatPanelDelay;
     public static int HideChatPanelDelay {
       get => _hideChatPanelDelay.Value;
     }
 
     static ConfigEntry<float> _hideChatPanelAlpha;
-
     public static float HideChatPanelAlpha {
       get => _hideChatPanelAlpha.Value;
     }
 
+    // Content
     static ConfigEntry<bool> _showMessageHudCenterMessages;
-
     public static bool ShowMessageHudCenterMessages {
       get => _showMessageHudCenterMessages.Value;
     }
 
+    internal static ConfigEntry<bool> _showChatPanelMessageDividers;
+    public static bool ShowChatPanelMessageDividers {
+      get => _showChatPanelMessageDividers.Value;
+    }
+
+    // Style
     public static ConfigEntry<string> ChatMessageFont { get; private set; }
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
 
@@ -45,6 +52,7 @@ namespace Chatter {
       Config = config;
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      // Behaviour
       _hideChatPanelDelay =
           config.Bind(
               "Behaviour",
@@ -61,12 +69,20 @@ namespace Chatter {
               new ConfigDescription(
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
+      // Content
       _showMessageHudCenterMessages =
           config.Bind(
               "Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
+
+      _showChatPanelMessageDividers =
+          config.Bind(
+              "Content",
+              "showChatPanelMessageDividers",
+              defaultValue: true,
+              "Show the horizontal dividers between groups of messages.");
 
       ChatPanelBackgroundColor =
           config.Bind(
