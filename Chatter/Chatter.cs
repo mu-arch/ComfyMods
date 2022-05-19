@@ -181,7 +181,7 @@ namespace Chatter {
       static void ShowPostfix() {
         if (IsModEnabled.Value) {
           ChatPanel?.ToggleGrabber(true);
-          ChatPanel?.SetPanelSize(ChatPanelSize.Value += new Vector2(0, 400f));
+          ChatPanel?.SetPanelSize(ChatPanelSize.Value + new Vector2(0, 400f));
         }
       }
 
