@@ -109,6 +109,11 @@ namespace Chatter {
       image.raycastTarget = raycastTarget;
       return image;
     }
+
+    public static Image SetSprite(this Image image, Sprite sprite) {
+      image.sprite = sprite;
+      return image;
+    }
   }
 
   public static class LayoutElementExtensions {

@@ -12,23 +12,11 @@ namespace Chatter {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     // Behaviour
-
-    static ConfigEntry<int> _hideChatPanelDelay;
-    public static int HideChatPanelDelay {
-      get => _hideChatPanelDelay.Value;
-    }
-
-    static ConfigEntry<float> _hideChatPanelAlpha;
-    public static float HideChatPanelAlpha {
-      get => _hideChatPanelAlpha.Value;
-    }
+    public static ConfigEntry<int> HideChatPanelDelay { get; private set; }
+    public static ConfigEntry<float> HideChatPanelAlpha { get; private set; }
 
     // Content
-    static ConfigEntry<bool> _showMessageHudCenterMessages;
-    public static bool ShowMessageHudCenterMessages {
-      get => _showMessageHudCenterMessages.Value;
-    }
-
+    public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
 
     // Style
@@ -49,7 +37,7 @@ namespace Chatter {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       // Behaviour
-      _hideChatPanelDelay =
+      HideChatPanelDelay =
           config.Bind(
               "Behaviour",
               "hideChatPanelDelay",
@@ -57,7 +45,7 @@ namespace Chatter {
               new ConfigDescription(
                   "Delay (in seconds) before hiding the ChatPanel.", new AcceptableValueRange<int>(1, 180)));
 
-      _hideChatPanelAlpha =
+      HideChatPanelAlpha =
           config.Bind(
               "Behaviour",
               "hideChatPanelAlpha",
@@ -66,7 +54,7 @@ namespace Chatter {
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
       // Content
-      _showMessageHudCenterMessages =
+      ShowMessageHudCenterMessages =
           config.Bind(
               "Content",
               "showMessageHudCenterMessages",

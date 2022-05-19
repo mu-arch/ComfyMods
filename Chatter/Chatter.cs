@@ -56,9 +56,9 @@ namespace Chatter {
 
     internal static bool _isPluginConfigBound = false;
 
-    internal static ChatPanel _chatPanel;
+    internal static ChatPanel _chatPanel = null;
     internal static ChatMessage _lastMessage = null;
-    internal static InputField _vanillaInputField;
+    internal static InputField _chatInputField = null;
 
     internal static bool _isCreatingChatMessage = false;
 
@@ -67,7 +67,7 @@ namespace Chatter {
       ToggleChatPanel(Chat.m_instance, toggle);
 
       if (Chat.m_instance) {
-        Chat.m_instance.m_input = toggle && ChatPanel?.Panel ? ChatPanel.InputField : _vanillaInputField;
+        Chat.m_instance.m_input = toggle && ChatPanel?.Panel ? ChatPanel.InputField : _chatInputField;
       }
     }
 
@@ -112,12 +112,12 @@ namespace Chatter {
     }
 
     internal static void HideChatPanelDelegate(float hideTimer) {
-      if (IsModEnabled.Value && _chatPanel?.Panel) {
-        if (hideTimer < HideChatPanelDelay || Menu.IsVisible()) {
+      if (IsModEnabled.Value && ChatPanel?.Panel) {
+        if (hideTimer < HideChatPanelDelay.Value || Menu.IsVisible()) {
           _chatPanel.CanvasGroup.alpha = 1f;
           _chatPanel.CanvasGroup.blocksRaycasts = true;
         } else {
-          _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha;
+          _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha.Value;
           _chatPanel.CanvasGroup.blocksRaycasts = false;
         }
       }
@@ -201,7 +201,10 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(MessageHud.ShowMessage))]
       static void ShowMessagePostfix(ref MessageHud.MessageType type, ref string text) {
-        if (!IsModEnabled.Value || type != MessageHud.MessageType.Center || !_chatPanel?.Panel) {
+        if (!IsModEnabled.Value
+            || type != MessageHud.MessageType.Center
+            || !ChatPanel?.Panel
+            || !ShowMessageHudCenterMessages.Value) {
           return;
         }
 

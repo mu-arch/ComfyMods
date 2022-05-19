@@ -16,7 +16,7 @@ namespace Chatter.Patches {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.Awake))]
     static void AwakePostfix(ref Chat __instance) {
-      _vanillaInputField = __instance.m_input;
+      _chatInputField = __instance.m_input;
 
       BindChatConfig(__instance, _chatPanel);
       MessageRows.ClearItems();

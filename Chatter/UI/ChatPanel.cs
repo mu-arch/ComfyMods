@@ -168,10 +168,10 @@ namespace Chatter {
           .SetPivot(Vector2.zero)
           .SetPosition(Vector2.zero);
 
-      Image viewportImage = viewport.AddComponent<Image>();
-      viewportImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
-      viewportImage.sprite = CreateGradientSprite();
-      viewportImage.raycastTarget = false;
+      viewport.AddComponent<Image>()
+          .SetColor(PluginConfig.ChatPanelBackgroundColor.Value)
+          .SetSprite(CreateGradientSprite())
+          .SetRaycastTarget(false);
 
       RectMask2D viewportRectMask = viewport.AddComponent<RectMask2D>();
       viewportRectMask.softness = Vector2Int.RoundToInt(PluginConfig.ChatPanelRectMaskSoftness.Value);
@@ -184,25 +184,21 @@ namespace Chatter {
 
     InputField CreateChatInputField(Transform parentTransform) {
       GameObject row = new("ChatPanel.InputField", typeof(RectTransform));
-      row.transform.SetParent(parentTransform, worldPositionStays: false);
+      row.SetParent(parentTransform, worldPositionStays: false);
 
-      RectTransform rowRectTransform = row.GetComponent<RectTransform>();
-      rowRectTransform.anchorMin = Vector2.zero;
-      rowRectTransform.anchorMax = Vector2.zero;
-      rowRectTransform.pivot = Vector2.zero;
-      rowRectTransform.anchoredPosition = Vector2.zero;
+      row.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
-      HorizontalLayoutGroup rowLayoutGroup = row.AddComponent<HorizontalLayoutGroup>();
-      rowLayoutGroup.childControlWidth = true;
-      rowLayoutGroup.childControlHeight = true;
-      rowLayoutGroup.childForceExpandWidth = true;
-      rowLayoutGroup.childForceExpandHeight = false;
-      rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
-      rowLayoutGroup.padding = new(left: 10, right: 10, top: 8, bottom: 8);
+      row.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: true, height: false)
+          .SetChildAlignment(TextAnchor.MiddleLeft)
+          .SetPadding(left: 10, right: 10, top: 8, bottom: 8);
 
-      Image rowImage = row.AddComponent<Image>();
-      Color color = PluginConfig.ChatPanelBackgroundColor.Value;
-      rowImage.color = color;
+      Image rowImage = row.AddComponent<Image>().SetColor(PluginConfig.ChatPanelBackgroundColor.Value);
 
       InputField inputField = CreateInputField(row.transform);
       inputField.targetGraphic = rowImage;
@@ -215,27 +211,25 @@ namespace Chatter {
       GameObject inputFieldRow = new("ChatPanel.InputField.Row", typeof(RectTransform));
       inputFieldRow.transform.SetParent(parentTransform, worldPositionStays: false);
 
-      RectTransform rowRectTransform = inputFieldRow.GetComponent<RectTransform>();
-      rowRectTransform.anchorMin = Vector2.zero;
-      rowRectTransform.anchorMax = Vector2.zero;
-      rowRectTransform.pivot = Vector2.zero;
-      rowRectTransform.anchoredPosition = Vector2.zero;
+      inputFieldRow.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
-      HorizontalLayoutGroup rowLayoutGroup = inputFieldRow.AddComponent<HorizontalLayoutGroup>();
-      rowLayoutGroup.childControlWidth = true;
-      rowLayoutGroup.childControlHeight = true;
-      rowLayoutGroup.childForceExpandWidth = true;
-      rowLayoutGroup.childForceExpandHeight = false;
-      rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
+      inputFieldRow.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: true, height: false)
+          .SetChildAlignment(TextAnchor.MiddleLeft);
 
       GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
       inputFieldText.name = "ChatPanel.InputField.Row.Text";
 
-      RectTransform textRectTransform = inputFieldText.GetComponent<RectTransform>();
-      textRectTransform.anchorMin = Vector2.zero;
-      textRectTransform.anchorMax = Vector2.zero;
-      textRectTransform.pivot = Vector2.zero;
-      textRectTransform.anchoredPosition = Vector2.zero;
+      inputFieldText.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
@@ -248,31 +242,27 @@ namespace Chatter {
 
     static GameObject CreateContent(Transform parentTransform) {
       GameObject content = new("ChatPanel.Content", typeof(RectTransform));
-      content.transform.SetParent(parentTransform, worldPositionStays: false);
+      content.SetParent(parentTransform);
 
-      RectTransform contentRectTransform = content.GetComponent<RectTransform>();
-      contentRectTransform.anchorMin = Vector2.zero;
-      contentRectTransform.anchorMax = new(1f, 0f);
-      contentRectTransform.pivot = Vector2.zero;
-      contentRectTransform.anchoredPosition = Vector2.zero;
+      content.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(new(1f, 0f))
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
-      Image contentImage = content.AddComponent<Image>();
-      //contentImage.color = PluginConfig.ChatPanelBackgroundColor.Value;
-      //contentImage.sprite = CreateGradientSprite();
-      contentImage.color = Color.clear;
-      contentImage.raycastTarget = true;
+      content.AddComponent<Image>()
+          .SetColor(Color.clear)
+          .SetRaycastTarget(true);
 
-      VerticalLayoutGroup contentLayoutGroup = content.AddComponent<VerticalLayoutGroup>();
-      contentLayoutGroup.childControlWidth = true;
-      contentLayoutGroup.childControlHeight = true;
-      contentLayoutGroup.childForceExpandWidth = false;
-      contentLayoutGroup.childForceExpandHeight = false;
-      contentLayoutGroup.spacing = PluginConfig.ChatPanelContentSpacing.Value;
-      contentLayoutGroup.padding = new(20, 20, 20, 20);
+      content.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetSpacing(PluginConfig.ChatPanelContentSpacing.Value)
+          .SetPadding(left: 20, right: 20, top: 20, bottom: 20);
 
-      ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
-      contentFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-      contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+      content.AddComponent<ContentSizeFitter>()
+          .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
+          .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
 
       return content;
     }
@@ -301,14 +291,14 @@ namespace Chatter {
     static GameObject CreateTextPrefab(Text parentText) {
       GameObject textPrefab = new("Text", typeof(RectTransform));
 
-      Text text = textPrefab.AddComponent<Text>();
-      text.font = PluginConfig.MessageFont; // parentText.font;
-      text.fontSize = PluginConfig.ChatMessageFontSize.Value;
+      textPrefab.AddComponent<Text>()
+          .SetFont(PluginConfig.MessageFont)
+          .SetFontSize(PluginConfig.ChatMessageFontSize.Value);
 
       if (parentText.TryGetComponent(out Outline parentTextOutline)) {
-        Outline textOutline = textPrefab.AddComponent<Outline>();
-        textOutline.effectColor = parentTextOutline.effectColor;
-        textOutline.effectDistance = parentTextOutline.effectDistance;
+        textPrefab.AddComponent<Outline>()
+            .SetEffectColor(parentTextOutline.effectColor)
+            .SetEffectDistance(parentTextOutline.effectDistance);
       }
 
       return textPrefab;
@@ -334,16 +324,16 @@ namespace Chatter {
 
     public GameObject CreateMessageDivider(Transform parentTransform) {
       GameObject divider = new("Message.Divider", typeof(RectTransform));
-      divider.transform.SetParent(parentTransform, worldPositionStays: false);
+      divider.SetParent(parentTransform, worldPositionStays: false);
 
-      Image image = divider.AddComponent<Image>();
-      image.color = new Color32(255, 255, 255, 16);
-      image.raycastTarget = true;
-      image.maskable = true;
+      divider.AddComponent<Image>()
+          .SetColor(new Color32(255, 255, 255, 16))
+          .SetRaycastTarget(true)
+          .SetMaskable(true);
 
-      LayoutElement layout = divider.AddComponent<LayoutElement>();
-      layout.flexibleWidth = 1f;
-      layout.preferredHeight = 1;
+      divider.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
+          .SetPreferred(height: 1f);
 
       return divider;
     }
@@ -352,19 +342,17 @@ namespace Chatter {
     // https://sushanta1991.blogspot.com/2019/09/force-expand-child-width-in-vertical.html
     public GameObject CreateChatMessageRow(Transform parentTransform) {
       GameObject row = new("Message.Row", typeof(RectTransform));
-      row.transform.SetParent(parentTransform, worldPositionStays: false);
+      row.SetParent(parentTransform, worldPositionStays: false);
 
-      VerticalLayoutGroup rowLayoutGroup = row.AddComponent<VerticalLayoutGroup>();
-      rowLayoutGroup.childControlWidth = true;
-      rowLayoutGroup.childControlHeight = true;
-      rowLayoutGroup.childForceExpandWidth = false;
-      rowLayoutGroup.childForceExpandHeight = false;
-      rowLayoutGroup.padding = new(0, 0, 0, 0);
-      rowLayoutGroup.spacing = 5f;
+      row.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 0, right: 0, top: 0, bottom: 0)
+          .SetSpacing(5f);
 
-      ContentSizeFitter rowFitter = row.AddComponent<ContentSizeFitter>();
-      rowFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-      rowFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+      row.AddComponent<ContentSizeFitter>()
+          .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
+          .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
 
       return row;
     }
@@ -375,7 +363,7 @@ namespace Chatter {
 
     public GameObject CreateChatMessageRowHeader(Transform parentTransform, string leftText, string rightText) {
       GameObject header = new("Message.Row.Header", typeof(RectTransform));
-      header.transform.SetParent(parentTransform, worldPositionStays: false);
+      header.SetParent(parentTransform, worldPositionStays: false);
 
       header.AddComponent<HorizontalLayoutGroup>()
           .SetChildControl(width: true, height: true)
