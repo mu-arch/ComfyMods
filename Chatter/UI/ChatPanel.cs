@@ -14,7 +14,6 @@ namespace Chatter {
     public Image ContentImage { get; private set; }
     public ScrollRect ScrollRect { get; private set; }
     public GameObject TextPrefab { get; private set; }
-
     public InputField InputField { get; private set; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
@@ -36,11 +35,12 @@ namespace Chatter {
       _contentLayoutGroup = Content.GetComponent<VerticalLayoutGroup>();
       _inputFieldImage = InputField.GetComponentInParent<Image>();
       _textPrefabText = TextPrefab.GetComponent<Text>();
-
+      _grabberCanvasGroup = Grabber.GetComponent<CanvasGroup>();
       _contentWidthOffset = _contentLayoutGroup.padding.horizontal * -1f;
-
       _panelRectTransform.SetAsFirstSibling();
     }
+
+    const string ContentRowBodyName = "Message.Row.Text";
 
     readonly RectTransform _panelRectTransform;
     readonly RectTransform _viewportRectTransform;
@@ -49,6 +49,7 @@ namespace Chatter {
     readonly VerticalLayoutGroup _contentLayoutGroup;
     readonly Image _inputFieldImage;
     readonly Text _textPrefabText;
+    readonly CanvasGroup _grabberCanvasGroup;
 
     float _contentWidthOffset = 0f;
 
@@ -97,13 +98,22 @@ namespace Chatter {
 
       foreach (
           LayoutElement layout
-              in Content.GetComponentsInChildren<LayoutElement>().Where(layout => layout.name == "Message.Row.Text")) {
+              in Content.GetComponentsInChildren<LayoutElement>().Where(layout => layout.name == ContentRowBodyName)) {
         layout.preferredWidth = preferredWidth;
       }
     }
 
     public void SetContentSpacing(float spacing) {
       _contentLayoutGroup.spacing = spacing;
+    }
+
+    public void ToggleGrabber(bool toggle) {
+      _grabberCanvasGroup.alpha = toggle ? 1f : 0f;
+      _grabberCanvasGroup.blocksRaycasts = toggle;
+    }
+
+    public void SetVerticalScrollPosition(float position) {
+      ScrollRect.verticalNormalizedPosition = position;
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -142,6 +152,8 @@ namespace Chatter {
       grabber.AddComponent<Image>()
           .SetColor(new Color32(255, 255, 255, 32))
           .SetRaycastTarget(true);
+
+      grabber.AddComponent<CanvasGroup>();
 
       return grabber;
     }
@@ -292,7 +304,7 @@ namespace Chatter {
 
       Text text = textPrefab.AddComponent<Text>();
       text.font = PluginConfig.MessageFont; // parentText.font;
-      text.fontSize = PluginConfig.MessageFontSize; // parentText.fontSize;
+      text.fontSize = PluginConfig.ChatMessageFontSize.Value;
 
       if (parentText.TryGetComponent(out Outline parentTextOutline)) {
         Outline textOutline = textPrefab.AddComponent<Outline>();
@@ -371,7 +383,7 @@ namespace Chatter {
           .SetChildForceExpand(width: false, height: false)
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0);
 
-      GameObject leftCell = UnityEngine.Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      GameObject leftCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
       leftCell.name = "Header.LeftCell";
 
       Text leftCellText = leftCell.GetComponent<Text>();
@@ -385,7 +397,7 @@ namespace Chatter {
       spacer.SetParent(header.transform);
       spacer.AddComponent<LayoutElement>().SetFlexible(width: 1f);
 
-      GameObject rightCell = UnityEngine.Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
+      GameObject rightCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
       rightCell.name = "Header.RightCell";
 
       Text rightCellText = rightCell.GetComponent<Text>();
@@ -399,8 +411,8 @@ namespace Chatter {
     }
 
     public GameObject CreateChatMessageRowBody(Transform parentTransform, string text) {
-      GameObject body = UnityEngine.Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
-      body.name = "Message.Row.Text";
+      GameObject body = Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
+      body.name = ContentRowBodyName;
 
       body.GetComponent<Text>()
           .SetText(text)

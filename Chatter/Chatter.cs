@@ -3,7 +3,6 @@
 using HarmonyLib;
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +25,7 @@ namespace Chatter {
     public void Awake() {
       BindConfig(Config);
 
-      IsModEnabled.SettingChanged += (s, ea) => ToggleChatPanel(IsModEnabled.Value);
+      IsModEnabled.OnSettingChanged(toggle => ToggleChatter(toggle));
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -63,30 +62,41 @@ namespace Chatter {
 
     internal static bool _isCreatingChatMessage = false;
 
-    internal static void ToggleChatPanel(bool toggle) {
-      ToggleVanillaChat(Chat.m_instance, !toggle);
+    public static void ToggleChatter(bool toggle) {
+      ToggleVanillaChat(Chat.m_instance, toggle);
+      ToggleChatPanel(Chat.m_instance, toggle);
 
+      if (Chat.m_instance) {
+        Chat.m_instance.m_input = toggle && ChatPanel?.Panel ? ChatPanel.InputField : _vanillaInputField;
+      }
+    }
+
+    static void ToggleChatPanel(Chat chat, bool toggle) {
       if (_chatPanel == null || !_chatPanel.Panel) {
-        _chatPanel = new(Chat.m_instance.m_chatWindow.transform.parent, Chat.m_instance.m_output);
+        _chatPanel = CreateChatPanel(chat);
       }
 
-      _chatPanel.Panel.SetActive(toggle);
+      ChatPanel?.Panel.SetActive(toggle);
 
       if (toggle) {
         ChatPanel?.SetPanelPosition(ChatPanelPosition.Value);
-        ChatPanel?.SetPanelSize(ChatPanelSize.Value) ;
+        ChatPanel?.SetPanelSize(ChatPanelSize.Value);
         ChatPanel?.SetContentWidthOffset(ChatContentWidthOffset.Value);
       }
+    }
 
-      if (!_chatPanel.Grabber.TryGetComponent(out PanelDragger panelDragger)) {
-        ToggleGrabber(false);
-        panelDragger = _chatPanel.Grabber.AddComponent<PanelDragger>();
-        panelDragger.TargetTransform = _chatPanel.Panel.GetComponent<RectTransform>();
-        panelDragger.EndDragAction =
-            () => ChatPanelPosition.Value = panelDragger.TargetTransform.anchoredPosition;
+    static ChatPanel CreateChatPanel(Chat chat) {
+      if (!chat) {
+        return null;
       }
 
-      Chat.m_instance.m_input = toggle ? _chatPanel.InputField : _vanillaInputField;
+      ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent, chat.m_output);
+
+      PanelDragger dragger = chatPanel.Grabber.AddComponent<PanelDragger>();
+      dragger.TargetTransform = chatPanel.Panel.GetComponent<RectTransform>();
+      dragger.OnEndDragAction = position => ChatPanelPosition.Value = position;
+
+      return chatPanel;
     }
 
     static void ToggleVanillaChat(Chat chat, bool toggle) {
@@ -114,14 +124,14 @@ namespace Chatter {
     }
 
     internal static void EnableChatPanelDelegate() {
-      if (IsModEnabled.Value && _chatPanel?.Panel) {
-        _chatPanel.InputField.enabled = true;
+      if (IsModEnabled.Value && ChatPanel?.InputField.Ref()) {
+        ChatPanel.InputField.enabled = true;
       }
     }
 
     internal static bool DisableChatPanelDelegate(bool active) {
-      if (IsModEnabled.Value && _chatPanel?.Panel) {
-        _chatPanel.InputField.enabled = false;
+      if (IsModEnabled.Value && ChatPanel?.Panel) {
+        ChatPanel.InputField.enabled = false;
         return true;
       }
 
@@ -214,29 +224,20 @@ namespace Chatter {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Show))]
       static void ShowPostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
-          ToggleGrabber(true);
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta += new Vector2(0, 200f);
+        if (IsModEnabled.Value) {
+          ChatPanel?.ToggleGrabber(true);
+          ChatPanel?.SetPanelSize(ChatPanelSize.Value += new Vector2(0, 400f));
         }
       }
 
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Menu.Hide))]
       static void HidePostfix() {
-        if (IsModEnabled.Value && _chatPanel != null && _chatPanel.Panel) {
-          ToggleGrabber(false);
-          _chatPanel.Panel.GetComponent<RectTransform>().sizeDelta = ChatPanelSize.Value;
-          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
+        if (IsModEnabled.Value) {
+          ChatPanel?.ToggleGrabber(false);
+          ChatPanel?.SetPanelSize(ChatPanelSize.Value);
+          ChatPanel?.SetVerticalScrollPosition(0f);
         }
-      }
-    }
-
-    static void ToggleGrabber(bool toggle) {
-      if (_chatPanel != null && _chatPanel.Grabber && _chatPanel.Grabber.TryGetComponent(out Image image)) {
-        image.raycastTarget = toggle;
-        Color color = image.color;
-        color.a = toggle ? 0.1f : 0;
-        image.color = color;
       }
     }
 

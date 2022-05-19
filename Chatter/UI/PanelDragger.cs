@@ -7,7 +7,7 @@ namespace Chatter {
     Vector2 _lastMousePosition;
 
     public RectTransform TargetTransform { get; set; } = default!;
-    public Action EndDragAction { get; set; } = default!;
+    public Action<Vector3> OnEndDragAction { get; set; } = default!;
 
     public void OnBeginDrag(PointerEventData eventData) {
       _lastMousePosition = eventData.position;
@@ -21,7 +21,7 @@ namespace Chatter {
     }
 
     public void OnEndDrag(PointerEventData eventData) {
-      EndDragAction();
+      OnEndDragAction(TargetTransform.position);
     }
   }
 }

@@ -114,8 +114,6 @@ namespace Chatter {
       }
     }
 
-    public static int MessageFontSize { get => ChatMessageFontSize.Value; }
-
     public static void BindChatMessageFont(Font defaultFont) {
       foreach (Font font in Resources.FindObjectsOfTypeAll<Font>()) {
         _fontCache[font.name] = font;

@@ -20,7 +20,7 @@ namespace Chatter.Patches {
 
       BindChatConfig(__instance, _chatPanel);
       MessageRows.ClearItems();
-      ToggleChatPanel(IsModEnabled.Value);
+      ToggleChatter(IsModEnabled.Value);
     }
 
     [HarmonyPrefix]
