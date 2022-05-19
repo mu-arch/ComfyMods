@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,13 +10,11 @@ namespace Chatter {
 
     public GameObject Grabber { get; private set; }
     public GameObject Viewport { get; private set; }
-    public Image ViewportImage { get; private set; }
     public GameObject Content { get; private set; }
     public Image ContentImage { get; private set; }
     public ScrollRect ScrollRect { get; private set; }
     public GameObject TextPrefab { get; private set; }
 
-    public Image InputFieldImage { get; private set; }
     public InputField InputField { get; private set; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
@@ -24,14 +22,88 @@ namespace Chatter {
       CanvasGroup = Panel.GetComponent<CanvasGroup>();
 
       Viewport = CreateViewport(Panel.transform);
-      ViewportImage = Viewport.GetComponent<Image>();
       Content = CreateContent(Viewport.transform);
       ContentImage = Content.GetComponent<Image>();
       ScrollRect = CreateScrollRect(Panel, Viewport, Content);
       TextPrefab = CreateTextPrefab(parentText);
       InputField = CreateChatInputField(Panel.transform);
-      InputFieldImage = InputField.transform.parent.GetComponent<Image>();
       Grabber = CreateGrabber(Panel.transform);
+
+      _panelRectTransform = Panel.GetComponent<RectTransform>();
+      _viewportRectTransform = Viewport.GetComponent<RectTransform>();
+      _viewportRectMask = Viewport.GetComponent<RectMask2D>();
+      _viewportImage = Viewport.GetComponent<Image>();
+      _contentLayoutGroup = Content.GetComponent<VerticalLayoutGroup>();
+      _inputFieldImage = InputField.GetComponentInParent<Image>();
+      _textPrefabText = TextPrefab.GetComponent<Text>();
+
+      _contentWidthOffset = _contentLayoutGroup.padding.horizontal * -1f;
+
+      _panelRectTransform.SetAsFirstSibling();
+    }
+
+    readonly RectTransform _panelRectTransform;
+    readonly RectTransform _viewportRectTransform;
+    readonly RectMask2D _viewportRectMask;
+    readonly Image _viewportImage;
+    readonly VerticalLayoutGroup _contentLayoutGroup;
+    readonly Image _inputFieldImage;
+    readonly Text _textPrefabText;
+
+    float _contentWidthOffset = 0f;
+
+    public void SetFont(Font font) {
+      _textPrefabText.font = font;
+
+      foreach (Text text in Panel.GetComponentsInChildren<Text>()) {
+        text.font = font;
+      }
+    }
+
+    public void SetFontSize(int fontSize) {
+      int delta = fontSize - _textPrefabText.fontSize;
+
+      foreach (Text text in Panel.GetComponentsInChildren<Text>()) {
+        text.fontSize += delta;
+      }
+    }
+
+    public void SetPanelBackgroundColor(Color color) {
+      _viewportImage.color = color;
+      _inputFieldImage.color = color;
+    }
+
+    public void SetPanelRectMaskSoftness(Vector2 softness) {
+      _viewportRectMask.softness = Vector2Int.RoundToInt(softness);
+    }
+
+    public void SetPanelPosition(Vector2 position) {
+      _panelRectTransform.anchoredPosition = position;
+    }
+
+    public void SetPanelSize(Vector2 sizeDelta) {
+      _panelRectTransform.sizeDelta = sizeDelta;
+      _viewportRectTransform.sizeDelta = sizeDelta;
+      SetRowLayoutPreferredWidths();
+    }
+
+    public void SetContentWidthOffset(float widthOffset) {
+      _contentWidthOffset = widthOffset;
+      SetRowLayoutPreferredWidths();
+    }
+
+    void SetRowLayoutPreferredWidths() {
+      float preferredWidth = _panelRectTransform.sizeDelta.x + _contentWidthOffset;
+
+      foreach (
+          LayoutElement layout
+              in Content.GetComponentsInChildren<LayoutElement>().Where(layout => layout.name == "Message.Row.Text")) {
+        layout.preferredWidth = preferredWidth;
+      }
+    }
+
+    public void SetContentSpacing(float spacing) {
+      _contentLayoutGroup.spacing = spacing;
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -184,7 +256,7 @@ namespace Chatter {
       contentLayoutGroup.childControlHeight = true;
       contentLayoutGroup.childForceExpandWidth = false;
       contentLayoutGroup.childForceExpandHeight = false;
-      contentLayoutGroup.spacing = PluginConfig.ChatMessageBlockSpacing.Value;
+      contentLayoutGroup.spacing = PluginConfig.ChatPanelContentSpacing.Value;
       contentLayoutGroup.padding = new(20, 20, 20, 20);
 
       ContentSizeFitter contentFitter = content.AddComponent<ContentSizeFitter>();
@@ -335,8 +407,7 @@ namespace Chatter {
           .SetAlignment(TextAnchor.MiddleLeft);
 
       body.AddComponent<LayoutElement>()
-          .SetPreferred(
-              width: Panel.GetComponent<RectTransform>().sizeDelta.x + PluginConfig.ChatMessageWidthOffset.Value);
+          .SetPreferred(width: _panelRectTransform.sizeDelta.x + _contentWidthOffset);
 
       return body;
     }

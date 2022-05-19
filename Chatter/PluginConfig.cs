@@ -29,24 +29,20 @@ namespace Chatter {
       get => _showMessageHudCenterMessages.Value;
     }
 
-    internal static ConfigEntry<bool> _showChatPanelMessageDividers;
-    public static bool ShowChatPanelMessageDividers {
-      get => _showChatPanelMessageDividers.Value;
-    }
+    public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
 
     // Style
     public static ConfigEntry<string> ChatMessageFont { get; private set; }
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
 
-    public static ConfigEntry<float> ChatMessageBlockSpacing { get; private set; }
+    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; }
 
     public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
 
+    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelSize { get; private set; }
-    public static ConfigEntry<float> ChatMessageWidthOffset { get; private set; }
-
-    public static ConfigEntry<Vector2> ChatWindowPositionOffset { get; private set; }
+    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       Config = config;
@@ -77,7 +73,7 @@ namespace Chatter {
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      _showChatPanelMessageDividers =
+      ShowChatPanelMessageDividers =
           config.Bind(
               "Content",
               "showChatPanelMessageDividers",
@@ -95,13 +91,13 @@ namespace Chatter {
           config.Bind(
               "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
 
-      ChatMessageBlockSpacing =
+      ChatPanelContentSpacing =
           config.Bind(
               "Style",
-              "chatMessageBlockSpacing",
+              "chatPanelContentSpacing",
               10f,
               new ConfigDescription(
-                  "The spacing (in pixels) between blocks of chat messages.",
+                  "The spacing (in pixels) between rows in the ChatPanel content.",
                   new AcceptableValueRange<float>(-100, 100)));
     }
 
@@ -144,31 +140,28 @@ namespace Chatter {
     }
 
     public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {
-      ChatWindowPositionOffset =
+      ChatPanelPosition =
           Config.Bind(
-              "Window",
-              "chatWindowPositionOffset",
+              "Panel",
+              "chatPanelPosition",
               chatWindowRectTransform.anchoredPosition,
-              "Offset the default chat window position.");
+              "The Vector2 position of the ChatPanel.");
 
       ChatPanelSize =
           Config.Bind(
-              "Style",
+              "Panel",
               "chatPanelSize",
               chatWindowRectTransform.sizeDelta - new Vector2(10f, 0f),
               "The size (width, height) of the ChatPanel.");
 
-      ChatMessageWidthOffset =
+      ChatContentWidthOffset =
           Config.Bind(
-              "Style",
-              "chatMessageWidthOffset",
+              "Panel",
+              "chatContentWidthOffset",
               -50f,
               new ConfigDescription(
-                  "Offsets the width of a ChatMessage row in the ChatPanel.",
+                  "Offsets the width of a row in the ChatPanel content.",
                   new AcceptableValueRange<float>(-400, 400)));
-
-      ZLog.Log($"ChatPanelSize at bind is: {ChatPanelSize.Value}");
-      ZLog.Log($"ChatMessageWidthOffset at bind is: {ChatMessageWidthOffset.Value}");
     }
   }
 }

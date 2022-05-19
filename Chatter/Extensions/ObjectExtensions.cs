@@ -18,9 +18,8 @@ namespace Chatter {
     }
 
     public static void OnSettingChanged<T>(
-        this BepInEx.Configuration.ConfigEntry<T> configEntry, EventHandler settingChangedHandler) {
-      configEntry.SettingChanged -= settingChangedHandler;
-      configEntry.SettingChanged += settingChangedHandler;
+        this BepInEx.Configuration.ConfigEntry<T> configEntry, Action<T> settingChangedHandler) {
+      configEntry.SettingChanged += (_, _) => settingChangedHandler(configEntry.Value);
     }
   }
 }

@@ -94,6 +94,7 @@
     <Compile Include="ChatMessage.cs" />
     <Compile Include="Chatter.cs" />
     <Compile Include="CircularQueue.cs" />
+    <Compile Include="Extensions\IsExternalInit.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
