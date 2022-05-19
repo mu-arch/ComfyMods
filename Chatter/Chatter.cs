@@ -63,7 +63,7 @@ namespace Chatter {
     internal static bool _isCreatingChatMessage = false;
 
     public static void ToggleChatter(bool toggle) {
-      ToggleVanillaChat(Chat.m_instance, toggle);
+      ToggleVanillaChat(Chat.m_instance, !toggle);
       ToggleChatPanel(Chat.m_instance, toggle);
 
       if (Chat.m_instance) {
@@ -164,58 +164,13 @@ namespace Chatter {
       ShowChatPanelMessageDividers.OnSettingChanged(ToggleChatPanelMessageDividers);
     }
 
-    static ChatPanel ChatPanel {
+    public static ChatPanel ChatPanel {
       get => _chatPanel?.Panel.Ref() ? _chatPanel : null;
     }
 
     static void ToggleChatPanelMessageDividers(bool toggle) {
       foreach (MessageRow row in MessageRows.Where(row => row.RowType == MessageRow.MessageType.Divider)) {
         row.Row.Ref()?.SetActive(toggle);
-      }
-    }
-
-    [HarmonyPatch(typeof(Terminal))]
-    class TerminalPatch {
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(Terminal.UpdateInput))]
-      static IEnumerable<CodeInstruction> UpdateInputTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
-                new CodeMatch(OpCodes.Ldc_I4_0),
-                new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
-                new CodeMatch(OpCodes.Ret))
-            .Advance(offset: 4)
-            .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
-            .InstructionEnumeration();
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Terminal.SendInput))]
-      static void SendInputPostfix(ref Terminal __instance) {
-        if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanel?.ScrollRect) {
-          _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
-        }
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Terminal.AddString), typeof(string))]
-      static void AddStringFinalPostfix(ref Terminal __instance, ref string text) {
-        if (!IsModEnabled.Value || __instance != Chat.m_instance || !_chatPanel?.Panel || _isCreatingChatMessage) {
-          return;
-        }
-
-        if (MessageRows.IsEmpty || MessageRows.LastItem.RowType != MessageRow.MessageType.Text) {
-          AddDivider();
-
-          MessageRows.EnqueueItem(
-            new(MessageRow.MessageType.Text, _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform)));
-        }
-
-        _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text);
       }
     }
 

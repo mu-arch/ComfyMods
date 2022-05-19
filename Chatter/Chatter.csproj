@@ -98,6 +98,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\ChatPanel.cs" />

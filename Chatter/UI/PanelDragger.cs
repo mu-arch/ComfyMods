@@ -21,7 +21,7 @@ namespace Chatter {
     }
 
     public void OnEndDrag(PointerEventData eventData) {
-      OnEndDragAction(TargetTransform.position);
+      OnEndDragAction(TargetTransform.anchoredPosition);
     }
   }
 }

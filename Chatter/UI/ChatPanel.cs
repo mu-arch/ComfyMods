@@ -62,10 +62,10 @@ namespace Chatter {
     }
 
     public void SetFontSize(int fontSize) {
-      int delta = fontSize - _textPrefabText.fontSize;
+      _textPrefabText.fontSize = fontSize;
 
       foreach (Text text in Panel.GetComponentsInChildren<Text>()) {
-        text.fontSize += delta;
+        text.fontSize = text.name == ContentRowBodyName ? fontSize : fontSize - 2;
       }
     }
 
@@ -228,8 +228,7 @@ namespace Chatter {
       rowLayoutGroup.childForceExpandHeight = false;
       rowLayoutGroup.childAlignment = TextAnchor.MiddleLeft;
 
-      GameObject inputFieldText =
-          UnityEngine.Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
+      GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
       inputFieldText.name = "ChatPanel.InputField.Row.Text";
 
       RectTransform textRectTransform = inputFieldText.GetComponent<RectTransform>();
