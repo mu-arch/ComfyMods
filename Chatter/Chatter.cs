@@ -33,27 +33,30 @@ namespace Chatter {
       _harmony?.UnpatchSelf();
     }
 
-    public class MessageRow {
-      public enum MessageType {
-        Text,
-        Chat,
-        Divider,
-        CenterText
-      }
+    public enum ContentRowType {
+      Text,
+      Chat,
+      Divider,
+      CenterText
+    }
 
-      public MessageType RowType { get; }
+    public class ContentRow {
+      public ContentRowType Type { get; }
       public GameObject Row { get; }
-      public ChatMessage ChatMessage { get; init; }
+      public GameObject Divider { get; }
 
-      public MessageRow(MessageType type, GameObject row, ChatMessage message = null) {
-        RowType = type;
+      public ChatMessage ChatMessage { get; init; }
+      public ContentRow(
+          ContentRowType type, GameObject row, ChatMessage message = default, GameObject divider = default) {
+        Type = type;
         Row = row;
         ChatMessage = message;
+        Divider = divider;
       }
     }
 
     internal static readonly List<ChatMessage> MessageHistory = new();
-    internal static readonly CircularQueue<MessageRow> MessageRows = new(50, row => Destroy(row.Row));
+    internal static readonly CircularQueue<ContentRow> MessageRows = new(50, row => Destroy(row.Row));
 
     internal static bool _isPluginConfigBound = false;
 
@@ -109,6 +112,25 @@ namespace Chatter {
             ChatPanelSize.Value = size;
             ChatPanelPosition.Value = panelRectTransform.anchoredPosition;
           };
+
+      chatPanel.SayToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Normal));
+      chatPanel.SayToggle.isOn = true;
+
+      chatPanel.ShoutToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Shout));
+      chatPanel.ShoutToggle.isOn = true;
+
+      chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Ping));
+      chatPanel.PingToggle.isOn = false;
+
+      chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Whisper));
+      chatPanel.WhisperToggle.isOn = true;
+
+      chatPanel.MessageHudToggle.onValueChanged.AddListener(
+          isOn => ToggleContentRows(isOn, ContentRowType.CenterText));
+      chatPanel.MessageHudToggle.isOn = true;
+
+      chatPanel.TextToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ContentRowType.Text));
+      chatPanel.TextToggle.isOn = true;
 
       return chatPanel;
     }
@@ -176,13 +198,12 @@ namespace Chatter {
       ChatContentWidthOffset.OnSettingChanged(offset => ChatPanel?.SetContentWidthOffset(offset));
 
       ChatPanelContentSpacing.OnSettingChanged(spacing => ChatPanel?.SetContentSpacing(spacing));
-      ShowChatPingMessages.OnSettingChanged(toggle => ToggleContentRows(toggle, Talker.Type.Ping));
       ShowChatPanelMessageDividers.OnSettingChanged(ToggleChatPanelMessageDividers);
 
       ChatMessageTextDefaultColor.OnSettingChanged(
-          color => SetContentRowBodyTextColor(color, MessageRow.MessageType.Text));
+          color => SetContentRowBodyTextColor(color, ContentRowType.Text));
       ChatMessageTextMessageHudColor.OnSettingChanged(
-          color => SetContentRowBodyTextColor(color, MessageRow.MessageType.CenterText));
+          color => SetContentRowBodyTextColor(color, ContentRowType.CenterText));
       ChatMessageTextSayColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Normal));
       ChatMessageTextShoutColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Shout));
       ChatMessageTextWhisperColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Whisper));
@@ -205,22 +226,29 @@ namespace Chatter {
       }
 
       if (MessageRows.IsEmpty
-          || MessageRows.LastItem.RowType != MessageRow.MessageType.Chat
+          || MessageRows.LastItem.Type != ContentRowType.Chat
           || _lastMessage == null
           || _lastMessage.SenderId != message.SenderId
           || _lastMessage.Type != message.Type) {
-        AddDivider();
+        GameObject divider = AddDivider();
 
         GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(MessageRow.MessageType.Chat, row, message));
+        MessageRows.EnqueueItem(new(ContentRowType.Chat, row, message, divider));
 
-        _chatPanel.CreateChatMessageRowHeader(row.transform, message.User, message.Timestamp.ToString("T"));
+        _chatPanel.CreateChatMessageRowHeader(
+            row.transform, $"{message.User} >>>", message.Timestamp.ToString("T"));
 
-        row.SetActive(
+        bool active =
             message.Type switch {
-              Talker.Type.Ping => ShowChatPingMessages.Value,
+              Talker.Type.Normal => _chatPanel.SayToggle.isOn,
+              Talker.Type.Shout => _chatPanel.ShoutToggle.isOn,
+              Talker.Type.Whisper => _chatPanel.WhisperToggle.isOn,
+              Talker.Type.Ping => _chatPanel.PingToggle.isOn,
               _ => true,
-            });
+            };
+
+        divider.SetActive(active);
+        row.SetActive(active);
       }
 
       CreateContentChatMessage(MessageRows.LastItem.Row.transform, message);
@@ -229,7 +257,7 @@ namespace Chatter {
 
     static GameObject CreateContentChatMessage(Transform parentTransform, ChatMessage message) {
       string text = message.Type switch {
-        Talker.Type.Ping => $"{message.Position}",
+        Talker.Type.Ping => $"Ping! {message.Position}",
         _ => message.Text,
       };
 
@@ -248,23 +276,31 @@ namespace Chatter {
     }
 
     static void ToggleChatPanelMessageDividers(bool toggle) {
-      foreach (MessageRow row in MessageRows.Where(row => row.RowType == MessageRow.MessageType.Divider)) {
+      foreach (ContentRow row in MessageRows.Where(row => row.Type == ContentRowType.Divider)) {
         row.Row.Ref()?.SetActive(toggle);
+      }
+    }
+
+    static void ToggleContentRows(bool toggle, ContentRowType rowType) {
+      foreach (ContentRow row in MessageRows.Where(row => row.Type == rowType)) {
+        row.Row.Ref()?.SetActive(toggle);
+        row.Divider.Ref()?.SetActive(toggle && ShowChatPanelMessageDividers.Value);
       }
     }
 
     static void ToggleContentRows(bool toggle, Talker.Type talkerType) {
       foreach (
-          MessageRow row in MessageRows
-              .Where(row => row.RowType == MessageRow.MessageType.Chat && row.ChatMessage?.Type == talkerType)) {
+          ContentRow row in MessageRows
+              .Where(row => row.Type == ContentRowType.Chat && row.ChatMessage?.Type == talkerType)) {
         row.Row.Ref()?.SetActive(toggle);
+        row.Divider.Ref()?.SetActive(toggle && ShowChatPanelMessageDividers.Value);
       }
     }
 
-    static void SetContentRowBodyTextColor(Color color, MessageRow.MessageType messageType) {             
+    static void SetContentRowBodyTextColor(Color color, ContentRowType messageType) {             
       foreach (
           Text text in MessageRows
-              .Where(row => row.RowType == messageType && row.Row)
+              .Where(row => row.Type == messageType && row.Row)
               .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.ContentRowBodyName)) {
         text.color = color;
@@ -275,7 +311,7 @@ namespace Chatter {
       foreach (
           Text text in MessageRows
               .Where(
-                  row => row.RowType == MessageRow.MessageType.Chat && row.ChatMessage?.Type == talkerType && row.Row)
+                  row => row.Type == ContentRowType.Chat && row.ChatMessage?.Type == talkerType && row.Row)
               .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.ContentRowBodyName)) {
         text.color = color;
@@ -316,13 +352,15 @@ namespace Chatter {
           return;
         }
 
-        if (MessageRows.IsEmpty || MessageRows.LastItem.RowType != MessageRow.MessageType.CenterText) {
-          AddDivider();
+        if (MessageRows.IsEmpty || MessageRows.LastItem.Type != ContentRowType.CenterText) {
+          GameObject divider = AddDivider();
+          divider.SetActive(_chatPanel.MessageHudToggle.isOn);
 
           GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-          MessageRows.EnqueueItem(new(MessageRow.MessageType.CenterText, row));
+          MessageRows.EnqueueItem(new(ContentRowType.CenterText, row, divider: divider));
 
           _chatPanel.CreateChatMessageRowHeader(row.transform, string.Empty, DateTime.Now.ToString("T"));
+          row.SetActive(_chatPanel.MessageHudToggle.isOn);
         }
 
         GameObject body = _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text);
@@ -330,13 +368,17 @@ namespace Chatter {
       }
     }
 
-    internal static void AddDivider() {
-      if (_chatPanel?.Panel) {
-        GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
-        divider.SetActive(ShowChatPanelMessageDividers.Value);
-
-        MessageRows.EnqueueItem(new(MessageRow.MessageType.Divider, divider));
+    internal static GameObject AddDivider() {
+      if (!_chatPanel?.Panel) {
+        return default;
       }
+
+      GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
+      divider.SetActive(ShowChatPanelMessageDividers.Value);
+
+      MessageRows.EnqueueItem(new(ContentRowType.Divider, divider));
+
+      return divider;
     }
   }
 }

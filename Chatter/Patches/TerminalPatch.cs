@@ -44,11 +44,11 @@ namespace Chatter.Patches {
         return;
       }
 
-      if (MessageRows.IsEmpty || MessageRows.LastItem.RowType != MessageRow.MessageType.Text) {
-        AddDivider();
+      if (MessageRows.IsEmpty || MessageRows.LastItem.Type != ContentRowType.Text) {
+        GameObject divider = AddDivider();
 
         MessageRows.EnqueueItem(
-          new(MessageRow.MessageType.Text, _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform)));
+          new(ContentRowType.Text, _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform), divider: divider));
       }
 
       _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text);

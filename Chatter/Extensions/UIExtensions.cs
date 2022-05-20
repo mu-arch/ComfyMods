@@ -150,6 +150,23 @@ namespace Chatter {
 
       return layoutElement;
     }
+
+    public static LayoutElement SetMinimum(
+        this LayoutElement layoutElement, float? width = null, float? height = null) {
+      if (!width.HasValue && !height.HasValue) {
+        throw new ArgumentException("Value for width or height must be provided.");
+      }
+
+      if (width.HasValue) {
+        layoutElement.minWidth = width.Value;
+      }
+
+      if (height.HasValue) {
+        layoutElement.minHeight = height.Value;
+      }
+
+      return layoutElement;
+    }
   }
 
   public static class OutlineExtensions {

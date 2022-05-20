@@ -17,7 +17,6 @@ namespace Chatter {
 
     // Content
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; } = default;
-    public static ConfigEntry<bool> ShowChatPingMessages { get; private set; } = default;
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; } = default;
 
     // Style
@@ -73,13 +72,6 @@ namespace Chatter {
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
-
-      ShowChatPingMessages =
-          config.Bind(
-              "Content",
-              "showChatPingMessages",
-              defaultValue: false,
-              "Show chat messages that are 'Ping' type with their position.");
 
       ShowChatPanelMessageDividers =
           config.Bind(

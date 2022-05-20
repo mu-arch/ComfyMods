@@ -57,6 +57,13 @@ namespace Chatter {
     readonly Text _textPrefabText;
     readonly CanvasGroup _grabberCanvasGroup;
 
+    public Toggle SayToggle { get; private set; } = default;
+    public Toggle ShoutToggle { get; private set; } = default;
+    public Toggle WhisperToggle { get; private set; } = default;
+    public Toggle PingToggle { get; private set; } = default;
+    public Toggle MessageHudToggle { get; private set; } = default;
+    public Toggle TextToggle { get; private set; } = default;
+
     float _contentWidthOffset = 0f;
 
     public void SetFont(Font font) {
@@ -173,39 +180,101 @@ namespace Chatter {
       grabber.AddComponent<Image>()
           .SetColor(new Color32(255, 255, 255, 32));
 
+      grabber.AddComponent<CanvasGroup>();
+
+      CreateGrabberResizer(grabber.transform);
+      CreateGrabberDragger(grabber.transform);
+      CreateShowMessageTypeTogglesRow(grabber.transform);
+
+      return grabber;
+    }
+
+    GameObject CreateGrabberResizer(Transform parentTransform) {
       GameObject resizer = new("Grabber.Resizer", typeof(RectTransform));
-      resizer.SetParent(grabber.transform);
+      resizer.SetParent(parentTransform.transform);
 
       resizer.AddComponent<LayoutElement>()
-          .SetPreferred(width: 25f, height: 15f);
+          .SetPreferred(width: 25f, height: 25f);
 
       resizer.AddComponent<PanelResizer>();
 
-      Text resizerText =
-          resizer.AddComponent<Text>()
+      resizer.AddComponent<Text>()
           .SetFont(_textPrefabText.font)
           .SetFontSize(10)
           .SetAlignment(TextAnchor.MiddleCenter)
-          .SetText("\u2199\u2197");
+          .SetText("\u2199\u2197")
+          .SetColor(Color.white);
 
-      resizerText.color = Color.white;
+      return resizer;
+    }
 
+    GameObject CreateGrabberDragger(Transform parentTransform) {
       GameObject dragger = new("Grabber.Dragger", typeof(RectTransform));
-      dragger.SetParent(grabber.transform);
+      dragger.SetParent(parentTransform.transform);
 
       dragger.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f)
-          .SetPreferred(height: 15f);
+          .SetPreferred(height: 25f);
 
       dragger.AddComponent<Image>()
-          .SetColor(new Color32(255, 255, 255, 32))
+          .SetColor(new Color32(192, 192, 192, 48))
           .SetRaycastTarget(true);
 
       dragger.AddComponent<PanelDragger>();
 
-      grabber.AddComponent<CanvasGroup>();
+      return dragger;
+    }
 
-      return grabber;
+    GameObject CreateShowMessageTypeTogglesRow(Transform parentTransform) {
+      GameObject row = new("Show.Toggles.Row", typeof(RectTransform));
+      row.SetParent(parentTransform.transform);
+
+      row.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 10, right: 10)
+          .SetSpacing(10f);
+
+      row.AddComponent<ContentSizeFitter>()
+          .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
+          .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
+
+      row.AddComponent<Image>()
+          .SetColor(new Color32(255, 255, 255, 32));
+
+      SayToggle = CreateMessageTypeToggle(row.transform, "Say".ToUpperInvariant());
+      ShoutToggle = CreateMessageTypeToggle(row.transform, "Shout".ToUpperInvariant());
+      WhisperToggle = CreateMessageTypeToggle(row.transform, "Whisper".ToUpperInvariant());
+      PingToggle = CreateMessageTypeToggle(row.transform, "Ping".ToUpperInvariant());
+      MessageHudToggle = CreateMessageTypeToggle(row.transform, "Hud".ToUpperInvariant());
+      TextToggle = CreateMessageTypeToggle(row.transform, "Text".ToUpperInvariant());
+
+      return row;
+    }
+
+    Toggle CreateMessageTypeToggle(Transform parentTransform, string label) {
+      GameObject togglePrefab = new($"Toggle.{label}", typeof(RectTransform));
+      togglePrefab.SetParent(parentTransform);
+
+      togglePrefab.AddComponent<LayoutElement>()
+          .SetPreferred(height: 25f);
+
+      Text toggleText =
+          togglePrefab.AddComponent<Text>()
+              .SetFont(_textPrefabText.font)
+              .SetFontSize(10)
+              .SetColor(Color.white)
+              .SetAlignment(TextAnchor.MiddleCenter)
+              .SetText(label);
+
+      togglePrefab.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
+
+      Toggle toggle = togglePrefab.AddComponent<Toggle>();
+      toggle.targetGraphic = togglePrefab.GetComponent<Text>();
+      toggle.onValueChanged.AddListener(isOn => toggleText.color = isOn ? Color.white : Color.gray);
+
+      return toggle;
     }
 
     static GameObject CreateViewport(Transform parentTransform) {
@@ -287,8 +356,8 @@ namespace Chatter {
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
 
-      LayoutElement textLayout = inputFieldRow.AddComponent<LayoutElement>();
-      textLayout.flexibleWidth = 1f;
+      inputFieldRow.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
 
       return inputField;
     }
