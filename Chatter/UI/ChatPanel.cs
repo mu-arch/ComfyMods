@@ -45,7 +45,7 @@ namespace Chatter {
       _panelRectTransform.SetAsFirstSibling();
     }
 
-    const string ContentRowBodyName = "Message.Row.Text";
+    public const string ContentRowBodyName = "Message.Row.Text";
 
     readonly RectTransform _panelRectTransform;
     readonly RectTransform _viewportRectTransform;
@@ -62,7 +62,7 @@ namespace Chatter {
     public void SetFont(Font font) {
       _textPrefabText.font = font;
 
-      foreach (Text text in Panel.GetComponentsInChildren<Text>()) {
+      foreach (Text text in Panel.GetComponentsInChildren<Text>(includeInactive: true)) {
         text.font = font;
       }
     }
@@ -70,7 +70,7 @@ namespace Chatter {
     public void SetFontSize(int fontSize) {
       _textPrefabText.fontSize = fontSize;
 
-      foreach (Text text in Panel.GetComponentsInChildren<Text>()) {
+      foreach (Text text in Panel.GetComponentsInChildren<Text>(includeInactive: true)) {
         text.fontSize = text.name == ContentRowBodyName ? fontSize : fontSize - 2;
       }
     }
@@ -103,8 +103,9 @@ namespace Chatter {
       float preferredWidth = _panelRectTransform.sizeDelta.x + _contentWidthOffset;
 
       foreach (
-          LayoutElement layout
-              in Content.GetComponentsInChildren<LayoutElement>().Where(layout => layout.name == ContentRowBodyName)) {
+          LayoutElement layout in Content
+              .GetComponentsInChildren<LayoutElement>(includeInactive: true)
+              .Where(layout => layout.name == ContentRowBodyName)) {
         layout.preferredWidth = preferredWidth;
       }
     }
@@ -280,6 +281,9 @@ namespace Chatter {
           .SetPivot(Vector2.zero)
           .SetPosition(Vector2.zero);
 
+      inputFieldText.GetComponent<Text>()
+          .SetSupportRichText(false);
+
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
 
@@ -353,24 +357,6 @@ namespace Chatter {
       return textPrefab;
     }
 
-    public GameObject AddChatMessage(ChatMessage message) {
-      GameObject row = CreateChatMessageRow(Content.transform);
-      CreateChatMessageRowHeader(row.transform, message);
-      CreateChatMessageRowBody(row.transform, GetMessageText(message));
-
-      return row;
-    }
-
-    public static string GetMessageText(ChatMessage message) {
-      return message.Type switch {
-        Talker.Type.Normal => $"{message.Text}",
-        Talker.Type.Shout => $"<color=yellow>{message.Text}</color>",
-        Talker.Type.Whisper => $"<color=purple>{message.Text}</color>",
-        Talker.Type.Ping => $"Ping! <color=cyan>{message.Position}</color>",
-        _ => string.Empty,
-      };
-    }
-
     public GameObject CreateMessageDivider(Transform parentTransform) {
       GameObject divider = new("Message.Divider", typeof(RectTransform));
       divider.SetParent(parentTransform, worldPositionStays: false);
@@ -387,8 +373,6 @@ namespace Chatter {
       return divider;
     }
 
-    // TODO: get the script from here and attach it to each child element instead of the content-size fitter?
-    // https://sushanta1991.blogspot.com/2019/09/force-expand-child-width-in-vertical.html
     public GameObject CreateChatMessageRow(Transform parentTransform) {
       GameObject row = new("Message.Row", typeof(RectTransform));
       row.SetParent(parentTransform, worldPositionStays: false);
@@ -404,10 +388,6 @@ namespace Chatter {
           .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
 
       return row;
-    }
-
-    public GameObject CreateChatMessageRowHeader(Transform parentTransform, ChatMessage message) {
-      return CreateChatMessageRowHeader(parentTransform, message.User, message.Timestamp.ToString("T"));
     }
 
     public GameObject CreateChatMessageRowHeader(Transform parentTransform, string leftText, string rightText) {

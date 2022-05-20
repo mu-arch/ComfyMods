@@ -204,6 +204,11 @@ namespace Chatter {
       return text;
     }
 
+    public static Text SetColor(this Text text, Color color) {
+      text.color = color;
+      return text;
+    }
+
     public static Text SetFont(this Text text, Font font) {
       text.font = font;
       return text;

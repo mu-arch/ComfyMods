@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,37 +40,10 @@ namespace Chatter.Patches {
         Position = pos,
         Type = type,
         User = user,
-        Text = text
+        Text = Regex.Replace(text, @"(<|>)", " "),
       };
 
-      MessageHistory.Add(message);
-
-      if (!_chatPanel?.Panel) {
-        return;
-      }
-
-      // Ignore pings.
-      if (type == Talker.Type.Ping) {
-        return;
-      }
-
-      if (MessageRows.IsEmpty
-          || MessageRows.LastItem.RowType != MessageRow.MessageType.Chat
-          || _lastMessage == null
-          || _lastMessage.SenderId != message.SenderId
-          || _lastMessage.Type != message.Type) {
-        AddDivider();
-
-        GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(MessageRow.MessageType.Chat, row));
-
-        _chatPanel.CreateChatMessageRowHeader(row.transform, message);
-      }
-
-      _chatPanel.CreateChatMessageRowBody(
-          MessageRows.LastItem.Row.transform.transform, ChatPanel.GetMessageText(message));
-
-      _lastMessage = message;
+      AddChatMessageText(message);
     }
 
     [HarmonyPostfix]
