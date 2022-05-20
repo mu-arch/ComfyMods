@@ -162,6 +162,11 @@ namespace Chatter {
       outline.effectDistance = effectDistance;
       return outline;
     }
+
+    public static Outline SetUseGraphicAlpha(this Outline outline, bool useGraphicAlpha) {
+      outline.useGraphicAlpha = useGraphicAlpha;
+      return outline;
+    }
   }
 
   public static class RectTransformExtensions {

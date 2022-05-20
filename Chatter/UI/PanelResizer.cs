@@ -2,15 +2,18 @@
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Chatter {
   public class PanelResizer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     Vector2 _lastMousePosition;
 
     public RectTransform TargetRectTransform { get; set; } = null;
+    public Outline TargetOutline { get; set; } = null;
     public Action<Vector2> OnEndDragAction { get; set; } = null;
 
     public void OnBeginDrag(PointerEventData eventData) {
+      TargetOutline.SetEnabled(true);
       _lastMousePosition = eventData.position;
     }
 
@@ -26,6 +29,7 @@ namespace Chatter {
     }
 
     public void OnEndDrag(PointerEventData eventData) {
+      TargetOutline.SetEnabled(false);
       OnEndDragAction(TargetRectTransform.sizeDelta);
     }
   }

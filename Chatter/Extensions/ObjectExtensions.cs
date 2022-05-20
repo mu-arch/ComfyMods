@@ -17,6 +17,11 @@ namespace Chatter {
       return gameObject;
     }
 
+    public static T SetEnabled<T>(this T behaviour, bool enabled) where T : UnityEngine.Behaviour {
+      behaviour.enabled = enabled;
+      return behaviour;
+    }
+
     public static void OnSettingChanged<T>(
         this BepInEx.Configuration.ConfigEntry<T> configEntry, Action<T> settingChangedHandler) {
       configEntry.SettingChanged += (_, _) => settingChangedHandler(configEntry.Value);

@@ -16,25 +16,31 @@ namespace Chatter {
     public InputField InputField { get; init; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
+      TextPrefab = CreateTextPrefab(parentText);
+      _textPrefabText = TextPrefab.GetComponent<Text>();
+
       Panel = CreatePanel(parentTransform);
       CanvasGroup = Panel.GetComponent<CanvasGroup>();
-      Viewport = CreateViewport(Panel.transform);
-      Content = CreateContent(Viewport.transform);
-      ContentImage = Content.GetComponent<Image>();
-      ScrollRect = CreateScrollRect(Panel, Viewport, Content);
-      TextPrefab = CreateTextPrefab(parentText);
-      InputField = CreateChatInputField(Panel.transform);
-      Grabber = CreateGrabber(Panel.transform);
-
       _panelRectTransform = Panel.GetComponent<RectTransform>();
+
+      Viewport = CreateViewport(Panel.transform);
       _viewportRectTransform = Viewport.GetComponent<RectTransform>();
       _viewportRectMask = Viewport.GetComponent<RectMask2D>();
       _viewportImage = Viewport.GetComponent<Image>();
+
+      Content = CreateContent(Viewport.transform);
+      ContentImage = Content.GetComponent<Image>();
       _contentRectTransform = Content.GetComponent<RectTransform>();
       _contentLayoutGroup = Content.GetComponent<VerticalLayoutGroup>();
+
+      ScrollRect = CreateScrollRect(Panel, Viewport, Content);
+
+      InputField = CreateChatInputField(Panel.transform);
       _inputFieldImage = InputField.GetComponentInParent<Image>();
-      _textPrefabText = TextPrefab.GetComponent<Text>();
+
+      Grabber = CreateGrabber(Panel.transform);
       _grabberCanvasGroup = Grabber.GetComponent<CanvasGroup>();
+
       _contentWidthOffset = _contentLayoutGroup.padding.horizontal * -1f;
       _panelRectTransform.SetAsFirstSibling();
     }
@@ -137,6 +143,15 @@ namespace Chatter {
 
       panel.AddComponent<CanvasGroup>();
 
+      panel.AddComponent<Image>()
+          .SetColor(Color.clear);
+
+      panel.AddComponent<Outline>()
+          .SetEffectColor(new Color32(255, 255, 255, 32))
+          .SetEffectDistance(Vector2.zero)
+          .SetUseGraphicAlpha(false)
+          .SetEnabled(false);
+
       return panel;
     }
 
@@ -154,17 +169,25 @@ namespace Chatter {
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false);
 
+      grabber.AddComponent<Image>()
+          .SetColor(new Color32(255, 255, 255, 32));
+
       GameObject resizer = new("Grabber.Resizer", typeof(RectTransform));
       resizer.SetParent(grabber.transform);
 
       resizer.AddComponent<LayoutElement>()
-          .SetPreferred(width: 15f, height: 15f);
-
-      resizer.AddComponent<Image>()
-          .SetColor(new Color32(0, 255, 0, 32))
-          .SetRaycastTarget(true);
+          .SetPreferred(width: 25f, height: 15f);
 
       resizer.AddComponent<PanelResizer>();
+
+      Text resizerText =
+          resizer.AddComponent<Text>()
+          .SetFont(_textPrefabText.font)
+          .SetFontSize(10)
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetText("\u2199\u2197");
+
+      resizerText.color = Color.white;
 
       GameObject dragger = new("Grabber.Dragger", typeof(RectTransform));
       dragger.SetParent(grabber.transform);

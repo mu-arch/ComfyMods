@@ -93,13 +93,16 @@ namespace Chatter {
 
       ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent, chat.m_output);
       RectTransform panelRectTransform = chatPanel.Panel.GetComponent<RectTransform>();
+      Outline panelOutline = chatPanel.Panel.GetComponent<Outline>();
 
       PanelDragger dragger = chatPanel.Grabber.GetComponentInChildren<PanelDragger>();
       dragger.TargetRectTransform = panelRectTransform;
+      dragger.TargetOutline = panelOutline;
       dragger.OnEndDragAction = position => ChatPanelPosition.Value = position;
 
       PanelResizer resizer = chatPanel.Grabber.GetComponentInChildren<PanelResizer>();
       resizer.TargetRectTransform = panelRectTransform;
+      resizer.TargetOutline = panelOutline;
       resizer.OnEndDragAction =
           size => {
             ChatPanelSize.Value = size;
