@@ -32,8 +32,8 @@ namespace Chatter.Patches {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Terminal.SendInput))]
     static void SendInputPostfix(ref Terminal __instance) {
-      if (IsModEnabled.Value && __instance == Chat.m_instance && _chatPanel?.ScrollRect) {
-        _chatPanel.ScrollRect.verticalNormalizedPosition = 0f;
+      if (IsModEnabled.Value && __instance == Chat.m_instance && Chatter.ChatPanel != null) {
+        Chatter.ChatPanel.SetVerticalScrollPosition(0f);
       }
     }
 

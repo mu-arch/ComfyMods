@@ -61,6 +61,7 @@ namespace Chatter {
     internal static InputField _chatInputField = null;
 
     internal static bool _isCreatingChatMessage = false;
+    static bool _isChatPanelVisible = false;
 
     public static void ToggleChatter(bool toggle) {
       ToggleVanillaChat(Chat.m_instance, !toggle);
@@ -91,10 +92,19 @@ namespace Chatter {
       }
 
       ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent, chat.m_output);
+      RectTransform panelRectTransform = chatPanel.Panel.GetComponent<RectTransform>();
 
-      PanelDragger dragger = chatPanel.Grabber.AddComponent<PanelDragger>();
-      dragger.TargetTransform = chatPanel.Panel.GetComponent<RectTransform>();
+      PanelDragger dragger = chatPanel.Grabber.GetComponentInChildren<PanelDragger>();
+      dragger.TargetRectTransform = panelRectTransform;
       dragger.OnEndDragAction = position => ChatPanelPosition.Value = position;
+
+      PanelResizer resizer = chatPanel.Grabber.GetComponentInChildren<PanelResizer>();
+      resizer.TargetRectTransform = panelRectTransform;
+      resizer.OnEndDragAction =
+          size => {
+            ChatPanelSize.Value = size;
+            ChatPanelPosition.Value = panelRectTransform.anchoredPosition;
+          };
 
       return chatPanel;
     }
@@ -112,26 +122,29 @@ namespace Chatter {
     }
 
     internal static void HideChatPanelDelegate(float hideTimer) {
-      if (IsModEnabled.Value && ChatPanel?.Panel) {
-        if (hideTimer < HideChatPanelDelay.Value || Menu.IsVisible()) {
-          _chatPanel.CanvasGroup.alpha = 1f;
-          _chatPanel.CanvasGroup.blocksRaycasts = true;
-        } else {
-          _chatPanel.CanvasGroup.alpha = HideChatPanelAlpha.Value;
-          _chatPanel.CanvasGroup.blocksRaycasts = false;
+      if (IsModEnabled.Value) {
+        _isChatPanelVisible = hideTimer < HideChatPanelDelay.Value || Menu.IsVisible();
+
+        if (_chatPanel?.CanvasGroup) {
+          _chatPanel.CanvasGroup.alpha = _isChatPanelVisible ? 1f : HideChatPanelAlpha.Value;
+          _chatPanel.CanvasGroup.blocksRaycasts = _isChatPanelVisible;
+        }
+
+        if (!_isChatPanelVisible) {
+          _chatPanel.SetVerticalScrollPosition(0f);
         }
       }
     }
 
     internal static void EnableChatPanelDelegate() {
-      if (IsModEnabled.Value && ChatPanel?.InputField.Ref()) {
-        ChatPanel.InputField.enabled = true;
+      if (IsModEnabled.Value && _chatPanel?.InputField) {
+        _chatPanel.InputField.enabled = true;
       }
     }
 
     internal static bool DisableChatPanelDelegate(bool active) {
-      if (IsModEnabled.Value && ChatPanel?.Panel) {
-        ChatPanel.InputField.enabled = false;
+      if (IsModEnabled.Value && _chatPanel?.InputField) {
+        _chatPanel.InputField.enabled = false;
         return true;
       }
 
@@ -140,11 +153,9 @@ namespace Chatter {
 
     internal static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
       if (_isPluginConfigBound) {
-        ZLog.Log($"PluginConfig already bound, skipping.");
         return;
       }
 
-      ZLog.Log($"Binding PluginConfig...");
       _isPluginConfigBound = true;
 
       BindChatMessageFont(chat.Ref()?.m_output.font);
@@ -165,7 +176,11 @@ namespace Chatter {
     }
 
     public static ChatPanel ChatPanel {
-      get => _chatPanel?.Panel.Ref() ? _chatPanel : null;
+      get => _chatPanel?.Panel ? _chatPanel : null;
+    }
+
+    public static bool IsChatPanelVisible {
+      get => _chatPanel?.Panel ? _isChatPanelVisible : false;
     }
 
     static void ToggleChatPanelMessageDividers(bool toggle) {
@@ -181,7 +196,7 @@ namespace Chatter {
       static void ShowPostfix() {
         if (IsModEnabled.Value) {
           ChatPanel?.ToggleGrabber(true);
-          ChatPanel?.SetPanelSize(ChatPanelSize.Value + new Vector2(0, 400f));
+          ChatPanel?.SetPanelSize(ChatPanelSize.Value);// + new Vector2(0, 400f));
         }
       }
 

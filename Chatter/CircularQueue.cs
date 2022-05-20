@@ -11,7 +11,7 @@ namespace Chatter {
       _dequeueFunc = dequeueFunc;
     }
 
-    T _lastItem = default;
+    T _lastItem = default!;
     public T LastItem {
       get => _lastItem;
     }

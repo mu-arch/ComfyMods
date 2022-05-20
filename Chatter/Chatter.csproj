@@ -80,6 +80,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -103,6 +106,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\ChatPanel.cs" />
     <Compile Include="UI\PanelDragger.cs" />
+    <Compile Include="UI\PanelResizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />

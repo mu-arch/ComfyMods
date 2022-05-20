@@ -122,6 +122,25 @@ namespace Chatter.Patches {
           .InstructionEnumeration();
     }
 
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.Update))]
+    static void UpdatePostfix(ref Chat __instance) {
+      if (!IsModEnabled.Value || !IsChatPanelVisible) {
+        return;
+      }
+
+      if (ScrollContentUpShortcut.Value.IsDown()) {
+        Chatter.ChatPanel?.OffsetVerticalScrollPosition(ScrollContentOffsetInterval.Value);
+        __instance.m_hideTimer = 0f;
+      }
+
+      if (ScrollContentDownShortcut.Value.IsDown()) {
+        Chatter.ChatPanel?.OffsetVerticalScrollPosition(-ScrollContentOffsetInterval.Value);
+        __instance.m_hideTimer = 0f;
+      }
+    }
+
+
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Chat.AddInworldText))]
     static IEnumerable<CodeInstruction> AddInworldTextTranspiler(IEnumerable<CodeInstruction> instructions) {

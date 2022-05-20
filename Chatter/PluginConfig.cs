@@ -28,9 +28,15 @@ namespace Chatter {
     public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
 
+    // Panel
     public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; }
     public static ConfigEntry<Vector2> ChatPanelSize { get; private set; }
     public static ConfigEntry<float> ChatContentWidthOffset { get; private set; }
+
+    // Scrolling
+    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; }
+    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       Config = config;
@@ -87,6 +93,29 @@ namespace Chatter {
               new ConfigDescription(
                   "The spacing (in pixels) between rows in the ChatPanel content.",
                   new AcceptableValueRange<float>(-100, 100)));
+
+      // Scrolling
+      ScrollContentUpShortcut =
+          config.Bind(
+              "Scrolling",
+              "scrollContentUpShortcut",
+              new KeyboardShortcut(KeyCode.PageUp),
+              "Keyboard shortcut to scroll the ChatPanel content up.");
+
+      ScrollContentDownShortcut =
+          config.Bind(
+              "Scrolling",
+              "scrollContentDownShortcut",
+              new KeyboardShortcut(KeyCode.PageDown),
+              "Keyboard shortcut to scroll the ChatPanel content down.");
+
+      ScrollContentOffsetInterval =
+          config.Bind(
+              "Scrolling",
+              "scrollContentOffsetInterval",
+              defaultValue: 200f,
+              "Interval (in pixels) to scroll the ChatPanel content up/down.");
+
     }
 
     static readonly Dictionary<string, Font> _fontCache = new();

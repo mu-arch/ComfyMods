@@ -5,21 +5,19 @@ using UnityEngine.UI;
 
 namespace Chatter {
   public class ChatPanel {
-    public GameObject Panel { get; private set; }
-    public CanvasGroup CanvasGroup { get; private set; }
-
-    public GameObject Grabber { get; private set; }
-    public GameObject Viewport { get; private set; }
-    public GameObject Content { get; private set; }
-    public Image ContentImage { get; private set; }
-    public ScrollRect ScrollRect { get; private set; }
-    public GameObject TextPrefab { get; private set; }
-    public InputField InputField { get; private set; }
+    public GameObject Panel { get; init; }
+    public CanvasGroup CanvasGroup { get; init; }
+    public GameObject Grabber { get; init; }
+    public GameObject Viewport { get; init; }
+    public GameObject Content { get; init; }
+    public Image ContentImage { get; init; }
+    public ScrollRect ScrollRect { get; init; }
+    public GameObject TextPrefab { get; init; }
+    public InputField InputField { get; init; }
 
     public ChatPanel(Transform parentTransform, Text parentText) {
       Panel = CreatePanel(parentTransform);
       CanvasGroup = Panel.GetComponent<CanvasGroup>();
-
       Viewport = CreateViewport(Panel.transform);
       Content = CreateContent(Viewport.transform);
       ContentImage = Content.GetComponent<Image>();
@@ -32,6 +30,7 @@ namespace Chatter {
       _viewportRectTransform = Viewport.GetComponent<RectTransform>();
       _viewportRectMask = Viewport.GetComponent<RectMask2D>();
       _viewportImage = Viewport.GetComponent<Image>();
+      _contentRectTransform = Content.GetComponent<RectTransform>();
       _contentLayoutGroup = Content.GetComponent<VerticalLayoutGroup>();
       _inputFieldImage = InputField.GetComponentInParent<Image>();
       _textPrefabText = TextPrefab.GetComponent<Text>();
@@ -46,6 +45,7 @@ namespace Chatter {
     readonly RectTransform _viewportRectTransform;
     readonly RectMask2D _viewportRectMask;
     readonly Image _viewportImage;
+    readonly RectTransform _contentRectTransform;
     readonly VerticalLayoutGroup _contentLayoutGroup;
     readonly Image _inputFieldImage;
     readonly Text _textPrefabText;
@@ -116,6 +116,11 @@ namespace Chatter {
       ScrollRect.verticalNormalizedPosition = position;
     }
 
+    public void OffsetVerticalScrollPosition(float offset) {
+      float percent = (offset / _contentRectTransform.sizeDelta.y);
+      ScrollRect.verticalNormalizedPosition += percent;
+    }
+
     GameObject CreatePanel(Transform parentTransform) {
       GameObject panel = new("ChatPanel", typeof(RectTransform));
       panel.SetParent(parentTransform);
@@ -135,7 +140,7 @@ namespace Chatter {
       return panel;
     }
 
-    static GameObject CreateGrabber(Transform parentTransform) {
+    GameObject CreateGrabber(Transform parentTransform) {
       GameObject grabber = new("ChatPanel.Grabber", typeof(RectTransform));
       grabber.SetParent(parentTransform);
 
@@ -145,13 +150,34 @@ namespace Chatter {
           .SetPivot(Vector2.zero)
           .SetPosition(Vector2.zero);
 
-      grabber.AddComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(height: 5f);
+      grabber.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false);
 
-      grabber.AddComponent<Image>()
+      GameObject resizer = new("Grabber.Resizer", typeof(RectTransform));
+      resizer.SetParent(grabber.transform);
+
+      resizer.AddComponent<LayoutElement>()
+          .SetPreferred(width: 15f, height: 15f);
+
+      resizer.AddComponent<Image>()
+          .SetColor(new Color32(0, 255, 0, 32))
+          .SetRaycastTarget(true);
+
+      resizer.AddComponent<PanelResizer>();
+
+      GameObject dragger = new("Grabber.Dragger", typeof(RectTransform));
+      dragger.SetParent(grabber.transform);
+
+      dragger.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
+          .SetPreferred(height: 15f);
+
+      dragger.AddComponent<Image>()
           .SetColor(new Color32(255, 255, 255, 32))
           .SetRaycastTarget(true);
+
+      dragger.AddComponent<PanelDragger>();
 
       grabber.AddComponent<CanvasGroup>();
 

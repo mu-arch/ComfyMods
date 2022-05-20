@@ -8,7 +8,7 @@ namespace Chatter {
     public long SenderId { get; set; }
     public Vector3 Position { get; set; }
     public Talker.Type Type { get; set; }
-    public string User { get; set; }
-    public string Text { get; set; }
+    public string User { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
   }
 }
