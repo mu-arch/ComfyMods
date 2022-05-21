@@ -1,4 +1,4 @@
-# Silence v1.0.0
+# Silence
 
   * Creator tool to completely hide the chat windows and in-game say/shout with a shortcut.
 
@@ -17,3 +17,19 @@
   * You can also download the mod at:
     * Nexus Mods: n/a
     * Thunderstore: n/a
+
+## Changelog
+
+### 1.2.0
+
+  * Modified the check for the keyboard shortcut to use a transpiler on `Player.Update()` instead of `TakeInput()`.
+
+### 1.1.0
+
+  * Updated for Hearth & Home.
+  * Fixed a possible issue with the toggle shortcut check in `Player.TakeInput()`.
+  * Fixed the ChatWindow popping up with a shout when Silence is turned on, because Chat inherits from Terminal now.
+
+### 1.0.0
+
+  * Initial release.

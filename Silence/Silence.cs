@@ -3,21 +3,22 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
-using System.Collections.Generic;
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 using UnityEngine;
-using System.Collections;
+
 
 namespace Silence {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Silence : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.silence";
     public const string PluginName = "Silence";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.2.0";
 
     public static ManualLogSource _logger;
 
@@ -60,16 +61,24 @@ namespace Silence {
 
     [HarmonyPatch(typeof(Chat))]
     class ChatPatch {
+      static readonly CodeMatch _inputGetKeyDownMatch =
+          new(
+              OpCodes.Call,
+              AccessTools.Method(typeof(Input), nameof(Input.GetKeyDown), new Type[] { typeof(KeyCode) }));
+
       [HarmonyPostfix]
       [HarmonyPatch(nameof(Chat.Awake))]
       static void AwakePostfix(ref Chat __instance) {
         _chat = __instance;
       }
 
-      static readonly CodeMatch _inputGetKeyDownMatch =
-          new(
-              OpCodes.Call,
-              AccessTools.Method(typeof(Input), nameof(Input.GetKeyDown), new Type[] { typeof(KeyCode) }));
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(Chat.LateUpdate))]
+      static void LateUpdatePostfix(ref Chat __instance) {
+        if (!_enableChatWindow && __instance.m_chatWindow.gameObject.activeSelf) {
+          __instance.m_chatWindow.gameObject.SetActive(false);
+        }
+      }
 
       [HarmonyTranspiler]
       [HarmonyPatch(nameof(Chat.Update))]
@@ -92,32 +101,54 @@ namespace Silence {
 
     [HarmonyPatch(typeof(Player))]
     class PlayerPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Player.TakeInput))]
-      static void TakeInputPostfix(ref Player __instance, ref bool __result) {
-        if (_isModEnabled.Value && !_toggleSilenceShortcut.Value.IsDown()) {
-          return;
+      [HarmonyTranspiler]
+      [HarmonyPatch(nameof(Player.Update))]
+      static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+        return new CodeMatcher(instructions)
+            .MatchForward(
+                useEnd: false,
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
+                new CodeMatch(OpCodes.Stloc_0))
+            .Advance(offset: 2)
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
+            .InsertAndAdvance(Transpilers.EmitDelegate<Func<Player, bool, bool>>(TakeInputDelegate))
+            .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
+            .InstructionEnumeration();
+      }
+
+      static bool TakeInputDelegate(Player player, bool takeInputResult) {
+        if (!_isModEnabled.Value || player != Player.m_localPlayer) {
+          return takeInputResult;
         }
 
-        __instance.StartCoroutine(ToggleSilenceCoroutine());
-        __result = false;
+        if (_toggleSilenceShortcut.Value.IsDown()) {
+          player.StartCoroutine(ToggleSilenceCoroutine());
+          return false;
+        }
+
+        return takeInputResult;
       }
     }
 
+    static readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+
     static IEnumerator ToggleSilenceCoroutine() {
-      yield return null;
+      yield return _waitForEndOfFrame;
 
       _enableChatWindow = !_hideChatWindow.Value || !_enableChatWindow;
       _enableInWorldTexts = !_hideInWorldTexts.Value || !_enableInWorldTexts;
 
       _logger.LogInfo($"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
 
-      MessageHud.instance.ShowMessage(
-          MessageHud.MessageType.TopLeft, $"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
+      MessageHud.instance?.ShowMessage(
+          MessageHud.MessageType.Center, $"ChatWindow: {_enableChatWindow}\nInWorldTexts: {_enableInWorldTexts}");
 
       if (_chat && !_enableChatWindow) {
         _chat.m_hideTimer = _chat.m_hideDelay;
+        _chat.m_focused = false;
         _chat.m_wasFocused = false;
+        _chat.m_input.DeactivateInputField();
       }
 
       if (_chat && !_enableInWorldTexts) {

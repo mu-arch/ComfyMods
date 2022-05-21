@@ -6,11 +6,17 @@ namespace Shortcuts {
   public class PluginConfig {
     public static ConfigEntry<bool> _isModEnabled;
 
+    public static ConfigEntry<KeyboardShortcut> _toggleConsoleShortcut;
     public static ConfigEntry<KeyboardShortcut> _toggleHudShortcut;
+    public static ConfigEntry<KeyboardShortcut> _toggleConnectPanelShortcut;
+
+    public static ConfigEntry<KeyboardShortcut> _takeScreenshotShortcut;
+    public static ConfigEntry<KeyboardShortcut> _toggleMouseCaptureShortcut;
 
     public static ConfigEntry<KeyboardShortcut> _toggleDebugFlyShortcut;
     public static ConfigEntry<KeyboardShortcut> _toggleDebugNoCostShortcut;
     public static ConfigEntry<KeyboardShortcut> _debugKillAllShortcut;
+    public static ConfigEntry<KeyboardShortcut> _debugRemoveDropsShortcut;
 
     public static ConfigEntry<KeyboardShortcut> _hotbarItem1Shortcut;
     public static ConfigEntry<KeyboardShortcut> _hotbarItem2Shortcut;
@@ -25,12 +31,40 @@ namespace Shortcuts {
       _isModEnabled =
           config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
+      _toggleConsoleShortcut =
+          config.Bind(
+              "Console",
+              "toggleConsoleShortcut",
+              new KeyboardShortcut(KeyCode.F5),
+              "Shortcut to toggle the Console on/off.");
+
       _toggleHudShortcut =
           config.Bind(
               "Hud",
               "toggleHudShortcut",
               new KeyboardShortcut(KeyCode.F3, KeyCode.LeftControl),
               "Shortcut to toggle the Hud on/off.");
+
+      _toggleConnectPanelShortcut =
+          config.Bind(
+              "ConnectPanel",
+              "toggleConnectPanelShortcut",
+              new KeyboardShortcut(KeyCode.F2),
+              "Shortcut to toggle the ConnectPanel on/off.");
+
+      _takeScreenshotShortcut =
+          config.Bind(
+              "GameCamera",
+              "takeScreenshotShortcut",
+              new KeyboardShortcut(KeyCode.F11),
+              "Shortcut to take a screenshot.");
+
+      _toggleMouseCaptureShortcut =
+          config.Bind(
+              "GameCamera",
+              "toggleMouseCaptureShortcut",
+              new KeyboardShortcut(KeyCode.F1, KeyCode.LeftControl),
+              "Shortcut to toggle mouse capture from the GameCamera.");
 
       _toggleDebugFlyShortcut =
           config.Bind(
@@ -52,6 +86,13 @@ namespace Shortcuts {
               "debugKillAllShortcut",
               new KeyboardShortcut(KeyCode.None),
               "Shortcut to kill/damage all mobs around player. Unbound by default.");
+
+      _debugRemoveDropsShortcut =
+          config.Bind(
+              "Debugmode",
+              "debugRemoveDropsShortcut",
+              new KeyboardShortcut(KeyCode.None),
+              "Shortcut to 'removedrops' command. Unbound by default.");
 
       _hotbarItem1Shortcut =
           config.Bind(
