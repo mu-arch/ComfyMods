@@ -17,7 +17,7 @@ namespace OdinSaves {
   [BepInPlugin(Package, ModName, Version)]
   public class OdinSaves : BaseUnityPlugin {
     public const string Package = "redseiko.valheim.odinsaves";
-    public const string Version = "1.1.2";
+    public const string Version = "1.2.0";
     public const string ModName = "OdinSaves";
 
     static ConfigEntry<bool> _isModEnabled;
