@@ -7,46 +7,46 @@ using UnityEngine;
 
 namespace Chatter {
   public class PluginConfig {
-    public static ConfigFile Config { get; private set; } = default;
+    public static ConfigFile Config { get; private set; } = default!;
 
-    public static ConfigEntry<bool> IsModEnabled { get; private set; } = default;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; } = default!;
 
     // Behaviour
-    public static ConfigEntry<int> HideChatPanelDelay { get; private set; } = default;
-    public static ConfigEntry<float> HideChatPanelAlpha { get; private set; } = default;
+    public static ConfigEntry<int> HideChatPanelDelay { get; private set; } = default!;
+    public static ConfigEntry<float> HideChatPanelAlpha { get; private set; } = default!;
 
     // Content
-    public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; } = default;
-    public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; } = default;
+    public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; } = default!;
+    public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; } = default!;
 
     // Style
-    public static ConfigEntry<string> ChatMessageFont { get; private set; } = default;
-    public static ConfigEntry<int> ChatMessageFontSize { get; private set; } = default;
-    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; } = default;
-    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; } = default;
-    public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; } = default;
+    public static ConfigEntry<string> ChatMessageFont { get; private set; } = default!;
+    public static ConfigEntry<int> ChatMessageFontSize { get; private set; } = default!;
+    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; } = default!;
+    public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; } = default!;
 
     // Panel
-    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; } = default;
-    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; } = default;
-    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; } = default;
+    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; } = default!;
+    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; } = default!;
+    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; } = default!;
 
     // Scrolling
-    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; } = default;
-    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; } = default;
-    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; } = default;
+    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; } = default!;
+    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; } = default!;
+    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; } = default!;
 
     // Colors
-    public static ConfigEntry<Color> ChatMessageTextDefaultColor { get; private set; } = default;
-    public static ConfigEntry<Color> ChatMessageTextSayColor { get; private set; } = default;
-    public static ConfigEntry<Color> ChatMessageTextShoutColor { get; private set; } = default;
-    public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; } = default;
-    public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; } = default;
-    public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; } = default;
+    public static ConfigEntry<Color> ChatMessageTextDefaultColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextSayColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextShoutColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; } = default!;
 
     // Username
-    public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; } = default;
-    public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; } = default;
+    public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; } = default!;
+    public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; } = default!;
 
     public static void BindConfig(ConfigFile config) {
       Config = config;
