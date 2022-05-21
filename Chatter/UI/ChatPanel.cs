@@ -205,6 +205,9 @@ namespace Chatter {
           .SetText("\u2199\u2197")
           .SetColor(Color.white);
 
+      resizer.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
+
       return resizer;
     }
 
@@ -240,7 +243,7 @@ namespace Chatter {
           .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
 
       row.AddComponent<Image>()
-          .SetColor(new Color32(255, 255, 255, 32));
+          .SetColor(new Color32(192, 192, 192, 32));
 
       SayToggle = CreateMessageTypeToggle(row.transform, "Say".ToUpperInvariant());
       ShoutToggle = CreateMessageTypeToggle(row.transform, "Shout".ToUpperInvariant());
@@ -273,6 +276,7 @@ namespace Chatter {
       Toggle toggle = togglePrefab.AddComponent<Toggle>();
       toggle.targetGraphic = togglePrefab.GetComponent<Text>();
       toggle.onValueChanged.AddListener(isOn => toggleText.color = isOn ? Color.white : Color.gray);
+      toggle.isOn = false;
 
       return toggle;
     }

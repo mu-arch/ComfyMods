@@ -44,6 +44,10 @@ namespace Chatter {
     public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; } = default;
     public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; } = default;
 
+    // Username
+    public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; } = default;
+    public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; } = default;
+
     public static void BindConfig(ConfigFile config) {
       Config = config;
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -100,6 +104,27 @@ namespace Chatter {
               new ConfigDescription(
                   "The spacing (in pixels) between rows in the ChatPanel content.",
                   new AcceptableValueRange<float>(-100, 100)));
+
+      // Username
+      ChatMessageUsernamePrefix =
+          config.Bind(
+              "Username",
+              "chatMessageUsernamePrefix",
+              defaultValue: string.Empty,
+              new ConfigDescription(
+                  "If non-empty, adds the text to the beginning of a ChatMesage username.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      ChatMessageUsernamePostfix =
+          config.Bind(
+              "Username",
+              "chatMessageUsernamePostfix",
+              defaultValue: string.Empty,
+              new ConfigDescription(
+                  "If non-empty, adds the text to the end of a ChatMessage username.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 1 }));
 
       // Scrolling
       ScrollContentUpShortcut =

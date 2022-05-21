@@ -120,7 +120,7 @@ namespace Chatter {
       chatPanel.ShoutToggle.isOn = true;
 
       chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Ping));
-      chatPanel.PingToggle.isOn = false;
+      chatPanel.PingToggle.onValueChanged.Invoke(false);
 
       chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Whisper));
       chatPanel.WhisperToggle.isOn = true;
@@ -200,8 +200,7 @@ namespace Chatter {
       ChatPanelContentSpacing.OnSettingChanged(spacing => ChatPanel?.SetContentSpacing(spacing));
       ShowChatPanelMessageDividers.OnSettingChanged(ToggleChatPanelMessageDividers);
 
-      ChatMessageTextDefaultColor.OnSettingChanged(
-          color => SetContentRowBodyTextColor(color, ContentRowType.Text));
+      ChatMessageTextDefaultColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ContentRowType.Text));
       ChatMessageTextMessageHudColor.OnSettingChanged(
           color => SetContentRowBodyTextColor(color, ContentRowType.CenterText));
       ChatMessageTextSayColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Normal));
@@ -236,7 +235,9 @@ namespace Chatter {
         MessageRows.EnqueueItem(new(ContentRowType.Chat, row, message, divider));
 
         _chatPanel.CreateChatMessageRowHeader(
-            row.transform, $"{message.User} >>>", message.Timestamp.ToString("T"));
+            row.transform,
+            $"{ChatMessageUsernamePrefix.Value}{message.User}{ChatMessageUsernamePostfix.Value}",
+            message.Timestamp.ToString("T"));
 
         bool active =
             message.Type switch {
@@ -247,7 +248,7 @@ namespace Chatter {
               _ => true,
             };
 
-        divider.SetActive(active);
+        divider.SetActive(active && ShowChatPanelMessageDividers.Value);
         row.SetActive(active);
       }
 
@@ -354,7 +355,7 @@ namespace Chatter {
 
         if (MessageRows.IsEmpty || MessageRows.LastItem.Type != ContentRowType.CenterText) {
           GameObject divider = AddDivider();
-          divider.SetActive(_chatPanel.MessageHudToggle.isOn);
+          divider.SetActive(_chatPanel.MessageHudToggle.isOn && ShowChatPanelMessageDividers.Value);
 
           GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
           MessageRows.EnqueueItem(new(ContentRowType.CenterText, row, divider: divider));
