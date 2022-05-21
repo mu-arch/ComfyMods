@@ -39,6 +39,13 @@
 
     ![UI-Screenshot-02](https://i.imgur.com/O8ZfTh2.png)
 
+### Notes
+
+  * This has reached a point of 'good-enough' for the initial release with more features to come later.
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Chatter).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+
 ## Changelog
 
 ### 1.0.0
