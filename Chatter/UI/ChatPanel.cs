@@ -45,6 +45,7 @@ namespace Chatter {
       _panelRectTransform.SetAsFirstSibling();
     }
 
+    public const string RowName = "Message.Row";
     public const string RowHeaderName = "Message.Row.Header";
     public const string HeaderLeftCellName = "Row.Header.LeftCell";
     public const string HeaderRightCellName = "Row.Header.RightCell";
@@ -122,6 +123,15 @@ namespace Chatter {
 
     public void SetContentSpacing(float spacing) {
       _contentLayoutGroup.spacing = spacing;
+    }
+
+    public void SetContentBodySpacing(float spacing) {
+      foreach (
+          VerticalLayoutGroup layoutGroup in Content
+              .GetComponentsInChildren<VerticalLayoutGroup>(includeInactive: true)
+              .Where(lg => lg.name == RowName)) {
+        layoutGroup.SetSpacing(spacing);
+      }
     }
 
     public void ToggleGrabber(bool toggle) {
@@ -386,7 +396,7 @@ namespace Chatter {
       content.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetSpacing(PluginConfig.ChatPanelContentSpacing.Value)
+          .SetSpacing(PluginConfig.ContentRowSpacing)
           .SetPadding(left: 20, right: 20, top: 20, bottom: 20);
 
       content.AddComponent<ContentSizeFitter>()
@@ -450,14 +460,14 @@ namespace Chatter {
     }
 
     public GameObject CreateChatMessageRow(Transform parentTransform) {
-      GameObject row = new("Message.Row", typeof(RectTransform));
+      GameObject row = new(RowName, typeof(RectTransform));
       row.SetParent(parentTransform, worldPositionStays: false);
 
       row.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0)
-          .SetSpacing(5f);
+          .SetSpacing(PluginConfig.ContentRowBodySpacing);
 
       row.AddComponent<ContentSizeFitter>()
           .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)

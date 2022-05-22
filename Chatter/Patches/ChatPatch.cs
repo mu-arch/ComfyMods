@@ -44,7 +44,7 @@ namespace Chatter.Patches {
         Text = Regex.Replace(text, @"(<|>)", " "),
       };
 
-      AddChatMessageText(message);
+      AddChatMessage(message);
     }
 
     static ChatMessageType GetMessageType(Talker.Type talkerType) {

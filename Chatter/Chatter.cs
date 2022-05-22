@@ -3,7 +3,6 @@
 using HarmonyLib;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -39,35 +38,24 @@ namespace Chatter {
       SingleRow
     }
 
-    public enum ContentRowType {
-      Text,
-      Chat,
-      Divider,
-      CenterText
-    }
-
     public class ContentRow {
-      public ContentRowType Type { get; }
-      public GameObject Row { get; }
-      public GameObject Divider { get; }
-
+      public GameObject Row { get; init; }
       public ChatMessage ChatMessage { get; init; }
-      public ContentRow(
-          ContentRowType type, GameObject row, ChatMessage message = default, GameObject divider = default) {
-        Type = type;
+      public GameObject Divider { get; init; }
+
+      public ContentRow(GameObject row, ChatMessage message, GameObject divider) {
         Row = row;
         ChatMessage = message;
         Divider = divider;
       }
     }
 
-    internal static readonly List<ChatMessage> MessageHistory = new();
-    internal static readonly CircularQueue<ContentRow> MessageRows = new(50, row => Destroy(row.Row));
+    internal static readonly CircularQueue<ChatMessage> MessageHistory = new(50, _ => { });
+    internal static readonly CircularQueue<ContentRow> MessageRows = new(50, DestroyMessageRow);
 
     internal static bool _isPluginConfigBound = false;
 
     internal static ChatPanel _chatPanel = null;
-    internal static ChatMessage _lastChatMessage = null;
     internal static InputField _chatInputField = null;
 
     internal static bool _isCreatingChatMessage = false;
@@ -119,23 +107,23 @@ namespace Chatter {
             ChatPanelPosition.Value = panelRectTransform.anchoredPosition;
           };
 
-      chatPanel.SayToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Normal));
+      chatPanel.SayToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Say));
       chatPanel.SayToggle.isOn = true;
 
-      chatPanel.ShoutToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Shout));
+      chatPanel.ShoutToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Shout));
       chatPanel.ShoutToggle.isOn = true;
 
-      chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Ping));
+      chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Ping));
       chatPanel.PingToggle.onValueChanged.Invoke(false);
 
-      chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, Talker.Type.Whisper));
+      chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Whisper));
       chatPanel.WhisperToggle.isOn = true;
 
       chatPanel.MessageHudToggle.onValueChanged.AddListener(
-          isOn => ToggleContentRows(isOn, ContentRowType.CenterText));
+          isOn => ToggleContentRows(isOn, ChatMessageType.HudCenter));
       chatPanel.MessageHudToggle.isOn = true;
 
-      chatPanel.TextToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ContentRowType.Text));
+      chatPanel.TextToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Text));
       chatPanel.TextToggle.isOn = true;
 
       return chatPanel;
@@ -203,16 +191,27 @@ namespace Chatter {
       ChatPanelSize.OnSettingChanged(size => ChatPanel?.SetPanelSize(size));
       ChatContentWidthOffset.OnSettingChanged(offset => ChatPanel?.SetContentWidthOffset(offset));
 
-      ChatPanelContentSpacing.OnSettingChanged(spacing => ChatPanel?.SetContentSpacing(spacing));
+      ChatPanelContentSpacing.OnSettingChanged(_ => ChatPanel?.SetContentSpacing(ContentRowSpacing));
+      ChatPanelContentBodySpacing.OnSettingChanged(_ => ChatPanel?.SetContentBodySpacing(ContentRowBodySpacing));
+      ChatPanelContentSingleRowSpacing.OnSettingChanged(_ => {
+        ChatPanel?.SetContentSpacing(ContentRowSpacing);
+        ChatPanel?.SetContentBodySpacing(ContentRowBodySpacing);
+      });
+
       ShowChatPanelMessageDividers.OnSettingChanged(ToggleChatPanelMessageDividers);
 
-      ChatMessageTextDefaultColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ContentRowType.Text));
+      ChatMessageLayout.OnSettingChanged(_ => RebuildMessageRows());
+      ChatMessageShowTimestamp.OnSettingChanged(ToggleShowTimestamp);
+
+      ChatMessageTextDefaultColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ChatMessageType.Text));
       ChatMessageTextMessageHudColor.OnSettingChanged(
-          color => SetContentRowBodyTextColor(color, ContentRowType.CenterText));
-      ChatMessageTextSayColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Normal));
-      ChatMessageTextShoutColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Shout));
-      ChatMessageTextWhisperColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Whisper));
-      ChatMessageTextPingColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, Talker.Type.Ping));
+          color => SetContentRowBodyTextColor(color, ChatMessageType.HudCenter));
+      ChatMessageTextSayColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ChatMessageType.Say));
+      ChatMessageTextShoutColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ChatMessageType.Shout));
+      ChatMessageTextWhisperColor.OnSettingChanged(
+          color => SetContentRowBodyTextColor(color, ChatMessageType.Whisper));
+      ChatMessageTextPingColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ChatMessageType.Ping));
+      ChatMessageTimestampColor.OnSettingChanged(SetTimestampTextColor);
     }
 
     public static ChatPanel ChatPanel {
@@ -223,133 +222,82 @@ namespace Chatter {
       get => _chatPanel?.Panel ? _isChatPanelVisible : false;
     }
 
-    static void SetChatMessageLayoutType(MessageLayoutType layoutType) {
-      if (layoutType == MessageLayoutType.SingleRow) {
-
-      }
+    static void DestroyMessageRow(ContentRow row) {
+      Destroy(row.Row);
+      Destroy(row.Divider);
     }
 
-    internal static void AddChatMessageText(ChatMessage message) {
-      MessageHistory.Add(message);
+    static void RebuildMessageRows() {
+      MessageRows.ClearItems();
 
       if (!_chatPanel?.Panel) {
         return;
       }
 
-      AddChatMessage(message);
-
-      _lastChatMessage = message;
-    }
-
-    static void AddChatMessageWithHeaderRow(ChatMessage message) {
-      if (MessageRows.IsEmpty
-          || MessageRows.LastItem?.Type != ContentRowType.Chat
-          || _lastChatMessage == null
-          || _lastChatMessage?.SenderId != message.SenderId
-          || _lastChatMessage?.TalkerType != message.TalkerType) {
-        GameObject divider = AddDivider();
-        GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(ContentRowType.Chat, row, message, divider));
-
-        _chatPanel.CreateChatMessageRowHeader(
-            row.transform,
-            $"{ChatMessageUsernamePrefix.Value}{message.Username}{ChatMessageUsernamePostfix.Value}",
-            message.Timestamp.ToString("T"));
-
-        bool active = IsTalkerTypeActive(message.TalkerType);
-        divider.SetActive(active && ShowChatPanelMessageDividers.Value);
-        row.SetActive(active);
+      foreach (ChatMessage message in MessageHistory) {
+        CreateChatMessageRow(message);
       }
-
-      _chatPanel
-          .CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, GetTalkerTypeText(message))
-          .GetComponent<Text>()
-          .SetColor(GetTalkerTypeColor(message.TalkerType));
-    }
-
-    static void AddChatMessageAsSingleRow(ChatMessage message) {
-      GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-      MessageRows.EnqueueItem(new(ContentRowType.Chat, row, message));
-
-      _chatPanel.CreateChatMessageRowBody(
-          row.transform,
-          string.Format(
-              "{0} [ {1}{2}{3} ] <color=#{4}>{5}</color>",
-              GetTimestampText(message.Timestamp),
-              ChatMessageUsernamePrefix.Value,
-              message.Username,
-              ChatMessageUsernamePostfix.Value,
-              ToHtmlStringRGBA(GetTalkerTypeColor(message.TalkerType)),
-              GetTalkerTypeText(message)));
-
-      row.SetActive(IsTalkerTypeActive(message.TalkerType));
-    }
-
-    static bool IsTalkerTypeActive(Talker.Type talkerType) {
-      return talkerType switch {
-        Talker.Type.Normal => _chatPanel.SayToggle.isOn,
-        Talker.Type.Shout => _chatPanel.ShoutToggle.isOn,
-        Talker.Type.Whisper => _chatPanel.WhisperToggle.isOn,
-        Talker.Type.Ping => _chatPanel.PingToggle.isOn,
-        _ => true,
-      };
-    }
-
-    static string GetTalkerTypeText(ChatMessage message) {
-      return message.TalkerType switch {
-        Talker.Type.Ping => $"Ping! {message.Position}",
-        _ => message.Text,
-      };
-    }
-
-    static Color GetTalkerTypeColor(Talker.Type talkerType) {
-      return talkerType switch {
-        Talker.Type.Normal => ChatMessageTextDefaultColor.Value,
-        Talker.Type.Shout => ChatMessageTextShoutColor.Value,
-        Talker.Type.Whisper => ChatMessageTextWhisperColor.Value,
-        Talker.Type.Ping => ChatMessageTextPingColor.Value,
-        _ => ChatMessageTextDefaultColor.Value,
-      };
     }
 
     static void ToggleChatPanelMessageDividers(bool toggle) {
-      foreach (ContentRow row in MessageRows.Where(row => row.Type == ContentRowType.Divider)) {
-        row.Row.Ref()?.SetActive(toggle);
+      if (ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
+        return;
+      }
+
+      foreach (ContentRow row in MessageRows) {
+        row.Divider.Ref()?.SetActive(toggle);
       }
     }
 
-    static void ToggleContentRows(bool toggle, ContentRowType rowType) {
-      foreach (ContentRow row in MessageRows.Where(row => row.Type == rowType)) {
+    static void ToggleContentRows(bool toggle, ChatMessageType messageType) {
+      foreach (ContentRow row in MessageRows.Where(row => row.ChatMessage?.MessageType == messageType)) {
         row.Row.Ref()?.SetActive(toggle);
-        row.Divider.Ref()?.SetActive(toggle && ShowChatPanelMessageDividers.Value);
+        row.Divider.Ref()?.SetActive(toggle && ShouldShowDivider());
       }
     }
 
-    static void ToggleContentRows(bool toggle, Talker.Type talkerType) {
-      foreach (
-          ContentRow row in MessageRows
-              .Where(row => row.Type == ContentRowType.Chat && row.ChatMessage?.TalkerType == talkerType)) {
-        row.Row.Ref()?.SetActive(toggle);
-        row.Divider.Ref()?.SetActive(toggle && ShowChatPanelMessageDividers.Value);
+    static void SetContentRowBodyTextColor(Color color, ChatMessageType messageType) {
+      if (ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
+        RebuildMessageRows();
+        return;
       }
-    }
 
-    static void SetContentRowBodyTextColor(Color color, ContentRowType messageType) {             
       foreach (
           Text text in MessageRows
-              .Where(row => row.Type == messageType && row.Row)
+              .Where(row => row.ChatMessage?.MessageType == messageType && row.Row)
               .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.ContentRowBodyName)) {
         text.color = color;
       }
     }
 
-    static void SetContentRowBodyTextColor(Color color, Talker.Type talkerType) {
+    static void ToggleShowTimestamp(bool toggle) {
+      if (ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
+        RebuildMessageRows();
+        return;
+      }
+
+      foreach (
+          GameObject cell in MessageRows
+              .Where(row => row.Row)
+              .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
+              .Where(text => text.name == ChatPanel.HeaderRightCellName)
+              .Select(text => text.gameObject)) {
+        cell.SetActive(toggle);
+      }
+    }
+
+    static void SetTimestampTextColor(Color color) {
+      if (ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
+        RebuildMessageRows();
+        return;
+      }
+
       foreach (
           Text text in MessageRows
-              .Where(row => row.Type == ContentRowType.Chat && row.ChatMessage?.TalkerType == talkerType && row.Row)
+              .Where(row => row.Row)
               .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
-              .Where(text => text.name == ChatPanel.ContentRowBodyName)) {
+              .Where(text => text.name == ChatPanel.HeaderRightCellName)) {
         text.color = color;
       }
     }
@@ -361,7 +309,7 @@ namespace Chatter {
       static void ShowPostfix() {
         if (IsModEnabled.Value) {
           ChatPanel?.ToggleGrabber(true);
-          ChatPanel?.SetPanelSize(ChatPanelSize.Value);// + new Vector2(0, 400f));
+          ChatPanel?.SetPanelSize(ChatPanelSize.Value);
         }
       }
 
@@ -393,10 +341,18 @@ namespace Chatter {
     }
 
     public static void AddChatMessage(ChatMessage message) {
+      MessageHistory.EnqueueItem(message);
+
+      if (_chatPanel.Panel) {
+        CreateChatMessageRow(message);
+      }
+    }
+
+    static void CreateChatMessageRow(ChatMessage message) {
       if (ShouldCreateDivider(message)) {
         GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
         GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(ContentRowType.Chat, row, message, divider));
+        MessageRows.EnqueueItem(new(row, message, divider));
 
         bool active = IsMessageTypeActive(message.MessageType);
         divider.SetActive(active && ShouldShowDivider());
@@ -414,14 +370,7 @@ namespace Chatter {
         }
       }
 
-      string bodyText = ChatMessageLayout.Value switch {
-        MessageLayoutType.SingleRow =>
-            string.Join(
-                " ", GetTimestampText(message.Timestamp), GetUsernameText(message.Username), GetMessageText(message)),
-        _ => GetMessageText(message)
-      };
-
-      _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, bodyText)
+      _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, GetBodyText(message))
           .GetComponent<Text>()
           .SetColor(GetMessageTextColor(message.MessageType));
     }
@@ -477,6 +426,15 @@ namespace Chatter {
       };
     }
 
+    static string GetBodyText(ChatMessage message) {
+      return ChatMessageLayout.Value switch {
+        MessageLayoutType.SingleRow =>
+            string.Join(
+                " ", GetTimestampText(message.Timestamp), GetUsernameText(message.Username), GetMessageText(message)),
+        _ => GetMessageText(message)
+      };
+    }
+
     static string GetMessageText(ChatMessage message) {
       string text =
           message.MessageType switch {
@@ -501,68 +459,6 @@ namespace Chatter {
         ChatMessageType.Ping => ChatMessageTextPingColor.Value,
         _ => ChatMessageTextDefaultColor.Value,
       };
-    }
-
-    static void AddMessageHudText(string text) {
-      if (ChatMessageLayout.Value == MessageLayoutType.WithHeaderRow) {
-        if (MessageRows.IsEmpty || MessageRows.LastItem.Type != ContentRowType.CenterText) {
-          GameObject divider = AddDivider();
-          divider.SetActive(_chatPanel.MessageHudToggle.isOn && ShowChatPanelMessageDividers.Value);
-
-          GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-          MessageRows.EnqueueItem(new(ContentRowType.CenterText, row, divider: divider));
-
-          _chatPanel.CreateChatMessageRowHeader(row.transform, string.Empty, DateTime.Now.ToString("T"));
-          row.SetActive(_chatPanel.MessageHudToggle.isOn);
-        }
-
-        _chatPanel
-            .CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text)
-            .GetComponent<Text>()
-            .SetColor(ChatMessageTextMessageHudColor.Value);
-      } else if (ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
-        GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(ContentRowType.CenterText, row));
-
-        _chatPanel.CreateChatMessageRowBody(
-            row.transform,
-            string.Format(
-                "{0} <color=#{1}>{2}</color>",
-                GetTimestampText(DateTime.Now),
-                ToHtmlStringRGBA(ChatMessageTextMessageHudColor.Value),
-                text));
-
-        row.SetActive(_chatPanel.MessageHudToggle.isOn);
-      }
-    }
-
-    public static void AddTerminalText(string text) {
-      if (MessageRows.IsEmpty
-          || MessageRows.LastItem.Type != ContentRowType.Text
-          || ChatMessageLayout.Value == MessageLayoutType.SingleRow) {
-        GameObject divider = ChatMessageLayout.Value == MessageLayoutType.WithHeaderRow ? AddDivider() : default;
-        GameObject row = _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform);
-        MessageRows.EnqueueItem(new(ContentRowType.Text, row, divider: divider));
-
-        row.SetActive(_chatPanel.TextToggle.isOn);
-      }
-
-      _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text)
-          .GetComponent<Text>()
-          .SetColor(ChatMessageTextDefaultColor.Value);
-    }
-
-    internal static GameObject AddDivider() {
-      if (!_chatPanel?.Panel) {
-        return default;
-      }
-
-      GameObject divider = _chatPanel.CreateMessageDivider(_chatPanel.Content.transform);
-      divider.SetActive(ShowChatPanelMessageDividers.Value);
-
-      MessageRows.EnqueueItem(new(ContentRowType.Divider, divider));
-
-      return divider;
     }
   }
 }

@@ -26,9 +26,14 @@ namespace Chatter {
     // Style
     public static ConfigEntry<string> ChatMessageFont { get; private set; } = default!;
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; } = default!;
-    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; } = default!;
+
     public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; } = default!;
     public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; } = default!;
+
+    // Spacing
+    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; } = default!;
+    public static ConfigEntry<float> ChatPanelContentBodySpacing { get; private set; } = default!;
+    public static ConfigEntry<float> ChatPanelContentSingleRowSpacing { get; private set; } = default!;
 
     // Panel
     public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; } = default!;
@@ -116,14 +121,36 @@ namespace Chatter {
           config.Bind(
               "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
 
+      // Spacing
       ChatPanelContentSpacing =
           config.Bind(
-              "Style",
+              "Spacing",
               "chatPanelContentSpacing",
               10f,
               new ConfigDescription(
-                  "The spacing (in pixels) between rows in the ChatPanel content.",
-                  new AcceptableValueRange<float>(-100, 100)));
+                  "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 3 }));
+
+      ChatPanelContentBodySpacing =
+          config.Bind(
+              "Spacing",
+              "chatPanelContentBodySpacing",
+              5f,
+              new ConfigDescription(
+                  "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      ChatPanelContentSingleRowSpacing =
+          config.Bind(
+              "Spacing",
+              "chatPanelContentSingleRowSpacing",
+              10f,
+              new ConfigDescription(
+                  "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 1 }));
 
       // Username
       ChatMessageUsernamePrefix =
@@ -247,6 +274,24 @@ namespace Chatter {
                   "Color for any timestamp shown in the chat messages.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 0 }));
+    }
+
+    public static float ContentRowSpacing {
+      get {
+        return ChatMessageLayout.Value switch {
+          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
+          _ => ChatPanelContentSpacing.Value,
+        };
+      }
+    }
+
+    public static float ContentRowBodySpacing {
+      get {
+        return ChatMessageLayout.Value switch {
+          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
+          _ => ChatPanelContentBodySpacing.Value,
+        };
+      }
     }
 
     static readonly Dictionary<string, Font> _fontCache = new();
