@@ -8,9 +8,9 @@ namespace Chatter {
   public class PanelResizer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     Vector2 _lastMousePosition;
 
-    public RectTransform TargetRectTransform { get; set; } = default;
-    public Outline TargetOutline { get; set; } = default;
-    public Action<Vector2> OnEndDragAction { get; set; } = default;
+    public RectTransform TargetRectTransform { get; set; } = default!;
+    public Outline TargetOutline { get; set; } = default!;
+    public Action<Vector2> OnEndDragAction { get; set; } = default!;
 
     public void OnBeginDrag(PointerEventData eventData) {
       TargetOutline.SetEnabled(true);

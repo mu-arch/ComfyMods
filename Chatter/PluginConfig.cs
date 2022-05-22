@@ -19,6 +19,10 @@ namespace Chatter {
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; } = default!;
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; } = default!;
 
+    // Layout
+    public static ConfigEntry<Chatter.MessageLayoutType> ChatMessageLayout { get; private set; } = default!;
+    public static ConfigEntry<bool> ChatMessageShowTimestamp { get; private set; } = default;
+
     // Style
     public static ConfigEntry<string> ChatMessageFont { get; private set; } = default!;
     public static ConfigEntry<int> ChatMessageFontSize { get; private set; } = default!;
@@ -43,6 +47,7 @@ namespace Chatter {
     public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; } = default!;
     public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; } = default!;
     public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTimestampColor { get; private set; } = default!;
 
     // Username
     public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; } = default!;
@@ -83,6 +88,21 @@ namespace Chatter {
               "showChatPanelMessageDividers",
               defaultValue: true,
               "Show the horizontal dividers between groups of messages.");
+
+      // Layout
+      ChatMessageLayout =
+          config.Bind(
+              "Layout",
+              "chatMessageLayout",
+              Chatter.MessageLayoutType.WithHeaderRow,
+              "Determines which layout to use when displaying a chat message.");
+
+      ChatMessageShowTimestamp =
+          config.Bind(
+              "Layout",
+              "chatMessageShowTimestamp",
+              defaultValue: true,
+              "Show a timestamp for each group of chat messages (except system/default).");
 
       // Style
       ChatPanelBackgroundColor =
@@ -217,6 +237,16 @@ namespace Chatter {
                   "Color for 'MessageHud' chat messages.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 1 }));
+
+      ChatMessageTimestampColor =
+          config.Bind(
+              "Colors",
+              "chatMessageTimestampColor",
+              (Color) new Color32(244, 246, 247, 255),
+              new ConfigDescription(
+                  "Color for any timestamp shown in the chat messages.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 0 }));
     }
 
     static readonly Dictionary<string, Font> _fontCache = new();

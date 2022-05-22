@@ -17,6 +17,10 @@ namespace Chatter {
       return gameObject;
     }
 
+    public static UnityEngine.GameObject GetChild(this UnityEngine.GameObject gameObject, string childName) {
+      return gameObject.transform.Find(childName).Ref()?.gameObject;
+    }
+
     public static T SetEnabled<T>(this T behaviour, bool enabled) where T : UnityEngine.Behaviour {
       behaviour.enabled = enabled;
       return behaviour;

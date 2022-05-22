@@ -35,15 +35,26 @@ namespace Chatter.Patches {
       _isCreatingChatMessage = true;
 
       ChatMessage message = new() {
+        MessageType = GetMessageType(type),
         Timestamp = DateTime.Now,
         SenderId = senderID,
         Position = pos,
-        Type = type,
-        User = user,
+        TalkerType = type,
+        Username = user,
         Text = Regex.Replace(text, @"(<|>)", " "),
       };
 
       AddChatMessageText(message);
+    }
+
+    static ChatMessageType GetMessageType(Talker.Type talkerType) {
+      return talkerType switch {
+        Talker.Type.Normal => ChatMessageType.Say,
+        Talker.Type.Shout => ChatMessageType.Shout,
+        Talker.Type.Whisper => ChatMessageType.Whisper,
+        Talker.Type.Ping => ChatMessageType.Ping,
+        _ => ChatMessageType.Text
+      };
     }
 
     [HarmonyPostfix]

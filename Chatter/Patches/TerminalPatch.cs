@@ -44,14 +44,7 @@ namespace Chatter.Patches {
         return;
       }
 
-      if (MessageRows.IsEmpty || MessageRows.LastItem.Type != ContentRowType.Text) {
-        GameObject divider = AddDivider();
-
-        MessageRows.EnqueueItem(
-          new(ContentRowType.Text, _chatPanel.CreateChatMessageRow(_chatPanel.Content.transform), divider: divider));
-      }
-
-      _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, text);
+      AddChatMessage(new() { MessageType = ChatMessageType.Text, Timestamp = DateTime.Now, Text = text });
     }
   }
 }
