@@ -332,7 +332,7 @@ namespace Chatter {
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: true, height: false)
           .SetChildAlignment(TextAnchor.MiddleLeft)
-          .SetPadding(left: 10, right: 10, top: 8, bottom: 8);
+          .SetPadding(left: 20, right: 20, top: 8, bottom: 8);
 
       Image rowImage = row.AddComponent<Image>().SetColor(PluginConfig.ChatPanelBackgroundColor.Value);
 
@@ -355,7 +355,7 @@ namespace Chatter {
 
       inputFieldRow.AddComponent<HorizontalLayoutGroup>()
           .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleLeft);
 
       GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
@@ -370,8 +370,27 @@ namespace Chatter {
       inputFieldText.GetComponent<Text>()
           .SetSupportRichText(false);
 
+      inputFieldText.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      GameObject inputFieldPlaceholder = Object.Instantiate(TextPrefab, inputFieldRow.transform, false);
+      inputFieldPlaceholder.SetName("Placeholder");
+
+      inputFieldPlaceholder.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
+
+      inputFieldPlaceholder.GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("...");
+
+      inputFieldPlaceholder.AddComponent<LayoutElement>();
+
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
+      inputField.placeholder = inputFieldPlaceholder.GetComponent<Text>();
 
       inputFieldRow.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f);
