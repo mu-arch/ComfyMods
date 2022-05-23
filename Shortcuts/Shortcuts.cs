@@ -22,9 +22,9 @@ namespace Shortcuts {
     Harmony _harmony;
 
     public void Awake() {
-      CreateConfig(Config);
+      BindConfig(Config);
 
-      if (_isModEnabled.Value) {
+      if (IsModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
       }
     }
@@ -33,12 +33,12 @@ namespace Shortcuts {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly CodeMatch _inputGetKeyDownMatch =
+    static readonly CodeMatch InputGetKeyDownMatch =
         new(
             OpCodes.Call,
             AccessTools.Method(typeof(Input), nameof(Input.GetKeyDown), new Type[] { typeof(KeyCode) }));
 
-    static readonly CodeMatch _inputGetKeyMatch =
+    static readonly CodeMatch InputGetKeyMatch =
         new(OpCodes.Call, AccessTools.Method(typeof(Input), nameof(Input.GetKey), new Type[] { typeof(KeyCode) }));
 
     [HarmonyPatch(typeof(Hud))]
@@ -47,14 +47,13 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(Hud.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11C), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11C), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => _toggleHudShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x132), _inputGetKeyMatch)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => ToggleHudShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x132), InputGetKeyMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(OpCodes.Call, Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => true).operand)
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => true))
             .InstructionEnumeration();
       }
     }
@@ -65,62 +64,54 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(Player.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x7A)), _inputGetKeyDownMatch)
-            .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleDebugFlyShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x62)), _inputGetKeyDownMatch)
-            .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleDebugNoCostShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x6B)), _inputGetKeyDownMatch)
-            .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _debugKillAllShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x6C)), _inputGetKeyDownMatch)
-            .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _debugRemoveDropsShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x31)), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x7A)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem1Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x32)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => ToggleDebugFlyShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x62)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem2Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x33)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => ToggleDebugNoCostShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x6B)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem3Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x34)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => DebugKillAllShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x6C)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem4Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x35)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => DebugRemoveDropsShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x31)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem5Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x36)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem1Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x32)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem6Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x37)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem2Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x33)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem7Shortcut.Value)))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x38)), _inputGetKeyDownMatch)
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem3Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x34)), InputGetKeyDownMatch)
             .Advance(offset: 1)
             .SetInstructionAndAdvance(
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => IsDownIgnored(_hotbarItem8Shortcut.Value)))
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem4Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x35)), InputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem5Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x36)), InputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem6Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x37)), InputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem7Shortcut.Value)))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(0x38)), InputGetKeyDownMatch)
+            .Advance(offset: 1)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => IsKeyDown(HotbarItem8Shortcut.Value)))
             .InstructionEnumeration();
       }
     }
@@ -131,12 +122,10 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(Console.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11E), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11E), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleConsoleShortcut.Value.IsDown()).operand)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => ToggleConsoleShortcut.Value.IsDown()))
             .InstructionEnumeration();
       }
     }
@@ -147,12 +136,10 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(FejdStartup.LateUpdate))]
       static IEnumerable<CodeInstruction> LateUpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x124), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x124), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _takeScreenshotShortcut.Value.IsDown()).operand)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => TakeScreenshotShortcut.Value.IsDown()))
             .InstructionEnumeration();
       }
     }
@@ -163,12 +150,10 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(GameCamera.LateUpdate))]
       static IEnumerable<CodeInstruction> LateUpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x124), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x124), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _takeScreenshotShortcut.Value.IsDown()).operand)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => TakeScreenshotShortcut.Value.IsDown()))
             .InstructionEnumeration();
       }
 
@@ -176,15 +161,13 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(GameCamera.UpdateMouseCapture))]
       static IEnumerable<CodeInstruction> UpdateMouseCaptureTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x132), _inputGetKeyMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x132), InputGetKeyMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleMouseCaptureShortcut.Value.IsDown()).operand)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11A), _inputGetKeyDownMatch)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => ToggleMouseCaptureShortcut.Value.IsDown()))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11A), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(OpCodes.Call, Transpilers.EmitDelegate<Func<KeyCode, bool>>(keyCode => true).operand)
+            .SetInstructionAndAdvance(Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => true))
             .InstructionEnumeration();
       }
     }
@@ -195,61 +178,12 @@ namespace Shortcuts {
       [HarmonyPatch(nameof(ConnectPanel.Update))]
       static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
         return new CodeMatcher(instructions)
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11B), _inputGetKeyDownMatch)
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Ldc_I4, 0x11B), InputGetKeyDownMatch)
             .Advance(offset: 1)
-            .SetAndAdvance(
-                OpCodes.Call,
-                Transpilers.EmitDelegate<Func<KeyCode, bool>>(
-                    keyCode => _toggleConnectPanelShortcut.Value.IsDown()).operand)
+            .SetInstructionAndAdvance(
+                Transpilers.EmitDelegate<Func<KeyCode, bool>>(_ => ToggleConnectPanelShortcut.Value.IsDown()))
             .InstructionEnumeration();
       }
-    }
-
-    static readonly string[] InputKeyNames = {
-      "Forward", "Backward", "Left", "Right", "Jump", "Crouch", "Run", "Hide", "Sit" };
-
-    static readonly KeyCode[] IgnoredKeyCodes = {
-      KeyCode.Mouse0,
-      KeyCode.Mouse1,
-      KeyCode.Mouse2,
-      KeyCode.Mouse3,
-      KeyCode.Mouse4,
-      KeyCode.Mouse5,
-      KeyCode.Mouse6,
-      KeyCode.None
-    };
-
-    static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[]) Enum.GetValues(typeof(KeyCode));
-    static readonly Dictionary<KeyboardShortcut, KeyCode[]> AllKeysCache = new();
-
-    static KeyCode[] BlockingKeyCodes = { };
-    static readonly HashSet<KeyCode> KeysCache = new();
-
-    static bool IsDownIgnored(KeyboardShortcut shortcut) {
-      if (!Input.GetKeyDown(shortcut.MainKey) || !shortcut.Modifiers.All(c => Input.GetKey(c))) {
-        return false;
-      }
-
-      if (!AllKeysCache.TryGetValue(shortcut, out KeyCode[] keys)) {
-        keys = new[] { shortcut.MainKey }.Concat(shortcut.Modifiers).ToArray();
-        AllKeysCache[shortcut] = keys;
-      }
-
-      return BlockingKeyCodes.All(c => !Input.GetKey(c) || keys.Contains(c));
-    }
-
-    static void UpdateBlockingKeyCodes(ZInput zInputInstance) {
-      KeyCode[] CombinedIgnoredKeyCodes =
-          IgnoredKeyCodes.Concat(
-                  InputKeyNames
-                      .Select(name => zInputInstance.m_buttons[name])
-                      .Where(def => def != null && def.m_key != KeyCode.None)
-                      .Select(def => def.m_key))
-              .ToArray();
-
-      ZLog.Log($"Combined IgnoredKeyCodes are: {string.Join(", ", CombinedIgnoredKeyCodes)}");
-
-      BlockingKeyCodes = AllKeyCodes.Except(CombinedIgnoredKeyCodes).ToArray();
     }
 
     [HarmonyPatch(typeof(ZInput))]
@@ -271,6 +205,49 @@ namespace Shortcuts {
       static void EndBindKeyPostfix(ref ZInput __instance) {
         UpdateBlockingKeyCodes(__instance);
       }
+    }
+
+    /**
+     * BepInEx.KeyboardShortcut documentation states "If any other keys are pressed, the shortcut will not trigger."
+     * However we want the Hotbar shortcuts to be able to trigger during player movement and so need to add special
+     * logic to exclude movement KeyCodes from the `IsDown()` validation.
+     *
+     * BepInEx hardcodes this in a private `KeyboardShortcut._modifierBlockKeyCodes` array so we need to mimic the
+     * `IsDown()` implementation and support a configurable set of KeyCodes.
+     *
+     * Modified from: https://github.com/BepInEx/BepInEx/blob/master/BepInEx.Unity/Configuration/KeyboardShortcut.cs/
+     */
+
+    static readonly string[] ZInputKeyNamesToIgnore = {
+      "Forward", "Backward", "Left", "Right", "Jump", "Crouch", "Run", "Hide", "Sit" };
+
+    static readonly KeyCode[] IgnoredKeyCodes = {
+      KeyCode.Mouse0, KeyCode.Mouse1, KeyCode.Mouse2, KeyCode.Mouse3, KeyCode.Mouse4, KeyCode.Mouse5, KeyCode.Mouse6,
+      KeyCode.None
+    };
+
+    static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[]) Enum.GetValues(typeof(KeyCode));
+    static KeyCode[] BlockingKeyCodes = AllKeyCodes.Except(IgnoredKeyCodes).ToArray();
+
+    static bool IsKeyDown(KeyboardShortcut shortcut) {
+      if (ShortcutKeysCache.TryGetValue(shortcut, out KeyCode[] keys)) {
+        return Input.GetKeyDown(shortcut.MainKey)
+            && shortcut.Modifiers.All(Input.GetKey)
+            && BlockingKeyCodes.All(c => !Input.GetKey(c) || keys.Contains(c));
+      }
+
+      return shortcut.IsDown();
+    }
+
+    static void UpdateBlockingKeyCodes(ZInput zInputInstance) {
+      BlockingKeyCodes =
+          AllKeyCodes.Except(
+                  IgnoredKeyCodes.Concat(
+                      ZInputKeyNamesToIgnore
+                          .Select(name => zInputInstance.m_buttons[name])
+                          .Where(def => def != null && def.m_key != KeyCode.None)
+                          .Select(def => def.m_key)))
+              .ToArray();
     }
   }
 }
