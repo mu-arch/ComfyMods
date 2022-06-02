@@ -94,6 +94,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PartyRock.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
+    <Compile Include="Patches\ZDOManPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\PlayerListPanel.cs" />
