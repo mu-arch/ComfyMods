@@ -44,7 +44,7 @@ namespace PartyRock {
 
         _playerListPanel.Panel.RectTransform()
             .SetPosition(new(50, 125))
-            .SetSizeDelta(new(350, 450));
+            .SetSizeDelta(new(250, 450));
 
         _playerListPanel.Panel.SetActive(false);
       }
@@ -54,14 +54,57 @@ namespace PartyRock {
 
       if (toggle) {
         PopulatePlayerList();
+      } else {
+        if (UpdatePlayerSlotsCoroutine != null) {
+          Hud.m_instance.StopCoroutine(UpdatePlayerSlotsCoroutine);
+          UpdatePlayerSlotsCoroutine = null;
+        }
       }
     }
 
     static void PopulatePlayerList() {
       _playerListPanel.ClearList();
 
-      foreach (string name in ZNet.m_instance.m_players.Select(pi => pi.m_name).Take(5)) {
-        _playerListPanel.CreatePlayerSlot(name);
+      foreach (ZNet.PlayerInfo playerInfo in ZNet.m_instance.m_players.Take(4)) {
+        PlayerSlot slot = _playerListPanel.CreatePlayerSlot(playerInfo.m_name);
+        ModelCache.Add(new PlayerSlotModel() { PlayerZdoid = playerInfo.m_characterID, Slot = slot });
+      }
+
+      UpdatePlayerSlotsCoroutine = Hud.m_instance.StartCoroutine(UpdatePlayerSlots());
+    }
+
+    public class PlayerSlotModel {
+      public ZDOID PlayerZdoid { get; set; }
+      public PlayerSlot Slot { get; set; }
+    }
+
+    public static readonly List<PlayerSlotModel> ModelCache = new();
+    public static readonly int HealthHashCode = "health".GetStableHashCode();
+    public static readonly int MaxHealthHashCode = "max_health".GetStableHashCode();
+
+    static Coroutine UpdatePlayerSlotsCoroutine;
+
+    static IEnumerator UpdatePlayerSlots() {
+      WaitForSeconds waitInterval = new(seconds: 0.25f);
+      ZDOMan zdoMan = ZDOMan.m_instance;
+
+      while (true) {
+        yield return waitInterval;
+
+        foreach (PlayerSlotModel model in ModelCache) {
+          zdoMan.RequestZDO(model.PlayerZdoid);
+          ZDO playerZdo = zdoMan.GetZDO(model.PlayerZdoid);
+
+          if (playerZdo == null) {
+            continue;
+          }
+
+          float health = playerZdo.GetFloat(HealthHashCode, 0f);
+          float maxHealth = playerZdo.GetFloat(MaxHealthHashCode, 25f);
+
+          model.Slot.SetHpBarFillAmount(health / maxHealth);
+          model.Slot.SetHpText($"{health:F0} / {maxHealth:F0}");
+        }
       }
     }
   }

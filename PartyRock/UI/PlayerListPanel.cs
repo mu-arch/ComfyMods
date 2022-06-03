@@ -23,7 +23,7 @@ namespace PartyRock {
       }
     }
 
-    public void CreatePlayerSlot(string playerName) {
+    public PlayerSlot CreatePlayerSlot(string playerName) {
       GameObject column = CreateColumn(Content.transform);
       column.SetName("Player.Slot");
 
@@ -35,7 +35,7 @@ namespace PartyRock {
       healthRow.SetName("Health.Row");
 
       healthRow.GetComponent<HorizontalLayoutGroup>()
-          .SetPadding(left: 10)
+          .SetPadding(left: 10, right: 10)
           .SetSpacing(0f);
 
       GameObject hpLabel = CreateLabel(healthRow.transform);
@@ -59,7 +59,7 @@ namespace PartyRock {
       hpBarImage.sprite = CreateGradientSprite();
 
       hpBar.AddComponent<LayoutElement>()
-          .SetPreferred(width: 200f);
+          .SetPreferred(width: 150f);
 
       hpBar.AddComponent<Outline>()
           .SetEffectColor(new Color(0f, 0f, 0f, 0.6f))
@@ -68,11 +68,33 @@ namespace PartyRock {
       GameObject hpBarText = CreateLabel(hpBar.transform);
       hpBarText.SetName("Health.Bar.Text");
       hpBarText.AddComponent<LayoutElement>().SetFlexible(width: 1f);
-      hpBarText.Text().SetText("50");
+      hpBarText.Text().SetFontSize(hpBarText.Text().fontSize - 1).SetText("50");
+
+      return new(hpBarImage, hpBarText.Text());
     }
 
     public PlayerListItem CreatePlayerListItem() {
       return new(Content.transform);
+    }
+
+    public class PlayerSlot {
+      readonly Image _hpBarImage;
+      readonly Text _hpBarText;
+
+      public PlayerSlot(Image hpBarImage, Text hpBarText) {
+        _hpBarImage = hpBarImage;
+        _hpBarText = hpBarText;
+      }
+
+      public PlayerSlot SetHpBarFillAmount(float amount) {
+        _hpBarImage.fillAmount = Mathf.Clamp01(amount);
+        return this;
+      }
+
+      public PlayerSlot SetHpText(string text) {
+        _hpBarText.text = text;
+        return this;
+      }
     }
 
     public class PlayerListItem {

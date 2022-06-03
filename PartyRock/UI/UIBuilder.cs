@@ -139,6 +139,7 @@ namespace PartyRock {
       label.SetParent(parentTransform);
 
       label.AddComponent<Text>()
+          .SetSupportRichText(true)
           .SetFont(UIResources.AveriaSerifLibre)
           .SetFontSize(16)
           .SetAlignment(TextAnchor.MiddleLeft)
