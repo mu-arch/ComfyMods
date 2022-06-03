@@ -23,6 +23,54 @@ namespace PartyRock {
       }
     }
 
+    public void CreatePlayerSlot(string playerName) {
+      GameObject column = CreateColumn(Content.transform);
+      column.SetName("Player.Slot");
+
+      GameObject nameLabel = CreateLabel(column.transform);
+      nameLabel.AddComponent<LayoutElement>().SetFlexible(width: 1f);
+      nameLabel.Text().SetText(playerName);
+
+      GameObject healthRow = CreateRow(column.transform);
+      healthRow.SetName("Health.Row");
+
+      healthRow.GetComponent<HorizontalLayoutGroup>()
+          .SetPadding(left: 10)
+          .SetSpacing(0f);
+
+      GameObject hpLabel = CreateLabel(healthRow.transform);
+      hpLabel.SetName("Health.Label");
+      hpLabel.AddComponent<LayoutElement>().SetPreferred(width: 25f);
+      hpLabel.Text().SetText("\u2661");
+
+      GameObject hpBar = CreateRow(healthRow.transform);
+      hpBar.SetName("Health.Bar");
+
+      hpBar.GetComponent<HorizontalLayoutGroup>()
+          .SetPadding(10, 2, 2, 2)
+          .SetChildAlignment(TextAnchor.MiddleLeft);
+
+      Image hpBarImage = hpBar.AddComponent<Image>();
+      hpBarImage.color = new Color(0f, 0.6f, 0f, 0.95f);
+      hpBarImage.type = Image.Type.Filled;
+      hpBarImage.fillMethod = Image.FillMethod.Horizontal;
+      hpBarImage.fillOrigin = (int) Image.OriginHorizontal.Left;
+      hpBarImage.fillAmount = Random.Range(0.25f, 1f);
+      hpBarImage.sprite = CreateGradientSprite();
+
+      hpBar.AddComponent<LayoutElement>()
+          .SetPreferred(width: 200f);
+
+      hpBar.AddComponent<Outline>()
+          .SetEffectColor(new Color(0f, 0f, 0f, 0.6f))
+          .SetEffectDistance(new(2, -2));
+
+      GameObject hpBarText = CreateLabel(hpBar.transform);
+      hpBarText.SetName("Health.Bar.Text");
+      hpBarText.AddComponent<LayoutElement>().SetFlexible(width: 1f);
+      hpBarText.Text().SetText("50");
+    }
+
     public PlayerListItem CreatePlayerListItem() {
       return new(Content.transform);
     }

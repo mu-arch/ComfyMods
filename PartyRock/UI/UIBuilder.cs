@@ -60,7 +60,7 @@ namespace PartyRock {
       content.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetSpacing(5f)
+          .SetSpacing(15f)
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0);
 
       content.AddComponent<ContentSizeFitter>()
@@ -104,6 +104,26 @@ namespace PartyRock {
       return row;
     }
 
+    public static GameObject CreateColumn(Transform parentTransform) {
+      GameObject column = new("Column", typeof(RectTransform));
+      column.SetParent(parentTransform);
+
+      column.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
+
+      column.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleLeft)
+          .SetPadding(left: 0, right: 0, top: 0, bottom: 0)
+          .SetSpacing(5);
+
+      return column;
+    }
+
     public static GameObject CreateSpacer(Transform parentTransform) {
       GameObject spacer = new("Spacer", typeof(RectTransform));
       spacer.SetParent(parentTransform);
@@ -128,6 +148,16 @@ namespace PartyRock {
           .SetEffectColor(Color.black);
 
       return label;
+    }
+
+    public static Sprite CreateGradientSprite() {
+      Texture2D texture = new(width: 1, height: 2);
+      texture.wrapMode = TextureWrapMode.Clamp;
+      texture.SetPixel(0, 0, Color.white);
+      texture.SetPixel(0, 1, new(0.9f, 0.9f, 0.9f, 0.7f));
+      texture.Apply();
+
+      return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
     }
   }
 }

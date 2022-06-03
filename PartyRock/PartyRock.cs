@@ -45,10 +45,24 @@ namespace PartyRock {
         _playerListPanel.Panel.RectTransform()
             .SetPosition(new(50, 125))
             .SetSizeDelta(new(350, 450));
+
+        _playerListPanel.Panel.SetActive(false);
       }
 
       bool toggle = !_playerListPanel.Panel.activeSelf;
       _playerListPanel.Panel.SetActive(toggle);
+
+      if (toggle) {
+        PopulatePlayerList();
+      }
+    }
+
+    static void PopulatePlayerList() {
+      _playerListPanel.ClearList();
+
+      foreach (string name in ZNet.m_instance.m_players.Select(pi => pi.m_name).Take(5)) {
+        _playerListPanel.CreatePlayerSlot(name);
+      }
     }
   }
 
