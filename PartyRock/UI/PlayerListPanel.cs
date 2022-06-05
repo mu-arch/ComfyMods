@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using static PartyRock.UIBuilder;
@@ -43,87 +45,119 @@ namespace PartyRock {
       hpLabel.AddComponent<LayoutElement>().SetPreferred(width: 25f);
       hpLabel.Text().SetText("\u2661");
 
-      GameObject hpBar = CreateRow(healthRow.transform);
+      GameObject hpBarBackground = CreateRow(healthRow.transform);
+      hpBarBackground.SetName("Health.Bar.Background");
+
+      hpBarBackground.GetComponent<HorizontalLayoutGroup>()
+          .SetPadding(2, 2, 2, 2);
+
+      hpBarBackground.AddComponent<Image>()
+          .SetColor(new Color(0f, 0f, 0f, 0.4f));
+
+      hpBarBackground.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      GameObject hpBar = CreateRow(hpBarBackground.transform);
       hpBar.SetName("Health.Bar");
 
       hpBar.GetComponent<HorizontalLayoutGroup>()
-          .SetPadding(10, 2, 2, 2)
-          .SetChildAlignment(TextAnchor.MiddleLeft);
+          .SetPadding(10, 10, 3, 3)
+          .SetChildAlignment(TextAnchor.MiddleLeft)
+          .SetSpacing(10f);
 
       Image hpBarImage = hpBar.AddComponent<Image>();
       hpBarImage.color = new Color(0f, 0.6f, 0f, 0.95f);
       hpBarImage.type = Image.Type.Filled;
       hpBarImage.fillMethod = Image.FillMethod.Horizontal;
       hpBarImage.fillOrigin = (int) Image.OriginHorizontal.Left;
-      hpBarImage.fillAmount = Random.Range(0.25f, 1f);
+      hpBarImage.fillAmount = 1f;
       hpBarImage.sprite = CreateGradientSprite();
 
       hpBar.AddComponent<LayoutElement>()
           .SetPreferred(width: 150f);
 
-      hpBar.AddComponent<Outline>()
-          .SetEffectColor(new Color(0f, 0f, 0f, 0.6f))
-          .SetEffectDistance(new(2, -2));
+      GameObject hpBarHealthLabel = CreateLabel(hpBar.transform);
+      hpBarHealthLabel.SetName("Health.Bar.CurrentHealth");
+      hpBarHealthLabel.AddComponent<LayoutElement>().SetFlexible(width: 1f);
+      hpBarHealthLabel.Text()
+          .SetFontSize(hpBarHealthLabel.Text().fontSize - 1)
+          .SetAlignment(TextAnchor.MiddleRight)
+          .SetText("50");
 
-      GameObject hpBarText = CreateLabel(hpBar.transform);
-      hpBarText.SetName("Health.Bar.Text");
-      hpBarText.AddComponent<LayoutElement>().SetFlexible(width: 1f);
-      hpBarText.Text().SetFontSize(hpBarText.Text().fontSize - 1).SetText("50");
+      GameObject hpBarDividerLabel = CreateLabel(hpBar.transform);
+      hpBarDividerLabel.SetName("Health.Bar.Divider");
+      hpBarHealthLabel.Text()
+          .SetFontSize(hpBarDividerLabel.Text().fontSize - 1)
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetText("<i>/</i>");
 
-      return new(hpBarImage, hpBarText.Text());
-    }
+      GameObject hpBarMaxHealthLabel = CreateLabel(hpBar.transform);
+      hpBarMaxHealthLabel.SetName("Health.Bar.MaxHealth");
+      hpBarMaxHealthLabel.AddComponent<LayoutElement>().SetFlexible(width: 1f);
+      hpBarMaxHealthLabel.Text()
+          .SetFontSize(hpBarMaxHealthLabel.Text().fontSize - 1)
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("50");
 
-    public PlayerListItem CreatePlayerListItem() {
-      return new(Content.transform);
+      return new(hpBarImage, hpBarHealthLabel.Text(), hpBarMaxHealthLabel.Text());
     }
 
     public class PlayerSlot {
       readonly Image _hpBarImage;
-      readonly Text _hpBarText;
+      readonly Text _hpBarHealthText;
+      readonly Text _hpBarMaxHealthText;
 
-      public PlayerSlot(Image hpBarImage, Text hpBarText) {
+      float _health = 0f;
+      float _maxHealth = 0f;
+
+      Coroutine _fillCoroutine;
+
+      public PlayerSlot(Image hpBarImage, Text hhpBarHealthText, Text hpBarMaxHealthText) {
         _hpBarImage = hpBarImage;
-        _hpBarText = hpBarText;
+        _hpBarHealthText = hhpBarHealthText;
+        _hpBarMaxHealthText = hpBarMaxHealthText;
       }
 
-      public PlayerSlot SetHpBarFillAmount(float amount) {
-        _hpBarImage.fillAmount = Mathf.Clamp01(amount);
+      IEnumerator LerpFillAmountCoroutine(float endValue) {
+        float timeElapsed = 0f;
+        float startValue = _hpBarImage.fillAmount;
+        ZLog.Log($"Starting fill: {startValue} to {endValue}");
+        while (timeElapsed < 2f) {
+          _hpBarImage.fillAmount = Mathf.Lerp(startValue, endValue, timeElapsed);
+          _hpBarHealthText.text = $"<i>{_maxHealth * _hpBarImage.fillAmount:0}</i>";
+          timeElapsed += Time.deltaTime;
+          yield return null;
+        }
+
+        ZLog.Log("done");
+        _hpBarHealthText.text = $"<i>{_health:0}</i>";
+        _hpBarImage.fillAmount = endValue;
+      }
+
+      public PlayerSlot SetHealthValues(float health, float maxHealth) {
+        if (_health == health && _maxHealth == maxHealth) {
+          return this;
+        }
+
+        _health = health;
+        _hpBarHealthText.text = $"<i>{health:0}</i>";
+
+        _maxHealth = maxHealth;
+        _hpBarMaxHealthText.text = $"<i>{maxHealth:0}</i>";
+
+        float amount = health / maxHealth;
+
+        if (_hpBarImage.fillAmount == amount) {
+          return this;
+        }
+
+        if (_fillCoroutine != null) {
+          Game.m_instance.StopCoroutine(_fillCoroutine);
+        }
+
+        _fillCoroutine = Game.m_instance.StartCoroutine(LerpFillAmountCoroutine(Mathf.Clamp01(amount)));
+
         return this;
-      }
-
-      public PlayerSlot SetHpText(string text) {
-        _hpBarText.text = text;
-        return this;
-      }
-    }
-
-    public class PlayerListItem {
-      public GameObject Row { get; }
-      public Text Name { get; }
-      public Text Health { get; }
-      public Text Stamina { get; }
-      public Text Distance { get; }
-
-      public PlayerListItem(Transform parentTransform) {
-        Row = CreateRow(parentTransform);
-
-        GameObject nameLabel = CreateLabel(Row.transform);
-        nameLabel.AddComponent<LayoutElement>().SetPreferred(width: 150f);
-        Name = nameLabel.Text();
-
-        CreateSpacer(Row.transform);
-
-        GameObject healthLabel = CreateLabel(Row.transform);
-        healthLabel.AddComponent<LayoutElement>().SetPreferred(width: 50f);
-        Health = healthLabel.Text().SetColor(Color.green);
-
-        GameObject staminaLabel = CreateLabel(Row.transform);
-        staminaLabel.AddComponent<LayoutElement>().SetPreferred(width: 50f);
-        Stamina = staminaLabel.Text().SetColor(Color.yellow);
-
-        GameObject distanceLabel = CreateLabel(Row.transform);
-        distanceLabel.AddComponent<LayoutElement>().SetPreferred(width: 75f);
-        Distance = distanceLabel.Text();
       }
     }
   }

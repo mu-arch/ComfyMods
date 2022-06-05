@@ -2,12 +2,12 @@
 
 using HarmonyLib;
 
-using System;
+using Steamworks;
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 
 using UnityEngine;
 
@@ -53,6 +53,7 @@ namespace PartyRock {
       _playerListPanel.Panel.SetActive(toggle);
 
       if (toggle) {
+        ZLog.Log($"PartyRock: My SteamId is... {SteamUser.GetSteamID()}");
         PopulatePlayerList();
       } else {
         if (UpdatePlayerSlotsCoroutine != null) {
@@ -102,8 +103,7 @@ namespace PartyRock {
           float health = playerZdo.GetFloat(HealthHashCode, 0f);
           float maxHealth = playerZdo.GetFloat(MaxHealthHashCode, 25f);
 
-          model.Slot.SetHpBarFillAmount(health / maxHealth);
-          model.Slot.SetHpText($"{health:F0} / {maxHealth:F0}");
+          model.Slot.SetHealthValues(health, maxHealth);
         }
       }
     }
