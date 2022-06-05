@@ -86,7 +86,7 @@ namespace PartyRock {
 
       GameObject hpBarDividerLabel = CreateLabel(hpBar.transform);
       hpBarDividerLabel.SetName("Health.Bar.Divider");
-      hpBarHealthLabel.Text()
+      hpBarDividerLabel.Text()
           .SetFontSize(hpBarDividerLabel.Text().fontSize - 1)
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetText("<i>/</i>");
