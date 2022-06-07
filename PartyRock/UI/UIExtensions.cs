@@ -48,6 +48,10 @@ namespace PartyRock {
           : Enumerable.Empty<GameObject>();
     }
 
+    public static Image Image(this GameObject gameObject) {
+      return gameObject.Ref()?.GetComponent<Image>();
+    }
+
     public static Text Text(this GameObject gameObject) {
       return gameObject.Ref()?.GetComponent<Text>();
     }
@@ -140,6 +144,26 @@ namespace PartyRock {
       return image;
     }
 
+    public static Image SetFillAmount(this Image image, float amount) {
+      image.fillAmount = amount;
+      return image;
+    }
+
+    public static Image SetFillMethod(this Image image, Image.FillMethod fillMethod) {
+      image.fillMethod = fillMethod;
+      return image;
+    }
+
+    public static Image SetFillOrigin(this Image image, Image.OriginHorizontal origin) {
+      image.fillOrigin = (int) origin;
+      return image;
+    }
+
+    public static Image SetFillOrigin(this Image image, Image.OriginVertical origin) {
+      image.fillOrigin = (int) origin;
+      return image;
+    }
+
     public static Image SetMaskable(this Image image, bool maskable) {
       image.maskable = maskable;
       return image;
@@ -152,6 +176,11 @@ namespace PartyRock {
 
     public static Image SetSprite(this Image image, Sprite sprite) {
       image.sprite = sprite;
+      return image;
+    }
+
+    public static Image SetType(this Image image, Image.Type type) {
+      image.type = type;
       return image;
     }
   }
@@ -322,6 +351,11 @@ namespace PartyRock {
 
     public static Text SetFont(this Text text, Font font) {
       text.font = font;
+      return text;
+    }
+
+    public static Text SetFontStyle(this Text text, FontStyle fontStyle) {
+      text.fontStyle = fontStyle;
       return text;
     }
 

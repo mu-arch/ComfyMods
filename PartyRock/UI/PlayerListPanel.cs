@@ -45,61 +45,27 @@ namespace PartyRock {
       hpLabel.AddComponent<LayoutElement>().SetPreferred(width: 25f);
       hpLabel.Text().SetText("\u2661");
 
-      GameObject hpBarBackground = CreateRow(healthRow.transform);
-      hpBarBackground.SetName("Health.Bar.Background");
+      // Health
+      ProgressBar healthBar = new(healthRow.transform);
 
-      hpBarBackground.GetComponent<HorizontalLayoutGroup>()
-          .SetPadding(2, 2, 2, 2);
+      // Stamina
 
-      hpBarBackground.AddComponent<Image>()
-          .SetColor(new Color(0f, 0f, 0f, 0.4f));
+      GameObject staminaRow = CreateRow(column.transform);
+      staminaRow.SetName("Stamina.Row");
 
-      hpBarBackground.AddComponent<LayoutElement>()
-          .SetFlexible(width: 1f);
+      staminaRow.GetComponent<HorizontalLayoutGroup>()
+          .SetPadding(left: 10, right: 10)
+          .SetSpacing(0f);
 
-      GameObject hpBar = CreateRow(hpBarBackground.transform);
-      hpBar.SetName("Health.Bar");
+      GameObject staminaLabel = CreateLabel(staminaRow.transform);
+      staminaLabel.SetName("Stamina.Label");
+      staminaLabel.AddComponent<LayoutElement>().SetPreferred(width: 25f);
+      staminaLabel.Text().SetFontSize(UIResources.AveriaSerifLibre.fontSize - 2).SetText("\u29bf");
 
-      hpBar.GetComponent<HorizontalLayoutGroup>()
-          .SetPadding(10, 10, 3, 3)
-          .SetChildAlignment(TextAnchor.MiddleLeft)
-          .SetSpacing(10f);
+      ProgressBar staminaBar = new(staminaRow.transform);
+      staminaBar.Bar.Image().SetColor(new(0.95f, 0.76f, 0.05f, 0.95f));
 
-      Image hpBarImage = hpBar.AddComponent<Image>();
-      hpBarImage.color = new Color(0f, 0.6f, 0f, 0.95f);
-      hpBarImage.type = Image.Type.Filled;
-      hpBarImage.fillMethod = Image.FillMethod.Horizontal;
-      hpBarImage.fillOrigin = (int) Image.OriginHorizontal.Left;
-      hpBarImage.fillAmount = 1f;
-      hpBarImage.sprite = CreateGradientSprite();
-
-      hpBar.AddComponent<LayoutElement>()
-          .SetPreferred(width: 150f);
-
-      GameObject hpBarHealthLabel = CreateLabel(hpBar.transform);
-      hpBarHealthLabel.SetName("Health.Bar.CurrentHealth");
-      hpBarHealthLabel.AddComponent<LayoutElement>().SetFlexible(width: 1f);
-      hpBarHealthLabel.Text()
-          .SetFontSize(hpBarHealthLabel.Text().fontSize - 1)
-          .SetAlignment(TextAnchor.MiddleRight)
-          .SetText("50");
-
-      GameObject hpBarDividerLabel = CreateLabel(hpBar.transform);
-      hpBarDividerLabel.SetName("Health.Bar.Divider");
-      hpBarDividerLabel.Text()
-          .SetFontSize(hpBarDividerLabel.Text().fontSize - 1)
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetText("<i>/</i>");
-
-      GameObject hpBarMaxHealthLabel = CreateLabel(hpBar.transform);
-      hpBarMaxHealthLabel.SetName("Health.Bar.MaxHealth");
-      hpBarMaxHealthLabel.AddComponent<LayoutElement>().SetFlexible(width: 1f);
-      hpBarMaxHealthLabel.Text()
-          .SetFontSize(hpBarMaxHealthLabel.Text().fontSize - 1)
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetText("50");
-
-      return new(hpBarImage, hpBarHealthLabel.Text(), hpBarMaxHealthLabel.Text());
+      return new(healthBar.Bar.Image(), healthBar.CurrentValue.Text(), healthBar.MaxValue.Text());
     }
 
     public class PlayerSlot {
@@ -110,7 +76,7 @@ namespace PartyRock {
       float _health = 0f;
       float _maxHealth = 0f;
 
-      Coroutine _fillCoroutine;
+      Coroutine _hpFillCoroutine;
 
       public PlayerSlot(Image hpBarImage, Text hhpBarHealthText, Text hpBarMaxHealthText) {
         _hpBarImage = hpBarImage;
@@ -121,7 +87,7 @@ namespace PartyRock {
       IEnumerator LerpFillAmountCoroutine(float endValue) {
         float timeElapsed = 0f;
         float startValue = _hpBarImage.fillAmount;
-        ZLog.Log($"Starting fill: {startValue} to {endValue}");
+
         while (timeElapsed < 2f) {
           _hpBarImage.fillAmount = Mathf.Lerp(startValue, endValue, timeElapsed);
           _hpBarHealthText.text = $"<i>{_maxHealth * _hpBarImage.fillAmount:0}</i>";
@@ -129,7 +95,6 @@ namespace PartyRock {
           yield return null;
         }
 
-        ZLog.Log("done");
         _hpBarHealthText.text = $"<i>{_health:0}</i>";
         _hpBarImage.fillAmount = endValue;
       }
@@ -151,11 +116,11 @@ namespace PartyRock {
           return this;
         }
 
-        if (_fillCoroutine != null) {
-          Game.m_instance.StopCoroutine(_fillCoroutine);
+        if (_hpFillCoroutine != null) {
+          Game.m_instance.StopCoroutine(_hpFillCoroutine);
         }
 
-        _fillCoroutine = Game.m_instance.StartCoroutine(LerpFillAmountCoroutine(Mathf.Clamp01(amount)));
+        _hpFillCoroutine = Game.m_instance.StartCoroutine(LerpFillAmountCoroutine(Mathf.Clamp01(amount)));
 
         return this;
       }
