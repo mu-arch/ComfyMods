@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace PartyRock {
@@ -159,6 +161,42 @@ namespace PartyRock {
       texture.Apply();
 
       return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
+    }
+
+    public static Sprite CreateSquareMaskingSprite(int width, int height, int radius) {
+      Texture2D texture = new(width, height);
+      texture.wrapMode = TextureWrapMode.Clamp;
+
+      for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+          texture.SetPixel(x, y, IsCornerPixel(x, y, width, height, radius) ? Color.clear : Color.white);
+        }
+      }
+
+      texture.Apply();
+      return Sprite.Create(texture, new(0, 0, width, height), Vector2.zero);
+    }
+
+    public static bool IsCornerPixel(int x, int y, int w, int h, int rad) {
+      if (rad == 0) {
+        return false;
+      }
+
+      int dx = Math.Min(x, w - x);
+      int dy = Math.Min(y, h - y);
+
+      if (dx == 0 && dy == 0) {
+        return true;
+      }
+
+      if (dx > rad || dy > rad) {
+        return false;
+      }
+
+      dx = rad - dx;
+      dy = rad - dy;
+
+      return Math.Round(Math.Sqrt(dx * dx + dy * dy)) > rad;
     }
   }
 }
