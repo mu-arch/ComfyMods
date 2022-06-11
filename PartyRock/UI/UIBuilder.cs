@@ -17,10 +17,14 @@ namespace PartyRock {
 
       panel.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: true, height: false);
+          .SetChildForceExpand(width: true, height: false)
+          .SetPadding(10, 10, 10, 10);
 
-      panel.AddComponent<Image>()
-          .SetColor(Color.clear);
+      Image image = panel.AddComponent<Image>()
+          .SetColor(new(0f, 0f, 0f, 0.4f))
+          .SetSprite(CreateRoundedCornerSprite(400, 400, 45));
+
+      image.SetType(Image.Type.Sliced);
 
       panel.AddComponent<CanvasGroup>()
           .SetBlocksRaycasts(true);
@@ -163,7 +167,7 @@ namespace PartyRock {
       return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
     }
 
-    public static Sprite CreateSquareMaskingSprite(int width, int height, int radius) {
+    public static Sprite CreateRoundedCornerSprite(int width, int height, int radius) {
       Texture2D texture = new(width, height);
       texture.wrapMode = TextureWrapMode.Clamp;
 
@@ -174,7 +178,14 @@ namespace PartyRock {
       }
 
       texture.Apply();
-      return Sprite.Create(texture, new(0, 0, width, height), Vector2.zero);
+      return Sprite.Create(
+          texture,
+          new(0, 0, width, height),
+          new(0.5f, 0.5f),
+          pixelsPerUnit: 100f,
+          0,
+          SpriteMeshType.FullRect,
+          new(width * 0.1f, height * 0.1f, width * 0.1f, height * 0.1f));
     }
 
     public static bool IsCornerPixel(int x, int y, int w, int h, int rad) {

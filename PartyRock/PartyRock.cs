@@ -44,7 +44,7 @@ namespace PartyRock {
 
         _playerListPanel.Panel.RectTransform()
             .SetPosition(new(50, 125))
-            .SetSizeDelta(new(250, 450));
+            .SetSizeDelta(new(250, 400));
 
         _playerListPanel.Panel.SetActive(false);
       }
