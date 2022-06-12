@@ -33,6 +33,7 @@ namespace PartyRock {
     }
 
     static PlayerListPanel _playerListPanel;
+    static Card _playerCard;
 
     public static void TogglePlayerListPanel() {
       if (!Hud.m_instance) {
@@ -51,6 +52,16 @@ namespace PartyRock {
 
       bool toggle = !_playerListPanel.Panel.activeSelf;
       _playerListPanel.Panel.SetActive(toggle);
+
+      if (toggle) {
+        _playerCard = new(Hud.m_instance.m_rootObject.transform);
+        _playerCard.Panel.RectTransform()
+            .SetPosition(new(450, 125))
+            .SetSizeDelta(new(225, 360));
+        _playerCard.Panel.SetActive(toggle);
+      } else {
+        Destroy(_playerCard.Panel);
+      }
 
       if (toggle) {
         ZLog.Log($"PartyRock: My SteamId is... {SteamUser.GetSteamID()}");

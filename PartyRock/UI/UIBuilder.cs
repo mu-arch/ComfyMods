@@ -20,11 +20,8 @@ namespace PartyRock {
           .SetChildForceExpand(width: true, height: false)
           .SetPadding(10, 10, 10, 10);
 
-      Image image = panel.AddComponent<Image>()
-          .SetColor(new(0f, 0f, 0f, 0.4f))
-          .SetSprite(CreateRoundedCornerSprite(400, 400, 45));
-
-      image.SetType(Image.Type.Sliced);
+      panel.AddComponent<Image>()
+          .SetColor(Color.clear);
 
       panel.AddComponent<CanvasGroup>()
           .SetBlocksRaycasts(true);
@@ -160,8 +157,8 @@ namespace PartyRock {
     public static Sprite CreateGradientSprite() {
       Texture2D texture = new(width: 1, height: 2);
       texture.wrapMode = TextureWrapMode.Clamp;
-      texture.SetPixel(0, 0, Color.white);
-      texture.SetPixel(0, 1, new(0.9f, 0.9f, 0.9f, 0.7f));
+      texture.SetPixel(0, 0, new(0.8f, 0.8f, 0.8f, 1f));
+      texture.SetPixel(0, 1, Color.white);
       texture.Apply();
 
       return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
@@ -185,7 +182,7 @@ namespace PartyRock {
           pixelsPerUnit: 100f,
           0,
           SpriteMeshType.FullRect,
-          new(width * 0.1f, height * 0.1f, width * 0.1f, height * 0.1f));
+          new(width * 0.15f, height * 0.15f, width * 0.15f, height * 0.15f));
     }
 
     public static bool IsCornerPixel(int x, int y, int w, int h, int rad) {

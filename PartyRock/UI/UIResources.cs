@@ -2,6 +2,7 @@
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace PartyRock {
   public class UIResources {
@@ -17,5 +18,16 @@ namespace PartyRock {
     }
 
     public static Font AveriaSerifLibre { get => FindFont("AveriaSerifLibre-Regular"); }
+
+    static readonly Dictionary<string, Sprite> SpriteCache = new();
+
+    public static Sprite GetSprite(string spriteName) {
+      if (!SpriteCache.TryGetValue(spriteName, out Sprite sprite)) {
+        sprite = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(sprite => sprite.name == spriteName);
+        SpriteCache[spriteName] = sprite;
+      }
+
+      return sprite;
+    }
   }
 }
