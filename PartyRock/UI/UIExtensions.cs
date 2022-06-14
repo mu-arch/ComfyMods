@@ -61,6 +61,42 @@ namespace PartyRock {
     }
   }
 
+  public static class GridLayoutGroupExtensions {
+    public static GridLayoutGroup SetCellSize(this GridLayoutGroup layoutGroup, Vector2 cellSize) {
+      layoutGroup.cellSize = cellSize;
+      return layoutGroup;
+    }
+
+    public static GridLayoutGroup SetPadding(
+        this GridLayoutGroup layoutGroup,
+        int? left = null,
+        int? right = null,
+        int? top = null,
+        int? bottom = null) {
+      if (!left.HasValue && !right.HasValue && !top.HasValue && !bottom.HasValue) {
+        throw new ArgumentException("Value for left, right, top or bottom must be provided.");
+      }
+
+      if (left.HasValue) {
+        layoutGroup.padding.left = left.Value;
+      }
+
+      if (right.HasValue) {
+        layoutGroup.padding.right = right.Value;
+      }
+
+      if (top.HasValue) {
+        layoutGroup.padding.top = top.Value;
+      }
+
+      if (bottom.HasValue) {
+        layoutGroup.padding.bottom = bottom.Value;
+      }
+
+      return layoutGroup;
+    }
+  }
+
   public static class HorizontalLayoutGroupExtensions {
     public static HorizontalLayoutGroup SetChildControl(
         this HorizontalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {
@@ -129,7 +165,6 @@ namespace PartyRock {
       }
 
       return layoutGroup;
-
     }
 
     public static HorizontalLayoutGroup SetSpacing(this HorizontalLayoutGroup layoutGroup, float spacing) {
@@ -166,6 +201,11 @@ namespace PartyRock {
 
     public static Image SetMaskable(this Image image, bool maskable) {
       image.maskable = maskable;
+      return image;
+    }
+
+    public static Image SetPreserveAspect(this Image image, bool preserveAspect) {
+      image.preserveAspect = preserveAspect;
       return image;
     }
 
@@ -235,6 +275,13 @@ namespace PartyRock {
       }
 
       return layoutElement;
+    }
+  }
+
+  public static class MaskExtensions {
+    public static Mask SetShowMaskGraphic(this Mask mask, bool showMaskGraphic) {
+      mask.showMaskGraphic = showMaskGraphic;
+      return mask;
     }
   }
 
