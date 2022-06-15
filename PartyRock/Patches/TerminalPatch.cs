@@ -10,7 +10,11 @@ namespace PartyRock {
           "playerlist",
           "PartyRock: toggle the PlayerListPanel.",
           args => PartyRock.TogglePlayerListPanel());
-      ;
+
+      new Terminal.ConsoleCommand(
+          "cardpanel",
+          "PartyRock: toggle the CardPanel",
+          args => PartyRock.ToggleCardPanel());
     }
   }
 }

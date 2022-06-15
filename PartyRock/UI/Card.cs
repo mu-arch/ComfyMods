@@ -46,126 +46,6 @@ namespace PartyRock {
       return panel;
     }
 
-    GameObject CreateCardCost(Transform parentTransform) {
-      GameObject cardCostBorder = new("Card.Cost.Border", typeof(RectTransform));
-      cardCostBorder.SetParent(parentTransform);
-
-      cardCostBorder.AddComponent<LayoutElement>()
-          .SetIgnoreLayout(true);
-
-      cardCostBorder.RectTransform()
-          .SetAnchorMin(new(0f, 1f))
-          .SetAnchorMax(new(0f, 1f))
-          .SetPivot(new(0f, 1f))
-          .SetPosition(new(-20f, 15f))
-          .SetSizeDelta(new(41f, 41f));
-
-      cardCostBorder.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostBorderRadius.Value))
-          .SetType(Image.Type.Sliced)
-          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
-
-      GameObject cardCostMask = new("Card.Cost.Mask", typeof(RectTransform));
-      cardCostMask.SetParent(cardCostBorder.transform);
-
-      cardCostMask.RectTransform()
-          .SetAnchorMin(new(0.5f, 0.5f))
-          .SetAnchorMax(new(0.5f, 0.5f))
-          .SetPivot(new(0.5f, 0.5f))
-          .SetPosition(Vector2.zero)
-          .SetSizeDelta(new(35f, 35f));
-
-      cardCostMask.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostMaskRadius.Value))
-          .SetType(Image.Type.Sliced)
-          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
-
-      cardCostMask.AddComponent<Mask>()
-          .SetShowMaskGraphic(true);
-
-      GameObject label = new("Card.Cost.Label", typeof(RectTransform));
-      label.SetParent(cardCostBorder.transform);
-
-      label.RectTransform()
-          .SetAnchorMin(Vector2.zero)
-          .SetAnchorMax(Vector2.one)
-          .SetPivot(new(0.5f, 0.5f))
-          .SetSizeDelta(new(35f, 35f));
-
-      label.AddComponent<Text>()
-          .SetSupportRichText(true)
-          .SetFont(UIResources.AveriaSerifLibre)
-          .SetFontSize(26)
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetColor(Color.white)
-          .SetText(CardCostLabelText.Value);
-
-      label.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
-
-      return cardCostBorder;
-    }
-
-    GameObject CreateCardType(Transform parentTransform) {
-      GameObject cardTypeBorder = new("Card.Type.Border", typeof(RectTransform));
-      cardTypeBorder.SetParent(parentTransform);
-
-      cardTypeBorder.AddComponent<LayoutElement>()
-          .SetIgnoreLayout(true);
-
-      cardTypeBorder.RectTransform()
-          .SetAnchorMin(new(0.5f, 0f))
-          .SetAnchorMax(new(0.5f, 0f))
-          .SetPivot(new(0.5f, 0f))
-          .SetPosition(new(0f, -15f))
-          .SetSizeDelta(new(86f, 36f));
-
-      cardTypeBorder.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(264, 105, CardTypeBorderRadius.Value))
-          .SetType(Image.Type.Sliced)
-          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
-
-      GameObject cardTypeMask= new("Card.Type.Mask", typeof(RectTransform));
-      cardTypeMask.SetParent(cardTypeBorder.transform);
-
-      cardTypeMask.RectTransform()
-          .SetAnchorMin(new(0.5f, 0.5f))
-          .SetAnchorMax(new(0.5f, 0.5f))
-          .SetPivot(new(0.5f, 0.5f))
-          .SetPosition(Vector2.zero)
-          .SetSizeDelta(new(80f, 30f));
-
-      cardTypeMask.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(240, 90, CardTypeMaskRadius.Value))
-          .SetType(Image.Type.Sliced)
-          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
-
-      cardTypeMask.AddComponent<Mask>()
-          .SetShowMaskGraphic(true);
-
-      GameObject label = new("Card.Type.Label", typeof(RectTransform));
-      label.SetParent(cardTypeMask.transform);
-
-      label.RectTransform()
-          .SetAnchorMin(Vector2.zero)
-          .SetAnchorMax(Vector2.one)
-          .SetPivot(new(0.5f, 0.5f))
-          .SetSizeDelta(new(80f, 30f));
-
-      label.AddComponent<Text>()
-          .SetSupportRichText(true)
-          .SetFont(UIResources.AveriaSerifLibre)
-          .SetFontSize(18)
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetColor(Color.white)
-          .SetText(CardTypeLabelText.Value);
-
-      label.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
-
-      return cardTypeBorder;
-    }
-
     GameObject CreateCardMask(Transform parentTransform) {
       GameObject mask = new("Card.Mask", typeof(RectTransform));
       mask.SetParent(parentTransform);
@@ -275,6 +155,126 @@ namespace PartyRock {
           .SetFlexible(width: 1f, height: 1f);
 
       return description;
+    }
+
+    GameObject CreateCardCost(Transform parentTransform) {
+      GameObject cardCostBorder = new("Card.Cost.Border", typeof(RectTransform));
+      cardCostBorder.SetParent(parentTransform);
+
+      cardCostBorder.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      cardCostBorder.RectTransform()
+          .SetAnchorMin(new(0f, 1f))
+          .SetAnchorMax(new(0f, 1f))
+          .SetPivot(new(0f, 1f))
+          .SetPosition(new(-20f, 15f))
+          .SetSizeDelta(new(41f, 41f));
+
+      cardCostBorder.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostBorderRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
+
+      GameObject cardCostMask = new("Card.Cost.Mask", typeof(RectTransform));
+      cardCostMask.SetParent(cardCostBorder.transform);
+
+      cardCostMask.RectTransform()
+          .SetAnchorMin(new(0.5f, 0.5f))
+          .SetAnchorMax(new(0.5f, 0.5f))
+          .SetPivot(new(0.5f, 0.5f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(35f, 35f));
+
+      cardCostMask.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostMaskRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
+
+      cardCostMask.AddComponent<Mask>()
+          .SetShowMaskGraphic(true);
+
+      GameObject cardCostLabel = new("Card.Cost.Label", typeof(RectTransform));
+      cardCostLabel.SetParent(cardCostBorder.transform);
+
+      cardCostLabel.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(new(35f, 35f));
+
+      cardCostLabel.AddComponent<Text>()
+          .SetSupportRichText(true)
+          .SetFont(UIResources.AveriaSerifLibre)
+          .SetFontSize(26)
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetColor(Color.white)
+          .SetText(CardCostLabelText.Value);
+
+      cardCostLabel.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
+
+      return cardCostBorder;
+    }
+
+    GameObject CreateCardType(Transform parentTransform) {
+      GameObject cardTypeBorder = new("Card.Type.Border", typeof(RectTransform));
+      cardTypeBorder.SetParent(parentTransform);
+
+      cardTypeBorder.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      cardTypeBorder.RectTransform()
+          .SetAnchorMin(new(0.5f, 0f))
+          .SetAnchorMax(new(0.5f, 0f))
+          .SetPivot(new(0.5f, 0f))
+          .SetPosition(new(0f, -15f))
+          .SetSizeDelta(new(86f, 36f));
+
+      cardTypeBorder.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(264, 105, CardTypeBorderRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
+
+      GameObject cardTypeMask = new("Card.Type.Mask", typeof(RectTransform));
+      cardTypeMask.SetParent(cardTypeBorder.transform);
+
+      cardTypeMask.RectTransform()
+          .SetAnchorMin(new(0.5f, 0.5f))
+          .SetAnchorMax(new(0.5f, 0.5f))
+          .SetPivot(new(0.5f, 0.5f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(80f, 30f));
+
+      cardTypeMask.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(240, 90, CardTypeMaskRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
+
+      cardTypeMask.AddComponent<Mask>()
+          .SetShowMaskGraphic(true);
+
+      GameObject cardTypeLabel = new("Card.Type.Label", typeof(RectTransform));
+      cardTypeLabel.SetParent(cardTypeMask.transform);
+
+      cardTypeLabel.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(new(80f, 30f));
+
+      cardTypeLabel.AddComponent<Text>()
+          .SetSupportRichText(true)
+          .SetFont(UIResources.AveriaSerifLibre)
+          .SetFontSize(18)
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetColor(Color.white)
+          .SetText(CardTypeLabelText.Value);
+
+      cardTypeLabel.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
+
+      return cardTypeBorder;
     }
   }
 }
