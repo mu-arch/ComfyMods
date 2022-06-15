@@ -166,6 +166,7 @@ namespace PartyRock {
 
     public static Sprite CreateRoundedCornerSprite(int width, int height, int radius) {
       Texture2D texture = new(width, height);
+      texture.name = $"RoundedCorner-{width}w-{height}h-{radius}r";
       texture.wrapMode = TextureWrapMode.Clamp;
 
       for (int x = 0; x < width; x++) {
@@ -175,14 +176,19 @@ namespace PartyRock {
       }
 
       texture.Apply();
-      return Sprite.Create(
-          texture,
-          new(0, 0, width, height),
-          new(0.5f, 0.5f),
-          pixelsPerUnit: 100f,
-          0,
-          SpriteMeshType.FullRect,
-          new(width * 0.15f, height * 0.15f, width * 0.15f, height * 0.15f));
+
+      Sprite sprite =
+          Sprite.Create(
+              texture,
+              new(0, 0, width, height),
+              new(0.5f, 0.5f),
+              pixelsPerUnit: 100f,
+              0,
+              SpriteMeshType.FullRect,
+              new(width * 0.15f, height * 0.15f, width * 0.15f, height * 0.15f));
+
+      sprite.name = $"RoundedCorner-{width}w-{height}h-{radius}r";
+      return sprite;
     }
 
     public static bool IsCornerPixel(int x, int y, int w, int h, int rad) {

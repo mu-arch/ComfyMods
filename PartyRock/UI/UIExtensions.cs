@@ -276,6 +276,11 @@ namespace PartyRock {
 
       return layoutElement;
     }
+
+    public static LayoutElement SetIgnoreLayout(this LayoutElement layoutElement, bool ignoreLayout) {
+      layoutElement.ignoreLayout = ignoreLayout;
+      return layoutElement;
+    }
   }
 
   public static class MaskExtensions {

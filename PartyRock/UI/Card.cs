@@ -47,32 +47,50 @@ namespace PartyRock {
     }
 
     GameObject CreateCardCost(Transform parentTransform) {
-      GameObject cost = new("Card.Cost", typeof(RectTransform));
-      cost.SetParent(parentTransform);
+      GameObject cardCostBorder = new("Card.Cost.Border", typeof(RectTransform));
+      cardCostBorder.SetParent(parentTransform);
 
-      cost.AddComponent<LayoutElement>()
-          .ignoreLayout = true;
+      cardCostBorder.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
 
-      cost.RectTransform()
+      cardCostBorder.RectTransform()
           .SetAnchorMin(new(0f, 1f))
           .SetAnchorMax(new(0f, 1f))
           .SetPivot(new(0f, 1f))
           .SetPosition(new(-20f, 15f))
-          .SetSizeDelta(new(40f, 40f));
+          .SetSizeDelta(new(41f, 41f));
 
-      cost.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(100, 100, 20))
+      cardCostBorder.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostBorderRadius.Value))
           .SetType(Image.Type.Sliced)
-          .SetColor(new(0.509f, 0.435f, 0.400f, 1f));
+          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
+
+      GameObject cardCostMask = new("Card.Cost.Mask", typeof(RectTransform));
+      cardCostMask.SetParent(cardCostBorder.transform);
+
+      cardCostMask.RectTransform()
+          .SetAnchorMin(new(0.5f, 0.5f))
+          .SetAnchorMax(new(0.5f, 0.5f))
+          .SetPivot(new(0.5f, 0.5f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(35f, 35f));
+
+      cardCostMask.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(100, 100, CardCostMaskRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
+
+      cardCostMask.AddComponent<Mask>()
+          .SetShowMaskGraphic(true);
 
       GameObject label = new("Card.Cost.Label", typeof(RectTransform));
-      label.SetParent(cost.transform);
+      label.SetParent(cardCostBorder.transform);
 
       label.RectTransform()
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.one)
           .SetPivot(new(0.5f, 0.5f))
-          .SetSizeDelta(new(40, 40));
+          .SetSizeDelta(new(35f, 35f));
 
       label.AddComponent<Text>()
           .SetSupportRichText(true)
@@ -80,41 +98,59 @@ namespace PartyRock {
           .SetFontSize(26)
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetColor(Color.white)
-          .SetText("3");
+          .SetText(CardCostLabelText.Value);
 
       label.AddComponent<Outline>()
           .SetEffectColor(Color.black);
 
-      return cost;
+      return cardCostBorder;
     }
 
     GameObject CreateCardType(Transform parentTransform) {
-      GameObject cardType = new("Card.Type", typeof(RectTransform));
-      cardType.SetParent(parentTransform);
+      GameObject cardTypeBorder = new("Card.Type.Border", typeof(RectTransform));
+      cardTypeBorder.SetParent(parentTransform);
 
-      cardType.AddComponent<LayoutElement>()
-          .ignoreLayout = true;
+      cardTypeBorder.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
 
-      cardType.RectTransform()
+      cardTypeBorder.RectTransform()
           .SetAnchorMin(new(0.5f, 0f))
           .SetAnchorMax(new(0.5f, 0f))
           .SetPivot(new(0.5f, 0f))
           .SetPosition(new(0f, -15f))
-          .SetSizeDelta(new(80f, 35f));
+          .SetSizeDelta(new(86f, 36f));
 
-      cardType.AddComponent<Image>()
-          .SetSprite(CreateRoundedCornerSprite(160, 70, 20))
+      cardTypeBorder.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(264, 105, CardTypeBorderRadius.Value))
           .SetType(Image.Type.Sliced)
-          .SetColor(new(0.509f, 0.435f, 0.400f, 1f));
+          .SetColor(new(0.9f, 0.9f, 0.9f, 1f));
+
+      GameObject cardTypeMask= new("Card.Type.Mask", typeof(RectTransform));
+      cardTypeMask.SetParent(cardTypeBorder.transform);
+
+      cardTypeMask.RectTransform()
+          .SetAnchorMin(new(0.5f, 0.5f))
+          .SetAnchorMax(new(0.5f, 0.5f))
+          .SetPivot(new(0.5f, 0.5f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(80f, 30f));
+
+      cardTypeMask.AddComponent<Image>()
+          .SetSprite(CreateRoundedCornerSprite(240, 90, CardTypeMaskRadius.Value))
+          .SetType(Image.Type.Sliced)
+          .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
+
+      cardTypeMask.AddComponent<Mask>()
+          .SetShowMaskGraphic(true);
 
       GameObject label = new("Card.Type.Label", typeof(RectTransform));
-      label.SetParent(cardType.transform);
+      label.SetParent(cardTypeMask.transform);
 
       label.RectTransform()
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.one)
           .SetPivot(new(0.5f, 0.5f))
-          .SetSizeDelta(new(80f, 35f));
+          .SetSizeDelta(new(80f, 30f));
 
       label.AddComponent<Text>()
           .SetSupportRichText(true)
@@ -122,12 +158,12 @@ namespace PartyRock {
           .SetFontSize(18)
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetColor(Color.white)
-          .SetText("Power");
+          .SetText(CardTypeLabelText.Value);
 
       label.AddComponent<Outline>()
           .SetEffectColor(Color.black);
 
-      return cardType;
+      return cardTypeBorder;
     }
 
     GameObject CreateCardMask(Transform parentTransform) {
@@ -144,7 +180,7 @@ namespace PartyRock {
           .SetColor(new(0.259f, 0.133f, 0.094f, 1f));
 
       mask.AddComponent<Mask>()
-          .showMaskGraphic = false;
+          .SetShowMaskGraphic(false);
 
       mask.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f, height: 1f);
