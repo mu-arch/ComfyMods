@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 using static PartyRock.PlayerListPanel;
 using static PartyRock.PluginConfig;
@@ -51,22 +52,25 @@ namespace PartyRock {
             .SetPosition(CardHandPosition.Value);
 
         int numberOfCards = CardHandCount.Value;
+        int startModifier = (numberOfCards % 2) - 1;
         float twistPerCard = CardHandCardTwist.Value;
         float nudgePerCard = CardHandCardNudge.Value;
-        float startTwist = (numberOfCards / 2) * twistPerCard;
-        float startNudge = (numberOfCards / 2) * nudgePerCard;
+        float startTwist = ((numberOfCards + startModifier) / 2f) * twistPerCard;
+        float startNudge = ((numberOfCards + startModifier) / 2f) * nudgePerCard;
 
         for (int i = 0; i < numberOfCards; i++) {
           Card card = new(_playerCardHand.transform);
           card.Panel.RectTransform()
               .SetPosition(new(i * CardHandCardSpacing.Value, 0f))
               .SetSizeDelta(new(225f, 360f))
-              .SetAnchorMin(new(0.5f, 0f))
-              .SetAnchorMax(new(0.5f, 0f))
-              .SetPivot(new(0.5f, 0f));
+              .SetAnchorMin(new(0.5f, 0.5f))
+              .SetAnchorMax(new(0.5f, 0.5f))
+              .SetPivot(new(0.5f, 0.5f));
 
           card.Panel.RectTransform().Rotate(0f, 0f, startTwist - (i * twistPerCard));
           card.Panel.RectTransform().Translate(0f, -Mathf.Abs(startNudge - (i * nudgePerCard)), 0f);
+
+          card.Panel.AddComponent<CardHandCardHover>();
 
           _playerCards.Add(card);
         }
