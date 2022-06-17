@@ -168,6 +168,7 @@ namespace PartyRock {
       Texture2D texture = new(width, height);
       texture.name = $"RoundedCorner-{width}w-{height}h-{radius}r";
       texture.wrapMode = TextureWrapMode.Clamp;
+      texture.filterMode = FilterMode.Trilinear;
 
       for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {

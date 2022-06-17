@@ -103,6 +103,7 @@
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Card.cs" />
+    <Compile Include="UI\CardHand.cs" />
     <Compile Include="UI\PlayerListPanel.cs" />
     <Compile Include="UI\ParentSizeFitter.cs" />
     <Compile Include="UI\ProgressBar.cs" />

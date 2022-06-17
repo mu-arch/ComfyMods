@@ -33,22 +33,50 @@ namespace PartyRock {
     }
 
     static PlayerListPanel _playerListPanel;
-    static Card _playerCard;
+    static GameObject _playerCardHand;
+    static readonly List<Card> _playerCards = new();
 
     public static void ToggleCardPanel() {
       if (!Hud.m_instance) {
         return;
       }
 
-      if (_playerCard?.Panel) {
-        Destroy(_playerCard.Panel);
-        _playerCard = null;
+      if (_playerCards.Count == 0) {
+        _playerCardHand = new("Player.CardHand", typeof(RectTransform));
+        _playerCardHand.SetParent(Hud.m_instance.m_rootObject.transform);
+        _playerCardHand.RectTransform()
+            .SetAnchorMin(new(0.5f, 0.5f))
+            .SetAnchorMax(new(0.5f, 0.5f))
+            .SetPivot(new(0.5f, 0.5f))
+            .SetPosition(CardHandPosition.Value);
+
+        int numberOfCards = CardHandCount.Value;
+        float twistPerCard = CardHandCardTwist.Value;
+        float nudgePerCard = CardHandCardNudge.Value;
+        float startTwist = (numberOfCards / 2) * twistPerCard;
+        float startNudge = (numberOfCards / 2) * nudgePerCard;
+
+        for (int i = 0; i < numberOfCards; i++) {
+          Card card = new(_playerCardHand.transform);
+          card.Panel.RectTransform()
+              .SetPosition(new(i * CardHandCardSpacing.Value, 0f))
+              .SetSizeDelta(new(225f, 360f))
+              .SetAnchorMin(new(0.5f, 0f))
+              .SetAnchorMax(new(0.5f, 0f))
+              .SetPivot(new(0.5f, 0f));
+
+          card.Panel.RectTransform().Rotate(0f, 0f, startTwist - (i * twistPerCard));
+          card.Panel.RectTransform().Translate(0f, -Mathf.Abs(startNudge - (i * nudgePerCard)), 0f);
+
+          _playerCards.Add(card);
+        }
       } else {
-        _playerCard = new(Hud.m_instance.m_rootObject.transform);
-        _playerCard.Panel.RectTransform()
-            .SetPosition(new(450, 125))
-            .SetSizeDelta(new(225, 360));
-        _playerCard.Panel.SetActive(true);
+        foreach (Card card in _playerCards) {
+          Destroy(card.Panel);
+        }
+
+        Destroy(_playerCardHand);
+        _playerCards.Clear();
       }
     }
 
