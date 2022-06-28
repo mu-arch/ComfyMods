@@ -73,6 +73,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatter", "Chatter\Chatter.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartyRock", "PartyRock\PartyRock.csproj", "{C918E1DD-5644-4F28-A21F-025E6D34A361}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ComfyValheimModPack", "ComfyValheimModPack", "{58A0BE10-0BF1-4E8B-BE5E-0F0370AC8D7B}"
+	ProjectSection(SolutionItems) = preProject
+		ComfyValheimModPack\icon.png = ComfyValheimModPack\icon.png
+		ComfyValheimModPack\manifest.json = ComfyValheimModPack\manifest.json
+		ComfyValheimModPack\README.md = ComfyValheimModPack\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
