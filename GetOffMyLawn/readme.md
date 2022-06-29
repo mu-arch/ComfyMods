@@ -1,36 +1,88 @@
 # GetOffMyLawn
 
-  * Set the health of any player building piece in the game to a configurable value.
-    * The default value is set to 100,000,000.
-  * You can also download the mod at:
-    * Nexus Mods: https://www.nexusmods.com/valheim/mods/1349
-    * Thunderstore: https://valheim.thunderstore.io/package/ComfyMods/GetOffMyLawn/
+  * Set the health of player-placed items in the game to a configurable value.
+  * Reduces monster attacks on player objects.
 
-## User Interface
+## Installation
 
-  * This fuctionality is available on repaired objects or placed build objects.
-  * Set the health of the currently targeted build object to a high value by repairing it.
-    * Note: build object must be either unwarded or on a ward the user can access).
+### Manual
 
-## Usage Notes
+  * Un-zip `GetOffMyLawn.dll` to your `/Valheim/BepInEx/plugins/` folder.
 
-- Health will be set when you place the item or when you use the repair hammer on it. You can only change the health of building pieces that you own or are permitted on.
-- You can activate a ward to set the health value of all building pieces within range to the configured value.
-- You can use this mod to ignore stability. Press F1 and find "GetOffMyLawn". Change the PieceValue by pressing "ctrl+A" and then just hold down the 1 key until you see it turn into 1.111111E+17 at current maximum. This makes makes it "ignore stability". *Warning:*stability in the game helps keep buildings smaller to reduce lag. When you cheat stability you can create larger buildings, but this means more lag because more instances of objects. Keep an eye on your instances with F2 if this is a concern for you. (Why this works: Stability ticks down HP over time. With high enough health it just takes such a long time to tick down(years) it doesn't matter.)
-- Great for boats. There are often "lag" issues with the game that cause boats to take more damage than they're supposed to. Just set your boat to high health. 
-- All items placed with the hammer have their health changed. If you're using a mod that spawns things with the hammer such as ore please keep in mind the ore will likely have high health. Simply disable GOML in the configuration manager if you're trying to place normal health ore veins for example.
-- Disabling the mod does not change the health of previously placed/repaired pieces. If you want to lower the health again you'll need to set the health value to low in GOML and repair the piece or activate a ward and everything in the ward radius will be set to that health.
+### Thunderstore (manual install)
 
-## Manual Install Instructions
+  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.4.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
 
-  1. Extract `GetOffMyLawn.dll` to your `/Valheim/BepInEx/plugins/` folder.
-  2. Place a new building piece or repair a building piece to set its health value to the configured value.
-  3. Activate a ward to set the health value of all building pieces within range to the configured value.
+## Instructions
+
+### User Interface
+
+  * Fuctionality is available on repaired objects or placed build objects.
+
+  - Set the health of the currently targeted build object to a high value by repairing it.
+    - Note: build object must be either unwarded or on a ward the user can access.
+
+### Usage
+
+  * Health will be set when you place the item or when you use the repair hammer on it.
+    * You can only change the health of building pieces that you own or are permitted on.
+
+  - You can activate a ward to set the health value of all building pieces within range to the configured value.
+
+  * Great for boats!
+    * There are often "lag" issues with the game that cause boats to take more damage than they're supposed to.
+    * Just set your boat to high health. 
+
+  - All items placed with the hammer have their health changed.
+    - If you're using a mod that spawns things with the hammer, the ore will likely have high health.
+    - Simply disable GOML in the configuration manager if you're trying to place normal health ore veins for example.
+
+  * **Disabling the mod does not change the health of previously placed/repaired pieces.**
+    * To lower the health again you'll need set a low health value and repair the piece or activate a ward in radius.
+
+### Ignoring Piece Stability
+
+  * You can use this mod to ignore piece stability by setting piece health to a very high value (`1E+17` or higher).
+
+  - **Caution!**
+    - Stability in the game helps keep buildings smaller to reduce lag.
+    - When you cheat stability you can create larger buildings but this causes more lag due to more instances.
+    - Keep an eye on your instances with `F2` panel if this is a concern for you.
+
+  * Why this works...
+    * Pieces with zero stability incur piece health damage over time (100% vanilla base health / second).
+    * With high enough health it just takes such a long time to tick down (years) it doesn't matter.
+
+  - **Every piece health damage message is broadcasted to everyone on the server.**
+    * The setting `EnablePieceHealthDamageThreshold` will restrict this behaviour to only pieces with < 100K health.
+
+### Recommended Mods to Use
+
+  * [ConfigurationManager](https://valheim.thunderstore.io/package/Azumatt/Official_BepInEx_ConfigurationManager/)﻿.
+    * Press F1 and navigate to the GetOffMyLawn section to change the health value.
+  * [EulersRuler](https://valheim.thunderstore.io/package/ComfyMods/EulersRuler/)﻿
+    * See piece health, stability and other information while building.
+
+### Notes
+
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/GetOffMyLawn).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
 
+### 1.4.0
+
+  * Moved all configuration code into new `PluginConfig` class.
+  * Moved all Harmony-patching code into their own patch classes.
+  * **Increased the default `PieceHealth` value to `1E+17`.**
+  * Added `manifest.json` and updated this `README.md`.
+  * Modified the project file to automatically create a versioned Thunderstore package.
+
 ### 1.3.1
-  * Destroy Carts & Boats with the Hammer like regular build pieces
+
+  * Destroy carts & boats with the Hammer like regular build pieces.
 
 ### 1.2.1
 

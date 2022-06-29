@@ -18,6 +18,7 @@
 ## Instructions
 
 ### Setting target color
+
   * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
     * Change the target color using the RGB sliders or using an HTML color code.
     * Change the target emission color factor using the slider (this affects how bright the target color will be).
