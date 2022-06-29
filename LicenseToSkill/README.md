@@ -13,7 +13,9 @@
   * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
-## Features
+## Instructions
+
+### Features
 
   * Increases 'no skill loss' status effect from 10 minutes to 20 minutes.
     * Now shows the current time remaining!
