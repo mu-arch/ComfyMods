@@ -2,6 +2,7 @@
     "name": "LetMePlay",
     "version_number": "1.4.0",
     "website_url": "https://discord.gg/ameHJz5PFk",
+    "author": "ComfyMods",
     "description": "Various game adjustments and tweaks for player accessibility and comfort.",
     "dependencies": [
         "denikson-BepInExPack_Valheim-5.4.1901"
