@@ -1,14 +1,22 @@
-This mod is used for the [Comfy Valheim](https://discord.gg/ameHJz5PFk) server to make installing mods faster.
+# ComfyValheimPack
 
-It does not include all of our allowed mods, just the ones I thought most people would use. See the full allowed list in the #allowed-mods channel.
+  * This modpack is used for the [Comfy Valheim](https://discord.gg/ameHJz5PFk) server to make installing mods faster.
+    * It does not include all of our allowed mods, just a few that most players will find useful.
+    * To see the full allowed mods list go to the `#allowed-mods` channel in our Discord.
 
-Mostly this is just a list of mods and it tells the mod manager other mods to install (dependencies). However, a few mods have been repacked into this one for ease of setup and customizing for our server.
+  - A modpack is just a list of mods that informs the mod manager which other mods to install (dependencies).
+    - However, a few mod configuration files have been added configured for our server (like QuickConnect).
 
-List is managed by the Comfy Dev team. If you need help feel free to reach out to me on the [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk).
+  * For any questions or help, open a ticket in our Discord `#get-support` channel.
 
-## Links
+### Links
 
-  * Looking for a chill Valheim server?
-    * Join us on: [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
-  * Looking for a great Valheim server to play on?
-    * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ComfyValheimModPack).
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+
+## Changelog
+
+### 2.0.0
+
+  * Pruned the dependency list for broken/out-dated mods and updated existing ones to their current versions.
+  * Added several new ComfyMods-created mods and removed a few others.
