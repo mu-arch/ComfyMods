@@ -2,6 +2,7 @@
   "name": "ComfyValheimPack",
   "version_number": "2.0.0",
   "website_url": "https://discord.gg/ameHJz5PFk",
+  "author": "ComfyMods",
   "description": "Convenient mods for use on the Comfy Valheim server.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901",
