@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -164,9 +165,17 @@ namespace PartyRock {
       return Sprite.Create(texture, new(0, 0, 1, 2), Vector2.zero);
     }
 
+    static readonly Dictionary<string, Sprite> RoundedCornerSpriteCache = new();
+
     public static Sprite CreateRoundedCornerSprite(int width, int height, int radius) {
+      string name = $"RoundedCorner-{width}w-{height}h-{radius}r";
+
+      if (RoundedCornerSpriteCache.TryGetValue(name, out Sprite sprite)) {
+        return sprite;
+      }
+
       Texture2D texture = new(width, height);
-      texture.name = $"RoundedCorner-{width}w-{height}h-{radius}r";
+      texture.name = name;
       texture.wrapMode = TextureWrapMode.Clamp;
       texture.filterMode = FilterMode.Trilinear;
 
@@ -178,7 +187,7 @@ namespace PartyRock {
 
       texture.Apply();
 
-      Sprite sprite =
+      sprite =
           Sprite.Create(
               texture,
               new(0, 0, width, height),
@@ -188,7 +197,9 @@ namespace PartyRock {
               SpriteMeshType.FullRect,
               new(width * 0.15f, height * 0.15f, width * 0.15f, height * 0.15f));
 
-      sprite.name = $"RoundedCorner-{width}w-{height}h-{radius}r";
+      sprite.name = name;
+
+      RoundedCornerSpriteCache[name] = sprite;
       return sprite;
     }
 
