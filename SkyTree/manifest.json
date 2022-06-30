@@ -2,6 +2,7 @@
   "name": "SkyTree",
   "version_number": "1.3.0",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/SkyTree",
+  "author": "ComfyMods",
   "description": "Makes the tree in the sky (Yggdrasil / World Tree) solid and a foundation to build on.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901"
