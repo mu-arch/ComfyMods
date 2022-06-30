@@ -14,7 +14,7 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     static ConfigEntry<bool> _isModEnabled;
 
@@ -74,7 +74,7 @@ namespace PotteryBarn {
         return;
       }
 
-      stoneReq.m_amount = 24;
+      stoneReq.m_amount = 12;
       stoneReq.m_recover = true;
 
       if (pieceTable.AddPiece(piece)) {
