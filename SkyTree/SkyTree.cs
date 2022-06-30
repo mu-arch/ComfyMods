@@ -10,20 +10,20 @@ using System.Reflection;
 
 using UnityEngine;
 
+using static SkyTree.PluginConfig;
+
 namespace SkyTree {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class SkyTree : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.skytree";
     public const string PluginName = "SkyTree";
-    public const string PluginVersion = "1.2.0";
-
-    static ConfigEntry<bool> _isModEnabled;
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
     public void Awake() {
-      _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      BindConfig(Config);
 
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginVersion);
@@ -33,25 +33,14 @@ namespace SkyTree {
       _harmony?.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(ZNetScene))]
-    class ZNetScenePatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZNetScene.Awake))]
-      static void AwakePostfix(ZNetScene __instance) {
-        if (_isModEnabled.Value) {
-          __instance.StartCoroutine(FixYggdrasilBranchCoroutine());
-        }
-      }
-    }
-
-    static IEnumerator FixYggdrasilBranchCoroutine() {
+    public static IEnumerator FixYggdrasilBranchCoroutine() {
       WaitForSeconds waitInterval = new(seconds: 3f);
       _logger.LogInfo("Starting FixYggdrasilBranch coroutine.");
 
       while (true) {
         yield return waitInterval;
 
-        if (!ZNetScene.instance) {
+        if (!ZNetScene.m_instance) {
           continue;
         }
 
@@ -62,9 +51,15 @@ namespace SkyTree {
           continue;
         }
 
+        int targetLayer = 15;
+        string targetLayerName = $"{targetLayer}:{LayerMask.LayerToName(targetLayer)}";
+
         foreach (GameObject yggdrasil in yggdrasils) {
-          _logger.LogInfo("Setting YggdrasilBranch layer to 15.");
-          yggdrasil.layer = 15;
+          int sourceLayer = yggdrasil.layer;
+          string sourceLayerName = $"{sourceLayer}:{LayerMask.LayerToName(sourceLayer)}";
+
+          _logger.LogInfo($"Setting YggdrasilBranch layer from {sourceLayerName} to {targetLayerName}.");
+          yggdrasil.layer = targetLayer;
 
           Transform branch = yggdrasil.transform.Find("branch");
 
@@ -72,8 +67,11 @@ namespace SkyTree {
             continue;
           }
 
-          _logger.LogInfo("Found YggdrasilBranch/branch, setting layer to 15.");
-          branch.gameObject.layer = 15;
+          sourceLayer = branch.gameObject.layer;
+          sourceLayerName = $"{sourceLayer}:{LayerMask.LayerToName(sourceLayer)}";
+
+          _logger.LogInfo( $"Found YggdrasilBranch/branch, setting layer from {sourceLayerName} to {targetLayerName}.");
+          branch.gameObject.layer = targetLayer;
 
           MeshFilter filter = branch.GetComponentInChildren<MeshFilter>();
 
