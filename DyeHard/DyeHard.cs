@@ -1,8 +1,10 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
+
 using HarmonyLib;
+
 using System.Reflection;
+
 using UnityEngine;
 
 namespace DyeHard {
@@ -10,7 +12,7 @@ namespace DyeHard {
   public class DyeHard : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.dyehard";
     public const string PluginName = "DyeHard";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static readonly int _hairColorHashCode = "HairColor".GetStableHashCode();
 
