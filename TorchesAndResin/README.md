@@ -1,12 +1,36 @@
 ﻿# Torches and Resin
 
-  * Any newly placed `Standing wood torch`, `Standing iron torch` or `Sconce` starts with `10,000` resin fuel.
+*Standing wood/iron/wall torches and hanging/floor braziers are refueled with 10,000 resin.*
+
+## Installation
+
+### Manual
+
+  * Un-zip `TorchesAndResin.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `TorchesAndResin_v1.3.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
 
-  * Unzip `TorchesAndResin.dll` to `/Valheim/BepInEx/plugins/`.
+  * This will set the fuel for several torch and brazier prefabs to 10,000 resin.
+    * Fuel will be set when prefab is placed or on entering the sector as the sole instance owner.
+
+### Notes
+
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/TorchesAndResin).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.3.0
+
+  * Added a `Fireplace.Awake` prefix patch that sets an eligible torch's `m_startFuel` to 10000.
+  * Added `manifest.json`, changed the `icon.png` and updated this `README.md`.
+  * Modified the project file to automatically create a versioned Thunderstore package.
 
 ### 1.2.0
 
