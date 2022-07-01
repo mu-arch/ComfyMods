@@ -1,4 +1,4 @@
-﻿# Torches and Resin
+﻿# TorchesAndResin
 
 *Standing wood/iron/wall torches and hanging/floor braziers are refueled with 10,000 resin.*
 
