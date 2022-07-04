@@ -4,7 +4,6 @@ using HarmonyLib;
 
 using System;
 using System.Collections;
-using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
@@ -23,6 +22,9 @@ namespace ZoneScouter {
     public void Awake() {
       BindConfig(Config);
 
+      IsModEnabled.SettingChanged += (_, _) => ToggleSectorInfoPanel();
+      ShowSectorInfoPanel.SettingChanged += (_, _) => ToggleSectorInfoPanel();
+
       IsModEnabled.SettingChanged += (_, _) => ToggleSectorBoundaries();
       ShowSectorBoundaries.SettingChanged += (_, _) => ToggleSectorBoundaries();
 
@@ -31,6 +33,58 @@ namespace ZoneScouter {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
+    }
+
+    static SectorInfoPanel _sectorInfoPanel;
+    static Coroutine _updateSectorInfoPanelCoroutine;
+
+    public static void ToggleSectorInfoPanel() {
+      if (_updateSectorInfoPanelCoroutine != null) {
+        Hud.m_instance.Ref().StopCoroutine(_updateSectorInfoPanelCoroutine);
+        _updateSectorInfoPanelCoroutine = null;
+      }
+
+      if (_sectorInfoPanel?.Panel) {
+        Destroy(_sectorInfoPanel.Panel);
+        _sectorInfoPanel = null;
+      }
+
+      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && Hud.m_instance) {
+        _sectorInfoPanel = new(Hud.m_instance.transform);
+
+        _sectorInfoPanel.Panel.RectTransform()
+            .SetAnchorMin(new(0.5f, 1f))
+            .SetAnchorMax(new(0.5f, 1f))
+            .SetPivot(new(0.5f, 1f))
+            .SetPosition(SectorInfoPanelPosition.Value)
+            .SetSizeDelta(new(SectorInfoPanelWidth.Value, 200f));
+
+        _sectorInfoPanel.Panel.SetActive(true);
+
+        _updateSectorInfoPanelCoroutine = Hud.m_instance.StartCoroutine(UpdateSectorInfoPanelCoroutine());
+      }
+    }
+
+    static IEnumerator UpdateSectorInfoPanelCoroutine() {
+      WaitForSeconds waitInterval = new(seconds: 0.25f);
+      Vector3 lastPosition = Vector3.positiveInfinity;
+
+      while (true) {
+        yield return waitInterval;
+
+        if (!ZoneSystem.m_instance || !Player.m_localPlayer || !_sectorInfoPanel?.Panel) {
+          continue;
+        }
+
+        Vector3 position = Player.m_localPlayer.transform.position;
+
+        if (position != lastPosition) {
+          lastPosition = position;
+          _sectorInfoPanel.PositionX.SetText($"{position.x:F0}");
+          _sectorInfoPanel.PositionY.SetText($"{position.y:F0}");
+          _sectorInfoPanel.PositionZ.SetText($"{position.z:F0}");
+        }
+      }
     }
 
     public static void ToggleSectorBoundaries() {
@@ -114,6 +168,12 @@ namespace ZoneScouter {
       }
 
       Destroy(wall.GetComponentInChildren<Collider>());
+    }
+  }
+
+  public static class ObjectExtensions {
+    public static T Ref<T>(this T o) where T : UnityEngine.Object {
+      return o ? o : null;
     }
   }
 }
