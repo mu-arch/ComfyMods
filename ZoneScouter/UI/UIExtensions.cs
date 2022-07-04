@@ -17,6 +17,14 @@ namespace ZoneScouter {
       return canvasGroup;
     }
   }
+
+  public static class ColorExtensions {
+    public static Color SetAlpha(this Color color, float alpha) {
+      color.a = alpha;
+      return color;
+    }
+  }
+
   public static class ContentSizeFitterExtensions {
     public static ContentSizeFitter SetHorizontalFit(
         this ContentSizeFitter fitter, ContentSizeFitter.FitMode fitMode) {
@@ -56,12 +64,16 @@ namespace ZoneScouter {
       return gameObject.Ref()?.GetComponent<Image>();
     }
 
-    public static Text Text(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<Text>();
+    public static LayoutElement LayoutElement(this GameObject gameObject) {
+      return gameObject.Ref()?.GetComponent<LayoutElement>();
     }
 
     public static RectTransform RectTransform(this GameObject gameObject) {
       return gameObject.Ref()?.GetComponent<RectTransform>();
+    }
+
+    public static Text Text(this GameObject gameObject) {
+      return gameObject.Ref()?.GetComponent<Text>();
     }
   }
 

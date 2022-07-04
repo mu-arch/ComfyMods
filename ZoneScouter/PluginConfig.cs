@@ -31,7 +31,7 @@ namespace ZoneScouter {
               new ConfigDescription(
                   "Show the SectorInfoPanel on the Hud.",
                   acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 4 }));
+                  new ConfigurationManagerAttributes { Order = 2 }));
 
       SectorInfoPanelPosition =
           config.Bind(
@@ -41,23 +41,14 @@ namespace ZoneScouter {
               new ConfigDescription(
                   "SectorInfoPanel position (relative to pivot/anchors).",
                   acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 3 }));
-
-      SectorInfoPanelWidth =
-          config.Bind(
-              "SectorInfoPanel",
-              "sectorInfoPanelWidth",
-              350f,
-              new ConfigDescription(
-                  "SectorInfoPanel width (in pixels).",
-                  acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 1 }));
+
 
       SectorInfoPanelBackgroundColor =
           config.Bind(
               "SectorInfoPanel",
               "sectorInfoPanelBackgroundColor",
-              new Color(0f, 0f, 0f, 0.8f),
+              new Color(0f, 0f, 0f, 0.9f),
               new ConfigDescription(
                   "SectorInfoPanel background color.",
                   acceptableValues: null,
@@ -70,7 +61,7 @@ namespace ZoneScouter {
           config.Bind(
               "SectorInfoPanel.PositionRow",
               "positionValueXTextColor",
-              new Color(1f, 0.878f, 0.51f, 1f),
+              new Color(1f, 0.878f, 0.51f),
               "SectorInfoPanel.PositionRow.X value text color.");
 
       PositionValueYTextColor =

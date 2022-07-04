@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace ZoneScouter {
-  public class UIBuilder {
+  public static class UIBuilder {
     public static GameObject CreateLabel(Transform parentTransform) {
       GameObject label = new($"{parentTransform.name}.Label", typeof(RectTransform));
       label.SetParent(parentTransform);
@@ -31,6 +31,17 @@ namespace ZoneScouter {
           .SetFlexible(width: 1f);
 
       return spacer;
+    }
+
+    static readonly Lazy<TextGenerator> CachedTextGenerator = new();
+
+    public static float GetTextPreferredWidth(Text text) {
+      return GetTextPreferredWidth(text, text.text);
+    }
+
+    public static float GetTextPreferredWidth(Text text, string value) {
+      return CachedTextGenerator.Value.GetPreferredWidth(
+          value, text.GetGenerationSettings(text.rectTransform.rect.size));
     }
 
     static readonly Dictionary<string, Sprite> RoundedCornerSpriteCache = new();
