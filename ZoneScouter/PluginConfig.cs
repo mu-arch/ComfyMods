@@ -11,6 +11,8 @@ namespace ZoneScouter {
     public static ConfigEntry<float> SectorInfoPanelWidth { get; private set; }
     public static ConfigEntry<Color> SectorInfoPanelBackgroundColor { get; private set; }
 
+    public static ConfigEntry<bool> ShowSectorZdoCountGrid { get; private set; }
+
     public static ConfigEntry<int> SectorInfoPanelFontSize { get; private set; }
 
     public static ConfigEntry<Color> PositionValueXTextColor { get; private set; }
@@ -53,6 +55,16 @@ namespace ZoneScouter {
                   "SectorInfoPanel background color.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 0 }));
+
+      ShowSectorZdoCountGrid =
+          config.Bind(
+              "SectorInfoPanel.ZdoCountGrid",
+              "showSectorZdoCountGrid",
+              true,
+              new ConfigDescription(
+                  "Show the SectorZdoCount grid in the SectorInfoPanel.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 3 }));
 
       SectorInfoPanelFontSize =
           config.Bind("SectorInfoPanel.Font", "sectorInfoPanelFontSize", 16, "SectorInfoPanel font size.");

@@ -73,7 +73,8 @@ namespace ZoneScouter {
             .SetAnchorMax(new(0.5f, 1f))
             .SetPivot(new(0.5f, 1f))
             .SetPosition(SectorInfoPanelPosition.Value)
-            .SetSizeDelta(new(200f, 200f));
+            .SetSizeDelta(new(200f, 200f))
+            .SetAsFirstSibling();
 
         _sectorInfoPanel.Panel.SetActive(true);
 
@@ -109,21 +110,32 @@ namespace ZoneScouter {
         }
 
         lastSector = sector;
-        _sectorInfoPanel.SectorX.Value.SetText($"{sector.x}");
-        _sectorInfoPanel.SectorY.Value.SetText($"{sector.y}");
+        long sectorZdoCount = GetSectorZdoCount(sector);
 
-        _sectorInfoPanel.ZdoCountCenter.SetText($"{GetSectorZdoCount(sector)}");
-        _sectorInfoPanel.ZdoCountCenterLeft.SetText($"{GetSectorZdoCount(sector.Left())}");
-        _sectorInfoPanel.ZdoCountCenterRight.SetText($"{GetSectorZdoCount(sector.Right())}");
+        _sectorInfoPanel.SectorXY.Value.SetText($"({sector.x}, {sector.y})");
+        _sectorInfoPanel.SectorZdoCount.Value.SetText($"{sectorZdoCount}");
 
-        _sectorInfoPanel.ZdoCountUpperCenter.SetText($"{GetSectorZdoCount(sector.Up())}");
-        _sectorInfoPanel.ZdoCountUpperLeft.SetText($"{GetSectorZdoCount(sector.UpLeft())}");
-        _sectorInfoPanel.ZdoCountUpperRight.SetText($"{GetSectorZdoCount(sector.UpRight())}");
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenter, sector);
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenterLeft, sector.Left());
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenterRight, sector.Right());
 
-        _sectorInfoPanel.ZdoCountLowerCenter.SetText($"{GetSectorZdoCount(sector.Down())}");
-        _sectorInfoPanel.ZdoCountLowerLeft.SetText($"{GetSectorZdoCount(sector.DownLeft())}");
-        _sectorInfoPanel.ZdoCountLowerRight.SetText($"{GetSectorZdoCount(sector.DownRight())}");
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperCenter, sector.Up());
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperLeft, sector.UpLeft());
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperRight, sector.UpRight());
+
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerCenter, sector.Down());
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerLeft, sector.DownLeft());
+        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerRight, sector.DownRight());
       }
+    }
+
+    static void SetSectorZdoCountCellText(SectorInfoPanel.SectorZdoCountCell cell, Vector2i sector) {
+      cell.ZdoCount.SetText($"{GetSectorZdoCount(sector)}");
+      cell.Sector.SetText($"({sector.x}, {sector.y})");
+    }
+
+    static string GetZdoCountText(Vector2i sector) {
+      return $"{GetSectorZdoCount(sector)}\n<size={SectorInfoPanelFontSize.Value - 2}>({sector.x}, {sector.y})</size>";
     }
 
     public static void ToggleSectorBoundaries() {

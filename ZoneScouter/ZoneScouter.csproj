@@ -103,6 +103,7 @@
     <Compile Include="UI\UIBuilder.cs" />
     <Compile Include="UI\UIExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />
+    <Compile Include="UI\ZdoCountCell.cs" />
     <Compile Include="ZoneScouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
