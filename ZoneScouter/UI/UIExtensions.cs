@@ -56,6 +56,14 @@ namespace ZoneScouter {
           : Enumerable.Empty<GameObject>();
     }
 
+    public static T GetOrAddComponent<T>(this Component component) where T : Component {
+      return component.gameObject.TryGetComponent(out T t) ? t : component.gameObject.AddComponent<T>();
+    }
+
+    public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component {
+      return gameObject.TryGetComponent(out T t) ? t : gameObject.AddComponent<T>();
+    }
+
     public static Button Button(this GameObject gameObject) {
       return gameObject.Ref()?.GetComponent<Button>();
     }

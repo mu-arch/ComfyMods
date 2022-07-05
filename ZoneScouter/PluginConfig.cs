@@ -13,6 +13,14 @@ namespace ZoneScouter {
 
     public static ConfigEntry<bool> ShowSectorZdoCountGrid { get; private set; }
 
+    public static ConfigEntry<Color> CellZdoCountBackgroundImageColor { get; private set; }
+    public static ConfigEntry<int> CellZdoCountTextFontSize { get; private set; }
+    public static ConfigEntry<Color> CellZdoCountTextColor { get; private set; }
+
+    public static ConfigEntry<Color> CellSectorBackgroundImageColor { get; private set; }
+    public static ConfigEntry<int> CellSectorTextFontSize { get; private set; }
+    public static ConfigEntry<Color> CellSectorTextColor { get; private set; }
+
     public static ConfigEntry<int> SectorInfoPanelFontSize { get; private set; }
 
     public static ConfigEntry<Color> PositionValueXTextColor { get; private set; }
@@ -58,13 +66,73 @@ namespace ZoneScouter {
 
       ShowSectorZdoCountGrid =
           config.Bind(
-              "SectorInfoPanel.ZdoCountGrid",
+              "SectorZdoCountGrid",
               "showSectorZdoCountGrid",
               true,
               new ConfigDescription(
                   "Show the SectorZdoCount grid in the SectorInfoPanel.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 3 }));
+
+      CellZdoCountBackgroundImageColor =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellZdoCountBackgroundImageColor",
+              Color.clear,
+              new ConfigDescription(
+                  "SectorZdoCountCell.ZdoCount.Background.Image color.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      CellZdoCountTextFontSize =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellZdoCountTextFontSize",
+              16,
+              new ConfigDescription(
+                  "SectorZdoCountCell.ZdoCount.Text font size.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      CellZdoCountTextColor =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellZdoCountTextColor",
+              Color.white,
+              new ConfigDescription(
+                  "SectorZdoCountCell.ZdoCount.Text color.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      CellSectorBackgroundImageColor =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellSectorBackgroundImageColor",
+              new Color(0.5f, 0.5f, 0.5f, 0.5f),
+              new ConfigDescription(
+                  "SectorZdoCountCell.Sector.Background.Image color.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 1 }));
+
+      CellSectorTextFontSize =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellSectorTextFontSize",
+              16,
+              new ConfigDescription(
+                  "SectorZdoCountCell.Sector.Text font size.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 1 }));
+
+      CellSectorTextColor =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "cellSectorTextColor",
+              new Color(0.9f, 0.9f, 0.9f, 1f),
+              new ConfigDescription(
+                  "SectorZdoCountCell.Sector.Text color.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 1 }));
 
       SectorInfoPanelFontSize =
           config.Bind("SectorInfoPanel.Font", "sectorInfoPanelFontSize", 16, "SectorInfoPanel font size.");

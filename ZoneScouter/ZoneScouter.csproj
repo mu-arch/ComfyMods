@@ -99,11 +99,13 @@
   <ItemGroup>
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="PluginConfig.cs" />
+    <Compile Include="PluginExtensions.cs" />
     <Compile Include="UI\SectorInfoPanel.cs" />
     <Compile Include="UI\UIBuilder.cs" />
     <Compile Include="UI\UIExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />
-    <Compile Include="UI\ZdoCountCell.cs" />
+    <Compile Include="UI\SectorZdoCountCell.cs" />
+    <Compile Include="UI\ValueWithLabel.cs" />
     <Compile Include="ZoneScouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

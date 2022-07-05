@@ -1,0 +1,93 @@
+﻿using UnityEngine;
+using UnityEngine.UI;
+
+using static ZoneScouter.PluginConfig;
+using static ZoneScouter.UIBuilder;
+
+namespace ZoneScouter {
+  public class SectorZdoCountCell {
+    public GameObject Cell { get; private set; }
+
+    public Image ZdoCountBackground { get; private set; }
+    public Text ZdoCount { get; private set; }
+
+    public Image SectorBackground { get; private set; }
+    public Text Sector { get; private set; }
+
+    public SectorZdoCountCell(Transform parentTransform) {
+      Cell = CreateChildCell(parentTransform);
+
+      ZdoCountBackground =
+          CreateChildBackground(Cell.transform).Image()
+              .SetColor(CellZdoCountBackgroundImageColor.Value);
+
+      ZdoCount =
+          CreateChildLabel(ZdoCountBackground.transform).Text()
+              .SetFontSize(CellZdoCountTextFontSize.Value)
+              .SetColor(CellZdoCountTextColor.Value);
+
+      SectorBackground =
+          CreateChildBackground(Cell.transform).Image()
+              .SetColor(CellSectorBackgroundImageColor.Value);
+
+      Sector =
+          CreateChildLabel(SectorBackground.transform).Text()
+              .SetFontSize(CellSectorTextFontSize.Value)
+              .SetColor(CellSectorTextColor.Value);
+    }
+
+    GameObject CreateChildCell(Transform parentTransform) {
+      GameObject cell = new("Cell", typeof(RectTransform));
+      cell.SetParent(parentTransform);
+
+      cell.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetSpacing(0f)
+          .SetChildAlignment(TextAnchor.MiddleCenter);
+
+      cell.AddComponent<ContentSizeFitter>()
+          .SetHorizontalFit(ContentSizeFitter.FitMode.Unconstrained)
+          .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
+
+      cell.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(CreateRoundedCornerSprite(200, 200, 10))
+          .SetColor(new(0f, 0f, 0f, 0.3f));
+
+      return cell;
+    }
+
+    GameObject CreateChildBackground(Transform parentTransform) {
+      GameObject background = new("Background", typeof(RectTransform));
+      background.SetParent(parentTransform);
+
+      background.AddComponent<HorizontalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetPadding(left: 4, right: 4, top: 2, bottom: 2)
+          .SetChildAlignment(TextAnchor.MiddleCenter);
+
+      background.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(CreateRoundedCornerSprite(200, 200, 5))
+          .SetColor(Color.clear);
+
+      return background;
+    }
+
+    GameObject CreateChildLabel(Transform parentTransform) {
+      GameObject label = CreateLabel(parentTransform);
+      label.SetName("Label");
+
+      label.Text()
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetText("123");
+
+      label.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      return label;
+    }
+  }
+}

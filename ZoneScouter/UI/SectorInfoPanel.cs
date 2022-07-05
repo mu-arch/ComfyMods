@@ -21,6 +21,8 @@ namespace ZoneScouter {
     public ValueWithLabel SectorXY { get; private set; }
     public ValueWithLabel SectorZdoCount { get; private set; }
 
+    public GameObject SectorZdoCountGrid { get; private set; }
+
     public GameObject ZdoCountUpperRow { get; private set; }
     public SectorZdoCountCell ZdoCountUpperLeft { get; private set; }
     public SectorZdoCountCell ZdoCountUpperCenter { get; private set; }
@@ -80,19 +82,14 @@ namespace ZoneScouter {
       SectorZdoCount.Label.SetText("ZDOs");
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
 
-      ContentRow zdoCountContent = new(Panel.transform);
-      GameObject zdoCountContentLabel = CreateLabel(zdoCountContent.Row.transform);
-      zdoCountContentLabel.Text()
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetFontSize(FontSize)
-          .SetText("ZDOs per Sector");
+      SectorZdoCountGrid = CreateSectorZdoCountGrid(Panel.transform);
 
-      ZdoCountUpperRow = CreateZdoCountRow(Panel.transform);
+      ZdoCountUpperRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
       ZdoCountUpperLeft = new(ZdoCountUpperRow.transform);
       ZdoCountUpperCenter = new(ZdoCountUpperRow.transform);
       ZdoCountUpperRight = new(ZdoCountUpperRow.transform);
 
-      ZdoCountCenterRow = CreateZdoCountRow(Panel.transform);
+      ZdoCountCenterRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
       ZdoCountCenterLeft = new(ZdoCountCenterRow.transform);
       ZdoCountCenter = new(ZdoCountCenterRow.transform);
       ZdoCountCenter.ZdoCount.SetColor(PositionValueZTextColor.Value);
@@ -100,7 +97,7 @@ namespace ZoneScouter {
       ZdoCountCenter.Sector.SetColor(Color.white);
       ZdoCountCenterRight = new(ZdoCountCenterRow.transform);
 
-      ZdoCountLowerRow = CreateZdoCountRow(Panel.transform);
+      ZdoCountLowerRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
       ZdoCountLowerLeft = new(ZdoCountLowerRow.transform);
       ZdoCountLowerCenter = new(ZdoCountLowerRow.transform);
       ZdoCountLowerRight = new(ZdoCountLowerRow.transform);
@@ -152,78 +149,26 @@ namespace ZoneScouter {
       }
     }
 
-    public class ValueWithLabel {
-      public GameObject Row { get; private set; }
-      public Text Value { get; private set; }
-      public Text Label { get; private set; }
+    GameObject CreateSectorZdoCountGrid(Transform parentTransform) {
+      GameObject grid = new("SectorZdoCountGrid", typeof(RectTransform));
+      grid.SetParent(parentTransform);
 
-      public ValueWithLabel(Transform parentTransform) {
-        Row = CreateChildRow(parentTransform);
-        Value = CreateChildValue(Row.transform).Text();
-        Label = CreateChildLabel(Row.transform).Text();
-      }
+      grid.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: false, height: false)
+          .SetChildAlignment(TextAnchor.MiddleCenter)
+          .SetSpacing(6f);
 
-      public ValueWithLabel FitValueToText(string longestText) {
-        if (!Row.TryGetComponent(out ContentSizeFitter _)) {
-            Row.AddComponent<ContentSizeFitter>()
-              .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
-              .SetVerticalFit(ContentSizeFitter.FitMode.Unconstrained);
-        }
+      CreateLabel(grid.transform).Text()
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetFontSize(FontSize)
+          .SetText("ZDOs per Sector");
 
-        Value.GetComponent<LayoutElement>()
-            .SetPreferred(width: GetTextPreferredWidth(Value, longestText));
-
-        return this;
-      }
-
-      GameObject CreateChildRow(Transform parentTransform) {
-        GameObject row = new("Row", typeof(RectTransform));
-        row.SetParent(parentTransform);
-
-        row.AddComponent<HorizontalLayoutGroup>()
-            .SetChildControl(width: true, height: true)
-            .SetChildForceExpand(width: false, height: false)
-            .SetPadding(left: 8, right: 8, top: 4, bottom: 4)
-            .SetSpacing(8f);
-
-        row.AddComponent<Image>()
-            .SetType(Image.Type.Sliced)
-            .SetSprite(CreateRoundedCornerSprite(200, 200, 5))
-            .SetColor(new(0f, 0f, 0f, 0.1f));
-
-        return row;
-      }
-
-      GameObject CreateChildValue(Transform parentTransform) {
-        GameObject value = CreateLabel(parentTransform);
-        value.SetName("Value");
-
-        value.Text()
-            .SetFontSize(FontSize)
-            .SetAlignment(TextAnchor.UpperRight)
-            .SetText("0");
-
-        value.AddComponent<LayoutElement>()
-            .SetPreferred(width: 50f);
-
-        return value;
-      }
-
-      GameObject CreateChildLabel(Transform parentTransform) {
-        GameObject label = CreateLabel(parentTransform);
-        label.SetName("Label");
-
-        label.Text()
-            .SetFontSize(FontSize)
-            .SetAlignment(TextAnchor.UpperLeft)
-            .SetText("X");
-
-        return label;
-      }
+      return grid;
     }
 
-    GameObject CreateZdoCountRow(Transform parentTransform) {
-      GameObject row = new("ZdoCount.Row", typeof(RectTransform));
+    GameObject CreateSectorZdoCountGridRow(Transform parentTransform) {
+      GameObject row = new("SectorZdoCountGrid.Row", typeof(RectTransform));
       row.SetParent(parentTransform);
 
       row.AddComponent<HorizontalLayoutGroup>()
@@ -235,82 +180,6 @@ namespace ZoneScouter {
       return row;
     }
 
-    public class SectorZdoCountCell {
-      public GameObject Cell { get; private set; }
-
-      public Image ZdoCountBackground { get; private set; }
-      public Text ZdoCount { get; private set; }
-
-      public Image SectorBackground { get; private set; }
-      public Text Sector { get; private set; }
-
-      public SectorZdoCountCell(Transform parentTransform) {
-        Cell = CreateChildCell(parentTransform);
-
-        ZdoCountBackground = CreateChildBackground(Cell.transform).Image();
-        ZdoCountBackground.SetColor(Color.clear);
-        ZdoCount = CreateChildLabel(ZdoCountBackground.transform).Text();
-
-        SectorBackground = CreateChildBackground(Cell.transform).Image();
-        SectorBackground.SetColor(new(0.5f, 0.5f, 0.5f, 0.5f));
-        Sector = CreateChildLabel(SectorBackground.transform).Text();
-        Sector.SetColor(new(0.9f, 0.9f, 0.9f, 1f));
-      }
-
-      GameObject CreateChildCell(Transform parentTransform) {
-        GameObject cell = new("Cell", typeof(RectTransform));
-        cell.SetParent(parentTransform);
-
-        cell.AddComponent<VerticalLayoutGroup>()
-            .SetChildControl(width: true, height: true)
-            .SetChildForceExpand(width: false, height: false)
-            .SetSpacing(0f)
-            .SetChildAlignment(TextAnchor.MiddleCenter);
-
-        cell.AddComponent<ContentSizeFitter>()
-            .SetHorizontalFit(ContentSizeFitter.FitMode.Unconstrained)
-            .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
-
-        cell.AddComponent<Image>()
-            .SetType(Image.Type.Sliced)
-            .SetSprite(CreateRoundedCornerSprite(200, 200, 10))
-            .SetColor(new(0f, 0f, 0f, 0.3f));
-
-        return cell;
-      }
-
-      GameObject CreateChildBackground(Transform parentTransform) {
-        GameObject background = new("Background", typeof(RectTransform));
-        background.SetParent(parentTransform);
-
-        background.AddComponent<HorizontalLayoutGroup>()
-            .SetChildControl(width: true, height: true)
-            .SetChildForceExpand(width: false, height: false)
-            .SetPadding(left: 4, right: 4, top: 2, bottom: 2)
-            .SetChildAlignment(TextAnchor.MiddleCenter);
-
-        background.AddComponent<Image>()
-            .SetType(Image.Type.Sliced)
-            .SetSprite(CreateRoundedCornerSprite(200, 200, 10))
-            .SetColor(Color.clear);
-
-        return background;
-      }
-
-      GameObject CreateChildLabel(Transform parentTransform) {
-        GameObject label = CreateLabel(parentTransform);
-        label.SetName("Label");
-
-        label.Text()
-            .SetFontSize(FontSize)
-            .SetAlignment(TextAnchor.MiddleCenter)
-            .SetText("123");
-
-        label.AddComponent<LayoutElement>()
-            .SetFlexible(width: 1f);
-
-        return label;
-      }
-    }
+    
   }
 }

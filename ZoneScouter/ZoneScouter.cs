@@ -25,11 +25,13 @@ namespace ZoneScouter {
     public void Awake() {
       BindConfig(Config);
 
-      IsModEnabled.SettingChanged += (_, _) => ToggleSectorInfoPanel();
-      ShowSectorInfoPanel.SettingChanged += (_, _) => ToggleSectorInfoPanel();
+      IsModEnabled.OnSettingChanged(ToggleSectorInfoPanel);
+      ShowSectorInfoPanel.OnSettingChanged(ToggleSectorInfoPanel);
 
-      IsModEnabled.SettingChanged += (_, _) => ToggleSectorBoundaries();
-      ShowSectorBoundaries.SettingChanged += (_, _) => ToggleSectorBoundaries();
+      IsModEnabled.OnSettingChanged(ToggleSectorBoundaries);
+      ShowSectorBoundaries.OnSettingChanged(ToggleSectorBoundaries);
+
+      ShowSectorZdoCountGrid.OnSettingChanged(ToggleSectorZdoCountGrid);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -82,6 +84,12 @@ namespace ZoneScouter {
       }
     }
 
+    static void ToggleSectorZdoCountGrid(bool toggle) {
+      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && _sectorInfoPanel?.SectorZdoCountGrid) {
+        _sectorInfoPanel.SectorZdoCountGrid.SetActive(toggle);
+      }
+    }
+
     static IEnumerator UpdateSectorInfoPanelCoroutine() {
       WaitForSeconds waitInterval = new(seconds: 0.25f);
       Vector3 lastPosition = Vector3.positiveInfinity;
@@ -129,7 +137,7 @@ namespace ZoneScouter {
       }
     }
 
-    static void SetSectorZdoCountCellText(SectorInfoPanel.SectorZdoCountCell cell, Vector2i sector) {
+    static void SetSectorZdoCountCellText(SectorZdoCountCell cell, Vector2i sector) {
       cell.ZdoCount.SetText($"{GetSectorZdoCount(sector)}");
       cell.Sector.SetText($"({sector.x}, {sector.y})");
     }
@@ -220,58 +228,6 @@ namespace ZoneScouter {
       }
 
       Destroy(wall.GetComponentInChildren<Collider>());
-    }
-  }
-
-  public static class ObjectExtensions {
-    public static T Ref<T>(this T o) where T : UnityEngine.Object {
-      return o ? o : null;
-    }
-  }
-
-  public static class Vector2iExtensions {
-    public static Vector2i Left(this Vector2i sector) {
-      sector.x--;
-      return sector;
-    }
-
-    public static Vector2i Right(this Vector2i sector) {
-      sector.x++;
-      return sector;
-    }
-
-    public static Vector2i Up(this Vector2i sector) {
-      sector.y++;
-      return sector;
-    }
-
-    public static Vector2i Down(this Vector2i sector) {
-      sector.y--;
-      return sector;
-    }
-
-    public static Vector2i UpLeft(this Vector2i sector) {
-      sector.x--;
-      sector.y++;
-      return sector;
-    }
-
-    public static Vector2i UpRight(this Vector2i sector) {
-      sector.x++;
-      sector.y++;
-      return sector;
-    }
-
-    public static Vector2i DownLeft(this Vector2i sector) {
-      sector.x--;
-      sector.y--;
-      return sector;
-    }
-
-    public static Vector2i DownRight(this Vector2i sector) {
-      sector.x++;
-      sector.y--;
-      return sector;
     }
   }
 }
