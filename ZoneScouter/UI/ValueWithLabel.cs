@@ -17,11 +17,12 @@ namespace ZoneScouter {
     }
 
     public ValueWithLabel FitValueToText(string longestText) {
-      Row.GetOrAddComponent<ContentSizeFitter>()
-          .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
-          .SetVerticalFit(ContentSizeFitter.FitMode.Unconstrained);
+      //Row.GetOrAddComponent<ContentSizeFitter>()
+      //    .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
+      //    .SetVerticalFit(ContentSizeFitter.FitMode.Unconstrained);
 
       Value.GetOrAddComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
           .SetPreferred(width: GetTextPreferredWidth(Value, longestText));
 
       return this;

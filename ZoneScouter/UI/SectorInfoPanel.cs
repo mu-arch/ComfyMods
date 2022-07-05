@@ -57,12 +57,14 @@ namespace ZoneScouter {
       SectorXY = new(SectorContent.Row.transform);
       SectorXY.Value.GetComponent<LayoutElement>().SetFlexible(width: 1f);
       SectorXY.Value.SetColor(PositionValueXTextColor.Value);
+      SectorXY.FitValueToText("-123,-123");
       SectorXY.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
       SectorXY.Label.SetText("Sector");
       SectorXY.Label.GetComponent<RectTransform>().SetAsFirstSibling();
 
       SectorZdoCount = new(SectorContent.Row.transform);
       SectorZdoCount.Value.GetComponent<LayoutElement>().SetFlexible(width: 1f);
+      SectorZdoCount.FitValueToText("123456");
       SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
       SectorZdoCount.Label.SetText("ZDOs");
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);

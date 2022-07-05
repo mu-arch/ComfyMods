@@ -12,6 +12,7 @@ namespace ZoneScouter {
     public static ConfigEntry<Color> SectorInfoPanelBackgroundColor { get; private set; }
 
     public static ConfigEntry<bool> ShowSectorZdoCountGrid { get; private set; }
+    public static ConfigEntry<GridSize> SectorZdoCountGridSize { get; private set; }
 
     public static ConfigEntry<Color> CellZdoCountBackgroundImageColor { get; private set; }
     public static ConfigEntry<int> CellZdoCountTextFontSize { get; private set; }
@@ -29,6 +30,11 @@ namespace ZoneScouter {
 
     public static ConfigEntry<bool> ShowSectorBoundaries { get; private set; }
     public static ConfigEntry<Color> SectorBoundaryColor { get; private set; }
+
+    public enum GridSize {
+      ThreeByThree,
+      FiveByFive
+    }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -70,7 +76,17 @@ namespace ZoneScouter {
               "showSectorZdoCountGrid",
               true,
               new ConfigDescription(
-                  "Show the SectorZdoCount grid in the SectorInfoPanel.",
+                  "Show the SectorZdoCount grid in the SectorInfo panel.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 4 }));
+
+      SectorZdoCountGridSize =
+          config.Bind(
+              "SectorZdoCountGrid",
+              "sectorZdoCountGridSize",
+              GridSize.ThreeByThree,
+              new ConfigDescription(
+                  "Size of the SectorZdoCount grid.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 3 }));
 

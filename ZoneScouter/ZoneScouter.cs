@@ -25,13 +25,13 @@ namespace ZoneScouter {
     public void Awake() {
       BindConfig(Config);
 
-      IsModEnabled.OnSettingChanged(ToggleSectorInfoPanel);
-      ShowSectorInfoPanel.OnSettingChanged(ToggleSectorInfoPanel);
+      IsModEnabled.SettingChanged += (_, _) => ToggleSectorInfoPanel();
+      ShowSectorInfoPanel.SettingChanged += (_, _) => ToggleSectorInfoPanel();
 
-      IsModEnabled.OnSettingChanged(ToggleSectorBoundaries);
-      ShowSectorBoundaries.OnSettingChanged(ToggleSectorBoundaries);
+      IsModEnabled.SettingChanged += (_, _) => ToggleSectorBoundaries();
+      ShowSectorBoundaries.SettingChanged += (_, _) => ToggleSectorBoundaries();
 
-      ShowSectorZdoCountGrid.OnSettingChanged(ToggleSectorZdoCountGrid);
+      ShowSectorZdoCountGrid.SettingChanged += (_, _) => ToggleSectorZdoCountGrid();
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -86,9 +86,9 @@ namespace ZoneScouter {
       }
     }
 
-    static void ToggleSectorZdoCountGrid(bool toggle) {
+    static void ToggleSectorZdoCountGrid() {
       if (IsModEnabled.Value && ShowSectorInfoPanel.Value && _sectorZdoCountGrid?.Grid) {
-        _sectorZdoCountGrid.Grid.SetActive(toggle);
+        _sectorZdoCountGrid.Grid.SetActive(ShowSectorZdoCountGrid.Value);
       }
     }
 
@@ -96,6 +96,10 @@ namespace ZoneScouter {
       WaitForSeconds waitInterval = new(seconds: 0.25f);
       Vector3 lastPosition = Vector3.positiveInfinity;
       Vector2i lastSector = EmptySector;
+      long lastZdoCount = long.MaxValue;
+
+      int gridSize = SectorZdoCountGridSize.Value == PluginConfig.GridSize.ThreeByThree ? 3 : 5;
+      int gridOffset = SectorZdoCountGridSize.Value == PluginConfig.GridSize.ThreeByThree ? 1 : 2;
 
       while (true) {
         yield return waitInterval;
@@ -114,28 +118,28 @@ namespace ZoneScouter {
         }
 
         Vector2i sector = ZoneSystem.m_instance.GetZone(position);
+        long zdoCount = GetSectorZdoCount(sector);
 
-        if (sector == lastSector) {
+        if (sector == lastSector && zdoCount == lastZdoCount) {
           continue;
         }
 
         lastSector = sector;
-        long sectorZdoCount = GetSectorZdoCount(sector);
+        lastZdoCount = zdoCount;
 
         _sectorInfoPanel.SectorXY.Value.SetText($"({sector.x}, {sector.y})");
-        _sectorInfoPanel.SectorZdoCount.Value.SetText($"{sectorZdoCount}");
+        _sectorInfoPanel.SectorZdoCount.Value.SetText($"{zdoCount}");
 
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenter, sector);
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenterLeft, sector.Left());
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenterRight, sector.Right());
+        if (!ShowSectorZdoCountGrid.Value) {
+          continue;
+        }
 
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperCenter, sector.Up());
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperLeft, sector.UpLeft());
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperRight, sector.UpRight());
-
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerCenter, sector.Down());
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerLeft, sector.DownLeft());
-        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerRight, sector.DownRight());
+        for (int i = 0; i < gridSize; i++) {
+          for (int j = 0; j < gridSize; j++) {
+            Vector2i gridSector = new(sector.x + i - gridOffset, sector.y + j - gridOffset);
+            SetSectorZdoCountCellText(_sectorZdoCountGrid.Cells[i, j], gridSector);
+          }
+        }
       }
     }
 
@@ -144,23 +148,26 @@ namespace ZoneScouter {
       cell.Sector.SetText($"({sector.x}, {sector.y})");
     }
 
-    static string GetZdoCountText(Vector2i sector) {
-      return $"{GetSectorZdoCount(sector)}\n<size={SectorInfoPanelFontSize.Value - 2}>({sector.x}, {sector.y})</size>";
-    }
-
     public static void ToggleSectorBoundaries() {
+      _updateBoundaryCube = false;
+      _lastBoundarySector = EmptySector;
+
+      if (_updateBoundaryCubeCoroutine != null) {
+        Hud.m_instance.Ref()?.StopCoroutine(_updateBoundaryCubeCoroutine);
+        _updateBoundaryCubeCoroutine = null;
+      }
+
+      if (_boundaryCube) {
+        Destroy(_boundaryCube);
+        _boundaryCube = null;
+      }
+
       if (IsModEnabled.Value && ShowSectorBoundaries.Value && Hud.m_instance) {
         if (!_updateBoundaryCube) {
+          _boundaryCube = CreateBoundaryCube();
           _updateBoundaryCube = true;
-          Hud.m_instance.StartCoroutine(UpdateBoundaryCubeCoroutine());
-        }
-      } else {
-        _updateBoundaryCube = false;
-        _lastBoundarySector = EmptySector;
 
-        if (_boundaryCube) {
-          Destroy(_boundaryCube);
-          _boundaryCube = null;
+          _updateBoundaryCubeCoroutine = Hud.m_instance.StartCoroutine(UpdateBoundaryCubeCoroutine());
         }
       }
     }
@@ -173,6 +180,7 @@ namespace ZoneScouter {
 
     static bool _updateBoundaryCube = false;
     static Vector2i _lastBoundarySector = EmptySector;
+    static Coroutine _updateBoundaryCubeCoroutine;
 
     static IEnumerator UpdateBoundaryCubeCoroutine() {
       WaitForSeconds waitInterval = new(seconds: 1f);
@@ -180,13 +188,9 @@ namespace ZoneScouter {
       while (_updateBoundaryCube) {
         yield return waitInterval;
 
-        if (!ZoneSystem.m_instance || !Player.m_localPlayer) {
+        if (!ZoneSystem.m_instance || !Player.m_localPlayer || !_boundaryCube) {
           _lastBoundarySector = EmptySector;
           continue;
-        }
-
-        if (!_boundaryCube) {
-          _boundaryCube = CreateBoundaryCube();
         }
 
         Vector2i sector = ZoneSystem.m_instance.GetZone(Player.m_localPlayer.transform.position);

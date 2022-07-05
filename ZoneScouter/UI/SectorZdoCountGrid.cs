@@ -8,41 +8,25 @@ namespace ZoneScouter {
   public class SectorZdoCountGrid {
     public GameObject Grid { get; private set; }
 
-    public GameObject ZdoCountUpperRow { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperRight { get; private set; }
+    public GameObject[] Rows { get; private set; }
+    public SectorZdoCountCell[,] Cells { get; private set; }
 
-    public GameObject ZdoCountCenterRow { get; private set; }
-    public SectorZdoCountCell ZdoCountCenterLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountCenterRight { get; private set; }
-
-    public GameObject ZdoCountLowerRow { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerRight { get; private set; }
+    // TODO: not this.
+    static int GridSize => SectorZdoCountGridSize.Value == PluginConfig.GridSize.ThreeByThree ? 3 : 5;
 
     public SectorZdoCountGrid(Transform parentTransform) {
       Grid = CreateChildGrid(parentTransform);
 
-      ZdoCountUpperRow = CreateSectorZdoCountGridRow(Grid.transform);
-      ZdoCountUpperLeft = new(ZdoCountUpperRow.transform);
-      ZdoCountUpperCenter = new(ZdoCountUpperRow.transform);
-      ZdoCountUpperRight = new(ZdoCountUpperRow.transform);
+      Rows = new GameObject[GridSize];
+      Cells = new SectorZdoCountCell[GridSize, GridSize];
 
-      ZdoCountCenterRow = CreateSectorZdoCountGridRow(Grid.transform);
-      ZdoCountCenterLeft = new(ZdoCountCenterRow.transform);
-      ZdoCountCenter = new(ZdoCountCenterRow.transform);
-      ZdoCountCenter.ZdoCount.SetColor(PositionValueZTextColor.Value);
-      ZdoCountCenter.SectorBackground.SetColor(PositionValueZTextColor.Value.SetAlpha(0.2f));
-      ZdoCountCenter.Sector.SetColor(Color.white);
-      ZdoCountCenterRight = new(ZdoCountCenterRow.transform);
+      for (int i = 0; i < GridSize; i++) {
+        GameObject row = CreateSectorZdoCountGridRow(Grid.transform);
 
-      ZdoCountLowerRow = CreateSectorZdoCountGridRow(Grid.transform);
-      ZdoCountLowerLeft = new(ZdoCountLowerRow.transform);
-      ZdoCountLowerCenter = new(ZdoCountLowerRow.transform);
-      ZdoCountLowerRight = new(ZdoCountLowerRow.transform);
+        for (int j = 0; j < GridSize; j++) {
+          Cells[i, j] = new(row.transform);
+        }
+      }
     }
 
     GameObject CreateChildGrid(Transform parentTransform) {
