@@ -54,6 +54,7 @@ namespace ZoneScouter {
     }
 
     static SectorInfoPanel _sectorInfoPanel;
+    static SectorZdoCountGrid _sectorZdoCountGrid;
     static Coroutine _updateSectorInfoPanelCoroutine;
 
     public static void ToggleSectorInfoPanel() {
@@ -69,6 +70,7 @@ namespace ZoneScouter {
 
       if (IsModEnabled.Value && ShowSectorInfoPanel.Value && Hud.m_instance) {
         _sectorInfoPanel = new(Hud.m_instance.transform);
+        _sectorZdoCountGrid = _sectorInfoPanel.SectorZdoCountGrid;
 
         _sectorInfoPanel.Panel.RectTransform()
             .SetAnchorMin(new(0.5f, 1f))
@@ -85,8 +87,8 @@ namespace ZoneScouter {
     }
 
     static void ToggleSectorZdoCountGrid(bool toggle) {
-      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && _sectorInfoPanel?.SectorZdoCountGrid) {
-        _sectorInfoPanel.SectorZdoCountGrid.SetActive(toggle);
+      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && _sectorZdoCountGrid?.Grid) {
+        _sectorZdoCountGrid.Grid.SetActive(toggle);
       }
     }
 
@@ -123,17 +125,17 @@ namespace ZoneScouter {
         _sectorInfoPanel.SectorXY.Value.SetText($"({sector.x}, {sector.y})");
         _sectorInfoPanel.SectorZdoCount.Value.SetText($"{sectorZdoCount}");
 
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenter, sector);
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenterLeft, sector.Left());
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountCenterRight, sector.Right());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenter, sector);
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenterLeft, sector.Left());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountCenterRight, sector.Right());
 
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperCenter, sector.Up());
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperLeft, sector.UpLeft());
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountUpperRight, sector.UpRight());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperCenter, sector.Up());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperLeft, sector.UpLeft());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountUpperRight, sector.UpRight());
 
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerCenter, sector.Down());
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerLeft, sector.DownLeft());
-        SetSectorZdoCountCellText(_sectorInfoPanel.ZdoCountLowerRight, sector.DownRight());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerCenter, sector.Down());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerLeft, sector.DownLeft());
+        SetSectorZdoCountCellText(_sectorZdoCountGrid.ZdoCountLowerRight, sector.DownRight());
       }
     }
 

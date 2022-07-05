@@ -101,6 +101,7 @@
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="UI\SectorInfoPanel.cs" />
+    <Compile Include="UI\SectorZdoCountGrid.cs" />
     <Compile Include="UI\UIBuilder.cs" />
     <Compile Include="UI\UIExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />

@@ -21,22 +21,7 @@ namespace ZoneScouter {
     public ValueWithLabel SectorXY { get; private set; }
     public ValueWithLabel SectorZdoCount { get; private set; }
 
-    public GameObject SectorZdoCountGrid { get; private set; }
-
-    public GameObject ZdoCountUpperRow { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountUpperRight { get; private set; }
-
-    public GameObject ZdoCountCenterRow { get; private set; }
-    public SectorZdoCountCell ZdoCountCenterLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountCenterRight { get; private set; }
-
-    public GameObject ZdoCountLowerRow { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerLeft { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerCenter { get; private set; }
-    public SectorZdoCountCell ZdoCountLowerRight { get; private set; }
+    public SectorZdoCountGrid SectorZdoCountGrid { get; private set; }
 
     static int FontSize { get => SectorInfoPanelFontSize.Value; }
 
@@ -82,25 +67,7 @@ namespace ZoneScouter {
       SectorZdoCount.Label.SetText("ZDOs");
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
 
-      SectorZdoCountGrid = CreateSectorZdoCountGrid(Panel.transform);
-
-      ZdoCountUpperRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
-      ZdoCountUpperLeft = new(ZdoCountUpperRow.transform);
-      ZdoCountUpperCenter = new(ZdoCountUpperRow.transform);
-      ZdoCountUpperRight = new(ZdoCountUpperRow.transform);
-
-      ZdoCountCenterRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
-      ZdoCountCenterLeft = new(ZdoCountCenterRow.transform);
-      ZdoCountCenter = new(ZdoCountCenterRow.transform);
-      ZdoCountCenter.ZdoCount.SetColor(PositionValueZTextColor.Value);
-      ZdoCountCenter.SectorBackground.SetColor(PositionValueZTextColor.Value.SetAlpha(0.2f));
-      ZdoCountCenter.Sector.SetColor(Color.white);
-      ZdoCountCenterRight = new(ZdoCountCenterRow.transform);
-
-      ZdoCountLowerRow = CreateSectorZdoCountGridRow(SectorZdoCountGrid.transform);
-      ZdoCountLowerLeft = new(ZdoCountLowerRow.transform);
-      ZdoCountLowerCenter = new(ZdoCountLowerRow.transform);
-      ZdoCountLowerRight = new(ZdoCountLowerRow.transform);
+      SectorZdoCountGrid = new(Panel.transform);
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -148,38 +115,5 @@ namespace ZoneScouter {
         return row;
       }
     }
-
-    GameObject CreateSectorZdoCountGrid(Transform parentTransform) {
-      GameObject grid = new("SectorZdoCountGrid", typeof(RectTransform));
-      grid.SetParent(parentTransform);
-
-      grid.AddComponent<VerticalLayoutGroup>()
-          .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: false, height: false)
-          .SetChildAlignment(TextAnchor.MiddleCenter)
-          .SetSpacing(6f);
-
-      CreateLabel(grid.transform).Text()
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetFontSize(FontSize)
-          .SetText("ZDOs per Sector");
-
-      return grid;
-    }
-
-    GameObject CreateSectorZdoCountGridRow(Transform parentTransform) {
-      GameObject row = new("SectorZdoCountGrid.Row", typeof(RectTransform));
-      row.SetParent(parentTransform);
-
-      row.AddComponent<HorizontalLayoutGroup>()
-          .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: false, height: false)
-          .SetChildAlignment(TextAnchor.MiddleCenter)
-          .SetSpacing(6f);
-
-      return row;
-    }
-
-    
   }
 }
