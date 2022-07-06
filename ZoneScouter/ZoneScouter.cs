@@ -29,7 +29,10 @@ namespace ZoneScouter {
       SectorInfoPanelPosition.OnSettingChanged(
           position => _sectorInfoPanel.Panel.Ref()?.RectTransform().SetPosition(position));
 
-      SectorInfoPanelFontSize.OnSettingChanged(ToggleSectorInfoPanel);
+      SectorInfoPanelFontSize.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
+      PositionValueXTextColor.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
+      PositionValueYTextColor.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
+      PositionValueZTextColor.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
 
       ShowSectorZdoCountGrid.OnSettingChanged(ToggleSectorZdoCountGrid);
       SectorZdoCountGridSize.OnSettingChanged(ToggleSectorZdoCountGrid);

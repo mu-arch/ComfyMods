@@ -70,7 +70,11 @@ namespace ZoneScouter {
                   new ConfigurationManagerAttributes { Order = 0 }));
 
       SectorInfoPanelFontSize =
-          config.Bind("SectorInfoPanel.Font", "sectorInfoPanelFontSize", 16, "SectorInfoPanel font size.");
+          config.Bind(
+              "SectorInfoPanel.Font",
+              "sectorInfoPanelFontSize",
+              16,
+              new ConfigDescription("SectorInfoPanel font size.", new AcceptableValueRange<int>(2, 64)));
 
       PositionValueXTextColor =
           config.Bind(
@@ -130,7 +134,7 @@ namespace ZoneScouter {
               16,
               new ConfigDescription(
                   "SectorZdoCountCell.ZdoCount.Text font size.",
-                  acceptableValues: null,
+                  new AcceptableValueRange<int>(2, 64),
                   new ConfigurationManagerAttributes { Order = 2 }));
 
       CellZdoCountTextColor =
@@ -160,7 +164,7 @@ namespace ZoneScouter {
               16,
               new ConfigDescription(
                   "SectorZdoCountCell.Sector.Text font size.",
-                  acceptableValues: null,
+                  new AcceptableValueRange<int>(2, 64),
                   new ConfigurationManagerAttributes { Order = 1 }));
 
       CellSectorTextColor =

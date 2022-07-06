@@ -28,40 +28,59 @@ namespace ZoneScouter {
       PositionContent = new(Panel.transform);
 
       PositionX = new(PositionContent.Row.transform);
-      PositionX.FitValueToText("-00000");
-      PositionX.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
       PositionX.Label.SetText("X");
-      PositionX.Value.SetColor(PositionValueXTextColor.Value);
 
       PositionY = new(PositionContent.Row.transform);
-      PositionY.FitValueToText("-00000");
-      PositionY.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
       PositionY.Label.SetText("Y");
-      PositionY.Value.SetColor(PositionValueYTextColor.Value);
 
       PositionZ = new(PositionContent.Row.transform);
-      PositionZ.FitValueToText("-00000");
-      PositionZ.Row.Image().SetColor(PositionValueZTextColor.Value.SetAlpha(0.1f));
       PositionZ.Label.SetText("Z");
-      PositionZ.Value.SetColor(PositionValueZTextColor.Value);
 
       SectorContent = new(Panel.transform);
 
       SectorXY = new(SectorContent.Row.transform);
-      SectorXY.Value.GetComponent<LayoutElement>().SetFlexible(width: 1f);
-      SectorXY.Value.SetColor(PositionValueXTextColor.Value);
-      SectorXY.FitValueToText("-123,-123");
-      SectorXY.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
       SectorXY.Label.SetText("Sector");
 
       SectorZdoCount = new(SectorContent.Row.transform);
-      SectorZdoCount.Value.GetComponent<LayoutElement>().SetFlexible(width: 1f);
-      SectorZdoCount.FitValueToText("123456");
-      SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
       SectorZdoCount.Label.SetText("ZDOs");
-      SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
+
+      SetPanelStyle();
 
       PanelDragger = Panel.AddComponent<PanelDragger>();
+    }
+
+    public void SetPanelStyle() {
+      int fontSize = SectorInfoPanelFontSize.Value;
+
+      PositionX.Label.SetFontSize(fontSize);
+      PositionX.Value.SetFontSize(fontSize);
+      PositionX.Value.SetColor(PositionValueXTextColor.Value);
+      PositionX.FitValueToText("-00000");
+      PositionX.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
+
+      PositionY.Label.SetFontSize(fontSize);
+      PositionY.Value.SetFontSize(fontSize);
+      PositionY.Value.SetColor(PositionValueYTextColor.Value);
+      PositionY.FitValueToText("-00000");
+      PositionY.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
+
+      PositionZ.Label.SetFontSize(fontSize);
+      PositionZ.Value.SetFontSize(fontSize);
+      PositionZ.Value.SetColor(PositionValueZTextColor.Value);
+      PositionZ.FitValueToText("-00000");
+      PositionZ.Row.Image().SetColor(PositionValueZTextColor.Value.SetAlpha(0.1f));
+
+      SectorXY.Label.SetFontSize(fontSize);
+      SectorXY.Value.SetFontSize(fontSize);
+      SectorXY.Value.SetColor(PositionValueXTextColor.Value);
+      SectorXY.FitValueToText("-123,-123");
+      SectorXY.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
+
+      SectorZdoCount.Label.SetFontSize(fontSize);
+      SectorZdoCount.Value.SetFontSize(fontSize);
+      SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
+      SectorZdoCount.FitValueToText("123456");
+      SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
     }
 
     GameObject CreatePanel(Transform parentTransform) {
