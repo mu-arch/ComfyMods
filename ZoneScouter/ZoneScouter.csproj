@@ -97,7 +97,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Chatter\UI\PanelDragger.cs">
+      <Link>UI\PanelDragger.cs</Link>
+    </Compile>
     <Compile Include="Patches\HudPatch.cs" />
+    <Compile Include="Patches\MenuPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="SectorBoundaries.cs" />

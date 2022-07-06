@@ -20,7 +20,7 @@ namespace ZoneScouter {
     public ValueWithLabel SectorXY { get; private set; }
     public ValueWithLabel SectorZdoCount { get; private set; }
 
-    static int FontSize { get => SectorInfoPanelFontSize.Value; }
+    public PanelDragger PanelDragger { get; private set; }
 
     public SectorInfoPanel(Transform parentTransform) {
       Panel = CreatePanel(parentTransform);
@@ -60,6 +60,8 @@ namespace ZoneScouter {
       SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
       SectorZdoCount.Label.SetText("ZDOs");
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
+
+      PanelDragger = Panel.AddComponent<PanelDragger>();
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -82,7 +84,7 @@ namespace ZoneScouter {
           .SetColor(SectorInfoPanelBackgroundColor.Value);
 
       panel.AddComponent<CanvasGroup>()
-          .SetBlocksRaycasts(false);
+          .SetBlocksRaycasts(true);
 
       return panel;
     }

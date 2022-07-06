@@ -91,6 +91,8 @@ namespace ZoneScouter {
             .SetSizeDelta(new(200f, 200f))
             .SetAsFirstSibling();
 
+        _sectorInfoPanel.PanelDragger.OnEndDragAction = position => SectorInfoPanelPosition.Value = position;
+
         _sectorInfoPanel.Panel.SetActive(true);
         _updateSectorInfoPanelCoroutine = Hud.m_instance.StartCoroutine(UpdateSectorInfoPanelCoroutine());
       }
@@ -149,7 +151,7 @@ namespace ZoneScouter {
         _sectorZdoCountGrid = null;
       }
 
-      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && ShowSectorZdoCountGrid.Value && _sectorInfoPanel.Panel) {
+      if (IsModEnabled.Value && ShowSectorInfoPanel.Value && ShowSectorZdoCountGrid.Value && _sectorInfoPanel?.Panel) {
         _sectorZdoCountGrid = new(_sectorInfoPanel.Panel.transform, SectorZdoCountGridSize.Value);
         _sectorZdoCountGrid.Grid.SetActive(true);
 
