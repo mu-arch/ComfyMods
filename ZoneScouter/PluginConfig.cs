@@ -32,8 +32,8 @@ namespace ZoneScouter {
     public static ConfigEntry<Color> SectorBoundaryColor { get; private set; }
 
     public enum GridSize {
-      ThreeByThree,
-      FiveByFive
+      ThreeByThree = 3,
+      FiveByFive = 5
     }
 
     public static void BindConfig(ConfigFile config) {

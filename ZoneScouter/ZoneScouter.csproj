@@ -100,6 +100,7 @@
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
+    <Compile Include="SectorBoundaries.cs" />
     <Compile Include="UI\SectorInfoPanel.cs" />
     <Compile Include="UI\SectorZdoCountGrid.cs" />
     <Compile Include="UI\UIBuilder.cs" />

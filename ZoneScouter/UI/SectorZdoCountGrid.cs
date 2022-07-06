@@ -2,31 +2,37 @@
 using UnityEngine.UI;
 
 using static ZoneScouter.PluginConfig;
-using static ZoneScouter.UIBuilder;
 
 namespace ZoneScouter {
   public class SectorZdoCountGrid {
     public GameObject Grid { get; private set; }
 
+    public int Size { get; private set; }
     public GameObject[] Rows { get; private set; }
     public SectorZdoCountCell[,] Cells { get; private set; }
 
-    // TODO: not this.
-    static int GridSize => SectorZdoCountGridSize.Value == PluginConfig.GridSize.ThreeByThree ? 3 : 5;
-
-    public SectorZdoCountGrid(Transform parentTransform) {
+    public SectorZdoCountGrid(Transform parentTransform, GridSize gridSize) {
+      Size = GetSize(gridSize);
       Grid = CreateChildGrid(parentTransform);
 
-      Rows = new GameObject[GridSize];
-      Cells = new SectorZdoCountCell[GridSize, GridSize];
+      Rows = new GameObject[Size];
+      Cells = new SectorZdoCountCell[Size, Size];
 
-      for (int i = 0; i < GridSize; i++) {
+      for (int i = 0; i < Size; i++) {
         GameObject row = CreateSectorZdoCountGridRow(Grid.transform);
 
-        for (int j = 0; j < GridSize; j++) {
+        for (int j = 0; j < Size; j++) {
           Cells[i, j] = new(row.transform);
         }
       }
+    }
+
+    static int GetSize(GridSize gridSize) {
+      return gridSize switch {
+        GridSize.ThreeByThree => 3,
+        GridSize.FiveByFive => 5,
+        _ => 1
+      };
     }
 
     GameObject CreateChildGrid(Transform parentTransform) {
@@ -38,11 +44,6 @@ namespace ZoneScouter {
           .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleCenter)
           .SetSpacing(6f);
-
-      CreateLabel(grid.transform).Text()
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetFontSize(SectorInfoPanelFontSize.Value)
-          .SetText("ZDOs per Sector");
 
       return grid;
     }

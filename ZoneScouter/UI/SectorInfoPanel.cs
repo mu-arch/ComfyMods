@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
@@ -24,10 +23,6 @@ namespace ZoneScouter {
     public SectorZdoCountGrid SectorZdoCountGrid { get; private set; }
 
     static int FontSize { get => SectorInfoPanelFontSize.Value; }
-
-    static IEnumerable<T> CreateEnumerable<T>(params T[] items) {
-      return items ?? Enumerable.Empty<T>();
-    }
 
     public SectorInfoPanel(Transform parentTransform) {
       Panel = CreatePanel(parentTransform);
@@ -60,7 +55,7 @@ namespace ZoneScouter {
       SectorXY.FitValueToText("-123,-123");
       SectorXY.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
       SectorXY.Label.SetText("Sector");
-      SectorXY.Label.GetComponent<RectTransform>().SetAsFirstSibling();
+      //SectorXY.Label.GetComponent<RectTransform>().SetAsFirstSibling();
 
       SectorZdoCount = new(SectorContent.Row.transform);
       SectorZdoCount.Value.GetComponent<LayoutElement>().SetFlexible(width: 1f);
@@ -69,7 +64,7 @@ namespace ZoneScouter {
       SectorZdoCount.Label.SetText("ZDOs");
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
 
-      SectorZdoCountGrid = new(Panel.transform);
+      SectorZdoCountGrid = new(Panel.transform, SectorZdoCountGridSize.Value);
     }
 
     GameObject CreatePanel(Transform parentTransform) {

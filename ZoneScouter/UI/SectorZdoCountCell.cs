@@ -26,6 +26,10 @@ namespace ZoneScouter {
               .SetFontSize(CellZdoCountTextFontSize.Value)
               .SetColor(CellZdoCountTextColor.Value);
 
+      ZdoCount.GetComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
+          .SetPreferred(width: GetTextPreferredWidth(ZdoCount, "12354"));
+
       SectorBackground =
           CreateChildBackground(Cell.transform).Image()
               .SetColor(CellSectorBackgroundImageColor.Value);
@@ -34,6 +38,10 @@ namespace ZoneScouter {
           CreateChildLabel(SectorBackground.transform).Text()
               .SetFontSize(CellSectorTextFontSize.Value)
               .SetColor(CellSectorTextColor.Value);
+
+      Sector.GetComponent<LayoutElement>()
+          .SetFlexible(width: 1f)
+          .SetPreferred(width: GetTextPreferredWidth(Sector, "-123,-123"));
     }
 
     GameObject CreateChildCell(Transform parentTransform) {

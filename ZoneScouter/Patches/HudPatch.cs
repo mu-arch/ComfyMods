@@ -11,7 +11,7 @@ namespace ZoneScouter {
     static void AwakePostfix() {
       if (IsModEnabled.Value) {
         ToggleSectorInfoPanel();
-        ToggleSectorBoundaries();
+        SectorBoundaries.ToggleSectorBoundaries();
       }
     }
   }

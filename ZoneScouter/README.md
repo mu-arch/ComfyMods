@@ -13,6 +13,10 @@
   * Go to Settings > Import local mod > Select `ZoneScouter_v1.0.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
+## Instructions
+
+
+
 ## Changelog
 
 ### 1.0.0
