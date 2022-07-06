@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 using static ZoneScouter.PluginConfig;
@@ -7,9 +9,11 @@ namespace ZoneScouter {
   public class SectorZdoCountGrid {
     public GameObject Grid { get; private set; }
 
-    public int Size { get; private set; }
+    public int Size { get; private set; } = 0;
     public GameObject[] Rows { get; private set; }
     public SectorZdoCountCell[,] Cells { get; private set; }
+
+    readonly List<SectorZdoCountCell> _cells = new();
 
     public SectorZdoCountGrid(Transform parentTransform, GridSize gridSize) {
       Size = GetSize(gridSize);
@@ -22,7 +26,10 @@ namespace ZoneScouter {
         GameObject row = CreateSectorZdoCountGridRow(Grid.transform);
 
         for (int j = 0; j < Size; j++) {
-          Cells[i, j] = new(row.transform);
+          SectorZdoCountCell cell = new(row.transform);
+
+          Cells[i, j] = cell;
+          _cells.Add(cell);
         }
       }
     }
@@ -33,6 +40,12 @@ namespace ZoneScouter {
         GridSize.FiveByFive => 5,
         _ => 1
       };
+    }
+
+    public void SetCellStyle() {
+      foreach (SectorZdoCountCell cell in _cells) {
+        cell.SetCellStyle();
+      }
     }
 
     GameObject CreateChildGrid(Transform parentTransform) {

@@ -17,31 +17,37 @@ namespace ZoneScouter {
     public SectorZdoCountCell(Transform parentTransform) {
       Cell = CreateChildCell(parentTransform);
 
-      ZdoCountBackground =
-          CreateChildBackground(Cell.transform).Image()
-              .SetColor(CellZdoCountBackgroundImageColor.Value);
+      ZdoCountBackground = CreateChildBackground(Cell.transform).Image();
+      ZdoCount = CreateChildLabel(ZdoCountBackground.transform).Text();
 
-      ZdoCount =
-          CreateChildLabel(ZdoCountBackground.transform).Text()
-              .SetFontSize(CellZdoCountTextFontSize.Value)
-              .SetColor(CellZdoCountTextColor.Value);
+      SectorBackground = CreateChildBackground(Cell.transform).Image();
+      Sector = CreateChildLabel(SectorBackground.transform).Text();
 
-      ZdoCount.GetComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: GetTextPreferredWidth(ZdoCount, "12354"));
+      SetCellStyle(setPreferredWidth: true);
+    }
 
-      SectorBackground =
-          CreateChildBackground(Cell.transform).Image()
-              .SetColor(CellSectorBackgroundImageColor.Value);
+    public void SetCellStyle(bool setPreferredWidth = false) {
+      ZdoCountBackground.SetColor(CellZdoCountBackgroundImageColor.Value);
+      ZdoCount.SetColor(CellZdoCountTextColor.Value);
 
-      Sector =
-          CreateChildLabel(SectorBackground.transform).Text()
-              .SetFontSize(CellSectorTextFontSize.Value)
-              .SetColor(CellSectorTextColor.Value);
+      if (ZdoCount.fontSize != CellZdoCountTextFontSize.Value || setPreferredWidth) {
+        ZdoCount.SetFontSize(CellZdoCountTextFontSize.Value);
 
-      Sector.GetComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: GetTextPreferredWidth(Sector, "-123,-123"));
+        ZdoCount.GetComponent<LayoutElement>()
+            .SetFlexible(width: 1f)
+            .SetPreferred(width: GetTextPreferredWidth(ZdoCount, "12354"));
+      }
+
+      SectorBackground.SetColor(CellSectorBackgroundImageColor.Value);
+      Sector.SetColor(CellSectorTextColor.Value);
+
+      if (Sector.fontSize != CellSectorTextFontSize.Value || setPreferredWidth) {
+        Sector.SetFontSize(CellSectorTextFontSize.Value);
+
+        Sector.GetComponent<LayoutElement>()
+            .SetFlexible(width: 1f)
+            .SetPreferred(width: GetTextPreferredWidth(Sector, "-123,-123"));
+      }
     }
 
     GameObject CreateChildCell(Transform parentTransform) {

@@ -8,8 +8,13 @@ namespace ZoneScouter {
 
     public static ConfigEntry<bool> ShowSectorInfoPanel { get; private set; }
     public static ConfigEntry<Vector2> SectorInfoPanelPosition { get; private set; }
-    public static ConfigEntry<float> SectorInfoPanelWidth { get; private set; }
     public static ConfigEntry<Color> SectorInfoPanelBackgroundColor { get; private set; }
+
+    public static ConfigEntry<int> SectorInfoPanelFontSize { get; private set; }
+
+    public static ConfigEntry<Color> PositionValueXTextColor { get; private set; }
+    public static ConfigEntry<Color> PositionValueYTextColor { get; private set; }
+    public static ConfigEntry<Color> PositionValueZTextColor { get; private set; }
 
     public static ConfigEntry<bool> ShowSectorZdoCountGrid { get; private set; }
     public static ConfigEntry<GridSize> SectorZdoCountGridSize { get; private set; }
@@ -21,12 +26,6 @@ namespace ZoneScouter {
     public static ConfigEntry<Color> CellSectorBackgroundImageColor { get; private set; }
     public static ConfigEntry<int> CellSectorTextFontSize { get; private set; }
     public static ConfigEntry<Color> CellSectorTextColor { get; private set; }
-
-    public static ConfigEntry<int> SectorInfoPanelFontSize { get; private set; }
-
-    public static ConfigEntry<Color> PositionValueXTextColor { get; private set; }
-    public static ConfigEntry<Color> PositionValueYTextColor { get; private set; }
-    public static ConfigEntry<Color> PositionValueZTextColor { get; private set; }
 
     public static ConfigEntry<bool> ShowSectorBoundaries { get; private set; }
     public static ConfigEntry<Color> SectorBoundaryColor { get; private set; }
@@ -70,11 +69,35 @@ namespace ZoneScouter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 0 }));
 
+      SectorInfoPanelFontSize =
+          config.Bind("SectorInfoPanel.Font", "sectorInfoPanelFontSize", 16, "SectorInfoPanel font size.");
+
+      PositionValueXTextColor =
+          config.Bind(
+              "SectorInfoPanel.PositionRow",
+              "positionValueXTextColor",
+              new Color(1f, 0.878f, 0.51f),
+              "SectorInfoPanel.PositionRow.X value text color.");
+
+      PositionValueYTextColor =
+          config.Bind(
+              "SectorInfoPanel.PositionRow",
+              "positionValueYTextColor",
+              new Color(0.565f, 0.792f, 0.976f),
+              "SectorInfoPanel.PositionRow.Y value text color.");
+
+      PositionValueZTextColor =
+          config.Bind(
+              "SectorInfoPanel.PositionRow",
+              "positionValueZTextColor",
+              new Color(0.647f, 0.839f, 0.655f),
+              "SectorInfoPanel.PositionRow.Z value text color.");
+
       ShowSectorZdoCountGrid =
           config.Bind(
               "SectorZdoCountGrid",
               "showSectorZdoCountGrid",
-              true,
+              false,
               new ConfigDescription(
                   "Show the SectorZdoCount grid in the SectorInfo panel.",
                   acceptableValues: null,
@@ -150,30 +173,6 @@ namespace ZoneScouter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 1 }));
 
-      SectorInfoPanelFontSize =
-          config.Bind("SectorInfoPanel.Font", "sectorInfoPanelFontSize", 16, "SectorInfoPanel font size.");
-
-      PositionValueXTextColor =
-          config.Bind(
-              "SectorInfoPanel.PositionRow",
-              "positionValueXTextColor",
-              new Color(1f, 0.878f, 0.51f),
-              "SectorInfoPanel.PositionRow.X value text color.");
-
-      PositionValueYTextColor =
-          config.Bind(
-              "SectorInfoPanel.PositionRow",
-              "positionValueYTextColor",
-              new Color(0.565f, 0.792f, 0.976f),
-              "SectorInfoPanel.PositionRow.Y value text color.");
-
-      PositionValueZTextColor =
-          config.Bind(
-              "SectorInfoPanel.PositionRow",
-              "positionValueZTextColor",
-              new Color(0.647f, 0.839f, 0.655f),
-              "SectorInfoPanel.PositionRow.Z value text color.");
-
       ShowSectorBoundaries =
           config.Bind(
               "SectorBoundary",
@@ -185,7 +184,7 @@ namespace ZoneScouter {
           config.Bind(
               "SectorBoundary",
               "sectorBoundaryColor",
-              (Color) new Color32(255, 255, 255, 48),
+              new Color(1f, 0f, 1f, 1f),
               "Color to use for the sector boundary walls.");
     }
   }
