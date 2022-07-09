@@ -57,6 +57,10 @@
 
 ## Changelog
 
+### 1.0.1
+
+  * Fixed grid display of sectors corresponding to NESW movement. Blah math.
+
 ### 1.0.0
 
   * Initial release.

@@ -15,7 +15,7 @@ namespace ZoneScouter {
   public class ZoneScouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.zonescouter";
     public const string PluginName = "ZoneScouter";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.0.1";
 
     Harmony _harmony;
 
@@ -182,8 +182,8 @@ namespace ZoneScouter {
 
         for (int i = 0; i < size; i++) {
           for (int j = 0; j < size; j++) {
-            Vector2i cellSector = new(sector.x + i - offset, sector.y + j - offset);
-            SectorZdoCountCell cell = _sectorZdoCountGrid.Cells[i, j];
+            Vector2i cellSector = new(sector.x + i - offset, sector.y - j + offset);
+            SectorZdoCountCell cell = _sectorZdoCountGrid.Cells[j, i];
 
             cell.ZdoCount.SetText($"{GetSectorZdoCount(cellSector)}");
             cell.Sector.SetText($"{cellSector.x},{cellSector.y}");
