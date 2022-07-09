@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ZoneScouter_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ZoneScouter_v1.0.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
