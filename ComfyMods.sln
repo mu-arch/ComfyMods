@@ -89,6 +89,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseToSkill", "LicenseTo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZoneScouter", "ZoneScouter\ZoneScouter.csproj", "{185751B7-5CAE-480A-8E9C-D8EC87CE481F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pinnacle", "Pinnacle\Pinnacle.csproj", "{8D534F00-8286-4B0E-B2BC-A7669730BBCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,6 +233,10 @@ Global
 		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

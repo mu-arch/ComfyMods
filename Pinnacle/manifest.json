@@ -1,0 +1,8 @@
+{
+    "name": "Pinnacle",
+    "version_number": "1.0.0",
+    "author": "redseiko.valheim.pinnacle",
+    "description": "Pinnacle provides peak pin performance.",
+    "website_url": "https://github.com/redseiko/ComfyMods/tree/main/Pinnacle",
+    "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
+}
