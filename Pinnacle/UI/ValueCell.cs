@@ -12,7 +12,7 @@ namespace Pinnacle {
       Background = Cell.Image();
 
       InputField = CreateChildInputField(Cell.transform).GetComponent<InputField>();
-      InputField.targetGraphic = Background;
+      InputField.SetTargetGraphic(Background);
     }
 
     GameObject CreateChildCell(Transform parentTransform) {
@@ -45,6 +45,8 @@ namespace Pinnacle {
           .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleLeft)
           .SetSpacing(8f);
+
+      row.AddComponent<LayoutElement>();
 
       GameObject label = UIBuilder.CreateLabel(row.transform);
       label.SetName("InputField.Text");

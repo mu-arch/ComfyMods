@@ -56,6 +56,11 @@ namespace Pinnacle {
           : Enumerable.Empty<GameObject>();
     }
 
+    public static T SetName<T>(this T component, string name) where T : Component {
+      component.gameObject.name = name;
+      return component;
+    }
+
     public static T GetOrAddComponent<T>(this Component component) where T : Component {
       return component.gameObject.TryGetComponent(out T t) ? t : component.gameObject.AddComponent<T>();
     }
@@ -91,6 +96,28 @@ namespace Pinnacle {
       return layoutGroup;
     }
 
+    public static GridLayoutGroup SetConstraint(
+        this GridLayoutGroup layoutGroup, GridLayoutGroup.Constraint constraint) {
+      layoutGroup.constraint = constraint;
+      return layoutGroup;
+    }
+
+    public static GridLayoutGroup SetConstraintCount(this GridLayoutGroup layoutGroup, int constraintCount) {
+      layoutGroup.constraintCount = constraintCount;
+      return layoutGroup;
+    }
+
+    public static GridLayoutGroup SetStartAxis(this GridLayoutGroup layoutGroup, GridLayoutGroup.Axis startAxis) {
+      layoutGroup.startAxis = startAxis;
+      return layoutGroup;
+    }
+
+    public static GridLayoutGroup SetStartCorner(
+        this GridLayoutGroup layoutGroup, GridLayoutGroup.Corner startCorner) {
+      layoutGroup.startCorner = startCorner;
+      return layoutGroup;
+    }
+
     public static GridLayoutGroup SetPadding(
         this GridLayoutGroup layoutGroup,
         int? left = null,
@@ -117,6 +144,11 @@ namespace Pinnacle {
         layoutGroup.padding.bottom = bottom.Value;
       }
 
+      return layoutGroup;
+    }
+
+    public static GridLayoutGroup SetSpacing(this GridLayoutGroup layoutGroup, Vector2 spacing) {
+      layoutGroup.spacing = spacing;
       return layoutGroup;
     }
   }

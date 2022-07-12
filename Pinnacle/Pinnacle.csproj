@@ -114,6 +114,7 @@
     <Compile Include="UI\UIBuilder.cs" />
     <Compile Include="UI\UIExtensions.cs" />
     <Compile Include="UI\UIResources.cs" />
+    <Compile Include="UI\VectorCell.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />

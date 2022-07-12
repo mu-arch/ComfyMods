@@ -11,10 +11,8 @@ namespace Pinnacle {
 
     public LabelValueRow PinType { get; private set; }
 
-    public GameObject PinPosition { get; private set; }
-    public ValueCell PositionX { get; private set; }
-    public ValueCell PositionY { get; private set; }
-    public ValueCell PositionZ { get; private set; }
+    public LabelRow PinPositionLabelRow { get; private set; }
+    public VectorCell PinPosition { get; private set; }
 
     public PinEditPanel(Transform parentTransform) {
       Panel = CreatePanel(parentTransform);
@@ -32,51 +30,17 @@ namespace Pinnacle {
       PinType = new(Panel.transform);
       PinType.Label.SetText("Type");
 
-      PinPosition = CreateChildRow(Panel.transform);
-      GameObject pinPositionLabel = CreateChildLabel(PinPosition.transform);
-      pinPositionLabel.Text().SetText("Position");
+      PinPositionLabelRow = new(Panel.transform);
+      PinPositionLabelRow.Label.SetText("Position");
 
-      GameObject positionValues = CreateChildRow(PinPosition.transform);
-      positionValues.GetComponent<HorizontalLayoutGroup>()
-          .SetPadding(left: 0, right: 0, top: 0, bottom: 0)
-          .SetSpacing(8f);
-
-      PositionX = new(positionValues.transform);
-      CreateChildLabel(PositionX.Cell.transform).SetName("X Label").Text().SetText("X");
-      PositionX.Cell.LayoutElement()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: -1f);
-      PositionX.InputField.GetOrAddComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: UIBuilder.GetPreferredWidth(pinPositionLabel.Text(), "-99999"));
-      PositionX.InputField.textComponent.SetAlignment(TextAnchor.MiddleRight);
-
-      PositionY = new(positionValues.transform);
-      CreateChildLabel(PositionY.Cell.transform).SetName("Y Label").Text().SetText("Y");
-      PositionY.Cell.LayoutElement()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: -1f);
-      PositionY.InputField.GetOrAddComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: UIBuilder.GetPreferredWidth(pinPositionLabel.Text(), "-99999"));
-      PositionY.InputField.textComponent.SetAlignment(TextAnchor.MiddleRight);
-
-      PositionZ = new(positionValues.transform);
-      CreateChildLabel(PositionZ.Cell.transform).SetName("Z Label").Text().SetText("Z");
-      PositionZ.Cell.LayoutElement()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: -1f);
-      PositionZ.InputField.GetOrAddComponent<LayoutElement>()
-          .SetFlexible(width: 1f)
-          .SetPreferred(width: UIBuilder.GetPreferredWidth(pinPositionLabel.Text(), "-99999"));
-      PositionZ.InputField.textComponent.SetAlignment(TextAnchor.MiddleRight);
+      PinPosition = new(PinPositionLabelRow.Row.transform);
 
       float labelWidth =
-          GetPreferredWidth(PinName.Label, PinIconSelectorLabelRow.Label, PinType.Label, pinPositionLabel.Text());
+          GetPreferredWidth(PinName.Label, PinIconSelectorLabelRow.Label, PinType.Label, PinPositionLabelRow.Label);
       float valueWidth = 200f;
 
       SetPreferredWidths(labelWidth, valueWidth, PinName, PinType);
-      pinPositionLabel.AddComponent<LayoutElement>().SetPreferred(width: labelWidth);
+      PinPositionLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
       PinIconSelectorLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
     }
 

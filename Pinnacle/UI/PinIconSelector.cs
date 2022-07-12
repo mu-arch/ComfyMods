@@ -7,25 +7,13 @@ using UnityEngine.UI;
 
 namespace Pinnacle {
   public class PinIconSelector {
-    static readonly Lazy<ColorBlock> ButtonColorBlock =
-        new(() =>
-          new() {
-            normalColor = new Color(1f, 1f, 1f, 0.8f),
-            highlightedColor = new Color(0.565f, 0.792f, 0.976f),
-            disabledColor = new Color(0f, 0f, 0f, 0.5f),
-            pressedColor = new Color(0.647f, 0.839f, 0.655f),
-            selectedColor = new Color(1f, 0.878f, 0.51f),
-            colorMultiplier = 1f,
-            fadeDuration = 0.25f,
-          });
-
-    public GameObject Row { get; private set; }
+    public GameObject Grid { get; private set; }
     public List<GameObject> Icons { get; } = new();
 
     Minimap.PinData _targetPin;
 
     public PinIconSelector(Transform parentTransform) {
-      Row = CreateChildRow(parentTransform);
+      Grid = CreateChildGrid(parentTransform);
 
       foreach (Minimap.PinType pinType in Enum.GetValues(typeof(Minimap.PinType))) {
         Sprite sprite = Minimap.m_instance.GetSprite(pinType);
@@ -34,7 +22,7 @@ namespace Pinnacle {
           continue;
         }
 
-        GameObject icon = CreateChildIcon(Row.transform);
+        GameObject icon = CreateChildIcon(Grid.transform);
         Icons.Add(icon);
 
         icon.Image()
@@ -76,22 +64,22 @@ namespace Pinnacle {
       }
     }
 
-    GameObject CreateChildRow(Transform parentTransform) {
-      GameObject row = new("PinIconSelector.Row", typeof(RectTransform));
-      row.SetParent(parentTransform);
+    GameObject CreateChildGrid(Transform parentTransform) {
+      GameObject grid = new("PinIconSelector.Grid", typeof(RectTransform));
+      grid.SetParent(parentTransform);
 
-      GridLayoutGroup layoutGroup = row.AddComponent<GridLayoutGroup>();
-      layoutGroup.cellSize = new(25f, 25f);
-      layoutGroup.spacing = new(8f, 8f);
-      layoutGroup.constraint = GridLayoutGroup.Constraint.FixedRowCount;
-      layoutGroup.constraintCount = 2;
-      layoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
-      layoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
+      grid.AddComponent<GridLayoutGroup>()
+          .SetCellSize(new(25f, 25f))
+          .SetSpacing(new(8f, 8f))
+          .SetConstraint(GridLayoutGroup.Constraint.FixedRowCount)
+          .SetConstraintCount(2)
+          .SetStartAxis(GridLayoutGroup.Axis.Horizontal)
+          .SetStartCorner(GridLayoutGroup.Corner.UpperLeft);
 
-      row.AddComponent<LayoutElement>()
+      grid.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f);
 
-      return row;
+      return grid;
     }
 
     GameObject CreateChildIcon(Transform parentTransform) {
@@ -107,5 +95,17 @@ namespace Pinnacle {
 
       return icon;
     }
+
+    static readonly Lazy<ColorBlock> ButtonColorBlock =
+        new(() =>
+          new() {
+            normalColor = new Color(1f, 1f, 1f, 0.8f),
+            highlightedColor = new Color(0.565f, 0.792f, 0.976f),
+            disabledColor = new Color(0f, 0f, 0f, 0.5f),
+            pressedColor = new Color(0.647f, 0.839f, 0.655f),
+            selectedColor = new Color(1f, 0.878f, 0.51f),
+            colorMultiplier = 1f,
+            fadeDuration = 0.25f,
+          });
   }
 }
