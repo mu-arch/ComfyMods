@@ -7,10 +7,10 @@ using UnityEngine.UI;
 
 namespace Pinnacle {
   public class PinIconSelector {
+    public event EventHandler<Minimap.PinType> OnPinIconClicked;
+
     public GameObject Grid { get; private set; }
     public List<GameObject> Icons { get; } = new();
-
-    Minimap.PinData _targetPin;
 
     public PinIconSelector(Transform parentTransform) {
       Grid = CreateChildGrid(parentTransform);
@@ -34,31 +34,16 @@ namespace Pinnacle {
             .SetTransition(Selectable.Transition.ColorTint)
             .SetColors(ButtonColorBlock.Value);
 
-        icon.Button().onClick.AddListener(() => OnIconClicked(pinType));
+        icon.Button().onClick.AddListener(() => OnPinIconClicked?.Invoke(this, pinType));
       }
     }
 
-    public void SetTargetPin(Minimap.PinData pin) {
-      _targetPin = pin;
-      UpdateIcons(_targetPin?.m_icon.name);
-    }
+    public void UpdateIcons(Minimap.PinType pinType) {
+      string spriteName = Minimap.m_instance.GetSprite(pinType).Ref()?.name;
 
-    void OnIconClicked(Minimap.PinType pinType) {
-      if (_targetPin != null) {
-        ZLog.Log($"Setting Pin.m_type from: {_targetPin.m_type}, to: {pinType}");
-
-        _targetPin.m_type = pinType;
-        _targetPin.m_icon = Minimap.m_instance.GetSprite(pinType);
-        _targetPin.m_iconElement.SetSprite(_targetPin.m_icon);
-
-        UpdateIcons(_targetPin.m_icon.name);
-      }
-    }
-
-    void UpdateIcons(string targetSpriteName) {
       foreach (Image icon in Icons.Select(i => i.Image())) {
         icon.SetColor(
-            icon.sprite.name == targetSpriteName
+            icon.sprite.name == spriteName
                 ? ButtonColorBlock.Value.selectedColor
                 : ButtonColorBlock.Value.normalColor);
       }

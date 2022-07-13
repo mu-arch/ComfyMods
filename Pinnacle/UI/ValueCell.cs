@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Pinnacle {
@@ -29,7 +31,7 @@ namespace Pinnacle {
       cell.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
           .SetSprite(UIBuilder.CreateRoundedCornerSprite(200, 200, 5))
-          .SetColor(new(0.565f, 0.792f, 0.976f, 0.1f));
+          .SetColor(new(0.5f, 0.5f, 0.5f, 0.5f));
 
       cell.AddComponent<LayoutElement>();
 
@@ -63,11 +65,24 @@ namespace Pinnacle {
       inputField
           .SetTextComponent(label.Text())
           .SetTransition(Selectable.Transition.ColorTint)
-          .SetNavigationMode(Navigation.Mode.None);
+          .SetNavigationMode(Navigation.Mode.None)
+          .SetColors(InputFieldColorBlock.Value);
 
       row.AddComponent<DisableHighlightOnSelect>();
 
       return row;
     }
+
+    static readonly Lazy<ColorBlock> InputFieldColorBlock =
+        new(() =>
+          new() {
+            normalColor = new Color(1f, 1f, 1f, 0.9f),
+            highlightedColor = new Color(0.565f, 0.792f, 0.976f),
+            disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.8f),
+            pressedColor = new Color(0.647f, 0.839f, 0.655f),
+            selectedColor = new Color(1f, 0.878f, 0.51f),
+            colorMultiplier = 1f,
+            fadeDuration = 0.25f,
+          });
   }
 }

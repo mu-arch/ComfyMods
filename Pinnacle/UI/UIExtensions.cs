@@ -408,6 +408,11 @@ namespace Pinnacle {
       return selectable;
     }
 
+    public static Selectable SetInteractable(this Selectable selectable, bool interactable) {
+      selectable.interactable = interactable;
+      return selectable;
+    }
+
     public static Selectable SetTargetGraphic(this Selectable selectable, Graphic graphic) {
       selectable.targetGraphic = graphic;
       return selectable;
