@@ -26,7 +26,7 @@ namespace Pinnacle {
 
       cell.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(200, 200, 5))
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(64, 64, 8))
           .SetColor(new(0.2f, 0.2f, 0.2f, 0.5f));
 
       cell.AddComponent<ContentSizeFitter>()

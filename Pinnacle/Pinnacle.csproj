@@ -82,6 +82,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
@@ -108,6 +111,7 @@
     <Compile Include="UI\LabelRow.cs" />
     <Compile Include="UI\LabelValueRow.cs" />
     <Compile Include="UI\PinIconSelector.cs" />
+    <Compile Include="UI\ToggleCell.cs" />
     <Compile Include="UI\ValueCell.cs" />
     <Compile Include="UI\LabelCell.cs" />
     <Compile Include="UI\PinEditPanel.cs" />

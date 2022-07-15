@@ -240,6 +240,11 @@ namespace Pinnacle {
       return image;
     }
 
+    public static Image SetFillCenter(this Image image, bool fillCenter) {
+      image.fillCenter = fillCenter;
+      return image;
+    }
+
     public static Image SetFillMethod(this Image image, Image.FillMethod fillMethod) {
       image.fillMethod = fillMethod;
       return image;
@@ -428,6 +433,18 @@ namespace Pinnacle {
       navigation.mode = mode;
       selectable.navigation = navigation;
       return selectable;
+    }
+  }
+
+  public static class ShadowExtensions {
+    public static Shadow SetEffectColor(this Shadow shadow, Color effectColor) {
+      shadow.effectColor = effectColor;
+      return shadow;
+    }
+
+    public static Shadow SetEffectDistance(this Shadow shadow, Vector2 effectDistance) {
+      shadow.effectDistance = effectDistance;
+      return shadow;
     }
   }
 

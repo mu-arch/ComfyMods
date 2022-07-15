@@ -3,11 +3,9 @@
 using HarmonyLib;
 
 using System.Collections;
-using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
-using UnityEngine.UI;
 
 using static Pinnacle.PluginConfig;
 
@@ -72,7 +70,7 @@ namespace Pinnacle {
 
       while (timeElapsed < lerpDuration) {
         float t = timeElapsed / lerpDuration;
-        t = t * t * (3f - 2f * t);
+        t = t * t * (3f - (2f * t));
 
         Minimap.m_instance.m_mapOffset = Vector3.Lerp(startPosition, targetPosition, t);
         timeElapsed += Time.deltaTime;

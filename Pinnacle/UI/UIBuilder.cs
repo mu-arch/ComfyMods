@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,7 +51,8 @@ namespace Pinnacle {
     static readonly Color32 ColorWhite = Color.white;
     static readonly Color32 ColorClear = Color.clear;
 
-    public static Sprite CreateRoundedCornerSprite(int width, int height, int radius) {
+    public static Sprite CreateRoundedCornerSprite(
+        int width, int height, int radius, FilterMode filterMode = FilterMode.Bilinear) {
       string name = $"RoundedCorner-{width}w-{height}h-{radius}r";
 
       if (RoundedCornerSpriteCache.TryGetValue(name, out Sprite sprite)) {
@@ -61,13 +63,13 @@ namespace Pinnacle {
           new Texture2D(width, height)
               .SetName(name)
               .SetWrapMode(TextureWrapMode.Clamp)
-              .SetFilterMode(FilterMode.Trilinear);
+              .SetFilterMode(filterMode);
 
       Color32[] pixels = new Color32[width * height];
 
-      for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-          pixels[x * width + y] = IsCornerPixel(x, y, width, height, radius) ? ColorClear : ColorWhite;
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          pixels[(y * width) + x] = IsCornerPixel(x, y, width, height, radius) ? ColorClear : ColorWhite;
         }
       }
 
@@ -87,6 +89,10 @@ namespace Pinnacle {
           break;
         }
       }
+
+      Directory.CreateDirectory("UIBuilder");
+      string filename = $"UIBuilder/{name}-{borderWidth}bw-{borderHeight}bh.png";
+      File.WriteAllBytes(filename, ImageConversion.EncodeToPNG(texture));
 
       sprite =
           Sprite.Create(

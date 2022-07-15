@@ -11,6 +11,9 @@ namespace Pinnacle {
 
     public LabelValueRow PinType { get; private set; }
 
+    public LabelRow PinModifierRow { get; private set; }
+    public ToggleCell PinChecked { get; private set; }
+
     public LabelRow PinPositionLabelRow { get; private set; }
     public VectorCell PinPosition { get; private set; }
 
@@ -31,6 +34,14 @@ namespace Pinnacle {
 
       PinType = new(Panel.transform);
       PinType.Label.SetText("Type");
+      PinType.Value.InputField.SetInteractable(false);
+
+      PinModifierRow = new(Panel.transform);
+      PinModifierRow.Label.SetText("Modifier");
+
+      PinChecked = new(PinModifierRow.Row.transform);
+      PinChecked.Label.SetText("Checked");
+      PinChecked.Toggle.onValueChanged.AddListener(OnPinCheckedChange);
 
       PinPositionLabelRow = new(Panel.transform);
       PinPositionLabelRow.Label.SetText("Position");
@@ -44,12 +55,19 @@ namespace Pinnacle {
       PinPosition.ZValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
       float labelWidth =
-          GetPreferredWidth(PinName.Label, PinIconSelectorLabelRow.Label, PinType.Label, PinPositionLabelRow.Label);
+          GetPreferredWidth(
+              PinName.Label,
+              PinIconSelectorLabelRow.Label,
+              PinType.Label,
+              PinModifierRow.Label,
+              PinPositionLabelRow.Label);
+
       float valueWidth = 200f;
 
       SetPreferredWidths(labelWidth, valueWidth, PinName, PinType);
       PinPositionLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
       PinIconSelectorLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
+      PinModifierRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
     }
 
     public Minimap.PinData TargetPin { get; private set; }
@@ -65,6 +83,8 @@ namespace Pinnacle {
 
       PinIconSelector.UpdateIcons(pin.m_type);
       PinType.Value.InputField.text = pin.m_type.ToString();
+
+      PinChecked.Toggle.isOn = pin.m_checked;
 
       PinPosition.XValue.InputField.text = $"{pin.m_pos.x:F0}";
       PinPosition.YValue.InputField.text = $"{pin.m_pos.y:F0}";
@@ -93,6 +113,15 @@ namespace Pinnacle {
       PinType.Value.InputField.text = pinType.ToString();
     }
 
+    void OnPinCheckedChange(bool pinChecked) {
+      if (TargetPin == null) {
+        return;
+      }
+
+      TargetPin.m_checked = pinChecked;
+      TargetPin.m_checkedElement.SetActive(pinChecked);
+    }
+
     void OnPinPositionValueChange() {
       if (TargetPin == null) {
         return;
@@ -101,6 +130,10 @@ namespace Pinnacle {
       if (!float.TryParse(PinPosition.XValue.InputField.text, out float x)
           || !float.TryParse(PinPosition.YValue.InputField.text, out float y)
           || !float.TryParse(PinPosition.ZValue.InputField.text, out float z)) {
+        PinPosition.XValue.InputField.text = $"{TargetPin.m_pos.x:F0}";
+        PinPosition.YValue.InputField.text = $"{TargetPin.m_pos.y:F0}";
+        PinPosition.ZValue.InputField.text = $"{TargetPin.m_pos.z:F0}";
+
         return;
       }
 
@@ -139,7 +172,7 @@ namespace Pinnacle {
       panel.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 2, right: 2, top: 4, bottom: 4)
+          .SetPadding(left: 2, right: 2, top: 8, bottom: 8)
           .SetSpacing(4f);
 
       panel.AddComponent<ContentSizeFitter>()
@@ -148,7 +181,7 @@ namespace Pinnacle {
 
       panel.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(400, 400, 15))
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 16))
           .SetColor(new(0f, 0f, 0f, 0.9f));
 
       panel.AddComponent<CanvasGroup>()

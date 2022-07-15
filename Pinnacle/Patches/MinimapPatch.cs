@@ -28,10 +28,12 @@ namespace Pinnacle {
 
     static Minimap.PinData GetClosestPinDelegate(Minimap.PinData closestPin) {
       if (IsModEnabled.Value) {
-        Pinnacle.TogglePinEditPanel(Input.GetKey(KeyCode.RightShift) ? closestPin : null);
-        return Input.GetKey(KeyCode.RightShift) ? null : closestPin;
+        ZLog.Log($"Toggling the PinEditPanel.");
+        Pinnacle.TogglePinEditPanel(closestPin);
+        return null;
       }
 
+      ZLog.Log($"I did not toggle the PinEditPanel.");
       return closestPin;
     }
 
