@@ -33,12 +33,10 @@ namespace Pinnacle {
 
     static Minimap.PinData GetClosestPinDelegate(Minimap.PinData closestPin) {
       if (IsModEnabled.Value) {
-        ZLog.Log($"Toggling the PinEditPanel.");
         Pinnacle.TogglePinEditPanel(closestPin);
         return null;
       }
 
-      ZLog.Log($"I did not toggle the PinEditPanel.");
       return closestPin;
     }
 
@@ -54,11 +52,30 @@ namespace Pinnacle {
       }
     }
 
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Minimap.RemovePin), typeof(Minimap.PinData))]
+    static void RemovePinPrefix(ref Minimap.PinData pin) {
+      if (IsModEnabled.Value && Pinnacle.PinEditPanel?.TargetPin == pin) {
+        Pinnacle.TogglePinEditPanel(null);
+      }
+    }
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Minimap.SetMapMode))]
     static void SetMapModePostfix(ref Minimap.MapMode mode) {
       if (IsModEnabled.Value && mode != Minimap.MapMode.Large && Pinnacle.PinEditPanel?.Panel) {
         Pinnacle.PinEditPanel.Panel.SetActive(false);
+      }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.ShowPinNameInput))]
+    static void ShowPinNameInputPostfix(ref Minimap __instance, ref Minimap.PinData pin) {
+      if (IsModEnabled.Value) {
+        __instance.m_namePin = null;
+
+        Pinnacle.TogglePinEditPanel(pin);
+        Pinnacle.PinEditPanel?.PinName?.Value?.InputField.Ref()?.ActivateInputField();
       }
     }
   }
