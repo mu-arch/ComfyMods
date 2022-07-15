@@ -1,18 +1,23 @@
-﻿using BepInEx.Configuration;
-
-using HarmonyLib;
+﻿using HarmonyLib;
 
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-
-using UnityEngine;
 
 using static Pinnacle.PluginConfig;
 
 namespace Pinnacle {
   [HarmonyPatch(typeof(Minimap))]
   public class MinimapPatch {
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.Awake))]
+    static void AwakePostfix(ref Minimap __instance) {
+      if (IsModEnabled.Value) {
+        MinimapConfig.BindConfig(Config);
+        MinimapConfig.SetMinimapPinFont();
+      }
+    }
+
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Minimap.OnMapLeftClick))]
     static IEnumerable<CodeInstruction> OnMapLeftClickTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -40,17 +45,20 @@ namespace Pinnacle {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Minimap.InTextInput))]
     static void InTextInputPostfix(ref bool __result) {
-      if (IsModEnabled.Value && !__result && Pinnacle.PinEditPanel?.Panel && Pinnacle.PinEditPanel.Panel.activeSelf) {
+      if (IsModEnabled.Value
+          && !__result
+          && Pinnacle.PinEditPanel?.Panel
+          && Pinnacle.PinEditPanel.Panel.activeSelf
+          && Pinnacle.PinEditPanel.HasFocus()) {
         __result = true;
       }
     }
 
     [HarmonyPostfix]
-    [HarmonyPatch(nameof(Minimap.Awake))]
-    static void AwakePostfix(ref Minimap __instance) {
-      if (IsModEnabled.Value) {
-        MinimapConfig.BindConfig(Config);
-        MinimapConfig.SetMinimapPinFont();
+    [HarmonyPatch(nameof(Minimap.SetMapMode))]
+    static void SetMapModePostfix(ref Minimap.MapMode mode) {
+      if (IsModEnabled.Value && mode != Minimap.MapMode.Large && Pinnacle.PinEditPanel?.Panel) {
+        Pinnacle.PinEditPanel.Panel.SetActive(false);
       }
     }
   }

@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Pinnacle {
@@ -16,6 +20,13 @@ namespace Pinnacle {
 
     public LabelRow PinPositionLabelRow { get; private set; }
     public VectorCell PinPosition { get; private set; }
+
+    // Styling.
+    readonly List<Text> Labels = new();
+    readonly List<GameObject> ValueCells = new();
+
+    // HasFocus.
+    readonly List<GameObject> Selectables = new();
 
     public PinEditPanel(Transform parentTransform) {
       Panel = CreatePanel(parentTransform);
@@ -47,27 +58,49 @@ namespace Pinnacle {
       PinPositionLabelRow.Label.SetText("Position");
 
       PinPosition = new(PinPositionLabelRow.Row.transform);
+
       PinPosition.XValue.InputField.textComponent.SetColor(new(1f, 0.878f, 0.51f));
+      PinPosition.XValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.XValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
+
       PinPosition.YValue.InputField.textComponent.SetColor(new(0.565f, 0.792f, 0.976f));
+      PinPosition.YValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.YValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
+
       PinPosition.ZValue.InputField.textComponent.SetColor(new(0.647f, 0.839f, 0.655f));
+      PinPosition.ZValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.ZValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
-      float labelWidth =
-          GetPreferredWidth(
-              PinName.Label,
-              PinIconSelectorLabelRow.Label,
-              PinType.Label,
-              PinModifierRow.Label,
-              PinPositionLabelRow.Label);
+      Selectables.AddRange(Panel.GetComponentsInChildren<Selectable>().Select(s => s.gameObject));
 
-      float valueWidth = 200f;
+      Labels.Add(
+          PinName.Label,
+          PinIconSelectorLabelRow.Label,
+          PinType.Label,
+          PinModifierRow.Label,
+          PinPositionLabelRow.Label);
 
-      SetPreferredWidths(labelWidth, valueWidth, PinName, PinType);
-      PinPositionLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
-      PinIconSelectorLabelRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
-      PinModifierRow.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
+      ValueCells.Add(
+          PinName.Value.Cell,
+          PinType.Value.Cell);
+
+      SetPanelStyle();
+    }
+
+    public void SetPanelStyle() {
+      float labelWidth = Labels.Select(label => label.GetPreferredWidth()).Max();
+      Labels.ForEach(l => l.GetComponent<LayoutElement>().SetPreferred(width: labelWidth));
+      ValueCells.ForEach(cell => cell.GetComponent<LayoutElement>().SetPreferred(width: 200f));
+    }
+
+    public bool HasFocus() {
+      GameObject selected = EventSystem.current.currentSelectedGameObject;
+
+      return selected
+          && Selectables.Any(s => s == selected)
+          && (!selected.TryGetComponent(out InputField inputField)
+              || inputField.isFocused
+              || Input.GetKeyDown(KeyCode.Return));
     }
 
     public Minimap.PinData TargetPin { get; private set; }
@@ -146,23 +179,6 @@ namespace Pinnacle {
     static Vector2 GetMapImagePosition(Vector3 mapPosition) {
       Minimap.m_instance.WorldToMapPoint(mapPosition, out float mx, out float my);
       return Minimap.m_instance.MapPointToLocalGuiPos(mx, my, Minimap.m_instance.m_mapImageLarge);
-    }
-
-    static float GetPreferredWidth(params Text[] texts) {
-      float width = 0f;
-
-      foreach (Text text in texts) {
-        width = Mathf.Max(width, text.GetPreferredWidth());
-      }
-
-      return width;
-    }
-
-    static void SetPreferredWidths(float labelWidth, float valueWidth, params LabelValueRow[] rows) {
-      foreach (LabelValueRow row in rows) {
-        row.Label.GetComponent<LayoutElement>().SetPreferred(width: labelWidth);
-        row.Value.Cell.GetComponent<LayoutElement>().SetPreferred(width: valueWidth).SetFlexible(width: 1f);
-      }
     }
 
     GameObject CreatePanel(Transform parentTransform) {
