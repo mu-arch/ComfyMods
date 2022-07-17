@@ -1,4 +1,4 @@
-﻿# ColorfulPortals
+# ColorfulPortals
 
   * You can color the activation glow effect of any portal using RGB and HTML color codes!
   * Those without the mod will still see the vanilla yellow/red glow effect.

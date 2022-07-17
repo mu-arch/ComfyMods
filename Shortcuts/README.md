@@ -1,4 +1,4 @@
-﻿# Shortcuts
+# Shortcuts
 
 *Re-assign more keyboard shortcuts that are hard-coded/unconfigurable in vanilla.*
 

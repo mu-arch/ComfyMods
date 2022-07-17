@@ -1,4 +1,4 @@
-﻿# ColorfulWards
+# ColorfulWards
 
   * You can color the glow effect of any ward using RGB and HTML color codes!
   * Those without the mod installed will still see the default yellow glow.

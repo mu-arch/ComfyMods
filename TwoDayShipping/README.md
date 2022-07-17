@@ -1,4 +1,4 @@
-﻿# TwoDayShipping
+# TwoDayShipping
 
   * Modifies the priority of several prefabs so that they are queued for sending soon than other prefabs.
     * For now this includes: guard_stone, guard_stone_test

@@ -1,4 +1,4 @@
-﻿# BetterZeeLog
+# BetterZeeLog
 
 *Logging zees the better way.*
 

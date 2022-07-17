@@ -1,4 +1,4 @@
-﻿# LetMePlay
+# LetMePlay
 
 *Collection of tweaks and mods to improve player experience and accessibility.*
 

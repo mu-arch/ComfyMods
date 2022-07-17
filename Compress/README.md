@@ -1,4 +1,4 @@
-﻿# Compress
+# Compress
 
   * Opt-in server and client data compression when syncing ZDOs.
   * ZPackage/ZSteamSocket optimizations for related code in the SendZDOs hot-loop.

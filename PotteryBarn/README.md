@@ -1,4 +1,4 @@
-﻿# PotteryBarn
+# PotteryBarn
 
 *Public build extension that adds existing game prefabs to the Hammer.*
 

@@ -1,4 +1,4 @@
-﻿# DyeHard
+# DyeHard
 
   * Change your player hair color using RGB values or HTML color codes.
   * Change your player beard (in-game).

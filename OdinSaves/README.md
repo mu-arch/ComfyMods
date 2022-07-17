@@ -1,4 +1,4 @@
-﻿# OdinSaves
+# OdinSaves
 
   * Your game will now save your character more often!
     * This means less annoyances if you crash or bug out!

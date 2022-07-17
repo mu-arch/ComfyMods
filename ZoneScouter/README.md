@@ -1,4 +1,4 @@
-﻿# ZoneScouter
+# ZoneScouter
 
 *The sector's instance level... it's over 9000!*
 

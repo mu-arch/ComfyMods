@@ -1,4 +1,4 @@
-﻿# ContentsWithin
+# ContentsWithin
 
   * Show the contents of any chests/container when hovering over it **using the existing container UI**.
 

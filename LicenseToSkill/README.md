@@ -1,4 +1,4 @@
-﻿# LicenseToSkill
+# LicenseToSkill
 
 *Lose less skill on death and increase skill loss prevention timer.*
 
