@@ -15,6 +15,9 @@ namespace Pinnacle {
       if (IsModEnabled.Value) {
         MinimapConfig.BindConfig(Config);
         MinimapConfig.SetMinimapPinFont();
+
+        Pinnacle.TogglePinEditPanel(null);
+        Pinnacle.TogglePinListPanel();
       }
     }
 
@@ -38,6 +41,23 @@ namespace Pinnacle {
       }
 
       return closestPin;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(Minimap.Update))]
+    static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Minimap), nameof(Minimap.InTextInput))))
+          .InsertAndAdvance(Transpilers.EmitDelegate<Action>(InTextInputPreDelegate))
+          .InstructionEnumeration();
+    }
+
+    static void InTextInputPreDelegate() {
+      if (IsModEnabled.Value && PinListPanelToggleShortcut.Value.IsDown()) {
+        Pinnacle.TogglePinListPanel();
+      }
     }
 
     [HarmonyPostfix]
@@ -64,7 +84,7 @@ namespace Pinnacle {
     [HarmonyPatch(nameof(Minimap.SetMapMode))]
     static void SetMapModePostfix(ref Minimap.MapMode mode) {
       if (IsModEnabled.Value && mode != Minimap.MapMode.Large && Pinnacle.PinEditPanel?.Panel) {
-        Pinnacle.PinEditPanel.Panel.SetActive(false);
+        Pinnacle.TogglePinEditPanel(null);
       }
     }
 

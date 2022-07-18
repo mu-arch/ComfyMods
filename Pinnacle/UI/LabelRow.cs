@@ -33,8 +33,7 @@ namespace Pinnacle {
           .SetAlignment(TextAnchor.MiddleLeft)
           .SetText("Label");
 
-      label.AddComponent<LayoutElement>()
-          .SetPreferred(width: 75f);
+      label.AddComponent<LayoutElement>();
 
       return label;
     }

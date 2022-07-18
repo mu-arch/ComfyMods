@@ -10,6 +10,7 @@ namespace Pinnacle {
     public static ConfigFile Config { get; private set; }
 
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> PinListPanelToggleShortcut { get; private set; }
     public static ConfigEntry<float> CenterMapLerpDuration { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
@@ -20,6 +21,13 @@ namespace Pinnacle {
       Config = config;
 
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      PinListPanelToggleShortcut =
+          config.Bind(
+              "PinListPanel",
+              "pinListPanelToggleShortcut",
+              new KeyboardShortcut(KeyCode.Tab),
+              "Keyboard shortcut to toggle the PinListPanel on/off.");
 
       CenterMapLerpDuration =
           config.Bind("CenterMap", "lerpDuration", 1f, "Duration (in seconds) for the CenterMap lerp.");

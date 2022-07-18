@@ -3,6 +3,7 @@
 using HarmonyLib;
 
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
@@ -48,6 +49,28 @@ namespace Pinnacle {
 
         PinEditPanel.SetTargetPin(pin);
         PinEditPanel.Panel.SetActive(true);
+      }
+    }
+
+    public static PinListPanel PinListPanel { get; private set; }
+
+    public static void TogglePinListPanel() {
+      if (!PinListPanel?.Panel) {
+        PinListPanel = new(Minimap.m_instance.m_largeRoot.transform);
+        PinListPanel.Panel.RectTransform()
+            .SetAnchorMin(new(0f, 0.5f))
+            .SetAnchorMax(new(0f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(25f, 0f))
+            .SetSizeDelta(new(400f, 400f));
+      }
+
+      if (PinListPanel.Panel.activeSelf) {
+        PinListPanel.Panel.SetActive(false);
+      } else {
+        PinListPanel.Panel.SetActive(true);
+        //TODO: remove limit from 30, just for testing right now.
+        PinListPanel.SetTargetPins(Minimap.m_instance.m_pins.Take(30).OrderBy(p => p.m_name).ToList());
       }
     }
 

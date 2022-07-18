@@ -110,7 +110,10 @@
     <Compile Include="UI\DisableHighlightOnSelect.cs" />
     <Compile Include="UI\LabelRow.cs" />
     <Compile Include="UI\LabelValueRow.cs" />
+    <Compile Include="UI\ParentSizeFitter.cs" />
+    <Compile Include="UI\PinListRow.cs" />
     <Compile Include="UI\PinIconSelector.cs" />
+    <Compile Include="UI\PinListPanel.cs" />
     <Compile Include="UI\ToggleCell.cs" />
     <Compile Include="UI\ValueCell.cs" />
     <Compile Include="UI\LabelCell.cs" />

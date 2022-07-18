@@ -49,6 +49,15 @@ namespace Pinnacle {
       }
     }
 
+    public void SetIconSize(Vector2 sizeDelta) {
+      foreach (LayoutElement layout in Icons.Select(icon => icon.LayoutElement())) {
+        layout.SetFlexible(width: sizeDelta.x, height: sizeDelta.y);
+      }
+
+      Grid.GetComponent<GridLayoutGroup>()
+          .SetCellSize(sizeDelta);
+    }
+
     GameObject CreateChildGrid(Transform parentTransform) {
       GameObject grid = new("PinIconSelector.Grid", typeof(RectTransform));
       grid.SetParent(parentTransform);
