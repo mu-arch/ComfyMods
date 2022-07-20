@@ -79,7 +79,7 @@ namespace Pinnacle {
       if (IsModEnabled.Value
           && Console.m_instance.IsCheatsEnabled()
           && Player.m_localPlayer
-          && Input.GetKeyDown(KeyCode.LeftShift)) {
+          && Input.GetKey(KeyCode.LeftShift)) {
         TeleportTo(targetPosition);
       } else {
         CenterMapOnPinPosition(targetPosition);

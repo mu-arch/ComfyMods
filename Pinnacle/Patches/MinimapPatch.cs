@@ -29,7 +29,7 @@ namespace Pinnacle {
       if (IsModEnabled.Value
           && Console.m_instance.IsCheatsEnabled()
           && Player.m_localPlayer
-          && Input.GetKeyDown(KeyCode.LeftShift)) {
+          && Input.GetKey(KeyCode.LeftShift)) {
         Vector3 targetPosition = __instance.ScreenToWorldPoint(Input.mousePosition);
 
         __instance.SetMapMode(Minimap.MapMode.Small);
