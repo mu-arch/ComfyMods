@@ -115,21 +115,23 @@ namespace Pinnacle {
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Minimap.SetMapMode))]
-    static void SetMapModePrefix(ref Minimap __instance, ref Minimap.MapMode mode) {
+    static void SetMapModePrefix(ref Minimap __instance, ref Minimap.MapMode mode, ref Minimap.MapMode __state) {
       if (IsModEnabled.Value
           && Pinnacle.PinListPanel?.Panel
-          && Pinnacle.PinListPanel.Panel.activeSelf
-          && mode != __instance.m_mode
-          && mode == Minimap.MapMode.Large) {
-        Pinnacle.PinListPanel.SetTargetPins();
+          && Pinnacle.PinListPanel.Panel.activeSelf) {
+        __state = __instance.m_mode;
       }
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Minimap.SetMapMode))]
-    static void SetMapModePostfix(ref Minimap.MapMode mode) {
+    static void SetMapModePostfix(ref Minimap.MapMode mode, ref Minimap.MapMode __state) {
       if (IsModEnabled.Value && mode != Minimap.MapMode.Large && Pinnacle.PinEditPanel?.Panel) {
         Pinnacle.TogglePinEditPanel(null);
+      }
+
+      if (IsModEnabled.Value && mode == Minimap.MapMode.Large && __state != mode) {
+        Pinnacle.PinListPanel.SetTargetPins();
       }
     }
 

@@ -68,6 +68,7 @@ namespace Pinnacle {
       }
 
       if (PinListPanel.Panel.activeSelf) {
+        PinListPanel.PinNameFilter.InputField.DeactivateInputField();
         PinListPanel.Panel.SetActive(false);
       } else {
         PinListPanel.Panel.SetActive(true);

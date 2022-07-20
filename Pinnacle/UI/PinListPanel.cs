@@ -122,7 +122,7 @@ namespace Pinnacle {
     }
 
     void OnVerticalScroll(Vector2 scroll) {
-      if (_isRefreshing) {
+      if (_isRefreshing || TargetPins.Count == 0 || _rowCache.Count == 0) {
         return;
       }
 
