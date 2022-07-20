@@ -10,23 +10,35 @@ namespace Pinnacle {
     public Image PinIcon { get; private set; }
     public Text PinName { get; private set; }
 
+    public Text PositionX { get; private set; }
+    public Text PositionY { get; private set; }
+    public Text PositionZ { get; private set; }
+
+    Vector3 _pinPositionCache = Vector3.zero;
+
     public PinListRow(Transform parentTransform) {
       Row = CreateChildRow(parentTransform);
-      Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnPinPosition(_pinPositionCache));
+      Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnOrTeleportTo(_pinPositionCache));
 
       PinIcon = CreateChildPinIcon(Row.transform).Image();
       PinName = CreateChildPinName(Row.transform).Text();
 
       UIBuilder.CreateRowSpacer(Row.transform);
-    }
 
-    Vector3 _pinPositionCache = Vector3.zero;
+      PositionX = CreateChildPinPositionValue(Row.transform).Text();
+      PositionY = CreateChildPinPositionValue(Row.transform).Text();
+      PositionZ = CreateChildPinPositionValue(Row.transform).Text();
+    }
 
     public PinListRow SetRowContent(Minimap.PinData pin) {
       _pinPositionCache = pin.m_pos;
 
       PinIcon.SetSprite(pin.m_icon);
       PinName.SetText(pin.m_name.Length == 0 ? pin.m_type.ToString() : pin.m_name);
+
+      PositionX.SetText($"{pin.m_pos.x:F0}");
+      PositionY.SetText($"{pin.m_pos.y:F0}");
+      PositionZ.SetText($"{pin.m_pos.z:F0}");
 
       return this;
     }
@@ -78,6 +90,20 @@ namespace Pinnacle {
       name.SetName("Pin.Name");
 
       return name;
+    }
+
+    GameObject CreateChildPinPositionValue(Transform parentTransform) {
+      GameObject value = UIBuilder.CreateLabel(parentTransform);
+      value.SetName("Pin.Position.Value");
+
+      value.Text()
+          .SetAlignment(TextAnchor.MiddleRight)
+          .SetText("-12345");
+
+      value.AddComponent<LayoutElement>()
+          .SetPreferred(width: value.Text().GetPreferredWidth());
+
+      return value;
     }
 
     static readonly Lazy<ColorBlock> ButtonColorBlock =

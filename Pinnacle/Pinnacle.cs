@@ -1,9 +1,9 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 
 using HarmonyLib;
 
 using System.Collections;
-using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
@@ -17,11 +17,13 @@ namespace Pinnacle {
     public const string PluginName = "Pinnacle";
     public const string PluginVersion = "1.0.0";
 
+    static ManualLogSource _logger;
     Harmony _harmony;
 
     public void Awake() {
       BindConfig(Config);
 
+      _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
@@ -69,10 +71,52 @@ namespace Pinnacle {
         PinListPanel.Panel.SetActive(false);
       } else {
         PinListPanel.Panel.SetActive(true);
-        if (PinListPanel.PinNameFilter.InputField.text == string.Empty) {
-          PinListPanel.SetTargetPins(Minimap.m_instance.m_pins);
-        }
+        PinListPanel.SetTargetPins();
       }
+    }
+
+    public static void CenterMapOnOrTeleportTo(Vector3 targetPosition) {
+      if (IsModEnabled.Value
+          && Console.m_instance.IsCheatsEnabled()
+          && Player.m_localPlayer
+          && Input.GetKeyDown(KeyCode.LeftShift)) {
+        TeleportTo(targetPosition);
+      } else {
+        CenterMapOnPinPosition(targetPosition);
+      }
+    }
+
+    public static void TeleportTo(Vector3 targetPosition) {
+      Player player = Player.m_localPlayer;
+
+      if (!player) {
+        _logger.LogWarning($"No local Player found.");
+        return;
+      }
+
+      targetPosition.y = GetHeight(targetPosition);
+
+      _logger.LogInfo($"Teleporting player from {player.transform.position} to {targetPosition}.");
+      player.TeleportTo(targetPosition, player.transform.rotation, distantTeleport: true);
+    }
+
+    public static float GetHeight(Vector3 targetPosition) {
+      Heightmap.GetHeight(targetPosition, out float height);
+
+      if (height == 0f) {
+        height = GetHeightmapData(targetPosition).m_baseHeights[0];
+      }
+
+      return height;
+    }
+
+    public static HeightmapBuilder.HMBuildData GetHeightmapData(Vector3 targetPosition) {
+      HeightmapBuilder.HMBuildData heightmapData =
+          new(targetPosition, width: 1, scale: 1f, distantLod: false, WorldGenerator.m_instance);
+
+      HeightmapBuilder.m_instance.Build(heightmapData);
+
+      return heightmapData;
     }
 
     static Coroutine _centerMapCoroutine;
@@ -81,6 +125,8 @@ namespace Pinnacle {
       if (_centerMapCoroutine != null) {
         Minimap.m_instance.StopCoroutine(_centerMapCoroutine);
       }
+
+      PinEditPanel?.Panel.Ref()?.SetActive(false);
 
       _centerMapCoroutine =
           Minimap.m_instance.StartCoroutine(

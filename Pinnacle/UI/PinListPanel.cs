@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Pinnacle {
@@ -16,7 +13,6 @@ namespace Pinnacle {
     public ScrollRect ScrollRect { get; private set; }
 
     public ValueCell PinNameFilter { get; private set; }
-    public PinIconSelector PinTypeSelector { get; private set; }
     public LabelCell PinStats { get; private set; }
 
     readonly PointerState _pointerState;
@@ -27,11 +23,7 @@ namespace Pinnacle {
       PinNameFilter = new(Panel.transform);
       PinNameFilter.Cell.LayoutElement().SetFlexible(width: 1f);
       PinNameFilter.Cell.GetComponent<HorizontalLayoutGroup>().SetPadding(left: 8, right: 8, top: 5, bottom: 5);
-      PinNameFilter.InputField.onValueChanged.AddListener(OnPinNameFilterChanged);
-
-      PinTypeSelector = new(Panel.transform);
-      PinTypeSelector.SetIconSize(new(18f, 18f));
-      PinTypeSelector.Grid.GetComponent<GridLayoutGroup>().SetConstraintCount(1);
+      PinNameFilter.InputField.onValueChanged.AddListener(SetTargetPins);
 
       Viewport = CreateChildViewport(Panel.transform);
       Content = CreateChildContent(Viewport.transform);
@@ -45,53 +37,53 @@ namespace Pinnacle {
     }
 
     public bool HasFocus() {
-      return _pointerState.IsPointerHovered;
+      return Panel && Panel.activeSelf && _pointerState.IsPointerHovered;
     }
 
     public readonly List<Minimap.PinData> TargetPins = new();
-    Coroutine _refreshPinListRowsCoroutine;
+    
+    static bool IsPinNameValid(Minimap.PinData pin, string filter) {
+      return filter.Length == 0
+          || (pin.m_name.Length > 0
+              && pin.m_name.IndexOf(filter, 0, StringComparison.InvariantCultureIgnoreCase) >= 0);
+    }
+
+    public void SetTargetPins() {
+      SetTargetPins(PinNameFilter.InputField.text);
+    }
+
+    public void SetTargetPins(string filter) {
+      SetTargetPins(Minimap.m_instance.m_pins.Where(pin => IsPinNameValid(pin, filter)));
+    }
 
     public void SetTargetPins(IEnumerable<Minimap.PinData> pins) {
-      if (_refreshPinListRowsCoroutine != null) {
-        Minimap.m_instance.StopCoroutine(_refreshPinListRowsCoroutine);
-      }
-
       TargetPins.Clear();
       TargetPins.AddRange(pins.OrderBy(p => p.m_type).ThenBy(p => p.m_name));
 
-      _refreshPinListRowsCoroutine = Minimap.m_instance.StartCoroutine(RefreshPinListRows());
-
-      PinStats.Label.SetText($"{TargetPins.Count} pins.");
-    }
-
-    void OnPinNameFilterChanged(string value) {
-      if (value == string.Empty) {
-        SetTargetPins(Minimap.m_instance.m_pins);
-        return;
+      foreach (Minimap.PinData pin in pins.Where(p => p.m_pos.x == 0f)) {
+        pin.m_pos.y = Pinnacle.GetHeight(pin.m_pos);
       }
 
-      SetTargetPins(
-          Minimap.m_instance.m_pins
-              .Where(
-                  pin =>
-                      pin.m_name.Length > 0
-                      && pin.m_name.IndexOf(value, 0, StringComparison.InvariantCultureIgnoreCase) >= 0));
+      RefreshPinListRows();
+
+      PinStats.Label.SetText($"{TargetPins.Count} pins.");
     }
 
     readonly List<PinListRow> _rowCache = new();
     int _visibleRows = 0;
     float _rowPreferredHeight = 0f;
     LayoutElement _bufferBlock;
+    bool _isRefreshing = false;
+    int _previousRowIndex = -1;
 
-    IEnumerator RefreshPinListRows() {
-      yield return null;
+    void RefreshPinListRows() {
+      _isRefreshing = true;
 
+      ScrollRect.onValueChanged.RemoveAllListeners();
+      Content.RectTransform().SetPosition(Vector2.zero);
       ScrollRect.SetVerticalScrollPosition(1f);
       _previousRowIndex = -1;
 
-      yield return null;
-
-      ScrollRect.onValueChanged.RemoveAllListeners();
       _rowCache.Clear();
 
       foreach (GameObject child in Content.Children()) {
@@ -106,14 +98,12 @@ namespace Pinnacle {
 
       PinListRow row = new(Content.transform);
 
-      yield return null;
-
+      LayoutRebuilder.ForceRebuildLayoutImmediate(Panel.RectTransform());
       _rowPreferredHeight = LayoutUtility.GetPreferredHeight(row.Row.RectTransform());
+
       _visibleRows = Mathf.CeilToInt(Viewport.RectTransform().sizeDelta.y / _rowPreferredHeight);
 
       UnityEngine.Object.Destroy(row.Row);
-
-      yield return null;
 
       Content.RectTransform().SetSizeDelta(
           new(Viewport.RectTransform().sizeDelta.x, _rowPreferredHeight * TargetPins.Count));
@@ -127,20 +117,18 @@ namespace Pinnacle {
       _previousRowIndex = -1;
       ScrollRect.SetVerticalScrollPosition(1f);
 
-      if (TargetPins.Count > _visibleRows) {
+      if (TargetPins.Count > _rowCache.Count && _rowCache.Count > 0) {
         ScrollRect.onValueChanged.AddListener(OnVerticalScroll);
       }
 
-      //yield return null;
-
-      //foreach (Image image in _rowCache.Select(r => r.Row.Image())) {
-      //  image.SetColor(image.color.SetAlpha(1f));
-      //}
+      _isRefreshing = false;
     }
 
-    int _previousRowIndex = -1;
-
     void OnVerticalScroll(Vector2 scroll) {
+      if (_isRefreshing) {
+        return;
+      }
+
       float scrolledY = Content.RectTransform().anchoredPosition.y;
 
       int rowIndex =
@@ -150,9 +138,6 @@ namespace Pinnacle {
         return;
       }
 
-      //ZLog.Log($"scrolledY {scrolledY}, rowIndex: {rowIndex}, previousRowIndex: {_previousRowIndex}, "
-      //    + $"RowCacheCount: {_rowCache.Count}, TargetPins.Count: {TargetPins.Count}");
-
       if (rowIndex > _previousRowIndex) {
         PinListRow row = _rowCache[0];
         _rowCache.RemoveAt(0);
@@ -161,22 +146,12 @@ namespace Pinnacle {
         int index = Mathf.Clamp(rowIndex + _rowCache.Count, 0, TargetPins.Count - 1);
         row.SetRowContent(TargetPins[index]);
         _rowCache.Add(row);
-
-        //ZLog.Log($"Removed row at 0, set to last with pin at index: {index}");
-        //if (index == TargetPins.Count - 1) {
-        //  ZLog.Log($"index: {index} Should be last.");
-        //}
       } else {
         PinListRow row = _rowCache[_rowCache.Count - 1];
         _rowCache.RemoveAt(_rowCache.Count - 1);
         row.Row.RectTransform().SetSiblingIndex(1);
         row.SetRowContent(TargetPins[rowIndex]);
         _rowCache.Insert(0, row);
-
-        //ZLog.Log($"Removed row at last, set to 0 with pin at index: {rowIndex}");
-        //if (rowIndex == 0) {
-        //  ZLog.Log($"Should be first.");
-        //}
       }
 
       _bufferBlock.SetPreferred(height: rowIndex * _rowPreferredHeight);

@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
+using UnityEngine;
+
 using static Pinnacle.PluginConfig;
 
 namespace Pinnacle {
@@ -16,9 +18,28 @@ namespace Pinnacle {
         MinimapConfig.BindConfig(Config);
         MinimapConfig.SetMinimapPinFont();
 
-        Pinnacle.TogglePinEditPanel(null);
+        Pinnacle.TogglePinEditPanel(pin: null);
         Pinnacle.TogglePinListPanel();
       }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Minimap.OnMapLeftClick))]
+    static bool OnMapLeftClickPrefix(ref Minimap __instance) {
+      if (IsModEnabled.Value
+          && Console.m_instance.IsCheatsEnabled()
+          && Player.m_localPlayer
+          && Input.GetKeyDown(KeyCode.LeftShift)) {
+        Vector3 targetPosition = __instance.ScreenToWorldPoint(Input.mousePosition);
+
+        __instance.SetMapMode(Minimap.MapMode.Small);
+        __instance.m_smallRoot.SetActive(true);
+
+        Pinnacle.TeleportTo(targetPosition);
+        return false;
+      }
+
+      return true;
     }
 
     [HarmonyTranspiler]
@@ -87,6 +108,18 @@ namespace Pinnacle {
     static void RemovePinPrefix(ref Minimap.PinData pin) {
       if (IsModEnabled.Value && Pinnacle.PinEditPanel?.TargetPin == pin) {
         Pinnacle.TogglePinEditPanel(null);
+      }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Minimap.SetMapMode))]
+    static void SetMapModePrefix(ref Minimap __instance, ref Minimap.MapMode mode) {
+      if (IsModEnabled.Value
+          && Pinnacle.PinListPanel?.Panel
+          && Pinnacle.PinListPanel.Panel.activeSelf
+          && mode != __instance.m_mode
+          && mode == Minimap.MapMode.Large) {
+        Pinnacle.PinListPanel.SetTargetPins();
       }
     }
 
