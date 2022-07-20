@@ -53,10 +53,10 @@ namespace Pinnacle {
     }
 
     public void SetTargetPins(string filter) {
-      SetTargetPins(Minimap.m_instance.m_pins.Where(pin => IsPinNameValid(pin, filter)));
+      SetTargetPins(Minimap.m_instance.m_pins.Where(pin => IsPinNameValid(pin, filter)).ToList());
     }
 
-    public void SetTargetPins(IEnumerable<Minimap.PinData> pins) {
+    public void SetTargetPins(List<Minimap.PinData> pins) {
       TargetPins.Clear();
       TargetPins.AddRange(pins.OrderBy(p => p.m_type).ThenBy(p => p.m_name));
 
@@ -117,10 +117,7 @@ namespace Pinnacle {
       _previousRowIndex = -1;
       ScrollRect.SetVerticalScrollPosition(1f);
 
-      if (TargetPins.Count > _rowCache.Count && _rowCache.Count > 0) {
-        ScrollRect.onValueChanged.AddListener(OnVerticalScroll);
-      }
-
+      ScrollRect.onValueChanged.AddListener(OnVerticalScroll);
       _isRefreshing = false;
     }
 

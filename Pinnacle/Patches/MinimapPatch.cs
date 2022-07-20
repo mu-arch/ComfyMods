@@ -76,7 +76,9 @@ namespace Pinnacle {
     }
 
     static void InTextInputPreDelegate() {
-      if (IsModEnabled.Value && PinListPanelToggleShortcut.Value.IsDown()) {
+      if (IsModEnabled.Value
+          && Minimap.m_instance.m_mode == Minimap.MapMode.Large
+          && PinListPanelToggleShortcut.Value.IsDown()) {
         Pinnacle.TogglePinListPanel();
       }
     }
