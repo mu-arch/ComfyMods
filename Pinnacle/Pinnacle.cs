@@ -69,8 +69,9 @@ namespace Pinnacle {
         PinListPanel.Panel.SetActive(false);
       } else {
         PinListPanel.Panel.SetActive(true);
-        //TODO: remove limit from 30, just for testing right now.
-        PinListPanel.SetTargetPins(Minimap.m_instance.m_pins.Take(30).OrderBy(p => p.m_name).ToList());
+        if (PinListPanel.PinNameFilter.InputField.text == string.Empty) {
+          PinListPanel.SetTargetPins(Minimap.m_instance.m_pins);
+        }
       }
     }
 

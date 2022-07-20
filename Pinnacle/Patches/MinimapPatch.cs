@@ -63,12 +63,22 @@ namespace Pinnacle {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Minimap.InTextInput))]
     static void InTextInputPostfix(ref bool __result) {
-      if (IsModEnabled.Value
-          && !__result
-          && Pinnacle.PinEditPanel?.Panel
-          && Pinnacle.PinEditPanel.Panel.activeSelf
-          && Pinnacle.PinEditPanel.HasFocus()) {
-        __result = true;
+      if (IsModEnabled.Value && !__result) {
+        if (Pinnacle.PinEditPanel?.Panel
+            && Pinnacle.PinEditPanel.Panel.activeSelf
+            && Pinnacle.PinEditPanel.HasFocus()) {
+          __result = true;
+        } else if (Pinnacle.PinListPanel?.Panel && Pinnacle.PinListPanel.HasFocus()) {
+          __result = true;
+        }
+      }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Minimap.UpdateMap))]
+    static void UpdateMapPrefix(ref bool takeInput) {
+      if (IsModEnabled.Value && Pinnacle.PinListPanel?.Panel && Pinnacle.PinListPanel.HasFocus()) {
+        takeInput = false;
       }
     }
 

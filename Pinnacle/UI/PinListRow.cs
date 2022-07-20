@@ -12,15 +12,22 @@ namespace Pinnacle {
 
     public PinListRow(Transform parentTransform) {
       Row = CreateChildRow(parentTransform);
+      Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnPinPosition(_pinPositionCache));
+
       PinIcon = CreateChildPinIcon(Row.transform).Image();
       PinName = CreateChildPinName(Row.transform).Text();
 
       UIBuilder.CreateRowSpacer(Row.transform);
     }
 
+    Vector3 _pinPositionCache = Vector3.zero;
+
     public PinListRow SetRowContent(Minimap.PinData pin) {
+      _pinPositionCache = pin.m_pos;
+
       PinIcon.SetSprite(pin.m_icon);
       PinName.SetText(pin.m_name.Length == 0 ? pin.m_type.ToString() : pin.m_name);
+
       return this;
     }
 
@@ -57,11 +64,11 @@ namespace Pinnacle {
       GameObject icon = new("Pin.Icon", typeof(RectTransform));
       icon.SetParent(parentTransform);
 
-      icon.AddComponent<Image>()
-          .SetType(Image.Type.Simple);
-
       icon.AddComponent<LayoutElement>()
           .SetPreferred(width: 20f, height: 20f);
+
+      icon.AddComponent<Image>()
+          .SetType(Image.Type.Simple);
 
       return icon;
     }
@@ -82,7 +89,7 @@ namespace Pinnacle {
             pressedColor = new Color32(50, 161, 217, 192),
             selectedColor = new Color32(50, 161, 217, 248),
             colorMultiplier = 1f,
-            fadeDuration = 0.15f,
+            fadeDuration = 0f,
           });
   }
 }

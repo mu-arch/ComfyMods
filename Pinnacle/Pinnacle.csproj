@@ -114,6 +114,7 @@
     <Compile Include="UI\PinListRow.cs" />
     <Compile Include="UI\PinIconSelector.cs" />
     <Compile Include="UI\PinListPanel.cs" />
+    <Compile Include="UI\PointerState.cs" />
     <Compile Include="UI\ToggleCell.cs" />
     <Compile Include="UI\ValueCell.cs" />
     <Compile Include="UI\LabelCell.cs" />
