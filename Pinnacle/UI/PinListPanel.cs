@@ -246,8 +246,8 @@ namespace Pinnacle {
           .SetAnchorMin(new(0.5f, 0f))
           .SetAnchorMax(new(0.5f, 0f))
           .SetPivot(new(0.5f, 0f))
-          .SetSizeDelta(new(200f, 50f))
-          .SetPosition(new(0f, -25f));
+          .SetSizeDelta(new(120f, 40f))
+          .SetPosition(new(0f, -20f));
 
       dragger.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
@@ -255,7 +255,7 @@ namespace Pinnacle {
           .SetColor(new(0.5f, 1f, 0.5f, 0.8f));
 
       dragger.AddComponent<CanvasGroup>()
-          .SetAlpha(0.05f);
+          .SetAlpha(0f);
 
       return dragger;
     }
@@ -271,8 +271,8 @@ namespace Pinnacle {
           .SetAnchorMin(new(1f, 0f))
           .SetAnchorMax(new(1f, 0f))
           .SetPivot(new(1f, 0f))
-          .SetSizeDelta(new(50f, 50f))
-          .SetPosition(new(25f, -25f));
+          .SetSizeDelta(new(60f, 40f))
+          .SetPosition(new(20f, -20f));
 
       resizer.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
@@ -280,7 +280,7 @@ namespace Pinnacle {
           .SetColor(new(0.5f, 0.5f, 1f, 0.8f));
 
       resizer.AddComponent<CanvasGroup>()
-          .SetAlpha(0.05f);
+          .SetAlpha(0f);
 
       return resizer;
     }

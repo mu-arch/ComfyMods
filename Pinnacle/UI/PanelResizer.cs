@@ -25,7 +25,7 @@ namespace Pinnacle {
     }
 
     public void OnPointerExit(PointerEventData eventData) {
-      _canvasGroup.Ref()?.SetAlpha(0.05f);
+      _canvasGroup.Ref()?.SetAlpha(0f);
     }
 
     public void OnBeginDrag(PointerEventData eventData) {
