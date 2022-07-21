@@ -63,8 +63,24 @@ namespace Pinnacle {
             .SetAnchorMin(new(0f, 0.5f))
             .SetAnchorMax(new(0f, 0.5f))
             .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(25f, 0f))
-            .SetSizeDelta(new(400f, 400f));
+            .SetPosition(PinListPanelPosition.Value)
+            .SetSizeDelta(PinListPanelSizeDelta.Value);
+
+        PinListPanelPosition.OnSettingChanged(
+            position => PinListPanel?.Panel.Ref()?.RectTransform().SetPosition(position));
+
+        PinListPanelSizeDelta.OnSettingChanged(
+            sizeDelta => {
+              if (PinListPanel?.Panel) {
+                PinListPanel.Panel.RectTransform().SetSizeDelta(sizeDelta);
+                PinListPanel.SetTargetPins();
+              }
+            });
+
+        PinListPanelBackgroundColor.OnSettingChanged(color => PinListPanel?.Panel.Ref()?.Image().SetColor(color));
+
+        PinListPanel.PanelDragger.OnPanelEndDrag += (_, position) => PinListPanelPosition.Value = position;
+        PinListPanel.PanelResizer.OnPanelEndResize += (_, sizeDelta) => PinListPanelSizeDelta.Value = sizeDelta;
       }
 
       if (PinListPanel.Panel.activeSelf) {

@@ -51,7 +51,7 @@ namespace Pinnacle {
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleCenter)
-          .SetPadding(left: 8, right: 8, top: 5, bottom: 5)
+          .SetPadding(left: 5, right: 5, top: 5, bottom: 5)
           .SetSpacing(5f);
 
       row.AddComponent<Image>()

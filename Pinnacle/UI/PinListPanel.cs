@@ -8,12 +8,17 @@ using UnityEngine.UI;
 namespace Pinnacle {
   public class PinListPanel {
     public GameObject Panel { get; private set; }
-    public GameObject Viewport { get; private set; }
-    public GameObject Content { get; private set; }
-    public ScrollRect ScrollRect { get; private set; }
 
     public ValueCell PinNameFilter { get; private set; }
+
+    public GameObject Viewport { get; private set; }
+    public GameObject Content { get; private set; }
+
+    public ScrollRect ScrollRect { get; private set; }
     public LabelCell PinStats { get; private set; }
+
+    public PanelDragger PanelDragger { get; private set; }
+    public PanelResizer PanelResizer { get; private set; }
 
     readonly PointerState _pointerState;
 
@@ -32,6 +37,13 @@ namespace Pinnacle {
       PinStats = new(Panel.transform);
       PinStats.Cell.GetComponent<HorizontalLayoutGroup>().SetPadding(left: 8, right: 8, top: 5, bottom: 5);
       PinStats.Cell.Image().SetColor(new(0.5f, 0.5f, 0.5f, 0.1f));
+      PinStats.Cell.AddComponent<Outline>().SetEffectDistance(new(2f, -2f));
+
+      PanelDragger = CreateChildPanelDragger(Panel).AddComponent<PanelDragger>();
+      PanelDragger.TargetRectTransform = Panel.RectTransform();
+
+      PanelResizer = CreateChildPanelResizer(Panel).AddComponent <PanelResizer>();
+      PanelResizer.TargetRectTransform = Panel.RectTransform();
 
       _pointerState = Panel.AddComponent<PointerState>();
     }
@@ -162,16 +174,13 @@ namespace Pinnacle {
       panel.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 10, right: 10, top: 10, bottom: 10)
-          .SetSpacing(10);
+          .SetPadding(left: 8, right: 8, top: 8, bottom: 8)
+          .SetSpacing(8);
 
       panel.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
           .SetSprite(UIBuilder.CreateRoundedCornerSprite(400, 400, 15))
-          .SetColor(new(0f, 0f, 0f, 0.8f));
-
-      panel.AddComponent<CanvasGroup>()
-          .SetBlocksRaycasts(true);
+          .SetColor(new(0f, 0f, 0f, 0.9f));
 
       return panel;
     }
@@ -186,7 +195,12 @@ namespace Pinnacle {
           .SetFlexible(width: 1f, height: 1f);
 
       viewport.AddComponent<Image>()
-          .SetColor(Color.clear);
+          .SetType(Image.Type.Sliced)
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 8))
+          .SetColor(new(0.5f, 0.5f, 0.5f, 0.1f));
+
+      viewport.AddComponent<Outline>()
+          .SetEffectDistance(new(2f, -2f));
 
       return viewport;
     }
@@ -206,7 +220,8 @@ namespace Pinnacle {
           .SetSpacing(0f);
 
       content.AddComponent<Image>()
-          .SetColor(Color.clear);
+          .SetColor(Color.clear)
+          .SetRaycastTarget(true);
 
       return content;
     }
@@ -218,6 +233,56 @@ namespace Pinnacle {
           .SetHorizontal(false)
           .SetVertical(true)
           .SetScrollSensitivity(30f);
+    }
+
+    GameObject CreateChildPanelDragger(GameObject panel) {
+      GameObject dragger = new("Dragger", typeof(RectTransform));
+      dragger.SetParent(panel.transform);
+
+      dragger.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      dragger.RectTransform()
+          .SetAnchorMin(new(0.5f, 0f))
+          .SetAnchorMax(new(0.5f, 0f))
+          .SetPivot(new(0.5f, 0f))
+          .SetSizeDelta(new(200f, 50f))
+          .SetPosition(new(0f, -25f));
+
+      dragger.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 12))
+          .SetColor(new(0.5f, 1f, 0.5f, 0.8f));
+
+      dragger.AddComponent<CanvasGroup>()
+          .SetAlpha(0.05f);
+
+      return dragger;
+    }
+
+    GameObject CreateChildPanelResizer(GameObject panel) {
+      GameObject resizer = new("Resizer", typeof(RectTransform));
+      resizer.SetParent(panel.transform);
+
+      resizer.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      resizer.RectTransform()
+          .SetAnchorMin(new(1f, 0f))
+          .SetAnchorMax(new(1f, 0f))
+          .SetPivot(new(1f, 0f))
+          .SetSizeDelta(new(50f, 50f))
+          .SetPosition(new(25f, -25f));
+
+      resizer.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 12))
+          .SetColor(new(0.5f, 0.5f, 1f, 0.8f));
+
+      resizer.AddComponent<CanvasGroup>()
+          .SetAlpha(0.05f);
+
+      return resizer;
     }
   }
 }

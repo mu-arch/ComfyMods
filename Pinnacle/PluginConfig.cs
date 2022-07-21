@@ -10,7 +10,12 @@ namespace Pinnacle {
     public static ConfigFile Config { get; private set; }
 
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
+
     public static ConfigEntry<KeyboardShortcut> PinListPanelToggleShortcut { get; private set; }
+    public static ConfigEntry<Vector2> PinListPanelPosition { get; private set; }
+    public static ConfigEntry<Vector2> PinListPanelSizeDelta { get; private set; }
+    public static ConfigEntry<Color> PinListPanelBackgroundColor { get; private set; }
+
     public static ConfigEntry<float> CenterMapLerpDuration { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
@@ -28,6 +33,27 @@ namespace Pinnacle {
               "pinListPanelToggleShortcut",
               new KeyboardShortcut(KeyCode.Tab),
               "Keyboard shortcut to toggle the PinListPanel on/off.");
+
+      PinListPanelPosition =
+          config.Bind(
+              "PinListPanel.Panel",
+              "pinListPanelPosition",
+              new Vector2(25f, 0f),
+              "The value for the PinListPanel.Panel position (relative to pivot/anchors).");
+
+      PinListPanelSizeDelta =
+          config.Bind(
+              "PinListPanel.Panel",
+              "pinListPanelSizeDelta",
+              new Vector2(400f, 400f),
+              "The value for the PinListPanel.Panel sizeDelta (width/height in pixels).");
+
+      PinListPanelBackgroundColor =
+          config.Bind(
+              "PinListPanel.Panel",
+              "pinListPanelBackgroundColor",
+              new Color(0f, 0f, 0f, 0.9f),
+              "The value for the PinListPanel.Panel background color.");
 
       CenterMapLerpDuration =
           config.Bind("CenterMap", "lerpDuration", 1f, "Duration (in seconds) for the CenterMap lerp.");
