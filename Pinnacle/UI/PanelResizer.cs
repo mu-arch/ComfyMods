@@ -7,13 +7,14 @@ using UnityEngine.EventSystems;
 namespace Pinnacle {
   public class PanelResizer :
       MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler {
-    Vector2 _lastMousePosition;
     CanvasGroup _canvasGroup;
+    float _targetAlpha = 0f;
+
+    Vector2 _lastMousePosition;
+    Coroutine _lerpAlphaCoroutine;
 
     public RectTransform TargetRectTransform;
     public event EventHandler<Vector2> OnPanelEndResize;
-
-    Coroutine _lerpAlphaCoroutine = null;
 
     void Awake() {
       _canvasGroup = GetComponent<CanvasGroup>();
@@ -50,12 +51,15 @@ namespace Pinnacle {
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
-      SetCanvasGroupAlpha(1f);
+      _targetAlpha = 1f;
+      SetCanvasGroupAlpha(_targetAlpha);
     }
 
     public void OnPointerExit(PointerEventData eventData) {
+      _targetAlpha = 0f;
+
       if (!eventData.dragging) {
-        SetCanvasGroupAlpha(0f);
+        SetCanvasGroupAlpha(_targetAlpha);
       }
     }
 
@@ -77,6 +81,7 @@ namespace Pinnacle {
     }
 
     public void OnEndDrag(PointerEventData eventData) {
+      SetCanvasGroupAlpha(_targetAlpha);
       OnPanelEndResize?.Invoke(this, TargetRectTransform.sizeDelta);
     }
   }

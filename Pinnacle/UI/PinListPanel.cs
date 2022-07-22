@@ -270,7 +270,7 @@ namespace Pinnacle {
 
       resizer.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 8))
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 12))
           .SetColor(new(0.565f, 0.792f, 0.976f, 0.849f));
 
       resizer.AddComponent<Shadow>()
