@@ -25,6 +25,12 @@ namespace Pinnacle {
     public PinListPanel(Transform parentTransform) {
       Panel = CreateChildPanel(parentTransform);
 
+      PanelDragger = CreateChildPanelDragger(Panel).AddComponent<PanelDragger>();
+      PanelDragger.TargetRectTransform = Panel.RectTransform();
+
+      PanelResizer = CreateChildPanelResizer(Panel).AddComponent<PanelResizer>();
+      PanelResizer.TargetRectTransform = Panel.RectTransform();
+
       PinNameFilter = new(Panel.transform);
       PinNameFilter.Cell.LayoutElement().SetFlexible(width: 1f);
       PinNameFilter.Cell.GetComponent<HorizontalLayoutGroup>().SetPadding(left: 8, right: 8, top: 5, bottom: 5);
@@ -39,17 +45,11 @@ namespace Pinnacle {
       PinStats.Cell.Image().SetColor(new(0.5f, 0.5f, 0.5f, 0.1f));
       PinStats.Cell.AddComponent<Outline>().SetEffectDistance(new(2f, -2f));
 
-      PanelDragger = CreateChildPanelDragger(Panel).AddComponent<PanelDragger>();
-      PanelDragger.TargetRectTransform = Panel.RectTransform();
-
-      PanelResizer = CreateChildPanelResizer(Panel).AddComponent <PanelResizer>();
-      PanelResizer.TargetRectTransform = Panel.RectTransform();
-
       _pointerState = Panel.AddComponent<PointerState>();
     }
 
     public bool HasFocus() {
-      return Panel && Panel.activeSelf && _pointerState.IsPointerHovered;
+      return Panel && Panel.activeInHierarchy && _pointerState.IsPointerHovered;
     }
 
     public readonly List<Minimap.PinData> TargetPins = new();
@@ -243,19 +243,13 @@ namespace Pinnacle {
           .SetIgnoreLayout(true);
 
       dragger.RectTransform()
-          .SetAnchorMin(new(0.5f, 0f))
-          .SetAnchorMax(new(0.5f, 0f))
-          .SetPivot(new(0.5f, 0f))
-          .SetSizeDelta(new(120f, 40f))
-          .SetPosition(new(0f, -20f));
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(Vector2.zero);
 
       dragger.AddComponent<Image>()
-          .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 12))
-          .SetColor(new(0.5f, 1f, 0.5f, 0.8f));
-
-      dragger.AddComponent<CanvasGroup>()
-          .SetAlpha(0f);
+          .SetColor(Color.clear);
 
       return dragger;
     }
@@ -268,19 +262,39 @@ namespace Pinnacle {
           .SetIgnoreLayout(true);
 
       resizer.RectTransform()
-          .SetAnchorMin(new(1f, 0f))
-          .SetAnchorMax(new(1f, 0f))
-          .SetPivot(new(1f, 0f))
-          .SetSizeDelta(new(60f, 40f))
-          .SetPosition(new(20f, -20f));
+          .SetAnchorMin(Vector2.right)
+          .SetAnchorMax(Vector2.right)
+          .SetPivot(Vector2.right)
+          .SetSizeDelta(new(40f, 40f))
+          .SetPosition(new(15f, -15f));
 
       resizer.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 12))
-          .SetColor(new(0.5f, 0.5f, 1f, 0.8f));
+          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 8))
+          .SetColor(new(0.565f, 0.792f, 0.976f, 0.849f));
+
+      resizer.AddComponent<Shadow>()
+          .SetEffectDistance(new(2f, -2f));
 
       resizer.AddComponent<CanvasGroup>()
           .SetAlpha(0f);
+
+      GameObject icon = UIBuilder.CreateLabel(resizer.transform);
+      icon.SetName("Resizer.Icon");
+
+      icon.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      icon.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(Vector2.zero);
+
+      icon.Text()
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetFontSize(24)
+          .SetText("\u21C6\u21C5");
 
       return resizer;
     }

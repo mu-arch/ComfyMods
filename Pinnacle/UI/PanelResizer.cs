@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,26 +10,57 @@ namespace Pinnacle {
     Vector2 _lastMousePosition;
     CanvasGroup _canvasGroup;
 
-    public float PosYMultiplier = -0.5f;
-    public float SizeXMultiplier = -1f;
-    public float SizeYMultiplier = 1f;
-
-    public RectTransform TargetRectTransform { get; set; }
+    public RectTransform TargetRectTransform;
     public event EventHandler<Vector2> OnPanelEndResize;
 
-    public void OnPointerEnter(PointerEventData eventData) {
-      if (!_canvasGroup) {
-        _canvasGroup = GetComponent<CanvasGroup>();
+    Coroutine _lerpAlphaCoroutine = null;
+
+    void Awake() {
+      _canvasGroup = GetComponent<CanvasGroup>();
+    }
+
+    void SetCanvasGroupAlpha(float alpha) {
+      if (_lerpAlphaCoroutine != null) {
+        StopCoroutine(_lerpAlphaCoroutine);
+        _lerpAlphaCoroutine = null;
       }
 
-      _canvasGroup.Ref()?.SetAlpha(1f);
+      if (_canvasGroup.alpha == alpha) {
+        return;
+      }
+
+      _lerpAlphaCoroutine = StartCoroutine(LerpCanvasGroupAlpha(alpha, 0.25f));
+    }
+
+    IEnumerator LerpCanvasGroupAlpha(float targetAlpha, float lerpDuration) {
+      float timeElapsed = 0f;
+      float sourceAlpha = _canvasGroup.alpha;
+
+      while (timeElapsed < lerpDuration) {
+        float t = timeElapsed / lerpDuration;
+        t = t * t * (3f - (2f * t));
+
+        _canvasGroup.SetAlpha(Mathf.Lerp(sourceAlpha, targetAlpha, t));
+        timeElapsed += Time.deltaTime;
+
+        yield return null;
+      }
+
+      _canvasGroup.SetAlpha(targetAlpha);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData) {
+      SetCanvasGroupAlpha(1f);
     }
 
     public void OnPointerExit(PointerEventData eventData) {
-      _canvasGroup.Ref()?.SetAlpha(0f);
+      if (!eventData.dragging) {
+        SetCanvasGroupAlpha(0f);
+      }
     }
 
     public void OnBeginDrag(PointerEventData eventData) {
+      SetCanvasGroupAlpha(1f);
       _lastMousePosition = eventData.position;
     }
 
@@ -36,10 +68,11 @@ namespace Pinnacle {
       Vector2 difference = _lastMousePosition - eventData.position;
 
       if (TargetRectTransform) {
-        TargetRectTransform.anchoredPosition += new Vector2(0, PosYMultiplier * difference.y);
-        TargetRectTransform.sizeDelta += new Vector2(SizeXMultiplier * difference.x, SizeYMultiplier * difference.y);
+        TargetRectTransform.anchoredPosition += new Vector2(0, -0.5f * difference.y);
+        TargetRectTransform.sizeDelta += new Vector2(-1f * difference.x, difference.y);
       }
 
+      SetCanvasGroupAlpha(1f);
       _lastMousePosition = eventData.position;
     }
 

@@ -111,13 +111,15 @@ namespace Pinnacle {
       foreach (Text text in minimap.m_pinPrefab.GetComponentsInChildren<Text>(includeInactive: true)) {
         text.SetFont(font)
             .SetFontSize(fontSize)
-            .SetResizeTextForBestFit(false);
+            .SetResizeTextForBestFit(false)
+            .SetSupportRichText(true);
       }
 
       foreach (Text text in minimap.m_pinRootLarge.GetComponentsInChildren<Text>(includeInactive: true)) {
         text.SetFont(font)
             .SetFontSize(fontSize)
-            .SetResizeTextForBestFit(false);
+            .SetResizeTextForBestFit(false)
+            .SetSupportRichText(true);
       }
     }
   }

@@ -25,6 +25,9 @@ namespace Pinnacle {
 
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+
+      ZLog.Log($"Current Application.targetFrameRate: {Application.targetFrameRate}");
+      Application.targetFrameRate = 60;
     }
 
     public void OnDestroy() {
@@ -115,6 +118,8 @@ namespace Pinnacle {
 
       _logger.LogInfo($"Teleporting player from {player.transform.position} to {targetPosition}.");
       player.TeleportTo(targetPosition, player.transform.rotation, distantTeleport: true);
+
+      Minimap.m_instance.SetMapMode(Minimap.MapMode.Small);
     }
 
     public static float GetHeight(Vector3 targetPosition) {

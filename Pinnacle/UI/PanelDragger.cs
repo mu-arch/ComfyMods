@@ -4,25 +4,11 @@ using UnityEngine.EventSystems;
 using System;
 
 namespace Pinnacle {
-  public class PanelDragger :
-      MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler {
+  public class PanelDragger : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     Vector2 _lastMousePosition;
-    CanvasGroup _canvasGroup;
 
     public RectTransform TargetRectTransform;
     public event EventHandler<Vector3> OnPanelEndDrag;
-
-    public void OnPointerEnter(PointerEventData eventData) {
-      if (!_canvasGroup) {
-        _canvasGroup = GetComponent<CanvasGroup>();
-      }
-
-      _canvasGroup.Ref()?.SetAlpha(1f);
-    }
-
-    public void OnPointerExit(PointerEventData eventData) {
-      _canvasGroup.Ref()?.SetAlpha(0f);
-    }
 
     public void OnBeginDrag(PointerEventData eventData) {
       _lastMousePosition = eventData.position;

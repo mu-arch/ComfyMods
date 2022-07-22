@@ -126,8 +126,14 @@ namespace Pinnacle {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Minimap.SetMapMode))]
     static void SetMapModePostfix(ref Minimap.MapMode mode, ref Minimap.MapMode __state) {
-      if (IsModEnabled.Value && mode != Minimap.MapMode.Large && Pinnacle.PinEditPanel?.Panel) {
-        Pinnacle.TogglePinEditPanel(null);
+      if (IsModEnabled.Value && mode != Minimap.MapMode.Large) {
+        if (Pinnacle.PinEditPanel?.Panel) {
+          Pinnacle.TogglePinEditPanel(null);
+        }
+
+        if (Pinnacle.PinListPanel?.Panel) {
+          Pinnacle.PinListPanel.PinNameFilter.InputField.DeactivateInputField();
+        }
       }
 
       if (IsModEnabled.Value && mode == Minimap.MapMode.Large && __state != mode) {

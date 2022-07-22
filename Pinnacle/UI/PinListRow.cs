@@ -26,8 +26,11 @@ namespace Pinnacle {
       UIBuilder.CreateRowSpacer(Row.transform);
 
       PositionX = CreateChildPinPositionValue(Row.transform).Text();
+      PositionX.SetColor(new(1f, 0.878f, 0.51f));
       PositionY = CreateChildPinPositionValue(Row.transform).Text();
+      PositionY.SetColor(new(0.565f, 0.792f, 0.976f));
       PositionZ = CreateChildPinPositionValue(Row.transform).Text();
+      PositionZ.SetColor(new(0.647f, 0.839f, 0.655f));
     }
 
     public PinListRow SetRowContent(Minimap.PinData pin) {
@@ -51,7 +54,7 @@ namespace Pinnacle {
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleCenter)
-          .SetPadding(left: 5, right: 5, top: 5, bottom: 5)
+          .SetPadding(left: 5, right: 10, top: 5, bottom: 5)
           .SetSpacing(5f);
 
       row.AddComponent<Image>()
