@@ -114,6 +114,7 @@
     <Compile Include="UI\PanelDragger.cs" />
     <Compile Include="UI\PanelResizer.cs" />
     <Compile Include="UI\ParentSizeFitter.cs" />
+    <Compile Include="UI\PinFilterPanel.cs" />
     <Compile Include="UI\PinListRow.cs" />
     <Compile Include="UI\PinIconSelector.cs" />
     <Compile Include="UI\PinListPanel.cs" />

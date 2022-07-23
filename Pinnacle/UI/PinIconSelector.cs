@@ -11,6 +11,7 @@ namespace Pinnacle {
 
     public GameObject Grid { get; private set; }
     public List<GameObject> Icons { get; } = new();
+    public Dictionary<Minimap.PinType, GameObject> IconsByType { get; } = new();
 
     public PinIconSelector(Transform parentTransform) {
       Grid = CreateChildGrid(parentTransform);
@@ -23,7 +24,9 @@ namespace Pinnacle {
         }
 
         GameObject icon = CreateChildIcon(Grid.transform);
+
         Icons.Add(icon);
+        IconsByType[pinType] = icon;
 
         icon.Image()
             .SetSprite(sprite);

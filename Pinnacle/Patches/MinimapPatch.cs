@@ -19,7 +19,18 @@ namespace Pinnacle {
         MinimapConfig.SetMinimapPinFont();
 
         Pinnacle.TogglePinEditPanel(pinToEdit: null);
-        Pinnacle.TogglePinListPanel();
+        Pinnacle.TogglePinListPanel(toggleOn: false);
+        Pinnacle.TogglePinFilterPanel(toggleOn: true);
+
+        Pinnacle.ToggleVanillaIconPanels(toggleOn: false);
+      }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.Start))]
+    static void StartPostfix() {
+      if (IsModEnabled.Value) {
+        Pinnacle.PinFilterPanel?.UpdatePinIconFilters();
       }
     }
 
@@ -149,6 +160,22 @@ namespace Pinnacle {
 
         Pinnacle.TogglePinEditPanel(pin);
         Pinnacle.PinEditPanel?.PinName?.Value?.InputField.Ref()?.ActivateInputField();
+      }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.SelectIcon))]
+    static void SelectIconPostfix() {
+      if (IsModEnabled.Value) {
+        Pinnacle.PinFilterPanel?.UpdatePinIconFilters();
+      }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.ToggleIconFilter))]
+    static void ToggleIconFilterPostfix() {
+      if (IsModEnabled.Value) {
+        Pinnacle.PinFilterPanel?.UpdatePinIconFilters();
       }
     }
   }

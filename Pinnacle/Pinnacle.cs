@@ -3,10 +3,11 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
-using System.Collections;
+using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using static Pinnacle.PluginConfig;
 
@@ -23,6 +24,8 @@ namespace Pinnacle {
     public void Awake() {
       BindConfig(Config);
 
+      IsModEnabled.OnSettingChanged(OnIsModEnabledChanged);
+
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
 
@@ -32,6 +35,22 @@ namespace Pinnacle {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
+    }
+
+    static void OnIsModEnabledChanged(bool value) {
+      TogglePinEditPanel(pinToEdit: null);
+      TogglePinListPanel(toggleOn: false);
+      TogglePinFilterPanel(toggleOn: value);
+      ToggleVanillaIconPanels(toggleOn: !value);
+    }
+
+    public static void ToggleVanillaIconPanels(bool toggleOn) {
+      foreach (
+          GameObject panel in Minimap.m_instance.Ref()?.m_largeRoot
+              .Children()
+              .Where(child => child.name.StartsWith("IconPanel"))) {
+        panel.SetActive(toggleOn);
+      }
     }
 
     public static PinEditPanel PinEditPanel { get; private set; }
@@ -60,6 +79,10 @@ namespace Pinnacle {
     public static PinListPanel PinListPanel { get; private set; }
 
     public static void TogglePinListPanel() {
+      TogglePinListPanel(!PinListPanel?.Panel.Ref()?.activeSelf ?? false);
+    }
+
+    public static void TogglePinListPanel(bool toggleOn) {
       if (!PinListPanel?.Panel) {
         PinListPanel = new(Minimap.m_instance.m_largeRoot.transform);
         PinListPanel.Panel.RectTransform()
@@ -86,13 +109,29 @@ namespace Pinnacle {
         PinListPanel.PanelResizer.OnPanelEndResize += (_, sizeDelta) => PinListPanelSizeDelta.Value = sizeDelta;
       }
 
-      if (PinListPanel.Panel.activeSelf) {
-        PinListPanel.PinNameFilter.InputField.DeactivateInputField();
-        PinListPanel.Panel.SetActive(false);
-      } else {
+      if (toggleOn) {
         PinListPanel.Panel.SetActive(true);
         PinListPanel.SetTargetPins();
+      } else {
+        PinListPanel.PinNameFilter.InputField.DeactivateInputField();
+        PinListPanel.Panel.SetActive(false);
       }
+    }
+
+    public static PinFilterPanel PinFilterPanel { get; private set; }
+
+    public static void TogglePinFilterPanel(bool toggleOn) {
+      if (!PinFilterPanel?.Panel) {
+        PinFilterPanel = new(Minimap.m_instance.m_largeRoot.transform);
+        PinFilterPanel.Panel.RectTransform()
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(1f, 0.5f))
+            .SetPosition(new(-25f, 0f))
+            .SetSizeDelta(new(150f, 150f));
+      }
+
+      PinFilterPanel.Panel.SetActive(toggleOn);
     }
 
     public static void CenterMapOnOrTeleportTo(Minimap.PinData targetPin) {
