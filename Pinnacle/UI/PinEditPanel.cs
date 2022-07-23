@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using static Pinnacle.PluginConfig;
 
 namespace Pinnacle {
   public class PinEditPanel {
@@ -27,6 +30,8 @@ namespace Pinnacle {
 
     // HasFocus.
     readonly List<GameObject> Selectables = new();
+
+    Coroutine _setActiveCoroutine;
 
     public PinEditPanel(Transform parentTransform) {
       Panel = CreatePanel(parentTransform);
@@ -85,6 +90,34 @@ namespace Pinnacle {
           PinType.Value.Cell);
 
       SetPanelStyle();
+    }
+
+    public void SetActive(bool toggle) {
+      if (_setActiveCoroutine != null) {
+        Minimap.m_instance.StopCoroutine(_setActiveCoroutine);
+      }
+
+      _setActiveCoroutine =
+          Minimap.m_instance.StartCoroutine(
+              LerpCanvasGroupAlpha(
+                  Panel.GetComponent<CanvasGroup>(), toggle ? 1f : 0f, PinEditPanelToggleLerpDuration.Value));
+    }
+
+    static IEnumerator LerpCanvasGroupAlpha(CanvasGroup canvasGroup, float targetAlpha, float lerpDuration) {
+      float timeElapsed = 0f;
+      float sourceAlpha = canvasGroup.alpha;
+
+      while (timeElapsed < lerpDuration) {
+        float t = timeElapsed / lerpDuration;
+        t = t * t * (3f - (2f * t));
+
+        canvasGroup.SetAlpha(Mathf.Lerp(sourceAlpha, targetAlpha, t));
+        timeElapsed += Time.deltaTime;
+
+        yield return null;
+      }
+
+      canvasGroup.SetAlpha(targetAlpha);
     }
 
     public void SetPanelStyle() {
@@ -173,7 +206,7 @@ namespace Pinnacle {
       TargetPin.m_pos = new(x, y, z);
       TargetPin.m_uiElement.SetPosition(GetMapImagePosition(TargetPin.m_pos));
 
-      Pinnacle.CenterMapOnPinPosition(TargetPin.m_pos);
+      CenterMapHelper.CenterMapOnPosition(TargetPin.m_pos);
     }
 
     static Vector2 GetMapImagePosition(Vector3 mapPosition) {

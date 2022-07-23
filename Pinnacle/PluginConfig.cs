@@ -16,6 +16,8 @@ namespace Pinnacle {
     public static ConfigEntry<Vector2> PinListPanelSizeDelta { get; private set; }
     public static ConfigEntry<Color> PinListPanelBackgroundColor { get; private set; }
 
+    public static ConfigEntry<float> PinEditPanelToggleLerpDuration { get; private set; }
+
     public static ConfigEntry<float> CenterMapLerpDuration { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
@@ -55,6 +57,15 @@ namespace Pinnacle {
               new Color(0f, 0f, 0f, 0.9f),
               "The value for the PinListPanel.Panel background color.");
 
+      PinEditPanelToggleLerpDuration =
+          config.Bind(
+              "PinEditPanel.Toggle",
+              "pinEditPanelToggleLerpDuration",
+              0.25f,
+              new ConfigDescription(
+                  "Duration (in seconds) for the PinEdiPanl.Toggle on/off lerp.",
+                  new AcceptableValueRange<float>(0f, 3f)));
+
       CenterMapLerpDuration =
           config.Bind("CenterMap", "lerpDuration", 1f, "Duration (in seconds) for the CenterMap lerp.");
     }
@@ -89,8 +100,8 @@ namespace Pinnacle {
               new ConfigDescription(
                   "The font size for the Pin text on the Minimap.", new AcceptableValueRange<int>(2, 26)));
 
-      PinFont.SettingChanged += (_, _) => SetMinimapPinFont();
-      PinFontSize.SettingChanged += (_, _) => SetMinimapPinFont();
+      PinFont.OnSettingChanged(SetMinimapPinFont);
+      PinFontSize.OnSettingChanged(SetMinimapPinFont);
 
       _isConfigBound = true;
     }

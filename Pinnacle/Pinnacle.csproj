@@ -102,6 +102,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CenterMapHelper.cs" />
     <Compile Include="Patches\MinimapPatch.cs" />
     <Compile Include="Pinnacle.cs" />
     <Compile Include="PluginConfig.cs" />

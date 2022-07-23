@@ -36,7 +36,7 @@ namespace Pinnacle {
 
     public static PinEditPanel PinEditPanel { get; private set; }
 
-    public static void TogglePinEditPanel(Minimap.PinData pin) {
+    public static void TogglePinEditPanel(Minimap.PinData pinToEdit = null) {
       if (!PinEditPanel?.Panel) {
         PinEditPanel = new(Minimap.m_instance.m_largeRoot.transform);
         PinEditPanel.Panel.RectTransform()
@@ -47,13 +47,13 @@ namespace Pinnacle {
             .SetSizeDelta(new(200f, 200f));
       }
 
-      if (pin == null) {
-        PinEditPanel.Panel.SetActive(false);
+      if (pinToEdit == null) {
+        PinEditPanel.SetActive(false);
       } else {
-        CenterMapOnPinPosition(pin.m_pos);
+        CenterMapHelper.CenterMapOnPosition(pinToEdit.m_pos);
 
-        PinEditPanel.SetTargetPin(pin);
-        PinEditPanel.Panel.SetActive(true);
+        PinEditPanel.SetTargetPin(pinToEdit);
+        PinEditPanel.SetActive(true);
       }
     }
 
@@ -95,14 +95,16 @@ namespace Pinnacle {
       }
     }
 
-    public static void CenterMapOnOrTeleportTo(Vector3 targetPosition) {
+    public static void CenterMapOnOrTeleportTo(Minimap.PinData targetPin) {
       if (IsModEnabled.Value
           && Console.m_instance.IsCheatsEnabled()
           && Player.m_localPlayer
-          && Input.GetKey(KeyCode.LeftShift)) {
-        TeleportTo(targetPosition);
+          && Input.GetKey(KeyCode.LeftShift)
+          && targetPin != null) {
+        TeleportTo(targetPin.m_pos);
       } else {
-        CenterMapOnPinPosition(targetPosition);
+        TogglePinEditPanel(null); // TODO: make this an option to show PinEditPanel map on RowClick
+        CenterMapHelper.CenterMapOnPosition(targetPin.m_pos);
       }
     }
 
@@ -139,38 +141,6 @@ namespace Pinnacle {
       HeightmapBuilder.m_instance.Build(heightmapData);
 
       return heightmapData;
-    }
-
-    static Coroutine _centerMapCoroutine;
-
-    public static void CenterMapOnPinPosition(Vector3 targetPosition) {
-      if (_centerMapCoroutine != null) {
-        Minimap.m_instance.StopCoroutine(_centerMapCoroutine);
-      }
-
-      PinEditPanel?.Panel.Ref()?.SetActive(false);
-
-      _centerMapCoroutine =
-          Minimap.m_instance.StartCoroutine(
-              CenterMapCoroutine(
-                  targetPosition - Player.m_localPlayer.transform.position, CenterMapLerpDuration.Value));
-    }
-
-    static IEnumerator CenterMapCoroutine(Vector3 targetPosition, float lerpDuration) {
-      float timeElapsed = 0f;
-      Vector3 startPosition = Minimap.m_instance.m_mapOffset;
-
-      while (timeElapsed < lerpDuration) {
-        float t = timeElapsed / lerpDuration;
-        t = t * t * (3f - (2f * t));
-
-        Minimap.m_instance.m_mapOffset = Vector3.Lerp(startPosition, targetPosition, t);
-        timeElapsed += Time.deltaTime;
-
-        yield return null;
-      }
-
-      Minimap.m_instance.m_mapOffset = targetPosition;
     }
   }
 }

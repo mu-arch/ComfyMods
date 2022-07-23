@@ -14,11 +14,11 @@ namespace Pinnacle {
     public Text PositionY { get; private set; }
     public Text PositionZ { get; private set; }
 
-    Vector3 _pinPositionCache = Vector3.zero;
+    Minimap.PinData _targetPin;
 
     public PinListRow(Transform parentTransform) {
       Row = CreateChildRow(parentTransform);
-      Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnOrTeleportTo(_pinPositionCache));
+      Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnOrTeleportTo(_targetPin));
 
       PinIcon = CreateChildPinIcon(Row.transform).Image();
       PinName = CreateChildPinName(Row.transform).Text();
@@ -34,7 +34,7 @@ namespace Pinnacle {
     }
 
     public PinListRow SetRowContent(Minimap.PinData pin) {
-      _pinPositionCache = pin.m_pos;
+      _targetPin = pin;
 
       PinIcon.SetSprite(pin.m_icon);
       PinName.SetText(pin.m_name.Length == 0 ? pin.m_type.ToString() : pin.m_name);

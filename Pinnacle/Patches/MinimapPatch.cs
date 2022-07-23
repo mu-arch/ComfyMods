@@ -18,7 +18,7 @@ namespace Pinnacle {
         MinimapConfig.BindConfig(Config);
         MinimapConfig.SetMinimapPinFont();
 
-        Pinnacle.TogglePinEditPanel(pin: null);
+        Pinnacle.TogglePinEditPanel(pinToEdit: null);
         Pinnacle.TogglePinListPanel();
       }
     }
