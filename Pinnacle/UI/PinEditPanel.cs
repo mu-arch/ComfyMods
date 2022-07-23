@@ -10,6 +10,8 @@ using static Pinnacle.PluginConfig;
 
 namespace Pinnacle {
   public class PinEditPanel {
+    public const long DefaultSharedPinOwnerId = long.MaxValue;
+
     public GameObject Panel { get; private set; }
     public LabelValueRow PinName { get; private set; }
 
@@ -20,6 +22,7 @@ namespace Pinnacle {
 
     public LabelRow PinModifierRow { get; private set; }
     public ToggleCell PinChecked { get; private set; }
+    public ToggleCell PinShared { get; private set; }
 
     public LabelRow PinPositionLabelRow { get; private set; }
     public VectorCell PinPosition { get; private set; }
@@ -59,20 +62,27 @@ namespace Pinnacle {
       PinChecked.Label.SetText("Checked");
       PinChecked.Toggle.onValueChanged.AddListener(OnPinCheckedChange);
 
+      PinShared = new(PinModifierRow.Row.transform);
+      PinShared.Label.SetText("Shared");
+      PinShared.Toggle.onValueChanged.AddListener(OnPinSharedChange);
+
       PinPositionLabelRow = new(Panel.transform);
       PinPositionLabelRow.Label.SetText("Position");
 
       PinPosition = new(PinPositionLabelRow.Row.transform);
 
       PinPosition.XValue.InputField.textComponent.SetColor(new(1f, 0.878f, 0.51f));
+      PinPosition.XValue.InputField.contentType = InputField.ContentType.DecimalNumber;
       PinPosition.XValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.XValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
       PinPosition.YValue.InputField.textComponent.SetColor(new(0.565f, 0.792f, 0.976f));
+      PinPosition.YValue.InputField.contentType = InputField.ContentType.DecimalNumber;
       PinPosition.YValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.YValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
       PinPosition.ZValue.InputField.textComponent.SetColor(new(0.647f, 0.839f, 0.655f));
+      PinPosition.ZValue.InputField.contentType = InputField.ContentType.DecimalNumber;
       PinPosition.ZValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
       PinPosition.ZValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
@@ -150,7 +160,8 @@ namespace Pinnacle {
       PinIconSelector.UpdateIcons(pin.m_type);
       PinType.Value.InputField.text = pin.m_type.ToString();
 
-      PinChecked.Toggle.isOn = pin.m_checked;
+      PinChecked.Toggle.SetIsOnWithoutNotify(pin.m_checked);
+      PinShared.Toggle.SetIsOnWithoutNotify(pin.m_ownerID != 0L);
 
       PinPosition.XValue.InputField.text = $"{pin.m_pos.x:F0}";
       PinPosition.YValue.InputField.text = $"{pin.m_pos.y:F0}";
@@ -186,6 +197,14 @@ namespace Pinnacle {
 
       TargetPin.m_checked = pinChecked;
       TargetPin.m_checkedElement.SetActive(pinChecked);
+    }
+
+    void OnPinSharedChange(bool pinShared) {
+      if (TargetPin == null) {
+        return;
+      }
+
+      TargetPin.m_ownerID = TargetPin.m_ownerID == 0L ? DefaultSharedPinOwnerId : 0L;
     }
 
     void OnPinPositionValueChange() {

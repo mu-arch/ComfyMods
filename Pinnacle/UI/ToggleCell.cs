@@ -66,7 +66,7 @@ namespace Pinnacle {
           .SetEffectDistance(new(1, -1));
 
       checkbox.AddComponent<GridLayoutGroup>()
-          .SetCellSize(new(16f, 16f))
+          .SetCellSize(new(12f, 12f))
           .SetPadding(left: 4, right: 4, top: 4, bottom: 4)
           .SetConstraint(GridLayoutGroup.Constraint.FixedColumnCount)
           .SetConstraintCount(1)
@@ -74,7 +74,7 @@ namespace Pinnacle {
           .SetStartCorner(GridLayoutGroup.Corner.UpperLeft);
 
       checkbox.AddComponent<LayoutElement>()
-          .SetPreferred(width: 20f, height: 20f);
+          .SetPreferred(width: 16f, height: 16f);
 
       return checkbox;
     }
