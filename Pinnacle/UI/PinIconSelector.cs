@@ -10,11 +10,14 @@ namespace Pinnacle {
     public event EventHandler<Minimap.PinType> OnPinIconClicked;
 
     public GameObject Grid { get; private set; }
+    public GridLayoutGroup GridLayoutGroup { get; private set; }
+
     public List<GameObject> Icons { get; } = new();
     public Dictionary<Minimap.PinType, GameObject> IconsByType { get; } = new();
 
     public PinIconSelector(Transform parentTransform) {
       Grid = CreateChildGrid(parentTransform);
+      GridLayoutGroup = Grid.GetComponent<GridLayoutGroup>();
 
       foreach (Minimap.PinType pinType in Enum.GetValues(typeof(Minimap.PinType))) {
         Sprite sprite = Minimap.m_instance.GetSprite(pinType);

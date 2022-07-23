@@ -127,8 +127,10 @@ namespace Pinnacle {
             .SetAnchorMin(new(1f, 0.5f))
             .SetAnchorMax(new(1f, 0.5f))
             .SetPivot(new(1f, 0.5f))
-            .SetPosition(new(-25f, 0f))
-            .SetSizeDelta(new(150f, 150f));
+            .SetPosition(PinFilterPanelPosition.Value);
+
+        PinFilterPanelGridIconSize.OnSettingChanged(PinFilterPanel.SetPanelStyle);
+        PinFilterPanel.PanelDragger.OnPanelEndDrag += (_, position) => PinFilterPanelPosition.Value = position;
       }
 
       PinFilterPanel.Panel.SetActive(toggleOn);

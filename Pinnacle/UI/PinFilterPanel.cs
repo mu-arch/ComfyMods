@@ -1,25 +1,35 @@
-﻿using System.Linq;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
+using static Pinnacle.PluginConfig;
 
 namespace Pinnacle {
   public class PinFilterPanel {
     public GameObject Panel { get; private set; }
+    public PanelDragger PanelDragger { get; private set; }
+
     public PinIconSelector PinIconSelector { get; private set; }
 
     public PinFilterPanel(Transform parentTransform) {
       Panel = CreateChildPanel(parentTransform);
 
+      PanelDragger = CreateChildPanelDragger(Panel.transform).AddComponent<PanelDragger>();
+      PanelDragger.TargetRectTransform = Panel.RectTransform();
+
       PinIconSelector = new(Panel.transform);
 
-      PinIconSelector.Grid.GetComponent<GridLayoutGroup>()
+      PinIconSelector.GridLayoutGroup
           .SetConstraint(GridLayoutGroup.Constraint.FixedColumnCount)
           .SetConstraintCount(2)
-          .SetStartAxis(GridLayoutGroup.Axis.Vertical)
-          .SetCellSize(new(40f, 40f));
+          .SetStartAxis(GridLayoutGroup.Axis.Vertical);
 
       PinIconSelector.OnPinIconClicked += (_, pinType) => Minimap.m_instance.ToggleIconFilter(pinType);
+
+      SetPanelStyle();
+    }
+
+    public void SetPanelStyle() {
+      PinIconSelector.GridLayoutGroup.SetCellSize(new(PinFilterPanelGridIconSize.Value, PinFilterPanelGridIconSize.Value));
     }
 
     public void UpdatePinIconFilters() {
@@ -54,6 +64,25 @@ namespace Pinnacle {
           .SetBlocksRaycasts(true);
 
       return panel;
+    }
+
+    GameObject CreateChildPanelDragger(Transform parentTransform) {
+      GameObject dragger = new("Dragger", typeof(RectTransform));
+      dragger.SetParent(parentTransform);
+
+      dragger.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      dragger.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(Vector2.zero);
+
+      dragger.AddComponent<Image>()
+          .SetColor(Color.clear);
+
+      return dragger;
     }
   }
 }

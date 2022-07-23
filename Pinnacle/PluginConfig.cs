@@ -18,6 +18,9 @@ namespace Pinnacle {
 
     public static ConfigEntry<float> PinEditPanelToggleLerpDuration { get; private set; }
 
+    public static ConfigEntry<Vector2> PinFilterPanelPosition { get; private set; }
+    public static ConfigEntry<float> PinFilterPanelGridIconSize { get; private set; }
+
     public static ConfigEntry<float> CenterMapLerpDuration { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
@@ -65,6 +68,21 @@ namespace Pinnacle {
               new ConfigDescription(
                   "Duration (in seconds) for the PinEdiPanl.Toggle on/off lerp.",
                   new AcceptableValueRange<float>(0f, 3f)));
+
+      PinFilterPanelPosition =
+          config.Bind(
+              "PinFilterPanel.Panel",
+              "pinFilterPanelPanelPosition",
+              new Vector2(-25f, 0f),
+              "The value for the PinFilterPanel.Panel position (relative to pivot/anchors).");
+
+      PinFilterPanelGridIconSize =
+          config.Bind(
+              "PinFilterPanel.Grid",
+              "pinFilterPanelGridIconSize",
+              30f,
+              new ConfigDescription(
+                  "The size of the PinFilterPanel.Grid icons.", new AcceptableValueRange<float>(10f, 100f)));
 
       CenterMapLerpDuration =
           config.Bind("CenterMap", "lerpDuration", 1f, "Duration (in seconds) for the CenterMap lerp.");
