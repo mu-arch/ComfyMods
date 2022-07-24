@@ -27,9 +27,6 @@ namespace Pinnacle {
 
       _logger = Logger;
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
-
-      ZLog.Log($"Current Application.targetFrameRate: {Application.targetFrameRate}");
-      Application.targetFrameRate = 60;
     }
 
     public void OnDestroy() {
