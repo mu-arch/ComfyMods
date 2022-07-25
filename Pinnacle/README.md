@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -95,6 +95,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.0.1
+
+  * Fixed a bug where the *PinEditPanel* was blocking map-movement when toggled off.
 
 ### 1.0.0
 

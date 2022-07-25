@@ -117,6 +117,8 @@ namespace Pinnacle {
       float timeElapsed = 0f;
       float sourceAlpha = canvasGroup.alpha;
 
+      canvasGroup.SetBlocksRaycasts(targetAlpha > 0f);
+
       while (timeElapsed < lerpDuration) {
         float t = timeElapsed / lerpDuration;
         t = t * t * (3f - (2f * t));
