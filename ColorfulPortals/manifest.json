@@ -1,0 +1,10 @@
+{
+    "name": "ColorfulPortals",
+    "version_number": "1.5.0",
+    "website_url": "https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces",
+    "author": "ComfyMods",
+    "description": "Color the activation glow effect of any portal using RGB and HTML color codes!",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.1901"
+    ]
+}

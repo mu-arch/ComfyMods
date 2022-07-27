@@ -1,27 +1,24 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+
 using HarmonyLib;
-using System;
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using UnityEngine;
+
+using static ColorfulPortals.PluginConfig;
 
 namespace ColorfulPortals {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.4.0";
-
-    static ConfigEntry<bool> _isModEnabled;
-    static ConfigEntry<Color> _targetPortalColor;
-    static ConfigEntry<string> _targetPortalColorHex;
-
-    static ConfigEntry<bool> _showChangeColorHoverText;
-    static ConfigEntry<int> _colorPromptFontSize;
+    public const string PluginVersion = "1.5.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -29,27 +26,7 @@ namespace ColorfulPortals {
     public void Awake() {
       _logger = Logger;
 
-      _isModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
-
-      _targetPortalColor =
-          Config.Bind("Color", "targetPortalColor", Color.cyan, "Target color to set the portal glow effect to.");
-
-      _targetPortalColorHex =
-          Config.Bind(
-              "Color",
-              "targetPortalColorHex",
-              $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
-              "Target color to set the portal glow effect to, in HTML hex form.");
-
-      _targetPortalColor.SettingChanged += UpdateColorHexValue;
-      _targetPortalColorHex.SettingChanged += UpdateColorValue;
-
-      _showChangeColorHoverText =
-          Config.Bind(
-              "Hud", "showChangeColorHoverText", true, "Show the 'change color' text when hovering over a portal.");
-
-      _colorPromptFontSize =
-          Config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change color' text prompt.");
+      BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
 
@@ -58,22 +35,6 @@ namespace ColorfulPortals {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      _targetPortalColorHex.Value = $"#{GetColorHtmlString(_targetPortalColor.Value)}";
-    }
-
-    void UpdateColorValue(object sender, EventArgs eventArgs) {
-      if (ColorUtility.TryParseHtmlString(_targetPortalColorHex.Value, out Color color)) {
-        _targetPortalColor.Value = color;
-      }
-    }
-
-    static string GetColorHtmlString(Color color) {
-      return color.a == 1.0f
-          ? ColorUtility.ToHtmlStringRGB(color)
-          : ColorUtility.ToHtmlStringRGBA(color);
     }
 
     class TeleportWorldData {
@@ -141,7 +102,7 @@ namespace ColorfulPortals {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
       static void TeleportWorldAwakePostfix(ref TeleportWorld __instance) {
-        if (!_isModEnabled.Value || !__instance) {
+        if (!IsModEnabled.Value || !__instance) {
           return;
         }
 
@@ -167,7 +128,7 @@ namespace ColorfulPortals {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.GetHoverText))]
       static void TeleportWorldGetHoverTextPostfix(ref TeleportWorld __instance, ref string __result) {
-        if (!_isModEnabled.Value || !_showChangeColorHoverText.Value || !__instance) {
+        if (!IsModEnabled.Value || !ShowChangeColorHoverText.Value || !__instance) {
           return;
         }
 
@@ -177,15 +138,15 @@ namespace ColorfulPortals {
                 __result,
                 "#FFA726",
                 _changeColorActionShortcut,
-                _targetPortalColorHex.Value,
-                _colorPromptFontSize.Value);
+                TargetPortalColorHex.Value,
+                ColorPromptFontSize.Value);
       }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(TeleportWorld.Interact))]
       static bool TeleportWorldInteractPrefix(
           ref TeleportWorld __instance, ref bool __result, Humanoid human, bool hold) {
-        if (!_isModEnabled.Value || hold || !__instance.m_nview || !_changeColorActionShortcut.IsDown()) {
+        if (!IsModEnabled.Value || hold || !__instance.m_nview || !_changeColorActionShortcut.IsDown()) {
           return true;
         }
 
@@ -206,12 +167,12 @@ namespace ColorfulPortals {
           __instance.m_nview.ClaimOwnership();
         }
 
-        __instance.m_nview.m_zdo.Set(_teleportWorldColorHashCode, Utils.ColorToVec3(_targetPortalColor.Value));
-        __instance.m_nview.m_zdo.Set(_teleportWorldColorAlphaHashCode, _targetPortalColor.Value.a);
+        __instance.m_nview.m_zdo.Set(_teleportWorldColorHashCode, Utils.ColorToVec3(TargetPortalColor.Value));
+        __instance.m_nview.m_zdo.Set(_teleportWorldColorAlphaHashCode, TargetPortalColor.Value.a);
         __instance.m_nview.m_zdo.Set(_portalLastColoredByHashCode, Player.m_localPlayer?.GetPlayerID() ?? 0L);
 
         if (_teleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
-          teleportWorldData.TargetColor = _targetPortalColor.Value;
+          teleportWorldData.TargetColor = TargetPortalColor.Value;
           SetTeleportWorldColors(teleportWorldData);
         }
 
@@ -222,7 +183,7 @@ namespace ColorfulPortals {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.UpdatePortal))]
       static void TeleportWorldUpdatePortalPostfix(ref TeleportWorld __instance) {
-        if (!_isModEnabled.Value
+        if (!IsModEnabled.Value
             || !__instance
             || !__instance.m_nview
             || __instance.m_nview.m_zdo == null
