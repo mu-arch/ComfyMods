@@ -19,6 +19,7 @@
 ### 1.5.0
 
   * Moved all configuration code into `PluginConfig`.
+  * Moved `TeleportWorldData` into its own class.
   * Added `manifest.json` and `icon.png`.
   * Modified the project file to automatically create a versioned Thunderstore package.
 
