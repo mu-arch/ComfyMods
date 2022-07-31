@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>9</LangVersion>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -97,9 +96,9 @@
     <Compile Include="ChatMessage.cs" />
     <Compile Include="Chatter.cs" />
     <Compile Include="CircularQueue.cs" />
-    <Compile Include="Extensions\IsExternalInit.cs" />
-    <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\UIExtensions.cs" />
+    <Compile Include="IsExternalInit.cs" />
+    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="UI\UIExtensions.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="PluginConfig.cs" />

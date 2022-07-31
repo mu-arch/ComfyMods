@@ -58,6 +58,10 @@
 
 ## Changelog
 
+### 1.2.0
+
+  * UI! UI? UI!
+
 ### 1.1.0
 
   * Added support for a new chat message layout `SingleRow`.
