@@ -32,6 +32,12 @@
   * ***Stone portal*** prefabs fixed to activate when connected.
   * Restrictions: they cannot be built and require a server-side mod to connect.
 
+## Notes
+
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPortals).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+
 ## Changelog
 
 ### 1.5.0
