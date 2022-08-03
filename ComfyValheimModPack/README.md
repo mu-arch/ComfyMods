@@ -16,6 +16,10 @@
 
 ## Changelog
 
+### 2.0.1
+
+  * Updated dependencies list to latest version (where applicable).
+
 ### 2.0.0
 
   * Pruned the dependency list for broken/out-dated mods and updated existing ones to their current versions.
