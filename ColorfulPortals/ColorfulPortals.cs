@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
@@ -25,11 +24,9 @@ namespace ColorfulPortals {
 
     public void Awake() {
       _logger = Logger;
-
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
-
       StartCoroutine(RemovedDestroyedTeleportWorldsCoroutine());
     }
 
@@ -37,49 +34,86 @@ namespace ColorfulPortals {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly Dictionary<TeleportWorld, TeleportWorldData> _teleportWorldDataCache = new();
+    public static readonly int TeleportWorldColorHashCode = "TeleportWorldColor".GetStableHashCode();
+    public static readonly int TeleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
+    public static readonly int PortalLastColoredByHashCode = "PortalLastColoredBy".GetStableHashCode();
+
+    static readonly Dictionary<TeleportWorld, TeleportWorldData> TeleportWorldDataCache = new();
 
     static IEnumerator RemovedDestroyedTeleportWorldsCoroutine() {
-      WaitForSeconds waitThirtySeconds = new(seconds: 30f);
-      List<KeyValuePair<TeleportWorld, TeleportWorldData>> existingPortals = new();
-      int portalCount = 0;
+      WaitForSeconds waitInterval = new(seconds: 30f);
+      List<KeyValuePair<TeleportWorld, TeleportWorldData>> existingCache = new();
 
       while (true) {
-        yield return waitThirtySeconds;
-        portalCount = _teleportWorldDataCache.Count;
+        yield return waitInterval;
 
-        existingPortals.AddRange(_teleportWorldDataCache.Where(entry => entry.Key));
-        _teleportWorldDataCache.Clear();
+        long count = TeleportWorldDataCache.Count;
 
-        foreach (KeyValuePair<TeleportWorld, TeleportWorldData> entry in existingPortals) {
-          _teleportWorldDataCache[entry.Key] = entry.Value;
+        if (count == 0) {
+          continue;
         }
 
-        existingPortals.Clear();
+        existingCache.AddRange(TeleportWorldDataCache.Where(entry => entry.Key));
 
-        if (portalCount > 0) {
-          _logger.LogInfo($"Removed {portalCount - _teleportWorldDataCache.Count}/{portalCount} portal references.");
+        if (count == existingCache.Count) {
+          _logger.LogInfo($"TeleportWorldData cache size: {count}");
+          existingCache.Clear();
+          continue;
         }
+
+        TeleportWorldDataCache.Clear();
+
+        foreach (KeyValuePair<TeleportWorld, TeleportWorldData> entry in existingCache) {
+          if (entry.Key) {
+            TeleportWorldDataCache[entry.Key] = entry.Value;
+          }
+        }
+
+        _logger.LogInfo($"Removed {count - existingCache.Count}/{count} TeleportWorldData cache references.");
+        existingCache.Clear();
       }
     }
 
     static bool TryGetTeleportWorld(TeleportWorld key, out TeleportWorldData value) {
       if (key) {
-        return _teleportWorldDataCache.TryGetValue(key, out value);
+        return TeleportWorldDataCache.TryGetValue(key, out value);
       }
 
       value = default;
       return false;
     }
 
+    public static IEnumerator ChangePortalColorCoroutine(TeleportWorld targetPortal) {
+      yield return null;
+
+      if (!targetPortal) {
+        yield break;
+      }
+
+      if (!targetPortal.m_nview || !targetPortal.m_nview.IsValid()) {
+        _logger.LogWarning("TeleportWorld does not have a valid ZNetView.");
+        yield break;
+      }
+
+      if (!PrivateArea.CheckAccess(targetPortal.transform.position, flash: true)) {
+        _logger.LogWarning("TeleportWorld is within a PrivateArea.");
+        yield break;
+      }
+
+      targetPortal.m_nview.ClaimOwnership();
+
+      targetPortal.m_nview.m_zdo.Set(TeleportWorldColorHashCode, Utils.ColorToVec3(TargetPortalColor.Value));
+      targetPortal.m_nview.m_zdo.Set(TeleportWorldColorAlphaHashCode, TargetPortalColor.Value.a);
+      targetPortal.m_nview.m_zdo.Set(PortalLastColoredByHashCode, Player.m_localPlayer?.GetPlayerID() ?? 0L);
+
+      if (TeleportWorldDataCache.TryGetValue(targetPortal, out TeleportWorldData teleportWorldData)) {
+        teleportWorldData.TargetColor = TargetPortalColor.Value;
+        SetTeleportWorldColors(teleportWorldData);
+      }
+    }
+
     [HarmonyPatch(typeof(TeleportWorld))]
     class TeleportWorldPatch {
-      static readonly int _teleportWorldColorHashCode = "TeleportWorldColor".GetStableHashCode();
-      static readonly int _teleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
-      static readonly int _portalLastColoredByHashCode = "PortalLastColoredBy".GetStableHashCode();
-
-      static readonly KeyboardShortcut _changeColorActionShortcut = new(KeyCode.E, KeyCode.LeftShift);
-
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
       static void TeleportWorldAwakePostfix(ref TeleportWorld __instance) {
@@ -103,7 +137,7 @@ namespace ColorfulPortals {
           targetFoundObject.SetActive(true);
         }
 
-        _teleportWorldDataCache.Add(__instance, new TeleportWorldData(__instance));
+        TeleportWorldDataCache.Add(__instance, new TeleportWorldData(__instance));
       }
 
       [HarmonyPostfix]
@@ -115,50 +149,11 @@ namespace ColorfulPortals {
 
         __result =
             string.Format(
-                "{0}\n<size={4}>[<color={1}>{2}</color>] Change color to: <color={3}>{3}</color></size>",
+                "{0}\n[<color={1}>{2}</color>] Change color to: <color={3}>{3}</color>",
                 __result,
                 "#FFA726",
-                _changeColorActionShortcut,
-                TargetPortalColorHex.Value,
-                ColorPromptFontSize.Value);
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(TeleportWorld.Interact))]
-      static bool TeleportWorldInteractPrefix(
-          ref TeleportWorld __instance, ref bool __result, Humanoid human, bool hold) {
-        if (!IsModEnabled.Value || hold || !__instance.m_nview || !_changeColorActionShortcut.IsDown()) {
-          return true;
-        }
-
-        if (!__instance.m_nview || !__instance.m_nview.IsValid()) {
-          _logger.LogWarning("TeleportWorld does not have a valid ZNetView.");
-
-          __result = true;
-          return false;
-        }
-
-        if (!PrivateArea.CheckAccess(__instance.transform.position, flash: true)) {
-          _logger.LogWarning("TeleportWorld is within a PrivateArea.");
-          __result = true;
-          return false;
-        }
-
-        if (!__instance.m_nview.IsOwner()) {
-          __instance.m_nview.ClaimOwnership();
-        }
-
-        __instance.m_nview.m_zdo.Set(_teleportWorldColorHashCode, Utils.ColorToVec3(TargetPortalColor.Value));
-        __instance.m_nview.m_zdo.Set(_teleportWorldColorAlphaHashCode, TargetPortalColor.Value.a);
-        __instance.m_nview.m_zdo.Set(_portalLastColoredByHashCode, Player.m_localPlayer?.GetPlayerID() ?? 0L);
-
-        if (_teleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
-          teleportWorldData.TargetColor = TargetPortalColor.Value;
-          SetTeleportWorldColors(teleportWorldData);
-        }
-
-        __result = true;
-        return false;
+                ChangePortalColorShortcut.Value,
+                TargetPortalColorHex.Value);
       }
 
       [HarmonyPostfix]
@@ -170,34 +165,34 @@ namespace ColorfulPortals {
             || __instance.m_nview.m_zdo == null
             || __instance.m_nview.m_zdo.m_zdoMan == null
             || __instance.m_nview.m_zdo.m_vec3 == null
-            || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(_teleportWorldColorHashCode)
-            || !_teleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
+            || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(TeleportWorldColorHashCode)
+            || !TeleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
           return;
         }
 
-        Color portalColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[_teleportWorldColorHashCode]);
-        portalColor.a = __instance.m_nview.m_zdo.GetFloat(_teleportWorldColorAlphaHashCode, defaultValue: 1f);
+        Color portalColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[TeleportWorldColorHashCode]);
+        portalColor.a = __instance.m_nview.m_zdo.GetFloat(TeleportWorldColorAlphaHashCode, defaultValue: 1f);
 
         teleportWorldData.TargetColor = portalColor;
         SetTeleportWorldColors(teleportWorldData);
       }
+    }
 
-      static void SetTeleportWorldColors(TeleportWorldData teleportWorldData) {
-        foreach (Light light in teleportWorldData.Lights) {
-          light.color = teleportWorldData.TargetColor;
-        }
+    static void SetTeleportWorldColors(TeleportWorldData teleportWorldData) {
+      foreach (Light light in teleportWorldData.Lights) {
+        light.color = teleportWorldData.TargetColor;
+      }
 
-        foreach (ParticleSystem system in teleportWorldData.Systems) {
-          ParticleSystem.ColorOverLifetimeModule colorOverLifetime = system.colorOverLifetime;
-          colorOverLifetime.color = new ParticleSystem.MinMaxGradient(teleportWorldData.TargetColor);
+      foreach (ParticleSystem system in teleportWorldData.Systems) {
+        ParticleSystem.ColorOverLifetimeModule colorOverLifetime = system.colorOverLifetime;
+        colorOverLifetime.color = new ParticleSystem.MinMaxGradient(teleportWorldData.TargetColor);
 
-          ParticleSystem.MainModule main = system.main;
-          main.startColor = teleportWorldData.TargetColor;
-        }
+        ParticleSystem.MainModule main = system.main;
+        main.startColor = teleportWorldData.TargetColor;
+      }
 
-        foreach (Material material in teleportWorldData.Materials) {
-          material.color = teleportWorldData.TargetColor;
-        }
+      foreach (Material material in teleportWorldData.Materials) {
+        material.color = teleportWorldData.TargetColor;
       }
     }
   }

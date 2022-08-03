@@ -2,25 +2,47 @@
 
   * You can color the activation glow effect of any portal using RGB and HTML color codes!
   * Those without the mod will still see the vanilla yellow/red glow effect.
-  * ***Stone portals*** prefabs are fixed to work (though cannot be built and requires serverside mod to connect).
+
+## Installation
+
+### Manual
+
+  * Un-zip `ColorfulPortals.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * **Uninstall** any older versions of `ColorfulPortals`.
+  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.5.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
 
-  1. Unzip `ColorfulPortals.dll` to your `/Valheim/BepInEx/plugins/` folder.
-  2. In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPortals section.
-     * Change the target color using the RGB sliders or using an HTML color code.
-  3. Hover over any portal ***that you are the owner of*** and a prompt to change its color will appear.
-     * This prompt can be hidden by disabling the `showChangeColorHoverText` setting.
-     * Prompt font-size can be configured with the `colorPromptFontSize` setting.
-  4. Hit `LeftShift + E` to change the color.
+### Changing portal glow effect color
+
+  * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPortals section.
+    * Change the target color using the RGB sliders or using an HTML color code.
+
+  - Hover over any portal ***that you are the owner of*** and a prompt to change its color will appear.
+    - This prompt can be hidden by disabling the `showChangeColorHoverText` setting.
+
+  * Hit `LeftShift + E` (configurable) to change the color of the portal glow effect.
+
+### Stone portals
+
+  * ***Stone portal*** prefabs fixed to activate when connected.
+  * Restrictions: they cannot be built and require a server-side mod to connect.
 
 ## Changelog
 
 ### 1.5.0
 
-  * Moved all configuration code into `PluginConfig`.
-  * Moved `TeleportWorldData` into its own class.
-  * Added `manifest.json` and `icon.png`.
+  * Moved change color code from `TeleportWorld.Interact()` prefix to `Player.TakeInput()` transpiler with coroutine.
+    * Can now configure the hot-key to change portal color.
+  * Changed some of the logic in `RemovedDestroyedTeleportWorldsCoroutine()`.
+  * Removed configuration option for `colorPromptFontSize` (UI overhaul coming later).
+  * Extracted configuration options into new `PluginConfig` class.
+  * Extracted `TeleportWorldData` into its own class.
+  * Added `manifest.json`, `icon.png` and updated this `README.md`.
   * Modified the project file to automatically create a versioned Thunderstore package.
 
 ### 1.4.0

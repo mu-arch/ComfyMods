@@ -6,15 +6,24 @@ using UnityEngine;
 
 namespace ColorfulPortals {
   public static class PluginConfig {
-    public static ConfigEntry<bool> IsModEnabled;
-    public static ConfigEntry<Color> TargetPortalColor;
-    public static ConfigEntry<string> TargetPortalColorHex;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
-    public static ConfigEntry<bool> ShowChangeColorHoverText;
-    public static ConfigEntry<int> ColorPromptFontSize;
+    public static ConfigEntry<KeyboardShortcut> ChangePortalColorShortcut { get; private set; }
+
+    public static ConfigEntry<Color> TargetPortalColor { get; private set; }
+    public static ConfigEntry<string> TargetPortalColorHex { get; private set; }
+
+    public static ConfigEntry<bool> ShowChangeColorHoverText { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      ChangePortalColorShortcut =
+          config.Bind(
+              "Hotkeys",
+              "changePortalColorShortcut",
+              new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift),
+              "Keyboard shortcut to change (or clear) the color of the hovered/targeted portal.");
 
       TargetPortalColor =
           config.Bind("Color", "targetPortalColor", Color.cyan, "Target color to set the portal glow effect to.");
@@ -32,9 +41,6 @@ namespace ColorfulPortals {
       ShowChangeColorHoverText =
           config.Bind(
               "Hud", "showChangeColorHoverText", true, "Show the 'change color' text when hovering over a portal.");
-
-      ColorPromptFontSize =
-          config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change color' text prompt.");
     }
 
     static void UpdateColorHexValue(object sender, EventArgs eventArgs) {
