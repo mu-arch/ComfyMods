@@ -1,22 +1,25 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
 using UnityEngine;
+
+using static PotteryBarn.PluginConfig;
 
 namespace PotteryBarn {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.1.0";
-
-    static ConfigEntry<bool> _isModEnabled;
+    public const string PluginVersion = "1.2.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -24,68 +27,127 @@ namespace PotteryBarn {
     public void Awake() {
       _logger = Logger;
 
-      _isModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+      BindConfig(Config);
 
-      if (_isModEnabled.Value) {
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
-      }
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    static PieceTable _hammerPieceTable;
+    static readonly Lazy<string> IconsFolderPath =
+        new(() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PotteryBarn"));
 
-    [HarmonyPatch(typeof(ZNetScene))]
-    class ZNetScenePatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZNetScene.Awake))]
-      static void AwakePostfix(ref ZNetScene __instance) {
-        AddHammerPieces();
-      }
+    public static readonly HashSet<string> CustomPiecePrefabNames = new();
+
+    static GameObject GetPrefab(string prefabName) {
+      return ZNetScene.m_instance.Ref()?.GetPrefab(prefabName);
     }
 
-    static void AddHammerPieces() {
-      _hammerPieceTable ??= GetPieceTable("_HammerPieceTable");
-
-      if (!_hammerPieceTable) {
-        _logger.LogError("Could not find the Hammer PieceTable.");
-        return;
-      }
-
-      AddStoneFloorPiece(_hammerPieceTable);
+    static Piece GetExistingPiece(string prefabName) {
+      return ZNetScene.m_instance.Ref()?.GetPrefab(prefabName).GetComponent<Piece>();
     }
 
-    static void AddStoneFloorPiece(PieceTable pieceTable) {
-      GameObject prefab = GetExistingPrefab("stone_floor");
+    static Piece CreateCustomPiece(string prefabName) {
+      GameObject prefab = ZNetScene.m_instance.m_prefabs.Where(p => p.name.StartsWith(prefabName)).FirstOrDefault();
 
       if (!prefab) {
-        _logger.LogError("Could not find prefab: stone_floor");
-        return;
+        _logger.LogError($"Could not find prefab: {prefabName}");
+        return null;
       }
 
-      Piece piece = prefab.GetComponent<Piece>();
-      Piece.Requirement stoneReq = piece.GetRequirement("Stone");
+      Piece piece = prefab.AddComponent<Piece>();
+      piece.SetName(prefabName);
 
-      if (stoneReq == null) {
-        _logger.LogError("Could not find Stone requirement for stone_floor Piece.");
-        return;
-      }
+      piece.m_repairPiece = false;
+      piece.m_groundOnly = false;
+      piece.m_groundPiece = false;
+      piece.m_cultivatedGroundOnly = false;
+      piece.m_waterPiece = false;
+      piece.m_noInWater = false;
+      piece.m_notOnWood = false;
+      piece.m_notOnTiltingSurface = false;
+      piece.m_inCeilingOnly = false;
+      piece.m_notOnFloor = false;
+      piece.m_onlyInTeleportArea = false;
+      piece.m_allowedInDungeons = false;
+      piece.m_clipEverything = true;
 
-      stoneReq.m_amount = 12;
-      stoneReq.m_recover = true;
+      CustomPiecePrefabNames.Add(prefabName);
 
-      if (pieceTable.AddPiece(piece)) {
-        _logger.LogInfo($"Added stone_floor prefab to {pieceTable.name} PieceTable.");
-      }
+      return piece;
     }
 
-    static GameObject GetExistingPrefab(string name) {
-      return ZNetScene.m_instance?.m_prefabs
-          .Where(prefab => prefab?.name == name)
-          .FirstOrDefault();
+    public static IEnumerator AddPieces() {
+      yield return null;
+
+      PieceTable pieceTable = GetPieceTable("_HammerPieceTable");
+
+      if (!pieceTable) {
+        _logger.LogError($"Could not find HammerPieceTable!");
+        yield break;
+      }
+
+      yield return AddHammerPieces(pieceTable);
+
+      Piece statueCorgi = CreateCustomPiece("StatueCorgi");
+
+      if (!statueCorgi) {
+        yield break;
+      }
+
+      statueCorgi.SetResources(CreateRequirement("Stone", 10, true));
+      statueCorgi.m_craftingStation = GetPrefab("piece_workbench").GetComponent<CraftingStation>();
+
+      if (TryGetPrefabIcon(statueCorgi.name, out Sprite icon)) {
+        statueCorgi.m_icon = icon;
+      }
+
+      pieceTable.AddPiece(statueCorgi);
+    }
+
+    static IEnumerator AddHammerPieces(PieceTable pieceTable) {
+      yield return null;
+
+      pieceTable.AddPiece(GetExistingPiece("turf_roof").SetName("turf_roof"));
+      pieceTable.AddPiece(GetExistingPiece("turf_roof_top").SetName("turf_roof_top"));
+      pieceTable.AddPiece(GetExistingPiece("turf_roof_wall").SetName("turf_roof_wall"));
+      pieceTable.AddPiece(GetExistingPiece("ArmorStand_Female").SetName("ArmorStand_Female"));
+      pieceTable.AddPiece(GetExistingPiece("ArmorStand_Male").SetName("ArmorStand_Male"));
+
+      pieceTable.AddPiece(
+          GetExistingPiece("stone_floor")
+              .SetResource("Stone", r => r.SetAmount(12).SetRecover(true)));
+    }
+
+    static bool TryGetPrefabIcon(string prefabName, out Sprite icon) {
+      FileInfo file = new(Path.Combine(IconsFolderPath.Value, $"{prefabName}.png"));
+
+      if (file.Exists) {
+        Texture2D texture = new(1, 1);
+
+        if (texture.LoadImage(File.ReadAllBytes(file.FullName))) {
+          icon = Sprite.Create(texture, new(0, 0, texture.width, texture.height), new(0.5f, 0.5f));
+          return true;
+        }
+      }
+
+      icon = default;
+      return false;
+    }
+
+    static Piece.Requirement CreateRequirement(string itemName, int amount, bool recover) {
+      if (ObjectDB.m_instance.m_itemByHash.TryGetValue(itemName.GetStableHashCode(), out GameObject prefab)
+          && prefab.TryGetComponent(out ItemDrop itemDrop)) {
+        return new() {
+          m_resItem = itemDrop,
+          m_amount = amount,
+          m_recover = recover
+        };
+      }
+
+      return null;
     }
 
     static PieceTable GetPieceTable(string name) {
@@ -93,21 +155,6 @@ namespace PotteryBarn {
           .Select(item => item.GetComponent<ItemDrop>()?.m_itemData?.m_shared?.m_buildPieces)
           .Where(table => table?.name == name)
           .FirstOrDefault();
-    }
-  }
-
-  static class HelperExtensions {
-    public static bool AddPiece(this PieceTable pieceTable, Piece piece) {
-      if (!piece || !pieceTable || pieceTable.m_pieces == null || pieceTable.m_pieces.Contains(piece.gameObject)) {
-        return false;
-      }
-
-      pieceTable.m_pieces.Add(piece.gameObject);
-      return true;
-    }
-
-    public static Piece.Requirement GetRequirement(this Piece piece, string name) {
-      return piece?.m_resources?.Where(req => req?.m_resItem?.name == name).FirstOrDefault();
     }
   }
 }

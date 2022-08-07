@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `PotteryBarn_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -25,6 +25,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.2.0
+
+  * Extracted patch-related code to `ZNetScenePatch` class.
+  * Extracted configuration-related code to `PluginConfig` class.
 
 ### 1.1.0
 
