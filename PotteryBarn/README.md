@@ -15,8 +15,25 @@
 
 ## Instructions
 
-  * New prefabs will be available in the Hammer build panel.
-    * Stone Floor 4x4 (costs 12 stone)
+  * New prefabs (that exist in the game) will be available to build!
+  * You might need to pick-up/drop a stone/wood/resource to have the recipe trigger.
+
+### Hammer
+
+| Category  | Prefab            | Crafting Station | Resource     | Resource        | Resource |
+|-----------|-------------------|------------------|--------------|-----------------|----------|
+| Building  | Stone Floor 4x4   | Stonecutter      | 12x Stone    |                 |          |
+| Building  | turf_roof         | Workbench        | 2x Wood      |                 |          |
+| Building  | turf_roof_top     | Workbench        | 2x Wood      |                 |          |
+| Building  | turf_roof_wall    | Workbench        | 2x Wood      |                 |          |
+| Furniture | ArmorStand_Female | Workbench        | 8x Fine Wood | 2x Bronze Nails | 4x Tar   |
+| Furniture | ArmorStand_Male   | Workbench        | 8x Fine Wood | 2x Bronze Nails | 4x Tar   |
+
+### Changing the ArmorStand pose
+
+  * The new ArmorStands have 15 different poses available!
+  * There is a `Change Pose" switch at the base of the stand.
+  * PotteryBarn fixes the error that prevents changing poses in vanilla.
 
 ### Notes
 
@@ -28,7 +45,9 @@
 
 ### 1.2.0
 
-  * Extracted patch-related code to `ZNetScenePatch` class.
+  * Added more prefabs to the Hammer PieceTable.
+  * Added `ArmorStand.SetPose()` prefix patch to eliminate NRE preventing pose changes.
+  * Extracted patch-related code to new classes.
   * Extracted configuration-related code to `PluginConfig` class.
 
 ### 1.1.0

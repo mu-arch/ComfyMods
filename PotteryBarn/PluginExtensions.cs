@@ -13,8 +13,9 @@ namespace PotteryBarn {
       return piece;
     }
 
-    public static Piece SetResource(this Piece piece, string resourceName, Action<Piece.Requirement> resourceFunc) {
-      resourceFunc?.Invoke(piece.GetResource(resourceName));
+    public static Piece SetResource(
+        this Piece piece, string resourceName, Action<Piece.Requirement> modifyResourceAction) {
+      modifyResourceAction?.Invoke(piece.GetResource(resourceName));
       return piece;
     }
 

@@ -84,7 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Patches\PiecePatch.cs" />
+    <Compile Include="Patches\ArmorStandPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
