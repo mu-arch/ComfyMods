@@ -43,6 +43,10 @@
 
 ## Changelog
 
+### 1.2.1
+
+  * Actually include the updated `README.md` in the packaged file *sigh*.
+
 ### 1.2.0
 
   * Added more prefabs to the Hammer PieceTable.
