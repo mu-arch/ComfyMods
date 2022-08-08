@@ -96,6 +96,11 @@
 
 ## Changelog
 
+### 1.0.2
+
+  * Fixed label for the Z-value in VectorCell incorrectly showing 'X'.
+  * Removed code in `UIBuilder.CreateRoundedCornerSprite()` that saved the sprite to disk, was used for debugging.
+
 ### 1.0.1
 
   * Fixed a bug where the *PinEditPanel* was blocking map-movement when toggled off.

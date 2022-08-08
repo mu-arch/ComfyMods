@@ -32,7 +32,7 @@
 ### Changing the ArmorStand pose
 
   * The new ArmorStands have 15 different poses available!
-  * There is a `Change Pose" switch at the base of the stand.
+  * There is a `Change Pose` switch at the base of the stand.
   * PotteryBarn fixes the error that prevents changing poses in vanilla.
 
 ### Notes

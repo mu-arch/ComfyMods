@@ -43,7 +43,7 @@ namespace Pinnacle {
       ZValue.Cell.LayoutElement().SetFlexible(width: 1f);
 
       ZLabel = UIBuilder.CreateLabel(ZValue.Cell.transform).Text();
-      ZLabel.SetText("X");
+      ZLabel.SetText("Z");
 
       ZValue.InputField.textComponent.SetAlignment(TextAnchor.MiddleRight);
       ZValue.InputField.GetComponent<LayoutElement>()

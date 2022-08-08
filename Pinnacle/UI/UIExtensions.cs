@@ -44,6 +44,11 @@ namespace Pinnacle {
       return gameObject;
     }
 
+    public static T SetName<T>(this T component, string name) where T : Component {
+      component.gameObject.name = name;
+      return component;
+    }
+
     public static GameObject SetParent(
         this GameObject gameObject, Transform transform, bool worldPositionStays = false) {
       gameObject.transform.SetParent(transform, worldPositionStays);
@@ -56,37 +61,24 @@ namespace Pinnacle {
           : Enumerable.Empty<GameObject>();
     }
 
-    public static T SetName<T>(this T component, string name) where T : Component {
-      component.gameObject.name = name;
-      return component;
-    }
-
-    public static T GetOrAddComponent<T>(this Component component) where T : Component {
-      return component.gameObject.TryGetComponent(out T t) ? t : component.gameObject.AddComponent<T>();
-    }
-
-    public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component {
-      return gameObject.TryGetComponent(out T t) ? t : gameObject.AddComponent<T>();
-    }
-
     public static Button Button(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<Button>();
+      return gameObject ? gameObject.GetComponent<Button>() : null;
     }
 
     public static Image Image(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<Image>();
+      return gameObject ? gameObject.GetComponent<Image>() : null;
     }
 
     public static LayoutElement LayoutElement(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<LayoutElement>();
+      return gameObject ? gameObject.GetComponent<LayoutElement>() : null;
     }
 
     public static RectTransform RectTransform(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<RectTransform>();
+      return gameObject ? gameObject.GetComponent<RectTransform>() : null;
     }
 
     public static Text Text(this GameObject gameObject) {
-      return gameObject.Ref()?.GetComponent<Text>();
+      return gameObject ? gameObject.GetComponent<Text>() : null;
     }
   }
 

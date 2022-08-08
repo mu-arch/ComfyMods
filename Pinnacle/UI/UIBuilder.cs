@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -89,10 +88,6 @@ namespace Pinnacle {
           break;
         }
       }
-
-      Directory.CreateDirectory("UIBuilder");
-      string filename = $"UIBuilder/{name}-{borderWidth}bw-{borderHeight}bh.png";
-      File.WriteAllBytes(filename, ImageConversion.EncodeToPNG(texture));
 
       sprite =
           Sprite.Create(
