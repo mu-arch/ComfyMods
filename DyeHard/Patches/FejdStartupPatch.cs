@@ -18,9 +18,14 @@ namespace DyeHard.Patches {
     [HarmonyPatch(nameof(FejdStartup.SetupCharacterPreview))]
     static void SetupCharacterPreviewPostfix(ref FejdStartup __instance) {
       LocalPlayerCache = __instance.m_playerInstance.GetComponent<Player>();
-      SetPlayerZdoHairColor();
-      SetPlayerHairItem();
-      SetPlayerBeardItem();
+
+      if (IsModEnabled.Value) {
+        SetPlayerZdoHairColor();
+        SetPlayerHairItem();
+        SetPlayerBeardItem();
+
+        __instance.m_playerInstance.transform.Translate(OffsetCharacterPreviewPosition.Value);
+      }
     }
   }
 }

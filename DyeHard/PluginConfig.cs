@@ -21,6 +21,8 @@ namespace DyeHard {
     public static ConfigEntry<bool> OverridePlayerBeardItem { get; private set; }
     public static ConfigEntry<string> PlayerBeardItem { get; private set; }
 
+    public static ConfigEntry<Vector3> OffsetCharacterPreviewPosition { get; private set; }
+
     public static void BindConfig(ConfigFile config) {
       Config = config;
 
@@ -47,6 +49,13 @@ namespace DyeHard {
               1f,
               "Hair glow multiplier for the hair color. Zero removes all color.",
               new AcceptableValueRange<float>(0f, 3f));
+
+      OffsetCharacterPreviewPosition =
+          config.BindInOrder(
+              "Preview",
+              "offsetCharacterPreviewPosition",
+              new Vector3(-1.25f, 0f, 0f),
+              "Offsets the position of the character preview.");
 
       IsModEnabled.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
 
