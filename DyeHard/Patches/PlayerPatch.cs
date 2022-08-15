@@ -9,8 +9,8 @@ namespace DyeHard.Patches {
     [HarmonyPatch(nameof(Player.SetLocalPlayer))]
     static void SetLocalPlayerPostfix(ref Player __instance) {
       LocalPlayerCache = __instance;
-      SetPlayerHairItem();
       SetPlayerZdoHairColor();
+      SetPlayerHairItem();
       SetPlayerBeardItem();
     }
 
@@ -18,8 +18,8 @@ namespace DyeHard.Patches {
     [HarmonyPatch(nameof(Player.OnSpawned))]
     static void OnSpawnedPostfix(ref Player __instance) {
       LocalPlayerCache = __instance;
-      SetPlayerHairItem();
       SetPlayerZdoHairColor();
+      SetPlayerHairItem();
       SetPlayerBeardItem();
     }
   }

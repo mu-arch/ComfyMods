@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace DyeHard {
   public static class PluginConfig {
+    public static ConfigFile Config { get; private set; }
+
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     public static ConfigEntry<bool> OverridePlayerHairColor { get; private set; }
@@ -18,8 +20,6 @@ namespace DyeHard {
 
     public static ConfigEntry<bool> OverridePlayerBeardItem { get; private set; }
     public static ConfigEntry<string> PlayerBeardItem { get; private set; }
-
-    public static ConfigFile Config { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       Config = config;
@@ -47,6 +47,32 @@ namespace DyeHard {
               1f,
               "Hair glow multiplier for the hair color. Zero removes all color.",
               new AcceptableValueRange<float>(0f, 3f));
+
+      IsModEnabled.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
+
+      OverridePlayerHairColor.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
+      PlayerHairColor.SettingChanged += (_, _) => UpdatePlayerHairColorHexValue();
+      PlayerHairColorHex.SettingChanged += (_, _) => UpdatePlayerHairColorValue();
+      PlayerHairGlow.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
+    }
+
+    static void UpdatePlayerHairColorHexValue() {
+      Color color = PlayerHairColor.Value;
+      color.a = 1f; // Alpha transparency is unsupported.
+
+      PlayerHairColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
+      PlayerHairColor.Value = color;
+
+      DyeHard.SetPlayerZdoHairColor();
+    }
+
+    static void UpdatePlayerHairColorValue() {
+      if (ColorUtility.TryParseHtmlString(PlayerHairColorHex.Value, out Color color)) {
+        color.a = 1f; // Alpha transparency is unsupported.
+        PlayerHairColor.Value = color;
+
+        DyeHard.SetPlayerZdoHairColor();
+      }
     }
 
     public static void BindCustomizationConfig(ObjectDB objectDb, PlayerCustomizaton customization) {
@@ -72,6 +98,7 @@ namespace DyeHard {
               "If non-empty, sets/overrides the player's hair (if any).",
               new AcceptableValueList<string>(hairItems));
 
+      IsModEnabled.SettingChanged += (_, _) => DyeHard.SetPlayerHairItem();
       OverridePlayerHairItem.SettingChanged += (_, _) => DyeHard.SetPlayerHairItem();
       PlayerHairItem.SettingChanged += (_, _) => DyeHard.SetPlayerHairItem();
 
@@ -93,6 +120,7 @@ namespace DyeHard {
               "If non-empty, sets/overrides the player's beard (if any).",
               new AcceptableValueList<string>(beardItems));
 
+      IsModEnabled.SettingChanged += (_, _) => DyeHard.SetPlayerBeardItem();
       OverridePlayerBeardItem.SettingChanged += (_, _) => DyeHard.SetPlayerBeardItem();
       PlayerBeardItem.SettingChanged += (_, _) => DyeHard.SetPlayerBeardItem();
     }

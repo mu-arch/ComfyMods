@@ -19,6 +19,8 @@ namespace DyeHard.Patches {
     static void SetupCharacterPreviewPostfix(ref FejdStartup __instance) {
       LocalPlayerCache = __instance.m_playerInstance.GetComponent<Player>();
       SetPlayerZdoHairColor();
+      SetPlayerHairItem();
+      SetPlayerBeardItem();
     }
   }
 }

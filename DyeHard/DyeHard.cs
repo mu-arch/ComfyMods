@@ -23,37 +23,11 @@ namespace DyeHard {
     public void Awake() {
       BindConfig(Config);
 
-      IsModEnabled.SettingChanged += (sender, eventArgs) => SetPlayerZdoHairColor();
-
-      OverridePlayerHairColor.SettingChanged += (_, _) => SetPlayerZdoHairColor();
-      PlayerHairColor.SettingChanged += (sender, eventArgs) => UpdatePlayerHairColorHexValue();
-      PlayerHairColorHex.SettingChanged += (sender, eventArgs) => UpdatePlayerHairColorValue();
-      PlayerHairGlow.SettingChanged += (sender, eventArgs) => SetPlayerZdoHairColor();
-
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    void UpdatePlayerHairColorHexValue() {
-      Color color = PlayerHairColor.Value;
-      color.a = 1f; // Alpha transparency is unsupported.
-
-      PlayerHairColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
-      PlayerHairColor.Value = color;
-
-      SetPlayerZdoHairColor();
-    }
-
-    void UpdatePlayerHairColorValue() {
-      if (ColorUtility.TryParseHtmlString(PlayerHairColorHex.Value, out Color color)) {
-        color.a = 1f; // Alpha transparency is unsupported.
-        PlayerHairColor.Value = color;
-
-        SetPlayerZdoHairColor();
-      }
     }
 
     public static Vector3 GetPlayerHairColorVector() {
