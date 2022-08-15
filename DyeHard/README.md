@@ -11,7 +11,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `DyeHard_v1.3.0.zip`.
+  * Go to Settings > Import local mod > Select `DyeHard_v1.4.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -27,6 +27,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Added option to override player hair.
 
 ### 1.3.0
 
