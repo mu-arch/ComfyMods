@@ -23,8 +23,7 @@ namespace DyeHard.Patches {
         SetPlayerZdoHairColor();
         SetPlayerHairItem();
         SetPlayerBeardItem();
-
-        __instance.m_playerInstance.transform.Translate(OffsetCharacterPreviewPosition.Value);
+        SetCharacterPreviewPosition();
       }
     }
   }

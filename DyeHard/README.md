@@ -31,6 +31,10 @@
 ### 1.4.0
 
   * Added option to override player hair.
+  * Added individual override toggles for player hair, hair color and player beard.
+  * Extracted all patch-related code into new patch classes.
+  * Extracted configuration-related code into PluginConfig class.
+  * Extracted extensions-related code into PluginExtensions class.
 
 ### 1.3.0
 

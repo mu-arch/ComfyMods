@@ -30,6 +30,14 @@ namespace DyeHard {
       _harmony?.UnpatchSelf();
     }
 
+    public static void SetCharacterPreviewPosition() {
+      if (FejdStartup.m_instance && FejdStartup.m_instance.m_playerInstance) {
+        FejdStartup.m_instance.m_playerInstance.transform.position =
+            FejdStartup.m_instance.m_characterPreviewPoint.position
+                + (IsModEnabled.Value ? OffsetCharacterPreviewPosition.Value : Vector3.zero);
+      }
+    }
+
     public static Vector3 GetPlayerHairColorVector() {
       Vector3 colorVector = Utils.ColorToVec3(PlayerHairColor.Value);
 

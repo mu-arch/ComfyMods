@@ -54,7 +54,7 @@ namespace DyeHard {
           config.BindInOrder(
               "Preview",
               "offsetCharacterPreviewPosition",
-              new Vector3(-1.25f, 0f, 0f),
+              new Vector3(1f, 0f, 1f),
               "Offsets the position of the character preview.");
 
       IsModEnabled.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
@@ -63,6 +63,8 @@ namespace DyeHard {
       PlayerHairColor.SettingChanged += (_, _) => UpdatePlayerHairColorHexValue();
       PlayerHairColorHex.SettingChanged += (_, _) => UpdatePlayerHairColorValue();
       PlayerHairGlow.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
+
+      OffsetCharacterPreviewPosition.SettingChanged += (_, _) => DyeHard.SetCharacterPreviewPosition();
     }
 
     static void UpdatePlayerHairColorHexValue() {
