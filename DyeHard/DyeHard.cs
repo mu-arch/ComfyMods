@@ -31,10 +31,18 @@ namespace DyeHard {
     }
 
     public static void SetCharacterPreviewPosition() {
-      if (FejdStartup.m_instance && FejdStartup.m_instance.m_playerInstance) {
-        FejdStartup.m_instance.m_playerInstance.transform.position =
-            FejdStartup.m_instance.m_characterPreviewPoint.position
-                + (IsModEnabled.Value ? OffsetCharacterPreviewPosition.Value : Vector3.zero);
+      SetCharacterPreviewPosition(FejdStartup.m_instance);
+    }
+
+    static void SetCharacterPreviewPosition(FejdStartup fejdStartup) {
+      if (fejdStartup && fejdStartup.m_playerInstance) {
+        Vector3 targetPosition = fejdStartup.m_characterPreviewPoint.position;
+
+        if (IsModEnabled.Value) {
+          targetPosition += OffsetCharacterPreviewPosition.Value;
+        }
+
+        fejdStartup.m_playerInstance.transform.position = targetPosition;
       }
     }
 

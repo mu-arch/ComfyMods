@@ -64,6 +64,7 @@ namespace DyeHard {
       PlayerHairColorHex.SettingChanged += (_, _) => UpdatePlayerHairColorValue();
       PlayerHairGlow.SettingChanged += (_, _) => DyeHard.SetPlayerZdoHairColor();
 
+      IsModEnabled.SettingChanged += (_, _) => DyeHard.SetCharacterPreviewPosition();
       OffsetCharacterPreviewPosition.SettingChanged += (_, _) => DyeHard.SetCharacterPreviewPosition();
     }
 

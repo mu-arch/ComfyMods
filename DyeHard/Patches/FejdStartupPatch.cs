@@ -26,5 +26,11 @@ namespace DyeHard.Patches {
         SetCharacterPreviewPosition();
       }
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(FejdStartup.ShowCharacterSelection))]
+    static void ShowCharacterSelectionPostfix() {
+      SetCharacterPreviewPosition();
+    }
   }
 }

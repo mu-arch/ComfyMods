@@ -3,7 +3,7 @@
   "version_number": "1.4.0",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/DyeHard",
   "author": "ComfyMods",
-  "description": "Change your player hair color and/or beard!",
+  "description": "Change your player hair type/color and beard type/color!",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901"
   ]
