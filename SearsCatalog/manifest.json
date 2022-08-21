@@ -1,0 +1,8 @@
+{
+    "name": "SearsCatalog",
+    "version_number": "1.0.0",
+    "author": "ComfyMods",
+    "description": "Everything you need to build that contemporary home.",
+    "website_url": "https://github.com/redseiko/ComfyMods/tree/main/SearsCatalog",
+    "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
+}

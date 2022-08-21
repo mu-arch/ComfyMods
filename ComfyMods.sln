@@ -91,6 +91,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pinnacle", "Pinnacle\Pinnac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipedia", "Recipedia\Recipedia.csproj", "{91C6BAEA-37EC-486E-9939-096ED25D96A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearsCatalog", "SearsCatalog\SearsCatalog.csproj", "{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,10 @@ Global
 		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
