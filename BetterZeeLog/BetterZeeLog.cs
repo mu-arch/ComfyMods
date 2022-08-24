@@ -1,7 +1,9 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+
 using HarmonyLib;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +17,7 @@ namespace BetterZeeLog {
   public class BetterZeeLog : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.betterzeelog";
     public const string PluginName = "BetterZeeLog";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static ConfigEntry<bool> _isModEnabled;
     static ConfigEntry<bool> _removeStackTraceForNonErrorLogType;
@@ -92,13 +94,15 @@ namespace BetterZeeLog {
         return new CodeMatcher(instructions)
             .MatchForward(
                 useEnd: false,
-                new CodeMatch(OpCodes.Ldstr),
-                new CodeMatch(OpCodes.Ldloc_3),
-                new CodeMatch(OpCodes.Box),
+                new CodeMatch(OpCodes.Ldstr, "Failed to send data "),
+                new CodeMatch(OpCodes.Ldloca_S),
+                new CodeMatch(OpCodes.Constrained),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(object), nameof(object.ToString))),
                 new CodeMatch(OpCodes.Call),
-                new CodeMatch(OpCodes.Call))
+                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(ZLog), nameof(ZLog.Log))))
             .Advance(offset: 1)
             .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Pop))
+            .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
             .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
             .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))
             .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Nop))

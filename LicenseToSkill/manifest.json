@@ -1,0 +1,10 @@
+{
+  "name": "LicenseToSkill",
+  "version_number": "1.1.0",
+  "website_url": "https://github.com/redseiko/ComfyMods/tree/main/LicenseToSkill",
+  "author": "ComfyMods",
+  "description": "Lose less skill on death and increase skill loss prevention timer.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.1901"
+  ]
+}

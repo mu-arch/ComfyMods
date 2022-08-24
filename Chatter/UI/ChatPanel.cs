@@ -45,6 +45,10 @@ namespace Chatter {
       _panelRectTransform.SetAsFirstSibling();
     }
 
+    public const string RowName = "Message.Row";
+    public const string RowHeaderName = "Message.Row.Header";
+    public const string HeaderLeftCellName = "Row.Header.LeftCell";
+    public const string HeaderRightCellName = "Row.Header.RightCell";
     public const string ContentRowBodyName = "Message.Row.Text";
 
     readonly RectTransform _panelRectTransform;
@@ -57,12 +61,12 @@ namespace Chatter {
     readonly Text _textPrefabText;
     readonly CanvasGroup _grabberCanvasGroup;
 
-    public Toggle SayToggle { get; private set; } = default;
-    public Toggle ShoutToggle { get; private set; } = default;
-    public Toggle WhisperToggle { get; private set; } = default;
-    public Toggle PingToggle { get; private set; } = default;
-    public Toggle MessageHudToggle { get; private set; } = default;
-    public Toggle TextToggle { get; private set; } = default;
+    public Toggle SayToggle { get; private set; } = default!;
+    public Toggle ShoutToggle { get; private set; } = default!;
+    public Toggle WhisperToggle { get; private set; } = default!;
+    public Toggle PingToggle { get; private set; } = default!;
+    public Toggle MessageHudToggle { get; private set; } = default!;
+    public Toggle TextToggle { get; private set; } = default!;
 
     float _contentWidthOffset = 0f;
 
@@ -119,6 +123,15 @@ namespace Chatter {
 
     public void SetContentSpacing(float spacing) {
       _contentLayoutGroup.spacing = spacing;
+    }
+
+    public void SetContentBodySpacing(float spacing) {
+      foreach (
+          VerticalLayoutGroup layoutGroup in Content
+              .GetComponentsInChildren<VerticalLayoutGroup>(includeInactive: true)
+              .Where(lg => lg.name == RowName)) {
+        layoutGroup.SetSpacing(spacing);
+      }
     }
 
     public void ToggleGrabber(bool toggle) {
@@ -319,7 +332,7 @@ namespace Chatter {
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: true, height: false)
           .SetChildAlignment(TextAnchor.MiddleLeft)
-          .SetPadding(left: 10, right: 10, top: 8, bottom: 8);
+          .SetPadding(left: 20, right: 20, top: 8, bottom: 8);
 
       Image rowImage = row.AddComponent<Image>().SetColor(PluginConfig.ChatPanelBackgroundColor.Value);
 
@@ -342,7 +355,7 @@ namespace Chatter {
 
       inputFieldRow.AddComponent<HorizontalLayoutGroup>()
           .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: true, height: false)
+          .SetChildForceExpand(width: false, height: false)
           .SetChildAlignment(TextAnchor.MiddleLeft);
 
       GameObject inputFieldText = Object.Instantiate(TextPrefab, inputFieldRow.transform, worldPositionStays: false);
@@ -357,8 +370,27 @@ namespace Chatter {
       inputFieldText.GetComponent<Text>()
           .SetSupportRichText(false);
 
+      inputFieldText.AddComponent<LayoutElement>()
+          .SetFlexible(width: 1f);
+
+      GameObject inputFieldPlaceholder = Object.Instantiate(TextPrefab, inputFieldRow.transform, false);
+      inputFieldPlaceholder.SetName("Placeholder");
+
+      inputFieldPlaceholder.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.zero)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero);
+
+      inputFieldPlaceholder.GetComponent<Text>()
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetText("...");
+
+      inputFieldPlaceholder.AddComponent<LayoutElement>();
+
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();
+      inputField.placeholder = inputFieldPlaceholder.GetComponent<Text>();
 
       inputFieldRow.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f);
@@ -383,7 +415,7 @@ namespace Chatter {
       content.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetSpacing(PluginConfig.ChatPanelContentSpacing.Value)
+          .SetSpacing(PluginConfig.ContentRowSpacing)
           .SetPadding(left: 20, right: 20, top: 20, bottom: 20);
 
       content.AddComponent<ContentSizeFitter>()
@@ -447,14 +479,14 @@ namespace Chatter {
     }
 
     public GameObject CreateChatMessageRow(Transform parentTransform) {
-      GameObject row = new("Message.Row", typeof(RectTransform));
+      GameObject row = new(RowName, typeof(RectTransform));
       row.SetParent(parentTransform, worldPositionStays: false);
 
       row.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0)
-          .SetSpacing(5f);
+          .SetSpacing(PluginConfig.ContentRowBodySpacing);
 
       row.AddComponent<ContentSizeFitter>()
           .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
@@ -463,8 +495,9 @@ namespace Chatter {
       return row;
     }
 
-    public GameObject CreateChatMessageRowHeader(Transform parentTransform, string leftText, string rightText) {
-      GameObject header = new("Message.Row.Header", typeof(RectTransform));
+    public (GameObject header, GameObject leftCell, GameObject rightCell) CreateChatMessageRowHeader(
+        Transform parentTransform, string leftText, string rightText) {
+      GameObject header = new(RowHeaderName, typeof(RectTransform));
       header.SetParent(parentTransform, worldPositionStays: false);
 
       header.AddComponent<HorizontalLayoutGroup>()
@@ -473,12 +506,12 @@ namespace Chatter {
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0);
 
       GameObject leftCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      leftCell.name = "Header.LeftCell";
+      leftCell.SetName(HeaderLeftCellName);
 
-      Text leftCellText = leftCell.GetComponent<Text>();
-      leftCellText.text = leftText;
-      leftCellText.alignment = TextAnchor.MiddleLeft;
-      leftCellText.fontSize -= 2;
+      leftCell.GetComponent<Text>()
+          .SetText(leftText)
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetFontSize(_textPrefabText.fontSize - 2);
 
       leftCell.AddComponent<LayoutElement>();
 
@@ -487,16 +520,16 @@ namespace Chatter {
       spacer.AddComponent<LayoutElement>().SetFlexible(width: 1f);
 
       GameObject rightCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      rightCell.name = "Header.RightCell";
+      rightCell.SetName(HeaderRightCellName);
 
-      Text rightCellText = rightCell.GetComponent<Text>();
-      rightCellText.text = rightText;
-      rightCellText.alignment = TextAnchor.MiddleRight;
-      rightCellText.fontSize -= 2;
+      rightCell.GetComponent<Text>()
+          .SetText(rightText)
+          .SetAlignment(TextAnchor.MiddleRight)
+          .SetFontSize(_textPrefabText.fontSize - 2);
 
       rightCell.AddComponent<LayoutElement>();
 
-      return header;
+      return (header, leftCell, rightCell);
     }
 
     public GameObject CreateChatMessageRowBody(Transform parentTransform, string text) {

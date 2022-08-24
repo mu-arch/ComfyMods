@@ -1,4 +1,4 @@
-﻿# ColorfulLights
+# ColorfulLights
 
   * You can color any torch, firepit, stone hearth and bonfire using RGB and HTML color codes!
   * Fireworks launched from bonfires will also be colored **AND** visible to others with the mod.

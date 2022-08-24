@@ -63,13 +63,35 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeNet", "BetterZeeNe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insightful", "Insightful\Insightful.csproj", "{197294CB-EA96-44CF-A334-A10ECCF84459}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeadsUp", "HeadsUp\HeadsUp.csproj", "{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterZeeRouter", "BetterZeeRouter\BetterZeeRouter.csproj", "{9C6D4066-3727-4589-B0AE-3DFC0248D088}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentsWithin", "ContentsWithin\ContentsWithin.csproj", "{A12EA987-2FF3-4AF8-8745-24BAE44B63BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatter", "Chatter\Chatter.csproj", "{801A13E7-7E13-469E-924D-E74CAD364371}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PartyRock", "PartyRock\PartyRock.csproj", "{C918E1DD-5644-4F28-A21F-025E6D34A361}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ComfyValheimModPack", "ComfyValheimModPack", "{58A0BE10-0BF1-4E8B-BE5E-0F0370AC8D7B}"
+	ProjectSection(SolutionItems) = preProject
+		ComfyValheimModPack\icon.png = ComfyValheimModPack\icon.png
+		ComfyValheimModPack\manifest.json = ComfyValheimModPack\manifest.json
+		ComfyValheimModPack\README.md = ComfyValheimModPack\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{7690CFA0-3B91-4BDB-8BF7-72D9C13226A1}"
+	ProjectSection(SolutionItems) = preProject
+		ComfyValheimModPack\config\quick_connect_servers.cfg = ComfyValheimModPack\config\quick_connect_servers.cfg
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenseToSkill", "LicenseToSkill\LicenseToSkill.csproj", "{6A971C22-27A8-4A95-8E43-CC4FA57953F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZoneScouter", "ZoneScouter\ZoneScouter.csproj", "{185751B7-5CAE-480A-8E9C-D8EC87CE481F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pinnacle", "Pinnacle\Pinnacle.csproj", "{8D534F00-8286-4B0E-B2BC-A7669730BBCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Recipedia", "Recipedia\Recipedia.csproj", "{91C6BAEA-37EC-486E-9939-096ED25D96A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SearsCatalog", "SearsCatalog\SearsCatalog.csproj", "{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,10 +207,6 @@ Global
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{197294CB-EA96-44CF-A334-A10ECCF84459}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A310A338-2D7C-4B1F-89ED-EF4B78E3CF85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C6D4066-3727-4589-B0AE-3DFC0248D088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C6D4066-3727-4589-B0AE-3DFC0248D088}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C6D4066-3727-4589-B0AE-3DFC0248D088}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -201,9 +219,36 @@ Global
 		{801A13E7-7E13-469E-924D-E74CAD364371}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{801A13E7-7E13-469E-924D-E74CAD364371}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{801A13E7-7E13-469E-924D-E74CAD364371}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C918E1DD-5644-4F28-A21F-025E6D34A361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C918E1DD-5644-4F28-A21F-025E6D34A361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C918E1DD-5644-4F28-A21F-025E6D34A361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C918E1DD-5644-4F28-A21F-025E6D34A361}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A971C22-27A8-4A95-8E43-CC4FA57953F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A971C22-27A8-4A95-8E43-CC4FA57953F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A971C22-27A8-4A95-8E43-CC4FA57953F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A971C22-27A8-4A95-8E43-CC4FA57953F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185751B7-5CAE-480A-8E9C-D8EC87CE481F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D534F00-8286-4B0E-B2BC-A7669730BBCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91C6BAEA-37EC-486E-9939-096ED25D96A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC8E41CD-C04E-45B6-B9E5-DE60DF83A8EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7690CFA0-3B91-4BDB-8BF7-72D9C13226A1} = {58A0BE10-0BF1-4E8B-BE5E-0F0370AC8D7B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7DCF26FA-FA87-4079-9F39-699DFB3BB472}

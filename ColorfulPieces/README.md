@@ -1,23 +1,46 @@
-﻿# ColorfulPieces
+# ColorfulPieces
 
   * You can color any building piece that can be built using the Hammer using RGB or HTML color codes.
     * Coloring is very simple at the moment and will color all materials/textures on the object (to be refined later).
     * Those without the mod installed will still see the default vanilla materials/textures.
 
+## Installation
+
+### Manual
+
+  * Un-zip `ColorfulPieces.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.7.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ## Instructions
 
-  1. Unzip `ColorfulPieces.dll` to your `/Valheim/BepInEx/plugins/` folder.
-  2. In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
-     * Change the target color using the RGB sliders or using an HTML color code.
-     * Change the target emission color factor using the slider (this affects how bright the target color will be).
-  3. Hover over any building piece ***that you are the owner of*** and a prompt will appear.
-     * Hit `LeftShift + R` to change the building piece color to the target color and emission factor.
-     * Hit `LeftAlt + R` to clear any existing colors from the building piece.
-     * Hit `LeftCtrl + R` to copy the existing color from a piece.
-     * This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
-     * Prompt font-size can be configured with the `colorPromptFontSize` setting.
+### Setting target color
+
+  * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
+    * Change the target color using the RGB sliders or using an HTML color code.
+    * Change the target emission color factor using the slider (this affects how bright the target color will be).
+
+### Changing piece colors
+
+  * Hover over any building piece ***that you are the owner of*** and a prompt will appear.
+    * Hit `LeftShift + R` to change the building piece color to the target color and emission factor.
+    * Hit `LeftAlt + R` to clear any existing colors from the building piece.
+    * Hit `LeftCtrl + R` to copy the existing color from a piece.
+    * This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
+    * Prompt font-size can be configured with the `colorPromptFontSize` setting.
 
 ## Changelog
+
+### 1.7.0
+
+  * Standardized `PluginConfig` to match more recent mods.
+  * Moved Harmony patching code into new `PlayerPatch`, `TerminalPatch` and `HudPatch` classes.
+  * Terminal commands now check for `IsModEnabled` for initial add and in the commands themselves.
+  * Added `manifest.json` and changed `icon.png`.
+  * Modified the project file to automatically create a versioned Thunderstore package.
 
 ### 1.6.0
 

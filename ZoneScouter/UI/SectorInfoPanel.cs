@@ -1,0 +1,132 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.UI;
+
+using static ZoneScouter.PluginConfig;
+using static ZoneScouter.UIBuilder;
+
+namespace ZoneScouter {
+  public class SectorInfoPanel {
+    public GameObject Panel { get; private set; }
+
+    public ContentRow PositionContent { get; private set; }
+    public ValueWithLabel PositionX { get; private set; }
+    public ValueWithLabel PositionY { get; private set; }
+    public ValueWithLabel PositionZ { get; private set; }
+
+    public ContentRow SectorContent { get; private set; }
+    public ValueWithLabel SectorXY { get; private set; }
+    public ValueWithLabel SectorZdoCount { get; private set; }
+
+    public PanelDragger PanelDragger { get; private set; }
+
+    public SectorInfoPanel(Transform parentTransform) {
+      Panel = CreatePanel(parentTransform);
+
+      PositionContent = new(Panel.transform);
+
+      PositionX = new(PositionContent.Row.transform);
+      PositionX.Label.SetText("X");
+
+      PositionY = new(PositionContent.Row.transform);
+      PositionY.Label.SetText("Y");
+
+      PositionZ = new(PositionContent.Row.transform);
+      PositionZ.Label.SetText("Z");
+
+      SectorContent = new(Panel.transform);
+
+      SectorXY = new(SectorContent.Row.transform);
+      SectorXY.Label.SetText("Sector");
+
+      SectorZdoCount = new(SectorContent.Row.transform);
+      SectorZdoCount.Label.SetText("ZDOs");
+
+      SetPanelStyle();
+
+      PanelDragger = Panel.AddComponent<PanelDragger>();
+    }
+
+    public void SetPanelStyle() {
+      int fontSize = SectorInfoPanelFontSize.Value;
+
+      PositionX.Label.SetFontSize(fontSize);
+      PositionX.Value.SetFontSize(fontSize);
+      PositionX.Value.SetColor(PositionValueXTextColor.Value);
+      PositionX.FitValueToText("-00000");
+      PositionX.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
+
+      PositionY.Label.SetFontSize(fontSize);
+      PositionY.Value.SetFontSize(fontSize);
+      PositionY.Value.SetColor(PositionValueYTextColor.Value);
+      PositionY.FitValueToText("-00000");
+      PositionY.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
+
+      PositionZ.Label.SetFontSize(fontSize);
+      PositionZ.Value.SetFontSize(fontSize);
+      PositionZ.Value.SetColor(PositionValueZTextColor.Value);
+      PositionZ.FitValueToText("-00000");
+      PositionZ.Row.Image().SetColor(PositionValueZTextColor.Value.SetAlpha(0.1f));
+
+      SectorXY.Label.SetFontSize(fontSize);
+      SectorXY.Value.SetFontSize(fontSize);
+      SectorXY.Value.SetColor(PositionValueXTextColor.Value);
+      SectorXY.FitValueToText("-123,-123");
+      SectorXY.Row.Image().SetColor(PositionValueXTextColor.Value.SetAlpha(0.1f));
+
+      SectorZdoCount.Label.SetFontSize(fontSize);
+      SectorZdoCount.Value.SetFontSize(fontSize);
+      SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
+      SectorZdoCount.FitValueToText("123456");
+      SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
+    }
+
+    GameObject CreatePanel(Transform parentTransform) {
+      GameObject panel = new("SectorInfo.Panel", typeof(RectTransform));
+      panel.SetParent(parentTransform);
+
+      panel.AddComponent<VerticalLayoutGroup>()
+          .SetChildControl(width: true, height: true)
+          .SetChildForceExpand(width: true, height: false)
+          .SetPadding(left: 10, right: 10, top: 10, bottom: 10)
+          .SetSpacing(8f);
+
+      panel.AddComponent<ContentSizeFitter>()
+          .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
+          .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
+
+      panel.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(CreateRoundedCornerSprite(400, 400, 15))
+          .SetColor(SectorInfoPanelBackgroundColor.Value);
+
+      panel.AddComponent<CanvasGroup>()
+          .SetBlocksRaycasts(true);
+
+      return panel;
+    }
+
+    public class ContentRow {
+      public GameObject Row { get; private set; }
+
+      public ContentRow(Transform parentTransform) {
+        Row = CreateChildRow(parentTransform);
+      }
+
+      GameObject CreateChildRow(Transform parentTransform) {
+        GameObject row = new("Row", typeof(RectTransform));
+        row.SetParent(parentTransform);
+
+        row.AddComponent<HorizontalLayoutGroup>()
+            .SetChildControl(width: true, height: true)
+            .SetChildForceExpand(width: true, height: false)
+            .SetSpacing(6f)
+            .SetChildAlignment(TextAnchor.MiddleCenter);
+
+        return row;
+      }
+    }
+  }
+}

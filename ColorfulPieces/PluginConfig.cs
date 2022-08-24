@@ -5,60 +5,61 @@ using UnityEngine;
 
 namespace ColorfulPieces {
   public class PluginConfig {
-    public static ConfigEntry<bool> _isModEnabled;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
-    public static ConfigEntry<KeyboardShortcut> _changePieceColorShortcut;
-    public static ConfigEntry<KeyboardShortcut> _clearPieceColorShortcut;
-    public static ConfigEntry<KeyboardShortcut> _copyPieceColorShortcut;
+    public static ConfigEntry<KeyboardShortcut> ChangePieceColorShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> ClearPieceColorShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> CopyPieceColorShortcut { get; private set; }
 
-    public static ConfigEntry<Color> _targetPieceColor;
-    public static ConfigEntry<string> _targetPieceColorHex;
-    public static ConfigEntry<float> _targetPieceEmissionColorFactor;
-    public static ConfigEntry<bool> _showChangeRemoveColorPrompt;
-    public static ConfigEntry<int> _colorPromptFontSize;
+    public static ConfigEntry<Color> TargetPieceColor { get; private set; }
+    public static ConfigEntry<string> TargetPieceColorHex { get; private set; }
+    public static ConfigEntry<float> TargetPieceEmissionColorFactor { get; private set; }
 
-    internal static Vector3 _targetPieceColorAsVec3 = Vector3.zero;
+    public static ConfigEntry<bool> ShowChangeRemoveColorPrompt { get; private set; }
+    public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
-    public static void CreateConfig(ConfigFile config) {
-      _isModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+    public static Vector3 TargetPieceColorAsVec3 = Vector3.zero;
 
-      _changePieceColorShortcut =
+    public static void BindConfig(ConfigFile config) {
+      IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      ChangePieceColorShortcut =
           config.Bind(
               "Hotkeys",
               "changePieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftShift),
               "Shortcut to change the color of the hovered piece.");
 
-      _clearPieceColorShortcut =
+      ClearPieceColorShortcut =
           config.Bind(
               "Hotkeys",
               "clearPieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftAlt),
               "Shortcut to clear the color of the hovered piece.");
 
-      _copyPieceColorShortcut =
+      CopyPieceColorShortcut =
           config.Bind(
               "Hotkeys",
               "copyPieceColorShortcut",
               new KeyboardShortcut(KeyCode.R, KeyCode.LeftControl),
               "Shortcut to copy the color of the hovered piece.");
 
-      _targetPieceColor =
+      TargetPieceColor =
           config.Bind("Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
 
-      _targetPieceColorAsVec3 = Utils.ColorToVec3(_targetPieceColor.Value);
+      TargetPieceColorAsVec3 = Utils.ColorToVec3(TargetPieceColor.Value);
 
-      _targetPieceColorHex =
+      TargetPieceColorHex =
           config.Bind(
               "Color",
               "targetPieceColorHex",
               $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
               "Target color to set the piece material to, in HTML hex form (alpha unsupported).");
 
-      _targetPieceColor.SettingChanged += (s, e) => UpdateColorHexValue();
-      _targetPieceColorHex.SettingChanged += (s, e) => UpdateColorValue();
+      TargetPieceColor.SettingChanged += (s, e) => UpdateColorHexValue();
+      TargetPieceColorHex.SettingChanged += (s, e) => UpdateColorValue();
 
-      _targetPieceEmissionColorFactor =
+      TargetPieceEmissionColorFactor =
           config.Bind(
               "Color",
               "targetPieceEmissionColorFactor",
@@ -67,28 +68,28 @@ namespace ColorfulPieces {
                   "Factor to multiply the target color by and set as emission color.",
                   new AcceptableValueRange<float>(0f, 0.8f)));
 
-      _showChangeRemoveColorPrompt =
+      ShowChangeRemoveColorPrompt =
           config.Bind("Hud", "showChangeRemoveColorPrompt", true, "Show the 'change/remove/copy' color text prompt.");
 
-      _colorPromptFontSize =
+      ColorPromptFontSize =
           config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
     }
 
     static void UpdateColorHexValue() {
-      Color color = _targetPieceColor.Value;
+      Color color = TargetPieceColor.Value;
       color.a = 1.0f;
 
-      _targetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
-      _targetPieceColor.Value = color;
-      _targetPieceColorAsVec3 = Utils.ColorToVec3(color);
+      TargetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
+      TargetPieceColor.Value = color;
+      TargetPieceColorAsVec3 = Utils.ColorToVec3(color);
     }
 
     static void UpdateColorValue() {
-      if (ColorUtility.TryParseHtmlString(_targetPieceColorHex.Value, out Color color)) {
+      if (ColorUtility.TryParseHtmlString(TargetPieceColorHex.Value, out Color color)) {
         color.a = 1.0f;
 
-        _targetPieceColor.Value = color;
-        _targetPieceColorAsVec3 = Utils.ColorToVec3(color);
+        TargetPieceColor.Value = color;
+        TargetPieceColorAsVec3 = Utils.ColorToVec3(color);
       }
     }
   }

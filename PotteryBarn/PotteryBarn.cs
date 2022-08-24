@@ -1,22 +1,20 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 
 using HarmonyLib;
 
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 
-using UnityEngine;
+using static PotteryBarn.PluginConfig;
 
 namespace PotteryBarn {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.0.0";
-
-    static ConfigEntry<bool> _isModEnabled;
+    public const string PluginVersion = "1.2.1";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -24,90 +22,47 @@ namespace PotteryBarn {
     public void Awake() {
       _logger = Logger;
 
-      _isModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+      BindConfig(Config);
 
-      if (_isModEnabled.Value) {
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
-      }
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    static PieceTable _hammerPieceTable;
-
-    [HarmonyPatch(typeof(ZNetScene))]
-    class ZNetScenePatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZNetScene.Awake))]
-      static void AwakePostfix(ref ZNetScene __instance) {
-        AddHammerPieces();
-      }
+    public static IEnumerator AddPieces() {
+      yield return AddHammerPieces(GetPieceTable("_HammerPieceTable"));
     }
 
-    static void AddHammerPieces() {
-      _hammerPieceTable ??= GetPieceTable("_HammerPieceTable");
+    static IEnumerator AddHammerPieces(PieceTable pieceTable) {
+      yield return null;
 
-      if (!_hammerPieceTable) {
-        _logger.LogError("Could not find the Hammer PieceTable.");
-        return;
+      if (!pieceTable) {
+        _logger.LogError($"Could not find HammerPieceTable!");
+        yield break;
       }
 
-      AddStoneFloorPiece(_hammerPieceTable);
+      pieceTable.AddPiece(GetExistingPiece("turf_roof").SetName("turf_roof"));
+      pieceTable.AddPiece(GetExistingPiece("turf_roof_top").SetName("turf_roof_top"));
+      pieceTable.AddPiece(GetExistingPiece("turf_roof_wall").SetName("turf_roof_wall"));
+      pieceTable.AddPiece(GetExistingPiece("ArmorStand_Female").SetName("ArmorStand_Female"));
+      pieceTable.AddPiece(GetExistingPiece("ArmorStand_Male").SetName("ArmorStand_Male"));
+
+      pieceTable.AddPiece(
+          GetExistingPiece("stone_floor")
+              .SetResource("Stone", r => r.SetAmount(12).SetRecover(true)));
     }
 
-    static void AddStoneFloorPiece(PieceTable pieceTable) {
-      GameObject prefab = GetExistingPrefab("stone_floor");
-
-      if (!prefab) {
-        _logger.LogError("Could not find prefab: stone_floor");
-        return;
-      }
-
-      Piece piece = prefab.GetComponent<Piece>();
-      Piece.Requirement stoneReq = piece.GetRequirement("Stone");
-
-      if (stoneReq == null) {
-        _logger.LogError("Could not find Stone requirement for stone_floor Piece.");
-        return;
-      }
-
-      stoneReq.m_amount = 24;
-      stoneReq.m_recover = true;
-
-      if (pieceTable.AddPiece(piece)) {
-        _logger.LogInfo($"Added stone_floor prefab to {pieceTable.name} PieceTable.");
-      }
-    }
-
-    static GameObject GetExistingPrefab(string name) {
-      return ZNetScene.m_instance?.m_prefabs
-          .Where(prefab => prefab?.name == name)
+    static PieceTable GetPieceTable(string pieceTableName) {
+      return ObjectDB.m_instance.Ref()?.m_items
+          .Select(item => item.GetComponent<ItemDrop>().Ref()?.m_itemData?.m_shared?.m_buildPieces)
+          .Where(table => table.Ref()?.name == pieceTableName)
           .FirstOrDefault();
     }
 
-    static PieceTable GetPieceTable(string name) {
-      return ObjectDB.m_instance?.m_items
-          .Select(item => item.GetComponent<ItemDrop>()?.m_itemData?.m_shared?.m_buildPieces)
-          .Where(table => table?.name == name)
-          .FirstOrDefault();
-    }
-  }
-
-  static class HelperExtensions {
-    public static bool AddPiece(this PieceTable pieceTable, Piece piece) {
-      if (!piece || !pieceTable || pieceTable.m_pieces == null || pieceTable.m_pieces.Contains(piece.gameObject)) {
-        return false;
-      }
-
-      pieceTable.m_pieces.Add(piece.gameObject);
-      return true;
-    }
-
-    public static Piece.Requirement GetRequirement(this Piece piece, string name) {
-      return piece?.m_resources?.Where(req => req?.m_resItem?.name == name).FirstOrDefault();
+    static Piece GetExistingPiece(string prefabName) {
+      return ZNetScene.m_instance.Ref()?.GetPrefab(prefabName).Ref()?.GetComponent<Piece>();
     }
   }
 }

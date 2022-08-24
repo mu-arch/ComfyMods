@@ -2,7 +2,7 @@
 
 *An elegant chat for a more civilized age.*
 
-![UI-Screenshot-01](https://i.imgur.com/Jhh7bi3.png)
+![UI-Screenshot-01](https://i.imgur.com/SPeqjsu.png)
 
 ## Installation
 
@@ -12,10 +12,14 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Chatter_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `Chatter_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
+
+### New Features!
+
+  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below)!
 
 ### Features
 
@@ -33,11 +37,17 @@
 
     ![UI-Screenshot-03](https://i.imgur.com/Fv126LR.png)
 
+### Change Message Layouts
+
+  * The message layout can be switched at anytime in configuration manager and messages will be rebuilt immediately.
+
+    ![UI-Screenshot-04](https://i.imgur.com/7c5T3X8.png)
+
 ### Configure
 
   * Almost every component of the UI is configurable.
 
-    ![UI-Screenshot-02](https://i.imgur.com/O8ZfTh2.png)
+    ![UI-Screenshot-02](https://i.imgur.com/XUzlkmp.png)
 
 ### Notes
 
@@ -47,6 +57,16 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.2.0
+
+  * UI! UI? UI!
+
+### 1.1.0
+
+  * Added support for a new chat message layout `SingleRow`.
+  * Added new configuration options for timestamp and content spacing.
+  * Refactored code to unify UI creation from all message types and rebuild from message history.
 
 ### 1.0.0
 

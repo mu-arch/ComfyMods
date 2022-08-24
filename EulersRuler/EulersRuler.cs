@@ -14,7 +14,7 @@ namespace EulersRuler {
   public class EulersRuler : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.eulersruler";
     public const string PluginName = "EulersRuler";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static readonly Gradient _healthPercentGradient = CreateHealthPercentGradient();
     static readonly Gradient _stabilityPercentGradient = CreateStabilityPercentGradient();

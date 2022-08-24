@@ -7,50 +7,61 @@ using UnityEngine;
 
 namespace Chatter {
   public class PluginConfig {
-    public static ConfigFile Config { get; private set; } = default!;
+    public static ConfigFile Config { get; private set; }
 
-    public static ConfigEntry<bool> IsModEnabled { get; private set; } = default!;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     // Behaviour
-    public static ConfigEntry<int> HideChatPanelDelay { get; private set; } = default!;
-    public static ConfigEntry<float> HideChatPanelAlpha { get; private set; } = default!;
+    public static ConfigEntry<int> HideChatPanelDelay { get; private set; }
+    public static ConfigEntry<float> HideChatPanelAlpha { get; private set; }
 
     // Content
-    public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; } = default!;
-    public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; } = default!;
+    public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
+    public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
+
+    // Layout
+    public static ConfigEntry<Chatter.MessageLayoutType> ChatMessageLayout { get; private set; }
+    public static ConfigEntry<bool> ChatMessageShowTimestamp { get; private set; }
 
     // Style
-    public static ConfigEntry<string> ChatMessageFont { get; private set; } = default!;
-    public static ConfigEntry<int> ChatMessageFontSize { get; private set; } = default!;
-    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; } = default!;
-    public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; } = default!;
+    public static ConfigEntry<string> ChatMessageFont { get; private set; }
+    public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
+
+    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
+    public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
+
+    // Spacing
+    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; }
+    public static ConfigEntry<float> ChatPanelContentBodySpacing { get; private set; }
+    public static ConfigEntry<float> ChatPanelContentSingleRowSpacing { get; private set; }
 
     // Panel
-    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; } = default!;
-    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; } = default!;
-    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; } = default!;
+    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; }
+    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; }
+    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; }
 
     // Scrolling
-    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; } = default!;
-    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; } = default!;
-    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; } = default!;
+    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; }
+    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; }
 
     // Colors
-    public static ConfigEntry<Color> ChatMessageTextDefaultColor { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatMessageTextSayColor { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatMessageTextShoutColor { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; } = default!;
-    public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; } = default!;
+    public static ConfigEntry<Color> ChatMessageTextDefaultColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTextSayColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTextShoutColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageTimestampColor { get; private set; }
 
     // Username
-    public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; } = default!;
-    public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; } = default!;
+    public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; }
+    public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       Config = config;
-      IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      IsModEnabled ??= config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       // Behaviour
       HideChatPanelDelay =
@@ -61,7 +72,7 @@ namespace Chatter {
               new ConfigDescription(
                   "Delay (in seconds) before hiding the ChatPanel.", new AcceptableValueRange<int>(1, 180)));
 
-      HideChatPanelAlpha =
+      HideChatPanelAlpha ??=
           config.Bind(
               "Behaviour",
               "hideChatPanelAlpha",
@@ -70,43 +81,80 @@ namespace Chatter {
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
       // Content
-      ShowMessageHudCenterMessages =
+      ShowMessageHudCenterMessages ??=
           config.Bind(
               "Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      ShowChatPanelMessageDividers =
+      ShowChatPanelMessageDividers ??=
           config.Bind(
               "Content",
               "showChatPanelMessageDividers",
               defaultValue: true,
               "Show the horizontal dividers between groups of messages.");
 
+      // Layout
+      ChatMessageLayout ??=
+          config.Bind(
+              "Layout",
+              "chatMessageLayout",
+              Chatter.MessageLayoutType.WithHeaderRow,
+              "Determines which layout to use when displaying a chat message.");
+
+      ChatMessageShowTimestamp ??=
+          config.Bind(
+              "Layout",
+              "chatMessageShowTimestamp",
+              defaultValue: true,
+              "Show a timestamp for each group of chat messages (except system/default).");
+
       // Style
-      ChatPanelBackgroundColor =
+      ChatPanelBackgroundColor ??=
           config.Bind(
               "Style",
               "chatPanelBackgroundColor",
               (Color) new Color32(0, 0, 0, 128),
               "The background color for the ChatPanel.");
 
-      ChatPanelRectMaskSoftness =
+      ChatPanelRectMaskSoftness ??=
           config.Bind(
               "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
 
-      ChatPanelContentSpacing =
+      // Spacing
+      ChatPanelContentSpacing ??=
           config.Bind(
-              "Style",
+              "Spacing",
               "chatPanelContentSpacing",
               10f,
               new ConfigDescription(
-                  "The spacing (in pixels) between rows in the ChatPanel content.",
-                  new AcceptableValueRange<float>(-100, 100)));
+                  "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 3 }));
+
+      ChatPanelContentBodySpacing ??=
+          config.Bind(
+              "Spacing",
+              "chatPanelContentBodySpacing",
+              5f,
+              new ConfigDescription(
+                  "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 2 }));
+
+      ChatPanelContentSingleRowSpacing ??=
+          config.Bind(
+              "Spacing",
+              "chatPanelContentSingleRowSpacing",
+              10f,
+              new ConfigDescription(
+                  "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
+                  new AcceptableValueRange<float>(-100, 100),
+                  new ConfigurationManagerAttributes { Order = 1 }));
 
       // Username
-      ChatMessageUsernamePrefix =
+      ChatMessageUsernamePrefix ??=
           config.Bind(
               "Username",
               "chatMessageUsernamePrefix",
@@ -116,7 +164,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 2 }));
 
-      ChatMessageUsernamePostfix =
+      ChatMessageUsernamePostfix ??=
           config.Bind(
               "Username",
               "chatMessageUsernamePostfix",
@@ -127,7 +175,7 @@ namespace Chatter {
                   new ConfigurationManagerAttributes { Order = 1 }));
 
       // Scrolling
-      ScrollContentUpShortcut =
+      ScrollContentUpShortcut ??=
           config.Bind(
               "Scrolling",
               "scrollContentUpShortcut",
@@ -137,7 +185,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 3 }));
 
-      ScrollContentDownShortcut =
+      ScrollContentDownShortcut ??=
           config.Bind(
               "Scrolling",
               "scrollContentDownShortcut",
@@ -147,7 +195,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 2 }));
 
-      ScrollContentOffsetInterval =
+      ScrollContentOffsetInterval ??=
           config.Bind(
               "Scrolling",
               "scrollContentOffsetInterval",
@@ -158,7 +206,7 @@ namespace Chatter {
                   new ConfigurationManagerAttributes { Order = 1 }));
 
       // Colors
-      ChatMessageTextDefaultColor =
+      ChatMessageTextDefaultColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextDefaultColor",
@@ -168,7 +216,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 6 }));
 
-      ChatMessageTextSayColor =
+      ChatMessageTextSayColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextSayColor",
@@ -178,7 +226,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 5 }));
 
-      ChatMessageTextShoutColor =
+      ChatMessageTextShoutColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextShoutColor",
@@ -188,7 +236,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 4 }));
 
-      ChatMessageTextWhisperColor =
+      ChatMessageTextWhisperColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextWhisperColor",
@@ -198,7 +246,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 3 }));
 
-      ChatMessageTextPingColor =
+      ChatMessageTextPingColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextPingColor",
@@ -208,7 +256,7 @@ namespace Chatter {
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 2 }));
 
-      ChatMessageTextMessageHudColor =
+      ChatMessageTextMessageHudColor ??=
           config.Bind(
               "Colors",
               "chatMessageTextMessageHudColor",
@@ -217,6 +265,34 @@ namespace Chatter {
                   "Color for 'MessageHud' chat messages.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 1 }));
+
+      ChatMessageTimestampColor ??=
+          config.Bind(
+              "Colors",
+              "chatMessageTimestampColor",
+              (Color) new Color32(244, 246, 247, 255),
+              new ConfigDescription(
+                  "Color for any timestamp shown in the chat messages.",
+                  acceptableValues: null,
+                  new ConfigurationManagerAttributes { Order = 0 }));
+    }
+
+    public static float ContentRowSpacing {
+      get {
+        return ChatMessageLayout.Value switch {
+          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
+          _ => ChatPanelContentSpacing.Value,
+        };
+      }
+    }
+
+    public static float ContentRowBodySpacing {
+      get {
+        return ChatMessageLayout.Value switch {
+          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
+          _ => ChatPanelContentBodySpacing.Value,
+        };
+      }
     }
 
     static readonly Dictionary<string, Font> _fontCache = new();
@@ -240,14 +316,14 @@ namespace Chatter {
       string[] fontNames =
           _fontCache.Keys.OrderBy(f => f).Concat(Font.GetOSInstalledFontNames().OrderBy(f => f)).ToArray();
 
-      ChatMessageFont =
+      ChatMessageFont ??=
           Config.Bind(
               "Style",
               "chatMessageFont",
               defaultFont.name,
               new ConfigDescription("The font to use for chat messages.", new AcceptableValueList<string>(fontNames)));
 
-      ChatMessageFontSize =
+      ChatMessageFontSize ??=
           Config.Bind(
               "Style",
               "chatMessageFontSize",
@@ -256,21 +332,21 @@ namespace Chatter {
     }
 
     public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {
-      ChatPanelPosition =
+      ChatPanelPosition ??=
           Config.Bind(
               "Panel",
               "chatPanelPosition",
               chatWindowRectTransform.anchoredPosition,
               "The Vector2 position of the ChatPanel.");
 
-      ChatPanelSize =
+      ChatPanelSize ??=
           Config.Bind(
               "Panel",
               "chatPanelSize",
               chatWindowRectTransform.sizeDelta - new Vector2(10f, 0f),
               "The size (width, height) of the ChatPanel.");
 
-      ChatContentWidthOffset =
+      ChatContentWidthOffset ??=
           Config.Bind(
               "Panel",
               "chatContentWidthOffset",
