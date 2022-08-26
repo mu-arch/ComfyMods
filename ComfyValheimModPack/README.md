@@ -16,6 +16,12 @@
 
 ## Changelog
 
+### 2.1.0
+
+  * Added `ComfyMods-ComfyNameYourShip-1.0.0` to the dependencies list.
+  * Updated dependencies list to latest version (where applicable).
+  * Modified `quick_connect_servers.cfg` to point to new ComfyValheim address: `comfy.cybermancy.org`
+
 ### 2.0.1
 
   * Updated dependencies list to latest version (where applicable).
