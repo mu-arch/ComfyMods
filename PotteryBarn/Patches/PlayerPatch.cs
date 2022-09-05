@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection.Emit;
 
 using HarmonyLib;
@@ -14,7 +11,7 @@ using static PotteryBarn.PotteryBarn;
 
 namespace PotteryBarn.Patches {
   [HarmonyPatch(typeof(Player))]
-  public class PlayerPatch {
+  static class PlayerPatch {
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Player.SetupPlacementGhost))]
     static IEnumerable<CodeInstruction> SetupPlacementGhostTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -88,22 +85,25 @@ namespace PotteryBarn.Patches {
     [HarmonyPatch(nameof(Player.CheckCanRemovePiece))]
     static bool CheckCanRemovePrefix(Player __instance, Piece piece, ref bool __result) {
       if (IsModEnabled.Value) {
-        if(!piece.IsPlacedByPlayer() && isCreatorShopPiece(piece)) {
-          log("Cannot deconstruct world generated item using pottery barn.");
+        if (!piece.IsPlacedByPlayer() && IsCreatorShopPiece(piece)) {
+          LogMessage("Cannot deconstruct world generated item using pottery barn.");
           __result = false;
           return false;
         }
-        if(isCreatorShopPiece(piece) && !piece.IsCreator()) {
-          log("Cannot deconstruct pottery barn piece you did not build yourself.");
+
+        if (IsCreatorShopPiece(piece) && !piece.IsCreator()) {
+          LogMessage("Cannot deconstruct pottery barn piece you did not build yourself.");
           __result = false;
           return false;
         }
-        if(!isDestructibleCreatorShopPiece(piece) && isCreatorShopPiece(piece)) {
-          log("This pottery barn piece cannot be deconstructed. You must destroy with damage.");
+
+        if (!IsDestructibleCreatorShopPiece(piece) && IsCreatorShopPiece(piece)) {
+          LogMessage("This pottery barn piece cannot be deconstructed. You must destroy with damage.");
           __result = false;
           return false;
         }
       }
+
       return true;
     }
   }

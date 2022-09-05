@@ -1,16 +1,15 @@
-﻿using BepInEx;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
 
 using Jotunn.Managers;
-using Jotunn.Configs;
-
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 using UnityEngine;
 
@@ -32,7 +31,7 @@ namespace PotteryBarn {
     static Quaternion _prefabIconRenderRotation;
 
     public static bool _debug = false;
-    public static bool isDropTableDisabled = false;
+    public static bool IsDropTableDisabled { get; set; } = false;
 
     public void Awake() {
       _logger = Logger;
@@ -78,22 +77,26 @@ namespace PotteryBarn {
           GetExistingPiece("wood_ledge")
               .SetResource("Wood", r => r.SetAmount(1).SetRecover(true)));
 
-      foreach (KeyValuePair<string, Dictionary<string, int>> entry in Requirements.hammerCreatorShopItems.OrderBy(o => o.Key).ToList()) {
+      foreach (
+          KeyValuePair<string, Dictionary<string, int>> entry in
+              Requirements.hammerCreatorShopItems.OrderBy(o => o.Key).ToList()) {
         GetOrAddPieceComponent(entry.Key, pieceTable)
-          .SetResources(CreateRequirements(entry.Value))
-          .SetCategory(_prefabPieceCategory)
-          .SetCraftingStation(GetCraftingStation(entry.Key))
-          .SetCanBeRemoved(true)
-          .SetTargetNonPlayerBuilt(false);
+            .SetResources(CreateRequirements(entry.Value))
+            .SetCategory(_prefabPieceCategory)
+            .SetCraftingStation(GetCraftingStation(entry.Key))
+            .SetCanBeRemoved(true)
+            .SetTargetNonPlayerBuilt(false);
       }
 
-      //foreach (KeyValuePair<string, Dictionary<string, int>> entry in Requirements.cultivatorCreatorShopItems.OrderBy(o => o.Key).ToList()) {
+      //foreach (
+      //    KeyValuePair<string, Dictionary<string, int>> entry in
+      //        Requirements.cultivatorCreatorShopItems.OrderBy(o => o.Key).ToList()) {
       //  GetOrAddPieceComponent(entry.Key, GetPieceTable("_CultivatorPieceTable"), true)
-      //    .SetResources(CreateRequirements(entry.Value))
-      //    .SetCanBeRemoved(false)
-      //    .SetTargetNonPlayerBuilt(false)
-      //    .SetGroundOnly(true)
-      //    .AddPlantComponent();
+      //      .SetResources(CreateRequirements(entry.Value))
+      //      .SetCanBeRemoved(false)
+      //      .SetTargetNonPlayerBuilt(false)
+      //      .SetGroundOnly(true)
+      //      .AddPlantComponent();
       //}
     }
 
@@ -101,7 +104,7 @@ namespace PotteryBarn {
       Piece.Requirement[] requirements = new Piece.Requirement[data.Count];
       for (int index = 0; index < data.Count; index++) {
         KeyValuePair<string, int> item = data.ElementAt(index);
-        Piece.Requirement req = new Piece.Requirement();
+        Piece.Requirement req = new();
         req.m_resItem = PrefabManager.Cache.GetPrefab<GameObject>(item.Key).GetComponent<ItemDrop>();
         req.m_amount = item.Value;
         requirements[index] = req;
@@ -122,9 +125,11 @@ namespace PotteryBarn {
 
     static Piece GetOrAddPieceComponent(string prefabName, PieceTable pieceTable) {
       GameObject prefab = ZNetScene.instance.GetPrefab(prefabName);
+
       if (!prefab.TryGetComponent(out Piece piece)) {
         piece = prefab.AddComponent<Piece>();
         piece.m_name = FormatPrefabName(prefab.name);
+
         SetPlacementRestrictions(piece);
       }
 
@@ -184,50 +189,59 @@ namespace PotteryBarn {
       return Sprite.Create(texture, new(0, 0, 1, 1), Vector2.zero);
     }
 
-    public static void log(string message) {
-      if(_debug) {
+    public static void LogMessage(string message) {
+      if (_debug) {
         _logger.LogMessage(message);
       }
     }
 
-    public static bool isCreatorShopPiece(Piece piece) {
+    public static bool IsCreatorShopPiece(Piece piece) {
       if (Requirements.hammerCreatorShopItems.Keys.Contains(piece.m_description)) {
         return true;
       }
+
       return false;
     }
 
-    public static bool isDestructibleCreatorShopPiece(string prefabName) {
+    public static bool IsDestructibleCreatorShopPiece(string prefabName) {
       if (Requirements.hammerCreatorShopItems.Keys.Contains(prefabName)) {
         return true;
       }
+
       return false;
     }
 
-    public static bool isDestructibleCreatorShopPiece(Piece piece) {
+    public static bool IsDestructibleCreatorShopPiece(Piece piece) {
       if (Requirements.hammerCreatorShopItems.Keys.Contains(piece.m_description)) {
         return true;
       }
+
       return false;
     }
 
-    public static bool isBuildHammerItem(string prefabName) {
+    public static bool IsBuildHammerItem(string prefabName) {
       if (Requirements.hammerCreatorShopItems.Keys.Contains(prefabName)) {
         return true;
       }
+
       return false;
     }
 
     public static bool HasCraftingStationRequirement(string prefabName) {
-      if(Requirements.craftingStationRequirements.Keys.Contains(prefabName)) {
+      if (Requirements.craftingStationRequirements.Keys.Contains(prefabName)) {
         return true;
       }
+
       return false;
     }
+
     public static CraftingStation GetCraftingStation(string prefabName) {
       if (Requirements.craftingStationRequirements.ContainsKey(prefabName)) {
-        return PrefabManager.Instance.GetPrefab(Requirements.craftingStationRequirements[prefabName]).GetComponent<CraftingStation>();
+        return PrefabManager.Instance
+            .GetPrefab(Requirements.craftingStationRequirements[prefabName])
+            .GetComponent<CraftingStation>();
       }
+
       return null;
     }
   }

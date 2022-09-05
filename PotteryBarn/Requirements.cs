@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace PotteryBarn {
   public class Requirements {
-    public static readonly Dictionary<string, Dictionary<string, int>> hammerCreatorShopItems = new Dictionary<string, Dictionary<string, int>>() {
+    public static readonly Dictionary<string, Dictionary<string, int>> hammerCreatorShopItems = new() {
       // Goblin items
       {"goblin_banner", new Dictionary<string, int>() {
           {"FineWood", 2 },
@@ -104,7 +100,7 @@ namespace PotteryBarn {
           {"MushroomBlue", 1 }}}
     };
 
-    //public static readonly Dictionary<string, Dictionary<string, int>> cultivatorCreatorShopItems = new Dictionary<string, Dictionary<string, int>>() {
+    //public static readonly Dictionary<string, Dictionary<string, int>> cultivatorCreatorShopItems = new() {
     //   // Natural Items
     //   {"Bush01", new Dictionary<string, int>() {
     //      {"Wood", 2 }}},
@@ -132,7 +128,7 @@ namespace PotteryBarn {
     //      {"Stone", 50 }}}
     //};
 
-    public static readonly Dictionary<string, string> craftingStationRequirements = new Dictionary<string, string>() {
+    public static readonly Dictionary<string, string> craftingStationRequirements = new() {
       {"goblin_banner", "piece_workbench" },
       {"goblin_fence", "piece_workbench" },
       {"goblin_pole", "piece_workbench" },
@@ -154,6 +150,5 @@ namespace PotteryBarn {
       {"StatueSeed", "piece_stonecutter" },
       {"stonechest", "piece_stonecutter" }
     };
-
   }
 }
