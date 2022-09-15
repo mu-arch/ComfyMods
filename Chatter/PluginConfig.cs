@@ -1,7 +1,10 @@
-﻿using BepInEx.Configuration;
-
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using BepInEx.Configuration;
+
+using ComfyLib;
 
 using UnityEngine;
 
@@ -18,6 +21,10 @@ namespace Chatter {
     // Content
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
+
+    // Filters
+    public static ConfigEntry<string> MessageHudTextFilter { get; private set; }
+    public static StringListConfigEntry MessageHudTextFilterList { get; private set; }
 
     // Layout
     public static ConfigEntry<Chatter.MessageLayoutType> ChatMessageLayout { get; private set; }
@@ -58,6 +65,83 @@ namespace Chatter {
     public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; }
     public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; }
 
+    public sealed class StringListConfigEntry {
+      public ConfigEntry<string> ConfigEntry { get; }
+
+      public StringListConfigEntry(ConfigFile config, string section, string key, string description) {
+        ConfigEntry = config.Bind(section, key, string.Empty, CreateConfigDescription(description));
+      }
+
+      ConfigDescription CreateConfigDescription(string description) {
+        return new(
+            description,
+            acceptableValues: null,
+            new ConfigurationManagerAttributes {
+              CustomDrawer = Drawer,
+              HideDefaultButton = true,
+              HideSettingName = true
+            });
+      }
+
+      readonly Lazy<GUIStyle> _horizontalStyle =
+          new(() =>
+              new() {
+                padding = new(left: 10, right: 10, top: 0, bottom: 0)
+              });
+
+      readonly Lazy<GUIStyle> _buttonStyle =
+          new(() =>
+              new(GUI.skin.button) {
+                padding = new(left: 10, right: 10, top: 5, bottom: 5)
+              });
+
+      readonly Lazy<GUIStyle> _textFieldStyle =
+          new(() =>
+              new(GUI.skin.textField) {
+                padding = new(left: 5, right: 5, top: 5, bottom: 5),
+                wordWrap = true
+              });
+
+      void Drawer(ConfigEntryBase entry) {
+        List<string> values = entry.BoxedValue.ToString().Split('\t').ToList();
+
+        GUILayout.BeginVertical();
+
+        GUILayout.BeginHorizontal(_horizontalStyle.Value);
+        GUILayout.Label(entry.Definition.Key, GUILayout.ExpandWidth(false));
+        GUILayout.Space(pixels: 5f);
+
+        if (GUILayout.Button("Add...", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
+          values.Add(string.Empty);
+        }
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
+        int deleteIndex = -1;
+
+        for (int i = 0; i < values.Count; i++) {
+          GUILayout.BeginHorizontal(_horizontalStyle.Value);
+
+          if (GUILayout.Button("Delete", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
+            deleteIndex = i;
+          }
+
+          GUILayout.Space(pixels: 5f);
+          values[i] = GUILayout.TextField(values[i], _textFieldStyle.Value, GUILayout.ExpandWidth(true));
+          GUILayout.EndHorizontal();
+        }
+
+        GUILayout.EndVertical();
+
+        if (deleteIndex >= 0 && deleteIndex < values.Count) {
+          values.RemoveAt(deleteIndex);
+        }
+
+        entry.BoxedValue = string.Join("\t", values);
+      }
+    }
+
     public static void BindConfig(ConfigFile config) {
       Config = config;
 
@@ -80,15 +164,20 @@ namespace Chatter {
               new ConfigDescription(
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
+      // Filters
+      MessageHudTextFilterList =
+          new(config, "Filters", "messageHudTextFilter", "Filter for MessageHud.Center messages.");
+      MessageHudTextFilter = MessageHudTextFilterList.ConfigEntry;
+
       // Content
-      ShowMessageHudCenterMessages ??=
+      ShowMessageHudCenterMessages =
           config.Bind(
               "Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      ShowChatPanelMessageDividers ??=
+      ShowChatPanelMessageDividers =
           config.Bind(
               "Content",
               "showChatPanelMessageDividers",
@@ -123,87 +212,66 @@ namespace Chatter {
               "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
 
       // Spacing
-      ChatPanelContentSpacing ??=
-          config.Bind(
+      ChatPanelContentSpacing =
+          config.BindInOrder(
               "Spacing",
               "chatPanelContentSpacing",
-              10f,
-              new ConfigDescription(
-                  "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
-                  new AcceptableValueRange<float>(-100, 100),
-                  new ConfigurationManagerAttributes { Order = 3 }));
+              defaultValue: 10f,
+              "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
+              new AcceptableValueRange<float>(-100, 100));
 
-      ChatPanelContentBodySpacing ??=
-          config.Bind(
+      ChatPanelContentBodySpacing =
+          config.BindInOrder(
               "Spacing",
               "chatPanelContentBodySpacing",
-              5f,
-              new ConfigDescription(
-                  "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
-                  new AcceptableValueRange<float>(-100, 100),
-                  new ConfigurationManagerAttributes { Order = 2 }));
+              defaultValue: 5f,
+              "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
+              new AcceptableValueRange<float>(-100, 100));
 
-      ChatPanelContentSingleRowSpacing ??=
-          config.Bind(
+      ChatPanelContentSingleRowSpacing =
+          config.BindInOrder(
               "Spacing",
               "chatPanelContentSingleRowSpacing",
-              10f,
-              new ConfigDescription(
-                  "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
-                  new AcceptableValueRange<float>(-100, 100),
-                  new ConfigurationManagerAttributes { Order = 1 }));
+              defaultValue: 10f,
+              "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
+              new AcceptableValueRange<float>(-100, 100));
 
       // Username
-      ChatMessageUsernamePrefix ??=
-          config.Bind(
+      ChatMessageUsernamePrefix =
+          config.BindInOrder(
               "Username",
               "chatMessageUsernamePrefix",
               defaultValue: string.Empty,
-              new ConfigDescription(
-                  "If non-empty, adds the text to the beginning of a ChatMesage username.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 2 }));
+              "If non-empty, adds the text to the beginning of a ChatMesage username.");
 
-      ChatMessageUsernamePostfix ??=
-          config.Bind(
+      ChatMessageUsernamePostfix =
+          config.BindInOrder(
               "Username",
               "chatMessageUsernamePostfix",
               defaultValue: string.Empty,
-              new ConfigDescription(
-                  "If non-empty, adds the text to the end of a ChatMessage username.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 1 }));
+              "If non-empty, adds the text to the end of a ChatMessage username.");
 
       // Scrolling
-      ScrollContentUpShortcut ??=
-          config.Bind(
+      ScrollContentUpShortcut =
+          config.BindInOrder(
               "Scrolling",
               "scrollContentUpShortcut",
               new KeyboardShortcut(KeyCode.PageUp),
-              new ConfigDescription(
-                  "Keyboard shortcut to scroll the ChatPanel content up.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 3 }));
+              "Keyboard shortcut to scroll the ChatPanel content up.");
 
-      ScrollContentDownShortcut ??=
-          config.Bind(
+      ScrollContentDownShortcut =
+          config.BindInOrder(
               "Scrolling",
               "scrollContentDownShortcut",
               new KeyboardShortcut(KeyCode.PageDown),
-              new ConfigDescription(
-                  "Keyboard shortcut to scroll the ChatPanel content down.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 2 }));
+              "Keyboard shortcut to scroll the ChatPanel content down.");
 
-      ScrollContentOffsetInterval ??=
-          config.Bind(
+      ScrollContentOffsetInterval =
+          config.BindInOrder(
               "Scrolling",
               "scrollContentOffsetInterval",
               defaultValue: 200f,
-              new ConfigDescription(
-                  "Interval (in pixels) to scroll the ChatPanel content up/down.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 1 }));
+              "Interval (in pixels) to scroll the ChatPanel content up/down.");
 
       // Colors
       ChatMessageTextDefaultColor ??=
@@ -358,6 +426,11 @@ namespace Chatter {
   }
 
   internal sealed class ConfigurationManagerAttributes {
+    public System.Action<ConfigEntryBase> CustomDrawer;
+
+    public bool? HideDefaultButton;
+    public bool? HideSettingName;
+
     public int? Order;
   }
 }
