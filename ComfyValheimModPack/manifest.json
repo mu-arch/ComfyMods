@@ -1,11 +1,12 @@
 {
   "name": "ComfyValheimPack",
-  "version_number": "2.1.0",
+  "version_number": "2.2.0",
   "website_url": "https://discord.gg/ameHJz5PFk",
   "author": "ComfyMods",
   "description": "Convenient mods for use on the Comfy Valheim server.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901",
+    "Azumatt-Official_BepInEx_ConfigurationManager-17.0.0",
     "ComfyMods-Chatter-1.1.0",
     "ComfyMods-ColorfulLights-1.6.0",
     "ComfyMods-ColorfulPieces-1.7.0",
