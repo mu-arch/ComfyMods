@@ -65,83 +65,6 @@ namespace Chatter {
     public static ConfigEntry<string> ChatMessageUsernamePrefix { get; private set; }
     public static ConfigEntry<string> ChatMessageUsernamePostfix { get; private set; }
 
-    public sealed class StringListConfigEntry {
-      public ConfigEntry<string> ConfigEntry { get; }
-
-      public StringListConfigEntry(ConfigFile config, string section, string key, string description) {
-        ConfigEntry = config.Bind(section, key, string.Empty, CreateConfigDescription(description));
-      }
-
-      ConfigDescription CreateConfigDescription(string description) {
-        return new(
-            description,
-            acceptableValues: null,
-            new ConfigurationManagerAttributes {
-              CustomDrawer = Drawer,
-              HideDefaultButton = true,
-              HideSettingName = true
-            });
-      }
-
-      readonly Lazy<GUIStyle> _horizontalStyle =
-          new(() =>
-              new() {
-                padding = new(left: 10, right: 10, top: 0, bottom: 0)
-              });
-
-      readonly Lazy<GUIStyle> _buttonStyle =
-          new(() =>
-              new(GUI.skin.button) {
-                padding = new(left: 10, right: 10, top: 5, bottom: 5)
-              });
-
-      readonly Lazy<GUIStyle> _textFieldStyle =
-          new(() =>
-              new(GUI.skin.textField) {
-                padding = new(left: 5, right: 5, top: 5, bottom: 5),
-                wordWrap = true
-              });
-
-      void Drawer(ConfigEntryBase entry) {
-        List<string> values = entry.BoxedValue.ToString().Split('\t').ToList();
-
-        GUILayout.BeginVertical();
-
-        GUILayout.BeginHorizontal(_horizontalStyle.Value);
-        GUILayout.Label(entry.Definition.Key, GUILayout.ExpandWidth(false));
-        GUILayout.Space(pixels: 5f);
-
-        if (GUILayout.Button("Add...", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
-          values.Add(string.Empty);
-        }
-
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-
-        int deleteIndex = -1;
-
-        for (int i = 0; i < values.Count; i++) {
-          GUILayout.BeginHorizontal(_horizontalStyle.Value);
-
-          if (GUILayout.Button("Delete", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
-            deleteIndex = i;
-          }
-
-          GUILayout.Space(pixels: 5f);
-          values[i] = GUILayout.TextField(values[i], _textFieldStyle.Value, GUILayout.ExpandWidth(true));
-          GUILayout.EndHorizontal();
-        }
-
-        GUILayout.EndVertical();
-
-        if (deleteIndex >= 0 && deleteIndex < values.Count) {
-          values.RemoveAt(deleteIndex);
-        }
-
-        entry.BoxedValue = string.Join("\t", values);
-      }
-    }
-
     public static void BindConfig(ConfigFile config) {
       Config = config;
 
@@ -166,7 +89,7 @@ namespace Chatter {
 
       // Filters
       MessageHudTextFilterList =
-          new(config, "Filters", "messageHudTextFilter", "Filter for MessageHud.Center messages.");
+          new(config, "Filters", "messageHudTextFilterList", "Filter list for MessageHud.Center message texts.");
       MessageHudTextFilter = MessageHudTextFilterList.ConfigEntry;
 
       // Content
@@ -422,6 +345,176 @@ namespace Chatter {
               new ConfigDescription(
                   "Offsets the width of a row in the ChatPanel content.",
                   new AcceptableValueRange<float>(-400, 400)));
+    }
+  }
+
+
+  public sealed class StringListConfigEntry {
+    public ConfigEntry<string> ConfigEntry { get; }
+
+    public StringListConfigEntry(ConfigFile config, string section, string key, string description) {
+      ConfigEntry = config.Bind(section, key, string.Empty, CreateConfigDescription(description));
+    }
+
+    ConfigDescription CreateConfigDescription(string description) {
+      return new(
+          description,
+          acceptableValues: null,
+          new ConfigurationManagerAttributes {
+            CustomDrawer = Drawer,
+            HideDefaultButton = true,
+            HideSettingName = true
+          });
+    }
+
+    readonly Lazy<GUIStyle> _labelStyle =
+        new(() =>
+            new(GUI.skin.label) {
+              padding = new(left: 0, right: 5, top: 5, bottom: 5)
+            });
+
+    readonly Lazy<GUIStyle> _horizontalStyle =
+        new(() =>
+            new() {
+              padding = new(left: 10, right: 10, top: 0, bottom: 0)
+            });
+
+    readonly Lazy<GUIStyle> _buttonStyle =
+        new(() =>
+            new(GUI.skin.button) {
+              padding = new(left: 10, right: 10, top: 5, bottom: 5)
+            });
+
+    readonly Lazy<GUIStyle> _textFieldStyle =
+        new(() =>
+            new(GUI.skin.textField) {
+              padding = new(left: 5, right: 5, top: 5, bottom: 5),
+              wordWrap = false
+            });
+
+    static readonly char[] _valuesSeparator = new char[] { '\t' };
+
+    readonly List<string> _valuesCache = new();
+
+    void Drawer(ConfigEntryBase entry) {
+      GUILayout.BeginVertical();
+
+      GUILayout.BeginHorizontal(_horizontalStyle.Value);
+      GUILayout.Label(entry.Definition.Key, GUILayout.ExpandWidth(false));
+      GUILayout.FlexibleSpace();
+      GUILayout.EndHorizontal();
+
+      _valuesCache.Clear();
+
+      if (!string.IsNullOrEmpty(entry.BoxedValue.ToString())) {
+        _valuesCache.AddRange(entry.BoxedValue.ToString().Split(_valuesSeparator));
+      }
+
+      int deleteIndex = -1;
+      bool valuesChanged = false;
+
+      if (!string.IsNullOrEmpty(entry.BoxedValue.ToString())) {
+        for (int i = 0; i < _valuesCache.Count; i++) {
+          GUILayout.BeginHorizontal(_horizontalStyle.Value);
+          GUILayout.Label($"#{i:D2}", _labelStyle.Value, GUILayout.ExpandWidth(false));
+          GUILayout.Space(pixels: 5f);
+
+          string name = $"{entry.Definition.Key}.{i}";
+          string value = _valuesCache[i];
+
+          if (ShowTextField(name, ref value)) {
+            if (_valuesCache[i] != value) {
+              ZLog.Log($"Applying value for {name}: {value}");
+              _valuesCache[i] = value;
+              valuesChanged = true;
+            }
+          }
+
+          if (Event.current.type == EventType.MouseDown) {
+            Rect rect = GUILayoutUtility.GetLastRect();
+
+            if (!rect.Contains(Event.current.mousePosition) && GUI.GetNameOfFocusedControl() == name) {
+              ZLog.Log($"Mouse clicked outside of {name} rect: {rect}");
+              GUI.FocusControl(null);
+            }
+          }
+
+          GUILayout.Space(pixels: 10f);
+
+          if (GUILayout.Button("Delete", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
+            deleteIndex = i;
+            ZLog.Log($"Delete button hit: deleteIndex set to {deleteIndex}");
+          }
+
+          GUILayout.EndHorizontal();
+        }
+      }
+
+      GUILayout.BeginHorizontal(_horizontalStyle.Value);
+
+      if (GUILayout.Button("Add new entry", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
+        ZLog.Log($"Adding new empty default value.");
+        _valuesCache.Add(string.Empty);
+        valuesChanged = true;
+      }
+
+      GUILayout.FlexibleSpace();
+      GUILayout.EndHorizontal();
+      GUILayout.EndVertical();
+
+      if (deleteIndex >= 0 && deleteIndex < _valuesCache.Count) {
+        ZLog.Log($"Removing value at {deleteIndex}: {_valuesCache[deleteIndex]}");
+        _valuesCache.RemoveAt(deleteIndex);
+        valuesChanged = true;
+      }
+
+      if (valuesChanged) {
+        ZLog.Log($"Values have changed, updating ConfigEntry value from:\n{entry.BoxedValue}");
+        entry.BoxedValue = string.Join("\t", _valuesCache);
+        ZLog.Log($"To:\n{entry.BoxedValue}");
+        ZLog.Log($"TODO: fire an actual OnSettingsChanged thingy here");
+      }
+    }
+
+    string _lastFocusedControl;
+    string _editingValue;
+
+    bool ShowTextField(string name, ref string value) {
+      GUI.SetNextControlName(name);
+
+      if (GUI.GetNameOfFocusedControl() != name) {
+        if (_lastFocusedControl == name) {
+          //ZLog.Log($"Lost focus, applying value.");
+          value = _editingValue;
+          GUILayout.TextField(value, _textFieldStyle.Value, GUILayout.ExpandWidth(true));
+          return true;
+        }
+
+        GUILayout.TextField(value, _textFieldStyle.Value, GUILayout.ExpandWidth(true));
+        return false;
+      }
+
+      if (_lastFocusedControl != name) {
+        _lastFocusedControl = name;
+        _editingValue = value;
+      }
+
+      bool applyingValue = false;
+
+      if (Event.current.isKey) {
+        switch (Event.current.keyCode) {
+          case KeyCode.Return:
+          case KeyCode.KeypadEnter:
+          case KeyCode.Escape:
+            value = _editingValue;
+            applyingValue = true;
+            Event.current.Use();
+            break;
+        }
+      }
+
+      _editingValue = GUILayout.TextField(_editingValue, _textFieldStyle.Value, GUILayout.ExpandWidth(true));
+      return applyingValue;
     }
   }
 
