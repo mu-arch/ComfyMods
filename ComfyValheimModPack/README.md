@@ -16,6 +16,10 @@
 
 ## Changelog
 
+### 2.3.0
+
+  * Added `ComfyMods-ZoneScouter-1.0.1` to the dependencies list.
+
 ### 2.2.0
 
   * Added `Azumatt-Official_BepInEx_ConfigurationManager-17.0.0` to the dependencies list.
