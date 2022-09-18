@@ -341,11 +341,25 @@ namespace Chatter {
     }
 
     public static void AddChatMessage(ChatMessage message) {
-      MessageHistory.EnqueueItem(message);
+      if (ShouldShowMessage(message)) {
+        MessageHistory.EnqueueItem(message);
+      } else {
+        ZLog.Log($"Filtering out message: {message.Text}");
+        return;
+      }
 
       if (_chatPanel.Panel) {
         CreateChatMessageRow(message);
       }
+    }
+
+    public static bool ShouldShowMessage(ChatMessage message) {
+      return message.MessageType switch {
+        ChatMessageType.Shout =>
+            !ShoutTextFilterList.Values.Any(
+                value => message.Text.IndexOf(value, 0, StringComparison.CurrentCultureIgnoreCase) != -1),
+        _ => true
+      };
     }
 
     static void CreateChatMessageRow(ChatMessage message) {

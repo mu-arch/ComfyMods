@@ -23,6 +23,8 @@ namespace Chatter {
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
 
     // Filters
+    public static StringListConfigEntry ShoutTextFilterList { get; private set; }
+
     public static ConfigEntry<string> MessageHudTextFilter { get; private set; }
     public static StringListConfigEntry MessageHudTextFilterList { get; private set; }
 
@@ -88,6 +90,8 @@ namespace Chatter {
                   "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
 
       // Filters
+      ShoutTextFilterList = new(config, "Filters", "shoutTextFilterList", "Filter list for Shout message texts.");
+
       MessageHudTextFilterList =
           new(config, "Filters", "messageHudTextFilterList", "Filter list for MessageHud.Center message texts.");
       MessageHudTextFilter = MessageHudTextFilterList.ConfigEntry;
@@ -352,6 +356,12 @@ namespace Chatter {
   public sealed class StringListConfigEntry {
     public ConfigEntry<string> ConfigEntry { get; }
 
+    public List<string> Values {
+      get => ConfigEntry.Value.Split(_valuesSeparator).ToList();
+    }
+
+    public event EventHandler<List<string>> ValuesChangedEvent;
+
     public StringListConfigEntry(ConfigFile config, string section, string key, string description) {
       ConfigEntry = config.Bind(section, key, string.Empty, CreateConfigDescription(description));
     }
@@ -435,7 +445,6 @@ namespace Chatter {
 
             if (!rect.Contains(Event.current.mousePosition) && GUI.GetNameOfFocusedControl() == name) {
               ZLog.Log($"Mouse clicked outside of {name} rect: {rect}");
-              GUI.FocusControl(null);
             }
           }
 
@@ -454,7 +463,7 @@ namespace Chatter {
 
       if (GUILayout.Button("Add new entry", _buttonStyle.Value, GUILayout.ExpandWidth(false))) {
         ZLog.Log($"Adding new empty default value.");
-        _valuesCache.Add(string.Empty);
+        _valuesCache.Add("change me!");
         valuesChanged = true;
       }
 
@@ -472,7 +481,7 @@ namespace Chatter {
         ZLog.Log($"Values have changed, updating ConfigEntry value from:\n{entry.BoxedValue}");
         entry.BoxedValue = string.Join("\t", _valuesCache);
         ZLog.Log($"To:\n{entry.BoxedValue}");
-        ZLog.Log($"TODO: fire an actual OnSettingsChanged thingy here");
+        ValuesChangedEvent?.Invoke(this, new(Values));
       }
     }
 
@@ -514,6 +523,7 @@ namespace Chatter {
       }
 
       _editingValue = GUILayout.TextField(_editingValue, _textFieldStyle.Value, GUILayout.ExpandWidth(true));
+
       return applyingValue;
     }
   }
