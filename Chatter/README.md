@@ -12,14 +12,14 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Chatter_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `Chatter_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
 
 ### New Features!
 
-  * Chat filters with a dynamic UI
+  * Chat filters with a dynamic UI.
 
 ### Features
 
@@ -30,7 +30,7 @@
   * Chat panel will auto-hide by dimming to 20% (configurable) after 10s (configurable).
   * Use any color for the chat panel background!
   * Move **and** resize the chat panel using the mouse (see below).
-  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below)!
+  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below).
 
 ### Move/Resize/Toggle
 
