@@ -44,6 +44,11 @@ namespace ComfyLib {
               description, acceptableValues, new ConfigurationManagerAttributes { Order = GetSettingOrder(section) }));
     }
 
+    public static StringListConfigEntry BindInOrder(
+        this ConfigFile config, string section, string key, string description, string valuesSeparator) {
+      return new StringListConfigEntry(config, section, key, description, valuesSeparator, GetSettingOrder(section));
+    }
+
     internal sealed class ConfigurationManagerAttributes {
       public int? Order;
     }

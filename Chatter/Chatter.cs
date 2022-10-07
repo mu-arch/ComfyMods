@@ -355,9 +355,21 @@ namespace Chatter {
 
     public static bool ShouldShowMessage(ChatMessage message) {
       return message.MessageType switch {
+        ChatMessageType.Say =>
+            !SayTextFilterList.Values.Any(
+                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
         ChatMessageType.Shout =>
             !ShoutTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.CurrentCultureIgnoreCase) != -1),
+                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
+        ChatMessageType.Whisper =>
+            !WhisperTextFilterList.Values.Any(
+                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
+        ChatMessageType.HudCenter =>
+            !HudCenterTextFilterList.Values.Any(
+                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
+        ChatMessageType.Text =>
+            !OtherTextFilterList.Values.Any(
+                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
         _ => true
       };
     }

@@ -19,7 +19,7 @@
 
 ### New Features!
 
-  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below)!
+  * Chat filters!
 
 ### Features
 
@@ -42,6 +42,8 @@
   * The message layout can be switched at anytime in configuration manager and messages will be rebuilt immediately.
 
     ![UI-Screenshot-04](https://i.imgur.com/7c5T3X8.png)
+
+### Chat filters
 
 ### Configure
 

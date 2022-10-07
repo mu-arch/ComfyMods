@@ -99,7 +99,8 @@
     <Compile Include="ChatMessage.cs" />
     <Compile Include="Chatter.cs" />
     <Compile Include="CircularQueue.cs" />
-    <Compile Include="Extensions\ConfigFileExtensions.cs" />
+    <Compile Include="Config\StringListConfigEntry.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="IsExternalInit.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="UI\UIExtensions.cs" />
