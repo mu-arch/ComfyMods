@@ -344,7 +344,6 @@ namespace Chatter {
       if (ShouldShowMessage(message)) {
         MessageHistory.EnqueueItem(message);
       } else {
-        ZLog.Log($"Filtering out message: {message.Text}");
         return;
       }
 
