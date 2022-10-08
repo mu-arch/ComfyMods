@@ -1,15 +1,15 @@
-﻿using BepInEx;
-
-using BetterZeeRouter;
-
-using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using BepInEx;
+
+using BetterZeeRouter;
+
+using HarmonyLib;
 
 using UnityEngine;
 
@@ -19,7 +19,7 @@ namespace CriticalDice {
   public class CriticalDice : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.criticaldice";
     public const string PluginName = "CriticalDice";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static readonly int _rpcRoutedRpcHashCode = "RoutedRPC".GetStableHashCode();
     static readonly int _rpcSayHashCode = "Say".GetStableHashCode();
@@ -95,6 +95,7 @@ namespace CriticalDice {
       _routedRpcData.m_parameters.Write((int) Talker.Type.Normal);
       _routedRpcData.m_parameters.Write("<color=#AEC6D3><b>Server</b></color>");
       _routedRpcData.m_parameters.Write($"{playerName} rolled... {result}");
+      _routedRpcData.m_parameters.Write(PrivilegeManager.GetNetworkUserId());
 
       _package.Clear();
       _package.Write(_rpcRoutedRpcHashCode);
