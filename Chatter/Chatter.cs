@@ -3,6 +3,7 @@
 using HarmonyLib;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -17,7 +18,7 @@ namespace Chatter {
   public class Chatter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.chatter";
     public const string PluginName = "Chatter";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.2.1";
 
     Harmony _harmony;
 
@@ -352,25 +353,24 @@ namespace Chatter {
       }
     }
 
+    // TODO: need to cache the FilterList values and hook into the OnValuesChanged event to update the cache.
     public static bool ShouldShowMessage(ChatMessage message) {
       return message.MessageType switch {
-        ChatMessageType.Say =>
-            !SayTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
-        ChatMessageType.Shout =>
-            !ShoutTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
-        ChatMessageType.Whisper =>
-            !WhisperTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
-        ChatMessageType.HudCenter =>
-            !HudCenterTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
-        ChatMessageType.Text =>
-            !OtherTextFilterList.Values.Any(
-                value => message.Text.IndexOf(value, 0, StringComparison.OrdinalIgnoreCase) != -1),
+        ChatMessageType.Say => ShouldShowText(message.Text, SayTextFilterList.Values),
+        ChatMessageType.Shout => ShouldShowText(message.Text, ShoutTextFilterList.Values),
+        ChatMessageType.Whisper => ShouldShowText(message.Text, WhisperTextFilterList.Values),
+        ChatMessageType.HudCenter => ShouldShowText(message.Text, HudCenterTextFilterList.Values),
+        ChatMessageType.Text => ShouldShowText(message.Text, OtherTextFilterList.Values),
         _ => true
       };
+    }
+
+    static bool ShouldShowText(string text, List<string> filters) {
+      if (filters.Count == 0) {
+        return true;
+      }
+
+      return !filters.Any(f => text.IndexOf(f, 0, StringComparison.OrdinalIgnoreCase) != -1);
     }
 
     static void CreateChatMessageRow(ChatMessage message) {

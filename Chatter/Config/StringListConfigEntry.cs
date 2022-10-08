@@ -13,7 +13,7 @@ namespace ComfyLib {
     public string[] ValuesSeparator { get; }
 
     public List<string> Values {
-      get => ConfigEntry.Value.Split(ValuesSeparator, StringSplitOptions.None).ToList();
+      get => ConfigEntry.Value.Split(ValuesSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
     }
 
     public event EventHandler<List<string>> ValuesChangedEvent;

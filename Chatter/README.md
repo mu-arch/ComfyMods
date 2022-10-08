@@ -69,6 +69,10 @@
 
 ## Changelog
 
+### 1.2.1
+
+  * Fixed a bug where if no filters are defined it filters **everything** (sadface).
+
 ### 1.2.0
 
   * Added support for chat filters configurable using a custom drawer in ConfigurationManager.
