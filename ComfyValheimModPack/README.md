@@ -16,6 +16,11 @@
 
 ## Changelog
 
+### 2.4.0
+
+  * Removed `ComfyMods-ComfyNameYourShip-1.0.0` from dependencies list as it is causing boat flipping issues.
+  * Updated dependencies list to latest version (where applicable).
+
 ### 2.3.0
 
   * Added `ComfyMods-ZoneScouter-1.0.1` to the dependencies list.
