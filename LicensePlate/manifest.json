@@ -1,0 +1,8 @@
+{
+  "name": "LicensePlate",
+  "version_number": "1.0.0",
+  "author": "ComfyMods",
+  "description": "License and registration please.",
+  "website_url": "https://github.com/redseiko/ComfyMods/tree/main/LicensePlate",
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
+}
