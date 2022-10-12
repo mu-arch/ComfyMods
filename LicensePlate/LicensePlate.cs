@@ -13,7 +13,8 @@ namespace LicensePlate {
     public const string PluginName = "LicensePlate";
     public const string PluginVersion = "1.0.0";
 
-    public static readonly int VagonNameHashCode = "VagonName".GetHashCode();
+    public static readonly int ShipNameHashCode = "ShipName".GetStableHashCode();
+    public static readonly int VagonNameHashCode = "VagonName".GetStableHashCode();
 
     Harmony _harmony;
 

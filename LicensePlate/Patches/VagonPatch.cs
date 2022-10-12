@@ -1,8 +1,5 @@
 ﻿using HarmonyLib;
 
-using UnityEngine;
-
-using static LicensePlate.LicensePlate;
 using static LicensePlate.PluginConfig;
 
 namespace LicensePlate {
