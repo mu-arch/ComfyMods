@@ -14,7 +14,7 @@ namespace LicensePlate {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ShipControlls.Awake))]
     static void AwakePostfix(ref ShipControlls __instance) {
-      if (IsModEnabled.Value) {
+      if (IsModEnabled.Value && ShowShipNames.Value) {
         __instance.gameObject.AddComponent<ShipName>();
       }
     }
@@ -40,21 +40,34 @@ namespace LicensePlate {
     }
 
     static bool StandingOnShipInequalityDelegate(bool isNotEqual, ShipControlls shipControls, bool alt) {
-      ZLog.Log($"IsEqual: {isNotEqual}, alt: {alt}, keydown: {Input.GetKey(KeyCode.RightShift)}");
-
       if (!isNotEqual
-          && (alt || Input.GetKey(KeyCode.RightShift))
+          && alt
           && IsModEnabled.Value
+          && ShowShipNames.Value
           && PrivateArea.CheckAccess(shipControls.transform.position)
           && shipControls.m_nview
           && shipControls.m_nview.IsValid()
           && shipControls.m_nview.IsOwner()
           && shipControls.TryGetComponent(out ShipName shipName)) {
-        TextInput.m_instance.RequestText(shipName, "$hud_rename", 50);
+        TextInput.m_instance.RequestText(shipName, "$hud_rename", 64);
         return true;
       }
 
       return isNotEqual;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ShipControlls.GetHoverText))]
+    static void GetHoverTextPostfix(ref ShipControlls __instance, ref string __result) {
+      if (IsModEnabled.Value
+          && ShowShipNames.Value
+          && __instance.m_nview
+          && __instance.m_nview.IsValid()
+          && Player.m_localPlayer
+          && __instance.InUseDistance(Player.m_localPlayer)) {
+        __result +=
+            Localization.m_instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $hud_rename");
+      }
     }
   }
 }

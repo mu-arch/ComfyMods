@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
+using UnityEngine.UI;
 
 using static LicensePlate.LicensePlate;
 using static LicensePlate.PluginConfig;
@@ -8,6 +11,7 @@ namespace LicensePlate {
     private ZNetView _netView;
     private Ship _ship;
     private Chat.NpcText _npcText;
+    private string _shipName = string.Empty;
 
     public void Awake() {
       ShipControlls shipControls = GetComponent<ShipControlls>();
@@ -23,56 +27,87 @@ namespace LicensePlate {
     }
 
     private void UpdateShipName() {
-      if (!_netView || !_netView.IsValid()) {
+      if (!_netView || !_netView.IsValid() || !_ship || !IsModEnabled.Value || !ShowShipNames.Value) {
+        ClearNpcText();
         CancelInvoke(nameof(UpdateShipName));
         return;
       }
 
-      string shipName = _netView.m_zdo.GetString(ShipNameHashCode, string.Empty);
+      _shipName = _netView.m_zdo.GetString(ShipLicensePlateHashCode, string.Empty);
 
-      if (_npcText?.m_gui) {
-        if (shipName.Length > 0) {
-          _npcText.m_textField.text = shipName;
-        } else {
-          Chat.m_instance.ClearNpcText(_npcText);
-          _npcText = null;
-        }
+      if (_npcText?.m_gui && _shipName.Length > 0) {
+        _npcText.m_textField.text = _shipName;
       } else {
-        if (_npcText != null) {
-          Chat.m_instance.ClearNpcText(_npcText);
-          _npcText = null;
-        }
+        ClearNpcText();
 
-        float cutoff = ShipNameCutoffDistance.Value;
-
-        if (shipName.Length > 0
+        if (_shipName.Length > 0
             && Player.m_localPlayer
-            && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position) < cutoff) {
-          Chat.m_instance.SetNpcText(_ship.gameObject, Vector3.up * 1f, cutoff, 600f, string.Empty, shipName, false);
-          _npcText = Chat.m_instance.FindNpcText(_ship.gameObject);
-
-          if (_npcText?.m_gui) {
-            SetupNpcTextUI(_npcText.m_gui);
-          }
+            && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position)
+                < ShipNameCutoffDistance.Value) {
+          SetNpcText();
         }
       }
     }
 
-    private void SetupNpcTextUI(GameObject gui) {
-      RectTransform rectTransform = gui.transform.Find("Image").Ref()?.GetComponent<RectTransform>();
+    private void ClearNpcText() {
+      if (_npcText != null) {
+        Chat.m_instance.ClearNpcText(_npcText);
+        _npcText = null;
+      }
+    }
+
+    private void SetNpcText() {
+      Chat.m_instance.SetNpcText(
+          _ship.gameObject,
+          ShipNameDisplayOffset.Value,
+          ShipNameCutoffDistance.Value,
+          600f,
+          string.Empty,
+          _shipName.Length > 64 ? _shipName.Substring(0, 64) : _shipName,
+          false); ;
+
+      _npcText = Chat.m_instance.FindNpcText(_ship.gameObject);
+
+      if (_npcText?.m_gui) {
+        CustomizeNpcText();
+      }
+    }
+
+    private void CustomizeNpcText() {
+      _npcText.m_textField.resizeTextForBestFit = false;
+      _npcText.m_textField.fontSize = ShipNameFontSize.Value;
+
+      Destroy(_npcText.m_textField.GetComponent<Outline>());
+
+      Shadow textShadow = _npcText.m_textField.gameObject.AddComponent<Shadow>();
+      textShadow.effectDistance = new(2f, -2f);
+      textShadow.effectColor = Color.black;
+
+      CustomizeNpcTextBackground(_npcText.m_gui.transform.Find("Image").gameObject);
+    }
+
+    private void CustomizeNpcTextBackground(GameObject background) {
+      RectTransform rectTransform = background.GetComponent<RectTransform>();
       rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 60f);
+
+      Image image = background.GetComponent<Image>();
+      Color color = image.color;
+      color.a = 0.5f;
+
+      image.color = color;
     }
 
     public string GetText() {
       return _netView && _netView.IsValid()
-          ? _netView.m_zdo.GetString(ShipNameHashCode, string.Empty)
+          ? _netView.m_zdo.GetString(ShipLicensePlateHashCode, string.Empty)
           : string.Empty;
     }
 
     public void SetText(string text) {
-      if (_netView && _netView.IsValid()) {
+      if (_netView && _netView.IsValid() && Player.m_localPlayer) {
         ZLog.Log($"Setting Ship ({_netView.m_zdo.m_uid}) name to: {text}");
-        _netView.m_zdo.Set(ShipNameHashCode, text);
+        _netView.m_zdo.Set(ShipLicensePlateHashCode, text);
+        _netView.m_zdo.Set(LicensePlateLastSetByHashCode, Player.m_localPlayer.GetPlayerID());
       }
     }
   }

@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="Components\ShipName.cs" />
     <Compile Include="Components\VagonName.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="LicensePlate.cs" />
     <Compile Include="Patches\ShipControllsPatch.cs" />
     <Compile Include="Patches\VagonPatch.cs" />
