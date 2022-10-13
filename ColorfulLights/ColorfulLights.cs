@@ -1,15 +1,14 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-
-using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+
+using BepInEx;
+using BepInEx.Logging;
+
+using HarmonyLib;
 
 using UnityEngine;
 
@@ -20,61 +19,25 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.6.0";
+    public const string PluginVersion = "1.7.0";
 
-    static readonly int _fireplaceColorHashCode = "FireplaceColor".GetStableHashCode();
-    static readonly int _fireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
+    public static readonly int FirePlaceColorHashCode = "FireplaceColor".GetStableHashCode();
+    public static readonly int FireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
     static readonly int _lightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
 
     static ManualLogSource _logger;
-    static readonly Dictionary<Fireplace, FireplaceData> _fireplaceDataCache = new();
 
     Harmony _harmony;
 
     public void Awake() {
       _logger = Logger;
-      Configure(Config);
+      BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
-
-      StartCoroutine(RemoveDestroyedFireplacesCoroutine());
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    static IEnumerator RemoveDestroyedFireplacesCoroutine() {
-      WaitForSeconds waitThirtySeconds = new(seconds: 30f);
-      List<KeyValuePair<Fireplace, FireplaceData>> existingFireplaces = new();
-      int fireplaceCount = 0;
-
-      while (true) {
-        yield return waitThirtySeconds;
-        fireplaceCount = _fireplaceDataCache.Count;
-
-        existingFireplaces.AddRange(_fireplaceDataCache.Where(entry => entry.Key));
-        _fireplaceDataCache.Clear();
-
-        foreach (KeyValuePair<Fireplace, FireplaceData> entry in existingFireplaces) {
-          _fireplaceDataCache[entry.Key] = entry.Value;
-        }
-
-        existingFireplaces.Clear();
-
-        if (fireplaceCount > 0) {
-          _logger.LogInfo($"Removed {fireplaceCount - _fireplaceDataCache.Count}/{fireplaceCount} fireplace refs.");
-        }
-      }
-    }
-
-    static bool TryGetFireplace(Fireplace key, out FireplaceData value) {
-      if (key) {
-        return _fireplaceDataCache.TryGetValue(key, out value);
-      }
-
-      value = default;
-      return false;
     }
 
     [HarmonyPatch(typeof(Player))]
@@ -108,18 +71,20 @@ namespace ColorfulLights {
         }
 
         if (ChangeColorActionShortcut.Value.IsDown()) {
-          Player.m_localPlayer.StartCoroutine(ChangeFireplaceColorCoroutine(_hoverObject));
-          return false;
+          Fireplace targetFireplace = _hoverObject.Ref()?.GetComponentInParent<Fireplace>();
+
+          if (targetFireplace) {
+            Player.m_localPlayer.StartCoroutine(ChangeFireplaceColorCoroutine(targetFireplace));
+            return false;
+          }
         }
 
         return takeInputResult;
       }
     }
 
-    static IEnumerator ChangeFireplaceColorCoroutine(GameObject target) {
+    static IEnumerator ChangeFireplaceColorCoroutine(Fireplace targetFireplace) {
       yield return null;
-
-      Fireplace targetFireplace = target.Ref()?.GetComponentInParent<Fireplace>();
 
       if (!targetFireplace) {
         yield break;
@@ -135,20 +100,19 @@ namespace ColorfulLights {
         yield break;
       }
 
-      targetFireplace.m_nview.ClaimOwnership();
+      Vector3 colorVec3 = Utils.ColorToVec3(TargetFireplaceColor.Value);
+      float colorAlpha = TargetFireplaceColor.Value.a;
 
-      targetFireplace.m_nview.m_zdo.Set(_fireplaceColorHashCode, Utils.ColorToVec3(TargetFireplaceColor.Value));
-      targetFireplace.m_nview.m_zdo.Set(_fireplaceColorAlphaHashCode, TargetFireplaceColor.Value.a);
+      targetFireplace.m_nview.ClaimOwnership();
+      targetFireplace.m_nview.m_zdo.Set(FirePlaceColorHashCode, colorVec3);
+      targetFireplace.m_nview.m_zdo.Set(FireplaceColorAlphaHashCode, colorAlpha);
       targetFireplace.m_nview.m_zdo.Set(_lightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
 
       targetFireplace.m_fuelAddedEffects?.Create(
           targetFireplace.transform.position, targetFireplace.transform.rotation);
 
-      if (TryGetFireplace(targetFireplace, out FireplaceData fireplaceData)) {
-        SetParticleColors(
-            fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, TargetFireplaceColor.Value);
-
-        fireplaceData.TargetColor = TargetFireplaceColor.Value;
+      if (targetFireplace.TryGetComponent(out FireplaceColor fireplaceColor)) {
+        fireplaceColor.SetColors(colorVec3, colorAlpha);
       }
     }
 
@@ -161,7 +125,9 @@ namespace ColorfulLights {
           return;
         }
 
-        _fireplaceDataCache.Add(__instance, new(__instance));
+        if (!__instance.TryGetComponent(out FireplaceColor _)) {
+          __instance.gameObject.AddComponent<FireplaceColor>();
+        }
       }
 
       static readonly string _changeColorHoverTextTemplate =
@@ -205,31 +171,15 @@ namespace ColorfulLights {
       }
 
       static Quaternion SpawnObjectQuaternionDelegate(Quaternion rotation, Fireplace fireplace) {
-        if (IsModEnabled.Value && TryGetFireplace(fireplace, out FireplaceData fireplaceData)) {
+        if (IsModEnabled.Value && fireplace.TryGetComponent(out FireplaceColor fireplaceColor)) {
+          Color color = fireplaceColor.TargetColor;
           rotation = fireplace.transform.rotation;
-          rotation.x = fireplaceData.TargetColor.r;
-          rotation.y = fireplaceData.TargetColor.g;
-          rotation.z = fireplaceData.TargetColor.b;
+          rotation.x = color.r;
+          rotation.y = color.g;
+          rotation.z = color.b;
         }
 
         return rotation;
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Fireplace.UpdateFireplace))]
-      static void UpdateFireplacePostfix(ref Fireplace __instance) {
-        if (!IsModEnabled.Value
-            || __instance.Ref()?.m_nview.Ref()?.m_zdo?.m_vec3 == null
-            || !__instance.m_nview.m_zdo.m_vec3.TryGetValue(_fireplaceColorHashCode, out Vector3 colorVec3)
-            || !TryGetFireplace(__instance, out FireplaceData fireplaceData)) {
-          return;
-        }
-
-        Color fireplaceColor = Utils.Vec3ToColor(colorVec3);
-        fireplaceColor.a = __instance.m_nview.m_zdo.GetFloat(_fireplaceColorAlphaHashCode, 1f);
-
-        SetParticleColors(fireplaceData.Lights, fireplaceData.Systems, fireplaceData.Renderers, fireplaceColor);
-        fireplaceData.TargetColor = fireplaceColor;
       }
     }
 

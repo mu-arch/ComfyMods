@@ -27,6 +27,11 @@
 
 ## Changelog
 
+### 1.7.0
+
+  * Fixed a bug with the `Player.TakeInput()` transpiler delegate where it would always intercept the keypress.
+  * Rewrote the entire fireplace-coloring system to use a new MonoBehaviour `FireplaceColor`.
+
 ### 1.6.0
 
   * Move action check from `Fireplace.Interact()` prefix to Player.TakeInput() transpiler delegate.

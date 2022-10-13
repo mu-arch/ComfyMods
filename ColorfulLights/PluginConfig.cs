@@ -15,7 +15,7 @@ namespace ColorfulLights {
     public static ConfigEntry<bool> ShowChangeColorHoverText { get; private set; }
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
-    public static void Configure(ConfigFile config) {
+    public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       ChangeColorActionShortcut =

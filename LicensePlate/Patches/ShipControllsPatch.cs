@@ -4,8 +4,6 @@ using System.Reflection.Emit;
 
 using HarmonyLib;
 
-using UnityEngine;
-
 using static LicensePlate.PluginConfig;
 
 namespace LicensePlate {

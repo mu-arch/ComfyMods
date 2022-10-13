@@ -108,6 +108,8 @@ namespace LicensePlate {
         ZLog.Log($"Setting Ship ({_netView.m_zdo.m_uid}) name to: {text}");
         _netView.m_zdo.Set(ShipLicensePlateHashCode, text);
         _netView.m_zdo.Set(LicensePlateLastSetByHashCode, Player.m_localPlayer.GetPlayerID());
+
+        UpdateShipName();
       }
     }
   }
