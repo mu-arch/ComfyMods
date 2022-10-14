@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 
+using System;
+
 using static LicensePlate.PluginConfig;
 
 namespace LicensePlate {
@@ -33,12 +35,15 @@ namespace LicensePlate {
       return true;
     }
 
+    static readonly Lazy<string> _renameText =
+        new(() =>
+            Localization.m_instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $hud_rename"));
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Vagon.GetHoverText))]
     static void GetHoverTextPostfix(ref Vagon __instance, ref string __result) {
       if (IsModEnabled.Value && ShowCartNames.Value && __instance.m_nview && __instance.m_nview.IsValid()) {
-        __result +=
-            Localization.m_instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $hud_rename");
+        __result += _renameText.Value;
       }
     }
   }
