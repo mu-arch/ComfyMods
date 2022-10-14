@@ -7,6 +7,9 @@ using static ColorfulLights.PluginConfig;
 
 namespace ColorfulLights {
   public class FireplaceColor : MonoBehaviour {
+    public static long FireplaceColorTotalCount { get; private set; } = 0L;
+    public static long FireplaceColorCount { get; private set; } = 0L;
+
     private ZNetView _netView;
 
     private Vector3 _targetColorVec3;
@@ -26,6 +29,12 @@ namespace ColorfulLights {
     }
 
     private void Awake() {
+      FireplaceColorTotalCount++;
+      FireplaceColorCount++;
+
+      _targetColorVec3 = Vector3.positiveInfinity;
+      _targetColorAlpha = float.NaN;
+
       _lights.Clear();
       _systems.Clear();
       _renderers.Clear();
@@ -38,16 +47,16 @@ namespace ColorfulLights {
 
       _netView = fireplace.m_nview;
 
-      _targetColorVec3 = Vector3.positiveInfinity;
-      _targetColorAlpha = float.NaN;
-
       CacheComponents(fireplace.m_enabledObject);
       CacheComponents(fireplace.m_enabledObjectHigh);
       CacheComponents(fireplace.m_enabledObjectLow);
       CacheComponents(fireplace.m_fireworks);
 
-      ZLog.Log($"FireplaceColor awake for: {_netView.m_zdo.m_uid}");
       InvokeRepeating(nameof(UpdateColors), 0f, 2f);
+    }
+
+    private void OnDestroy() {
+      FireplaceColorCount--;
     }
 
     private void CacheComponents(GameObject target) {

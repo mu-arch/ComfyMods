@@ -84,6 +84,7 @@
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="ColorfulLights.cs" />
     <Compile Include="Components\FireplaceColor.cs" />
+    <Compile Include="Patches\FireplacePatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
