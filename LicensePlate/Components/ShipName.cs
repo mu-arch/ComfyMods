@@ -1,6 +1,4 @@
-﻿using System;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 using static LicensePlate.LicensePlate;
@@ -11,10 +9,13 @@ namespace LicensePlate {
     private ZNetView _netView;
     private Ship _ship;
     private Chat.NpcText _npcText;
+
     private string _shipName = string.Empty;
+    private string _shipNameCache = string.Empty;
 
     public void Awake() {
       ShipControlls shipControls = GetComponent<ShipControlls>();
+
       _netView = shipControls.Ref()?.m_nview;
       _ship = shipControls.Ref()?.m_ship;
 
@@ -36,7 +37,7 @@ namespace LicensePlate {
       _shipName = _netView.m_zdo.GetString(ShipLicensePlateHashCode, string.Empty);
 
       if (_npcText?.m_gui && _shipName.Length > 0) {
-        _npcText.m_textField.text = _shipName;
+        UpdateNpcTextValue(_shipName);
       } else {
         ClearNpcText();
 
@@ -44,7 +45,7 @@ namespace LicensePlate {
             && Player.m_localPlayer
             && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position)
                 < ShipNameCutoffDistance.Value) {
-          SetNpcText();
+          SetNpcText(_shipName);
         }
       }
     }
@@ -56,16 +57,17 @@ namespace LicensePlate {
       }
     }
 
-    private void SetNpcText() {
+    private void SetNpcText(string shipName) {
       Chat.m_instance.SetNpcText(
           _ship.gameObject,
           ShipNameDisplayOffset.Value,
           ShipNameCutoffDistance.Value,
           600f,
           string.Empty,
-          _shipName.Length > 64 ? _shipName.Substring(0, 64) : _shipName,
+          GetSanitizedShipName(shipName),
           false); ;
 
+      _shipNameCache = shipName;
       _npcText = Chat.m_instance.FindNpcText(_ship.gameObject);
 
       if (_npcText?.m_gui) {
@@ -73,8 +75,31 @@ namespace LicensePlate {
       }
     }
 
+    public void UpdateNpcTextValue(string shipName) {
+      if (shipName == _shipNameCache) {
+        return;
+      }
+
+      _shipNameCache = shipName;
+      _npcText.m_textField.text = GetSanitizedShipName(shipName);
+    }
+
+    private string GetSanitizedShipName(string shipName) {
+      if (shipName.Length > 64) {
+        shipName = shipName.Substring(0, 64);
+      }
+
+      if (ShipNameStripHtmlTags.Value) {
+        shipName = HtmlTagsRegex.Replace(shipName, string.Empty);
+      }
+
+      return shipName;
+    }
+
     private void CustomizeNpcText() {
       _npcText.m_textField.resizeTextForBestFit = false;
+      _npcText.m_textField.horizontalOverflow = HorizontalWrapMode.Overflow;
+      _npcText.m_textField.verticalOverflow = VerticalWrapMode.Overflow;
       _npcText.m_textField.fontSize = ShipNameFontSize.Value;
 
       Destroy(_npcText.m_textField.GetComponent<Outline>());

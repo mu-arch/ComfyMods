@@ -1,6 +1,4 @@
-﻿using System;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 using static LicensePlate.LicensePlate;
@@ -10,7 +8,9 @@ namespace LicensePlate {
   public class VagonName : MonoBehaviour, TextReceiver {
     private ZNetView _netView;
     private Chat.NpcText _npcText;
+
     private string _vagonName = string.Empty;
+    private string _vagonNameCache = string.Empty;
 
     public void Awake() {
       _netView = GetComponent<ZNetView>();
@@ -33,7 +33,7 @@ namespace LicensePlate {
       _vagonName = _netView.m_zdo.GetString(VagonLicensePlateHashCode, string.Empty);
 
       if (_npcText?.m_gui && _vagonName.Length > 0) {
-        _npcText.m_textField.text = _vagonName;
+        UpdateNpcTextValue(_vagonName);
       } else {
         ClearNpcText();
 
@@ -41,7 +41,7 @@ namespace LicensePlate {
             && Player.m_localPlayer
             && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position)
                 < CartNameCutoffDistance.Value) {
-          SetNpcText();
+          SetNpcText(_vagonName);
         }
       }
     }
@@ -51,18 +51,21 @@ namespace LicensePlate {
         Chat.m_instance.ClearNpcText(_npcText);
         _npcText = null;
       }
+
+      _vagonNameCache = string.Empty;
     }
 
-    private void SetNpcText() {
+    private void SetNpcText(string vagonName) {
       Chat.m_instance.SetNpcText(
           gameObject,
           CartNameDisplayOffset.Value,
           CartNameCutoffDistance.Value,
           600f,
           string.Empty,
-          _vagonName.Length > 64 ? _vagonName.Substring(0, 64) : _vagonName,
+          GetSanitizedVagonName(vagonName),
           false);
 
+      _vagonNameCache = vagonName;
       _npcText = Chat.m_instance.FindNpcText(gameObject);
 
       if (_npcText?.m_gui) {
@@ -70,8 +73,31 @@ namespace LicensePlate {
       }
     }
 
+    private void UpdateNpcTextValue(string vagonName) {
+      if (vagonName == _vagonNameCache) {
+        return;
+      }
+
+      _vagonNameCache = vagonName;
+      _npcText.m_textField.text = GetSanitizedVagonName(vagonName);
+    }
+
+    private string GetSanitizedVagonName(string vagonName) {
+      if (vagonName.Length > 64) {
+        vagonName = vagonName.Substring(0, 64);
+      }
+
+      if (CartNameStripHtmlTags.Value) {
+        vagonName = HtmlTagsRegex.Replace(vagonName, string.Empty);
+      }
+
+      return vagonName;
+    }
+
     private void CustomizeNpcText() {
       _npcText.m_textField.resizeTextForBestFit = false;
+      _npcText.m_textField.horizontalOverflow = HorizontalWrapMode.Overflow;
+      _npcText.m_textField.verticalOverflow = VerticalWrapMode.Overflow;
       _npcText.m_textField.fontSize = CartNameFontSize.Value;
 
       Destroy(_npcText.m_textField.GetComponent<Outline>());

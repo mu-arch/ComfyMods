@@ -27,7 +27,7 @@ namespace LicensePlate {
               new CodeMatch(
                   OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetStandingOnShip))),
               new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Ldfld, AccessTools.Method(typeof(ShipControlls), nameof(ShipControlls.m_ship))),
+              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(ShipControlls), nameof(ShipControlls.m_ship))),
               new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "op_Inequality")))
           .Advance(offset: 5)
           .InsertAndAdvance(
@@ -54,6 +54,10 @@ namespace LicensePlate {
       return isNotEqual;
     }
 
+    static readonly Lazy<string> _renameText =
+        new(() =>
+            Localization.m_instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $hud_rename"));
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ShipControlls.GetHoverText))]
     static void GetHoverTextPostfix(ref ShipControlls __instance, ref string __result) {
@@ -63,8 +67,7 @@ namespace LicensePlate {
           && __instance.m_nview.IsValid()
           && Player.m_localPlayer
           && __instance.InUseDistance(Player.m_localPlayer)) {
-        __result +=
-            Localization.m_instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $hud_rename");
+        __result += _renameText.Value;
       }
     }
   }
