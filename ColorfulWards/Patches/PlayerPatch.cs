@@ -1,8 +1,8 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+
+using HarmonyLib;
 
 using static ColorfulWards.PluginConfig;
 
@@ -27,11 +27,12 @@ namespace ColorfulWards.Patches {
           && ChangeWardColorShortcut.Value.IsDown()
           && Player.m_localPlayer
           && Player.m_localPlayer.m_hovering) {
-        Player.m_localPlayer.StartCoroutine(
-            ColorfulWards.ChangeWardColorCoroutine(
-                Player.m_localPlayer.m_hovering.GetComponentInParent<PrivateArea>()));
+        PrivateArea privateArea = Player.m_localPlayer.m_hovering.GetComponentInParent<PrivateArea>();
 
-        return false;
+        if (privateArea) {
+          Player.m_localPlayer.StartCoroutine(ColorfulWards.ChangeWardColorCoroutine(privateArea));
+          return false;
+        }
       }
 
       return takeInputResult;

@@ -1,6 +1,6 @@
-﻿using BepInEx.Configuration;
+﻿using System;
 
-using System;
+using BepInEx.Configuration;
 
 using UnityEngine;
 

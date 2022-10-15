@@ -41,6 +41,10 @@
 
 ## Changelog
 
+### 1.4.1
+
+  * Fixed a bug with the `Player.TakeInput()` transpiler blocking other inputs with the same keybind.
+
 ### 1.4.0
 
   * Moved change color code from `PrivateArea.Interact()` prefix to `Player.TakeInput()` transpiler with coroutine.
