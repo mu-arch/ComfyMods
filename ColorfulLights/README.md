@@ -13,7 +13,7 @@
 ### Thunderstore (manual install)
 
   * **Uninstall** any older versions of `ColorfulLights`.
-  * Go to Settings > Import local mod > Select `ColorfulLights_v1.6.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulLights_v1.7.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -29,8 +29,9 @@
 
 ### 1.7.0
 
-  * Fixed a bug with the `Player.TakeInput()` transpiler delegate where it would always intercept the keypress.
+  * Fixed a bug with the `Player.TakeInput()` transpiler blocking other inputs with the same keybind.
   * Rewrote the entire fireplace-coloring system to use a new MonoBehaviour `FireplaceColor`.
+  * Moved patch-related code into their own classes.
 
 ### 1.6.0
 

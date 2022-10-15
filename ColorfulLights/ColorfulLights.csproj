@@ -85,6 +85,8 @@
     <Compile Include="ColorfulLights.cs" />
     <Compile Include="Components\FireplaceColor.cs" />
     <Compile Include="Patches\FireplacePatch.cs" />
+    <Compile Include="Patches\PlayerPatch.cs" />
+    <Compile Include="Patches\ZNetScenePatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
