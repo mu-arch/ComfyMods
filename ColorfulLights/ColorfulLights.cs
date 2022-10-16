@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Reflection;
-using System.Reflection.Emit;
 
 using BepInEx;
 using BepInEx.Logging;
@@ -25,12 +21,12 @@ namespace ColorfulLights {
     public static readonly int FireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
     public static readonly int LightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
 
-    static ManualLogSource _logger;
+    public static ManualLogSource PluginLogger { get; private set; }
 
     Harmony _harmony;
 
     public void Awake() {
-      _logger = Logger;
+      PluginLogger = Logger;
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
@@ -48,12 +44,12 @@ namespace ColorfulLights {
       }
 
       if (!targetFireplace.m_nview || !targetFireplace.m_nview.IsValid()) {
-        _logger.LogWarning("Fireplace does not have a valid ZNetView.");
+        PluginLogger.LogWarning("Fireplace does not have a valid ZNetView.");
         yield break;
       }
 
       if (!PrivateArea.CheckAccess(targetFireplace.transform.position, radius: 0f, flash: true, wardCheck: false)) {
-        _logger.LogWarning("Fireplace is within private area with no access.");
+        PluginLogger.LogWarning("Fireplace is within private area with no access.");
         yield break;
       }
 
@@ -69,7 +65,7 @@ namespace ColorfulLights {
           targetFireplace.transform.position, targetFireplace.transform.rotation);
 
       if (targetFireplace.TryGetComponent(out FireplaceColor fireplaceColor)) {
-        fireplaceColor.SetColors(colorVec3, colorAlpha);
+        fireplaceColor.SetFireplaceColors(colorVec3, colorAlpha);
       }
     }
   }

@@ -6,6 +6,7 @@ using HarmonyLib;
 
 using UnityEngine;
 
+using static ColorfulLights.ColorfulLights;
 using static ColorfulLights.PluginConfig;
 
 namespace ColorfulLights {
@@ -50,26 +51,30 @@ namespace ColorfulLights {
       return new CodeMatcher(instructions)
       .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Call, typeof(Component).GetProperty(nameof(Component.transform))),
-              new CodeMatch(OpCodes.Callvirt, typeof(Transform).GetProperty(nameof(Transform.position))),
-              new CodeMatch(OpCodes.Call, typeof(Quaternion).GetProperty(nameof(Quaternion.identity))),
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Component), "get_transform")),
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Transform), "get_position")),
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Quaternion), "get_identity")),
               new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Ldfld, typeof(Fireplace).GetField(nameof(Fireplace.m_fireworks))),
-              new CodeMatch(OpCodes.Callvirt, typeof(ZNetScene).GetMethod(nameof(ZNetScene.SpawnObject))))
+              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Fireplace), nameof(Fireplace.m_fireworks))),
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZNetScene), nameof(ZNetScene.SpawnObject))))
           .Advance(offset: 3)
-          .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
           .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldarg_0),
               Transpilers.EmitDelegate<Func<Quaternion, Fireplace, Quaternion>>(SpawnObjectQuaternionDelegate))
           .InstructionEnumeration();
     }
 
     static Quaternion SpawnObjectQuaternionDelegate(Quaternion rotation, Fireplace fireplace) {
-      if (IsModEnabled.Value && fireplace.TryGetComponent(out FireplaceColor fireplaceColor)) {
-        Color color = fireplaceColor.TargetColor;
-        rotation = fireplace.transform.rotation;
+      if (IsModEnabled.Value
+          && fireplace.TryGetComponent(out FireplaceColor fireplaceColor)
+          && fireplaceColor.TargetColor != Color.clear) {
+        Color color = fireplaceColor.TargetColor.SetAlpha(1f);
+
         rotation.x = color.r;
         rotation.y = color.g;
         rotation.z = color.b;
+
+        PluginLogger.LogInfo($"Sending fireworks with color: {color}, rotation: {rotation}");
       }
 
       return rotation;

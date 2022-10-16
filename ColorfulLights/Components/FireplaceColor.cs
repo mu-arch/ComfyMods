@@ -7,30 +7,25 @@ using static ColorfulLights.PluginConfig;
 
 namespace ColorfulLights {
   public class FireplaceColor : MonoBehaviour {
-    public static long FireplaceColorTotalCount { get; private set; } = 0L;
-    public static long FireplaceColorCount { get; private set; } = 0L;
+    public static long TotalCount { get; private set; } = 0L;
+    public static long CurrentCount { get; private set; } = 0L;
 
-    private ZNetView _netView;
+    public Color TargetColor { get; private set; } = Color.clear;
 
     private Vector3 _targetColorVec3;
     private float _targetColorAlpha;
+
+    private ZNetView _netView;
 
     private readonly List<Light> _lights = new();
     private readonly List<ParticleSystem> _systems = new();
     private readonly List<ParticleSystemRenderer> _renderers = new();
 
-    public Color TargetColor {
-      get {
-        Color color = Utils.Vec3ToColor(_targetColorVec3);
-        color.a = _targetColorAlpha;
-
-        return color;
-      }
-    }
-
     private void Awake() {
-      FireplaceColorTotalCount++;
-      FireplaceColorCount++;
+      TotalCount++;
+      CurrentCount++;
+
+      TargetColor = Color.clear;
 
       _targetColorVec3 = Vector3.positiveInfinity;
       _targetColorAlpha = float.NaN;
@@ -56,7 +51,7 @@ namespace ColorfulLights {
     }
 
     private void OnDestroy() {
-      FireplaceColorCount--;
+      CurrentCount--;
     }
 
     private void CacheComponents(GameObject target) {
@@ -84,20 +79,26 @@ namespace ColorfulLights {
         return;
       }
 
-      SetColors(colorVec3, colorAlpha);
+      SetFireplaceColors(colorVec3, colorAlpha);
     }
 
-    public void SetColors(Vector3 colorVec3, float colorAlpha) {
+    public void SetFireplaceColors(Vector3 colorVec3, float colorAlpha) {
+      TargetColor = Utils.Vec3ToColor(colorVec3).SetAlpha(colorAlpha);
+
       _targetColorVec3 = colorVec3;
       _targetColorAlpha = colorAlpha;
 
-      SetColors(TargetColor);
+      SetParticleColors( _lights, _systems, _renderers, TargetColor);
     }
 
-    private void SetColors(Color color) {
+    public static void SetParticleColors(
+        IEnumerable<Light> lights,
+        IEnumerable<ParticleSystem> systems,
+        IEnumerable<ParticleSystemRenderer> renderers,
+        Color color) {
       ParticleSystem.MinMaxGradient gradient = new(color);
 
-      foreach (ParticleSystem system in _systems) {
+      foreach (ParticleSystem system in systems) {
         ParticleSystem.ColorOverLifetimeModule colorOverLiftime = system.colorOverLifetime;
 
         if (colorOverLiftime.enabled) {
@@ -112,11 +113,11 @@ namespace ColorfulLights {
         }
       }
 
-      foreach (ParticleSystemRenderer renderer in _renderers) {
+      foreach (ParticleSystemRenderer renderer in renderers) {
         renderer.material.color = color;
       }
 
-      foreach (Light light in _lights) {
+      foreach (Light light in lights) {
         light.color = color;
       }
     }
