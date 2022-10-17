@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.7.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.7.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -33,6 +33,10 @@
     * Prompt font-size can be configured with the `colorPromptFontSize` setting.
 
 ## Changelog
+
+### 1.7.1
+
+  * Fixed a bug with the `Player.TakeInput()` transpiler code blocking other inputs.
 
 ### 1.7.0
 

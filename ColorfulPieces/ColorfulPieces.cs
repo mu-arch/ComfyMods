@@ -19,7 +19,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.7.0";
+    public const string PluginVersion = "1.7.1";
 
     public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
     public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -57,9 +57,9 @@ namespace ColorfulPieces {
       return true;
     }
 
-    public static IEnumerator ChangePieceColorCoroutine(GameObject target) {
+    public static IEnumerator ChangePieceColorCoroutine(WearNTear target) {
       yield return null;
-      ChangePieceColorAction(target?.GetComponentInParent<WearNTear>());
+      ChangePieceColorAction(target);
     }
 
     static void ChangePieceColorAction(WearNTear wearNTear) {
@@ -106,9 +106,9 @@ namespace ColorfulPieces {
       _piecesCache.Clear();
     }
 
-    public static IEnumerator ClearPieceColorCoroutine(GameObject target) {
+    public static IEnumerator ClearPieceColorCoroutine(WearNTear target) {
       yield return null;
-      ClearPieceColorAction(target?.GetComponentInParent<WearNTear>());
+      ClearPieceColorAction(target);
     }
 
     static void ClearPieceColorAction(WearNTear wearNTear) {
@@ -153,9 +153,9 @@ namespace ColorfulPieces {
       _logger.LogInfo($"Cleared colors from {clearColorCount} pieces.");
     }
 
-    public static IEnumerator CopyPieceColorCoroutine(GameObject target) {
+    public static IEnumerator CopyPieceColorCoroutine(WearNTear target) {
       yield return null;
-      CopyPieceColorAction(target?.GetComponentInParent<WearNTear>());
+      CopyPieceColorAction(target);
     }
 
     static void CopyPieceColorAction(WearNTear wearNTear) {
