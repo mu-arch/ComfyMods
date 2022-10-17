@@ -13,7 +13,7 @@
 ### Thunderstore (manual install)
 
   * **Uninstall** any older versions of `ColorfulLights`.
-  * Go to Settings > Import local mod > Select `ColorfulLights_v1.7.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulLights_v1.7.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -40,6 +40,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.7.1
+
+  * Fixed yet another small bug with the `Player.TakeInput()` transpiler not matching the same pattern as other mods.
 
 ### 1.7.0
 

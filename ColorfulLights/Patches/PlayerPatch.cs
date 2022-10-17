@@ -16,12 +16,10 @@ namespace ColorfulLights {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
-              new CodeMatch(OpCodes.Stloc_0))
+              new CodeMatch(OpCodes.Ldarg_0),
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
           .Advance(offset: 2)
-          .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
-          .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
           .InstructionEnumeration();
     }
 

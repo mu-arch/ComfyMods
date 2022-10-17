@@ -15,7 +15,7 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.7.0";
+    public const string PluginVersion = "1.7.1";
 
     public static readonly int FirePlaceColorHashCode = "FireplaceColor".GetStableHashCode();
     public static readonly int FireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
