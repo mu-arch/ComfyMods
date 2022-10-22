@@ -2,8 +2,6 @@
 
 using ComfyLib;
 
-using System;
-
 using UnityEngine;
 
 namespace BetterBattleUI {
@@ -16,8 +14,11 @@ namespace BetterBattleUI {
       BindDamageTextConfig(config);
     }
 
-    public static ConfigEntry<float> DamageTextMaxTextDistance { get; private set; }
-    public static ConfigEntry<float> DamageTextSmallFontDistance { get; private set; }
+    public static ConfigEntry<float> DamageTextPopupDuration { get; private set; }
+    public static ConfigEntry<Vector3> DamageTextPopupLerpPosition { get; private set; }
+
+    public static ConfigEntry<float> DamageTextMaxPopupDistance { get; private set; }
+    public static ConfigEntry<float> DamageTextSmallPopupDistance { get; private set; }
 
     public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
     public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
@@ -32,23 +33,36 @@ namespace BetterBattleUI {
     public static ConfigEntry<Color> DamageTextTooHardColor { get; private set; }
     public static ConfigEntry<Color> DamageTextBlockedColor { get; private set; }
 
-    public static ConfigEntry<float> DamageTextMessageDuration { get; private set; }
-
     public static void BindDamageTextConfig(ConfigFile config) {
-      DamageTextMaxTextDistance =
+      DamageTextPopupDuration =
           config.BindInOrder(
-              "DamageText.Distance",
-              "maxTextDistance",
+              "DamageText.Popup",
+              "popupDuration",
+              1.5f,
+              "Duration (in seconds) to show DamageText messages.",
+              new AcceptableValueRange<float>(0f, 10f));
+
+      DamageTextPopupLerpPosition =
+          config.BindInOrder(
+              "DamageText.Popup",
+              "popupLerpPosition",
+              new Vector3(0f, 1.5f, 0f),
+              "Position (Vector3) offset to lerp the DamageText message to.");
+
+      DamageTextMaxPopupDistance =
+          config.BindInOrder(
+              "DamageText.Popup",
+              "maxPopupDistance",
               30f,
-              "DamageText maximum distance to show any damage messages.",
+              "Maximum distance to popup DamageText messages.",
               new AcceptableValueRange<float>(0f, 30f));
 
-      DamageTextSmallFontDistance =
+      DamageTextSmallPopupDistance =
           config.BindInOrder(
-              "DamageText.Distance",
-              "smallFontDistance",
+              "DamageText.Popup",
+              "smallPopupDistance",
               10f,
-              "DamageText minimum distance to show small (far-away) damage messages.",
+              "Distance to popup small (far-away) DamageText messages.",
               new AcceptableValueRange<float>(0f, 30f));
 
       DamageTextSmallFontSize =
@@ -129,14 +143,6 @@ namespace BetterBattleUI {
               "blockedColor",
               Color.white,
               "DamageText.color for TextType.Blocked damage.");
-
-      DamageTextMessageDuration =
-          config.BindInOrder(
-              "DamageText.Behaviour",
-              "messageDuration",
-              1.5f,
-              "Duration (in seconds) to show DamageText messages.",
-              new AcceptableValueRange<float>(0f, 10f));
     }
   }
 }

@@ -30,7 +30,7 @@ namespace BetterBattleUI {
       worldText.m_textField.text = GetWorldTextText(type, dmg);
       worldText.m_textField.color = GetWorldTextColor(type, dmg, mySelf);
       worldText.m_textField.fontSize =
-          distance > DamageTextSmallFontDistance.Value ? DamageTextSmallFontSize.Value : DamageTextLargeFontSize.Value;
+          distance > DamageTextSmallPopupDistance.Value ? DamageTextSmallFontSize.Value : DamageTextLargeFontSize.Value;
 
       return false;
     }
@@ -84,7 +84,7 @@ namespace BetterBattleUI {
         DamageText.WorldTextInstance worldText = __instance.m_worldTexts[i];
         worldText.m_timer += dt;
 
-        if (worldText.m_timer > DamageTextMessageDuration.Value) {
+        if (worldText.m_timer > DamageTextPopupDuration.Value) {
           UnityEngine.Object.Destroy(worldText.m_gui);
 
           // Source: https://www.vertexfragment.com/ramblings/list-removal-performance/
@@ -94,17 +94,18 @@ namespace BetterBattleUI {
           continue;
         }
 
-        // TODO: this needs to be lerped for max float value; default 1.5f at most in vanilla
-        worldText.m_worldPos[1] += dt;
+        float t = worldText.m_timer / DamageTextPopupDuration.Value;
 
-        Vector3 point = camera.WorldToScreenPoint(worldText.m_worldPos);
+        Vector3 position =
+            Vector3.Lerp(worldText.m_worldPos, worldText.m_worldPos + DamageTextPopupLerpPosition.Value, t);
+
+        Vector3 point = camera.WorldToScreenPoint(position);
 
         if (point.x < 0f || point.x > width || point.y < 0f || point.y > height || point.z < 0f) {
           worldText.m_gui.SetActive(false);
           continue;
         }
-
-        float t = worldText.m_timer / DamageTextMessageDuration.Value;
+        
         Color color = worldText.m_textField.color;
         color.a = 1f - (t * t * t);
         worldText.m_textField.color = color;
