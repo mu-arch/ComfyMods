@@ -28,6 +28,16 @@ namespace BetterBattleUI {
       worldText.m_timer = 0f;
       worldText.m_gui = UnityEngine.Object.Instantiate(__instance.m_worldTextBase, __instance.transform);
 
+      if (DamageTextUseShadowEffect.Value) {
+        if (worldText.m_gui.TryGetComponent(out Outline outline)) {
+          outline.enabled = false;
+        }
+
+        Shadow shadow = worldText.m_gui.AddComponent<Shadow>();
+        shadow.effectColor = DamageTextShadowEffectColor.Value;
+        shadow.effectDistance = DamageTextShadowEffectDistance.Value;
+      }
+
       worldText.m_textField = worldText.m_gui.GetComponent<Text>();
       worldText.m_textField.text = GetWorldTextText(type, dmg);
       worldText.m_textField.color = GetWorldTextColor(type, dmg, mySelf);

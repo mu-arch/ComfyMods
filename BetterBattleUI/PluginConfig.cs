@@ -23,6 +23,10 @@ namespace BetterBattleUI {
     public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
     public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
 
+    public static ConfigEntry<bool> DamageTextUseShadowEffect { get; private set; }
+    public static ConfigEntry<Color> DamageTextShadowEffectColor { get; private set; }
+    public static ConfigEntry<Vector2> DamageTextShadowEffectDistance { get; private set; }
+
     public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
     public static ConfigEntry<Color> DamageTextPlayerNoDamageColor { get; private set; }
     public static ConfigEntry<Color> DamageTextNormalColor { get; private set; }
@@ -80,6 +84,27 @@ namespace BetterBattleUI {
               18,
               "DamageText.fontSize for large (nearby) damage messages.",
               new AcceptableValueRange<int>(0, 32));
+
+      DamageTextUseShadowEffect =
+          config.BindInOrder(
+              "DamageText.ShadowEffect",
+              "useShadowEffect",
+              false,
+              "If true, uses a Shadow effect on the DamageText instead of Outline effect.");
+
+      DamageTextShadowEffectColor =
+          config.BindInOrder(
+              "DamageText.ShadowEffect",
+              "shadowEffectColor",
+              Color.black,
+              "Color of the Shadow effect to use on the DamageText.");
+
+      DamageTextShadowEffectDistance =
+          config.BindInOrder(
+              "DamageText.ShadowEffect",
+              "shadowEffectDistance",
+              new Vector2(2f, -2f),
+              "Distance of the Shadow effect to use on the DamageText.");
 
       DamageTextPlayerDamageColor =
           config.BindInOrder(
