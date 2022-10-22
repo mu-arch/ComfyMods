@@ -104,25 +104,16 @@ namespace BetterBattleUI {
           continue;
         }
 
-        worldText.m_textField.color =
-            LerpFadeOutColorAlpha(worldText.m_textField.color, worldText.m_timer / DamageTextMessageDuration.Value);
+        float t = worldText.m_timer / DamageTextMessageDuration.Value;
+        Color color = worldText.m_textField.color;
+        color.a = 1f - (t * t * t);
+        worldText.m_textField.color = color;
 
         worldText.m_gui.SetActive(true);
         worldText.m_gui.transform.position = point;
       }
 
       return false;
-    }
-
-    static Color LerpFadeOutColorAlpha(Color color, float t) {
-      if (DamageTextFadeOutUseBezier.Value) {
-        // Bezier curve.
-        color.a = 1f - (t * t * (3f - (2f * t))); 
-      } else {
-        color.a = 1f - (t * t * t);
-      }
-
-      return color;
     }
   }
 }

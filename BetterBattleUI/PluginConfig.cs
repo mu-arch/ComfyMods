@@ -33,7 +33,6 @@ namespace BetterBattleUI {
     public static ConfigEntry<Color> DamageTextBlockedColor { get; private set; }
 
     public static ConfigEntry<float> DamageTextMessageDuration { get; private set; }
-    public static ConfigEntry<bool> DamageTextFadeOutUseBezier { get; private set; }
 
     public static void BindDamageTextConfig(ConfigFile config) {
       DamageTextMaxTextDistance =
@@ -138,13 +137,6 @@ namespace BetterBattleUI {
               1.5f,
               "Duration (in seconds) to show DamageText messages.",
               new AcceptableValueRange<float>(0f, 10f));
-
-      DamageTextFadeOutUseBezier =
-          config.BindInOrder(
-              "DamageText.FadeOut",
-              "useBezier",
-              false,
-              "If true, fades-out DamageText using Bezier curve instead of vanilla code.");
     }
   }
 }
