@@ -54,16 +54,16 @@ namespace BetterBattleUI {
               "DamageText.Popup",
               "maxPopupDistance",
               30f,
-              "Maximum distance to popup DamageText messages.",
-              new AcceptableValueRange<float>(0f, 30f));
+              "Maximum distance to popup ANY (small/ or large) DamageText messages.",
+              new AcceptableValueRange<float>(0f, 60f));
 
       DamageTextSmallPopupDistance =
           config.BindInOrder(
               "DamageText.Popup",
               "smallPopupDistance",
               10f,
-              "Distance to popup small (far-away) DamageText messages.",
-              new AcceptableValueRange<float>(0f, 30f));
+              "Distance to popup DamageText messages using small (far-away) font size.",
+              new AcceptableValueRange<float>(0f, 60f));
 
       DamageTextSmallFontSize =
           config.BindInOrder(

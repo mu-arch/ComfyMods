@@ -1,7 +1,9 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection.Emit;
+
+using HarmonyLib;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -115,6 +117,24 @@ namespace BetterBattleUI {
       }
 
       return false;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(DamageText.RPC_DamageText))]
+    static IEnumerable<CodeInstruction> RpcDamageTextTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldarg_0),
+              new CodeMatch(
+                  OpCodes.Ldfld, AccessTools.Field(typeof(DamageText), nameof(DamageText.m_maxTextDistance))))
+          .Advance(offset: 2)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<float, float>>(MaxTextDistanceDelegate))
+          .InstructionEnumeration();
+    }
+
+    static float MaxTextDistanceDelegate(float maxTextDistance) {
+      return IsModEnabled.Value ? DamageTextMaxPopupDistance.Value : maxTextDistance;
     }
   }
 }
