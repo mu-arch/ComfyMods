@@ -1,0 +1,8 @@
+{
+  "name": "BetterBattleUI",
+  "version_number": "1.0.0",
+  "author": "ComfyMods",
+  "description": "Critical damage!",
+  "website_url": "https://github.com/redseiko/ComfyMods/tree/main/BetterBattleUI",
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
+}
