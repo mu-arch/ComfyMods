@@ -102,7 +102,6 @@
     <Compile Include="Patches\EnemyHudPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\Components\Gradient.cs" />
     <Compile Include="UI\Components\VerticalGradient.cs" />
     <Compile Include="UI\Components\WobblyText.cs" />
   </ItemGroup>
