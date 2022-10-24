@@ -1,43 +1,42 @@
-﻿using BepInEx.Configuration;
+﻿using System.Linq;
+
+using BepInEx.Configuration;
 
 using ComfyLib;
+
+using HarmonyLib;
 
 using UnityEngine;
 
 namespace BetterBattleUI {
   public static class PluginConfig {
+    public static ConfigFile Config { get; private set; }
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
+      Config = config;
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
-      BindDamageTextConfig(config);
+      BindDamageTextPopupConfig(config);
+      BindDamageTextShadowEffectConfig(config);
+      BindDamageTextColorConfig(config);
+    }
+
+    [HarmonyPatch(typeof(FejdStartup))]
+    static class FejdStartupPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(FejdStartup.Awake))]
+      static void AwakePostfix() {
+        BindDamageTextFontConfig(Config);
+      }
     }
 
     public static ConfigEntry<float> DamageTextPopupDuration { get; private set; }
     public static ConfigEntry<Vector3> DamageTextPopupLerpPosition { get; private set; }
-
     public static ConfigEntry<float> DamageTextMaxPopupDistance { get; private set; }
     public static ConfigEntry<float> DamageTextSmallPopupDistance { get; private set; }
 
-    public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
-    public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
-
-    public static ConfigEntry<bool> DamageTextUseShadowEffect { get; private set; }
-    public static ConfigEntry<Color> DamageTextShadowEffectColor { get; private set; }
-    public static ConfigEntry<Vector2> DamageTextShadowEffectDistance { get; private set; }
-
-    public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextPlayerNoDamageColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextNormalColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextResistantColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextWeakColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextImmuneColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextHealColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextTooHardColor { get; private set; }
-    public static ConfigEntry<Color> DamageTextBlockedColor { get; private set; }
-
-    public static void BindDamageTextConfig(ConfigFile config) {
+    private static void BindDamageTextPopupConfig(ConfigFile config) {
       DamageTextPopupDuration =
           config.BindInOrder(
               "DamageText.Popup",
@@ -68,6 +67,22 @@ namespace BetterBattleUI {
               10f,
               "Distance to popup DamageText messages using small (far-away) font size.",
               new AcceptableValueRange<float>(0f, 60f));
+    }
+
+    public static ConfigEntry<string> DamageTextMessageFont { get; private set; }
+    public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
+    public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
+
+    private static void BindDamageTextFontConfig(ConfigFile config) {
+      string[] fontNames = Resources.FindObjectsOfTypeAll<Font>().Select(f => f.name).OrderBy(f => f).ToArray();
+
+      DamageTextMessageFont =
+          config.BindInOrder(
+              "DamageText.Font",
+              "messageFont",
+              "AveriaSerifLibre-Bold",
+              "DamageText.font for all damage messages.",
+              new AcceptableValueList<string>(fontNames));
 
       DamageTextSmallFontSize =
           config.BindInOrder(
@@ -84,7 +99,13 @@ namespace BetterBattleUI {
               18,
               "DamageText.fontSize for large (nearby) damage messages.",
               new AcceptableValueRange<int>(0, 32));
+    }
 
+    public static ConfigEntry<bool> DamageTextUseShadowEffect { get; private set; }
+    public static ConfigEntry<Color> DamageTextShadowEffectColor { get; private set; }
+    public static ConfigEntry<Vector2> DamageTextShadowEffectDistance { get; private set; }
+
+    private static void BindDamageTextShadowEffectConfig(ConfigFile config) {
       DamageTextUseShadowEffect =
           config.BindInOrder(
               "DamageText.ShadowEffect",
@@ -105,7 +126,19 @@ namespace BetterBattleUI {
               "shadowEffectDistance",
               new Vector2(2f, -2f),
               "Distance of the Shadow effect to use on the DamageText.");
+    }
 
+    public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextPlayerNoDamageColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextNormalColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextResistantColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextWeakColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextImmuneColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextHealColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextTooHardColor { get; private set; }
+    public static ConfigEntry<Color> DamageTextBlockedColor { get; private set; }
+
+    private static void BindDamageTextColorConfig(ConfigFile config) {
       DamageTextPlayerDamageColor =
           config.BindInOrder(
               "DamageText.Color",

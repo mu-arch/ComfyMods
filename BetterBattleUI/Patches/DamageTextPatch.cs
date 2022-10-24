@@ -41,8 +41,12 @@ namespace BetterBattleUI {
       worldText.m_textField = worldText.m_gui.GetComponent<Text>();
       worldText.m_textField.text = GetWorldTextText(type, dmg);
       worldText.m_textField.color = GetWorldTextColor(type, dmg, mySelf);
+
+      worldText.m_textField.font = FontCache.GetFont(DamageTextMessageFont.Value);
       worldText.m_textField.fontSize =
-          distance > DamageTextSmallPopupDistance.Value ? DamageTextSmallFontSize.Value : DamageTextLargeFontSize.Value;
+          distance > DamageTextSmallPopupDistance.Value
+              ? DamageTextSmallFontSize.Value
+              : DamageTextLargeFontSize.Value;
 
       return false;
     }
