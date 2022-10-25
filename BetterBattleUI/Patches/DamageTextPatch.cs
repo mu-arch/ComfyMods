@@ -13,6 +13,20 @@ using static BetterBattleUI.PluginConfig;
 namespace BetterBattleUI {
   [HarmonyPatch(typeof(DamageText))]
   static class DamageTextPatch {
+    static readonly Gradient _damageTextGradient =
+        new() {
+          colorKeys =
+              new GradientColorKey[] {
+                new GradientColorKey(Color.white, 1f),
+                new GradientColorKey(Color.white, 0f)
+              },
+          alphaKeys =
+              new GradientAlphaKey[] {
+                new GradientAlphaKey(1f, 1f),
+                new GradientAlphaKey(0.25f, 0f)
+              }
+        };
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(DamageText.AddInworldText))]
     static bool AddInworldText(
@@ -36,6 +50,11 @@ namespace BetterBattleUI {
         Shadow shadow = worldText.m_gui.AddComponent<Shadow>();
         shadow.effectColor = DamageTextShadowEffectColor.Value;
         shadow.effectDistance = DamageTextShadowEffectDistance.Value;
+      }
+
+      if (DamageTextUseGradientEffect.Value) {
+        VerticalGradient gradient = worldText.m_gui.AddComponent<VerticalGradient>();
+        gradient.EffectGradient = _damageTextGradient;
       }
 
       worldText.m_textField = worldText.m_gui.GetComponent<Text>();

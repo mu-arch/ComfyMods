@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using BepInEx.Configuration;
 
@@ -10,24 +12,30 @@ using UnityEngine;
 
 namespace BetterBattleUI {
   public static class PluginConfig {
-    public static ConfigFile Config { get; private set; }
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
-      Config = config;
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       BindDamageTextPopupConfig(config);
       BindDamageTextShadowEffectConfig(config);
+      BindDamageTextGradientEffectConfig(config);
       BindDamageTextColorConfig(config);
+
+      _fejdStartupBindConfigQueue.Clear();
+      _fejdStartupBindConfigQueue.Enqueue(() => BindDamageTextFontConfig(config));
     }
+
+    static readonly Queue<Action> _fejdStartupBindConfigQueue = new();
 
     [HarmonyPatch(typeof(FejdStartup))]
     static class FejdStartupPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(FejdStartup.Awake))]
       static void AwakePostfix() {
-        BindDamageTextFontConfig(Config);
+        while (_fejdStartupBindConfigQueue.Count > 0) {
+          _fejdStartupBindConfigQueue.Dequeue()?.Invoke();
+        }
       }
     }
 
@@ -69,38 +77,6 @@ namespace BetterBattleUI {
               new AcceptableValueRange<float>(0f, 60f));
     }
 
-    public static ConfigEntry<string> DamageTextMessageFont { get; private set; }
-    public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
-    public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
-
-    private static void BindDamageTextFontConfig(ConfigFile config) {
-      string[] fontNames = Resources.FindObjectsOfTypeAll<Font>().Select(f => f.name).OrderBy(f => f).ToArray();
-
-      DamageTextMessageFont =
-          config.BindInOrder(
-              "DamageText.Font",
-              "messageFont",
-              "AveriaSerifLibre-Bold",
-              "DamageText.font for all damage messages.",
-              new AcceptableValueList<string>(fontNames));
-
-      DamageTextSmallFontSize =
-          config.BindInOrder(
-              "DamageText.Font",
-              "smallFontSize",
-              14,
-              "DamageText.fontSize for small (far-away) damage messages.",
-              new AcceptableValueRange<int>(0, 32));
-
-      DamageTextLargeFontSize =
-          config.BindInOrder(
-              "DamageText.Font",
-              "largeFontSize",
-              18,
-              "DamageText.fontSize for large (nearby) damage messages.",
-              new AcceptableValueRange<int>(0, 32));
-    }
-
     public static ConfigEntry<bool> DamageTextUseShadowEffect { get; private set; }
     public static ConfigEntry<Color> DamageTextShadowEffectColor { get; private set; }
     public static ConfigEntry<Vector2> DamageTextShadowEffectDistance { get; private set; }
@@ -126,6 +102,17 @@ namespace BetterBattleUI {
               "shadowEffectDistance",
               new Vector2(2f, -2f),
               "Distance of the Shadow effect to use on the DamageText.");
+    }
+
+    public static ConfigEntry<bool> DamageTextUseGradientEffect { get; private set; }
+
+    private static void BindDamageTextGradientEffectConfig(ConfigFile config) {
+      DamageTextUseGradientEffect =
+          config.BindInOrder(
+              "DamageText.GradientEffect",
+              "useGradientEffect",
+              false,
+              "If true, applies a Gradient effect on the DamageText.");
     }
 
     public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
@@ -201,6 +188,38 @@ namespace BetterBattleUI {
               "blockedColor",
               Color.white,
               "DamageText.color for TextType.Blocked damage.");
+    }
+
+    public static ConfigEntry<string> DamageTextMessageFont { get; private set; }
+    public static ConfigEntry<int> DamageTextSmallFontSize { get; private set; }
+    public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
+
+    private static void BindDamageTextFontConfig(ConfigFile config) {
+      string[] fontNames = Resources.FindObjectsOfTypeAll<Font>().Select(f => f.name).OrderBy(f => f).ToArray();
+
+      DamageTextMessageFont =
+          config.BindInOrder(
+              "DamageText.Font",
+              "messageFont",
+              "AveriaSerifLibre-Bold",
+              "DamageText.font for all damage messages.",
+              new AcceptableValueList<string>(fontNames));
+
+      DamageTextSmallFontSize ??=
+          config.BindInOrder(
+              "DamageText.Font",
+              "smallFontSize",
+              14,
+              "DamageText.fontSize for small (far-away) damage messages.",
+              new AcceptableValueRange<int>(0, 32));
+
+      DamageTextLargeFontSize =
+          config.BindInOrder(
+              "DamageText.Font",
+              "largeFontSize",
+              18,
+              "DamageText.fontSize for large (nearby) damage messages.",
+              new AcceptableValueRange<int>(0, 32));
     }
   }
 }
