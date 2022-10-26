@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicensePlate", "LicensePlat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterBattleUI", "BetterBattleUI\BetterBattleUI.csproj", "{0256FB31-98ED-4E66-BFAD-EF96B3270D45}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulDamage", "ColorfulDamage\ColorfulDamage.csproj", "{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -255,6 +257,10 @@ Global
 		{0256FB31-98ED-4E66-BFAD-EF96B3270D45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0256FB31-98ED-4E66-BFAD-EF96B3270D45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0256FB31-98ED-4E66-BFAD-EF96B3270D45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
