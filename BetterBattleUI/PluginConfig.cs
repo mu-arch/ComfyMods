@@ -19,7 +19,6 @@ namespace BetterBattleUI {
 
       BindDamageTextPopupConfig(config);
       BindDamageTextShadowEffectConfig(config);
-      BindDamageTextGradientEffectConfig(config);
       BindDamageTextColorConfig(config);
 
       _fejdStartupBindConfigQueue.Clear();
@@ -102,17 +101,6 @@ namespace BetterBattleUI {
               "shadowEffectDistance",
               new Vector2(2f, -2f),
               "Distance of the Shadow effect to use on the DamageText.");
-    }
-
-    public static ConfigEntry<bool> DamageTextUseGradientEffect { get; private set; }
-
-    private static void BindDamageTextGradientEffectConfig(ConfigFile config) {
-      DamageTextUseGradientEffect =
-          config.BindInOrder(
-              "DamageText.GradientEffect",
-              "useGradientEffect",
-              false,
-              "If true, applies a Gradient effect on the DamageText.");
     }
 
     public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
