@@ -98,13 +98,11 @@
   <ItemGroup>
     <Compile Include="BetterBattleUI.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
-    <Compile Include="Patches\DamageTextPatch.cs" />
     <Compile Include="Patches\EnemyHudPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Components\VerticalGradient.cs" />
     <Compile Include="UI\Components\WobblyText.cs" />
-    <Compile Include="UI\FontCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
