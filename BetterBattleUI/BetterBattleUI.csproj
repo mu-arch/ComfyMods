@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="BetterBattleUI.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Config\MoreFieldDrawers.cs" />
     <Compile Include="Patches\EnemyHudPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
