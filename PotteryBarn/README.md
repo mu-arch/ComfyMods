@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.2.0.zip`.
+  * Go to Settings > Import local mod > Select `PotteryBarn_v1.4.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -79,6 +79,16 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Fixed for `v0.211.9` patch.
+  * Added `BepInDependency` and `manifest.json` dependency to JVL.
+  * Removed `yield return null` from `AddHammerPieces` coroutine.
+
+### 1.3.0
+
+  * CreatorShop changes?
 
 ### 1.2.1
 

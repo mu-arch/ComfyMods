@@ -17,10 +17,11 @@ using static PotteryBarn.PluginConfig;
 
 namespace PotteryBarn {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
+  [BepInDependency(Jotunn.Main.ModGuid, Jotunn.Main.Version)]
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -53,8 +54,6 @@ namespace PotteryBarn {
     }
 
     static IEnumerator AddHammerPieces(PieceTable pieceTable) {
-      yield return null;
-
       if (!pieceTable) {
         _logger.LogError($"Could not find HammerPieceTable!");
         yield break;
