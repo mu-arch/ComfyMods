@@ -2,6 +2,23 @@
 
 *Damage made colorful.*
 
+![ColorfulDamage - Splash](https://imgur.com/wEG7LFt.png)
+
+## Features
+
+Customize your damage numbers, including:
+
+  * Color by damage type
+  * Font and font size
+  * Damage popup duration and direction
+  * Optional drop shadow effect
+
+All options can be configured in-game via ConfigurationManager.
+
+## Configuration
+
+![ColorfulDamage - Configuration](https://i.imgur.com/gjocTQk.png)
+
 ## Installation
 
 ### Manual
@@ -12,10 +29,6 @@
 
   * Go to Settings > Import local mod > Select `ColorfulDamage_v1.0.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
-
-## Features
-
-  * TODO.
 
 ## Notes
 
