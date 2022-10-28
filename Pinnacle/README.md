@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.2.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.3.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -95,6 +95,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.0.3
+
+  * Fixed a bug where the PinEditPanel would not default the Pin.Icon to the last selected one.
 
 ### 1.0.2
 
