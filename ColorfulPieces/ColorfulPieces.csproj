@@ -91,13 +91,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorfulPieces.cs" />
+    <Compile Include="Components\PieceColor.cs" />
+    <Compile Include="Components\PieceColorUpdater.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
+    <Compile Include="Patches\GamePatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WearNTearData.cs" />
     <Compile Include="ZdoExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +108,7 @@
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />

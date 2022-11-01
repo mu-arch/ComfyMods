@@ -25,10 +25,16 @@ namespace ColorfulPieces {
 
     static bool TakeInputDelegate(bool takeInputResult) {
       if (IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
-        if (ChangePieceColorShortcut.Value.IsDown()
-            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
-          Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
-          return false;
+        if (ChangePieceColorShortcut.Value.IsDown()) {
+          if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
+            Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
+            return false;
+          }
+
+          //if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out PieceColor pieceColor)) {
+          //  ChangePieceColorAction(pieceColor);
+          //  return false;
+          //}
         }
 
         if (ClearPieceColorShortcut.Value.IsDown()
