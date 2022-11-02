@@ -96,8 +96,10 @@
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
+    <Compile Include="Patches\StaticPhysicsPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Patches\GamePatch.cs" />
+    <Compile Include="Patches\WearNTearPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

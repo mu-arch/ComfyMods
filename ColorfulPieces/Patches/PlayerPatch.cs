@@ -30,11 +30,6 @@ namespace ColorfulPieces {
             Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
             return false;
           }
-
-          //if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out PieceColor pieceColor)) {
-          //  ChangePieceColorAction(pieceColor);
-          //  return false;
-          //}
         }
 
         if (ClearPieceColorShortcut.Value.IsDown()

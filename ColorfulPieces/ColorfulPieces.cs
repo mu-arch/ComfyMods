@@ -40,16 +40,15 @@ namespace ColorfulPieces {
     }
 
     static bool ClaimOwnership(WearNTear wearNTear) {
-      if (!wearNTear?.m_nview
+      if (!wearNTear
+          || !wearNTear.m_nview
           || !wearNTear.m_nview.IsValid()
           || !PrivateArea.CheckAccess(wearNTear.transform.position, flash: true)) {
         _logger.LogWarning("Piece does not have a valid ZNetView or is in a PrivateArea.");
         return false;
       }
 
-      if (!wearNTear.m_nview.IsOwner()) {
-        wearNTear.m_nview.ClaimOwnership();
-      }
+      wearNTear.m_nview.ClaimOwnership();
 
       return true;
     }
@@ -172,7 +171,8 @@ namespace ColorfulPieces {
     }
 
     static void CopyPieceColorAction(WearNTear wearNTear) {
-      if (!wearNTear?.m_nview
+      if (!wearNTear
+          || !wearNTear.m_nview
           || !wearNTear.m_nview.IsValid()
           || !wearNTear.m_nview.m_zdo.TryGetVec3(PieceColorHashCode, out Vector3 colorAsVector)) {
         return;
@@ -185,42 +185,9 @@ namespace ColorfulPieces {
         TargetPieceEmissionColorFactor.Value = factor;
       }
 
-      MessageHud.instance?.ShowMessage(
+      MessageHud.m_instance.ShowMessage(
           MessageHud.MessageType.TopLeft,
           $"Copied piece color: {TargetPieceColorHex.Value} (f: {TargetPieceEmissionColorFactor.Value})");
-    }
-
-    [HarmonyPatch(typeof(WearNTear))]
-    static class WearNTearPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(WearNTear.Awake))]
-      static void WearNTearAwakePostfix(ref WearNTear __instance) {
-        if (IsModEnabled.Value) {
-          __instance.gameObject.AddComponent<PieceColor>();
-        }
-      }
-    }
-
-    [HarmonyPatch(typeof(StaticPhysics))]
-    static class StaticPhysicsPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(StaticPhysics.Awake))]
-      static void StaticPhysicsAwake(ref StaticPhysics __instance) {
-        if (IsModEnabled.Value) {
-          __instance.gameObject.AddComponent<PieceColor>();
-        }
-      }
-    }
-
-    [HarmonyPatch(typeof(AnimalAI))]
-    static class AnimalAiPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(AnimalAI.Awake))]
-      static void AwakePostfix(ref AnimalAI __instance) {
-        if (IsModEnabled.Value) {
-          __instance.gameObject.AddComponent<PieceColor>();
-        }
-      }
     }
   }
 }

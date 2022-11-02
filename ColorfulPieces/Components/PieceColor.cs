@@ -16,24 +16,23 @@ namespace ColorfulPieces {
     public Color TargetColor { get; set; } = Color.clear;
     public float TargetEmissionColorFactor { get; set; } = 0f;
 
-    readonly MaterialPropertyBlock _propertyBlock = new();
-
     static readonly Vector3 _noColor = Vector3.one * -1f;
+
+    readonly MaterialPropertyBlock _propertyBlock = new();
 
     int _cacheIndex;
     long _lastDataRevision;
     Vector3 _lastColorVec3;
     float _lastEmissionColorFactor;
-
     ZNetView _netView;
 
     void Awake() {
+      _propertyBlock.Clear();
+
       _lastDataRevision = -1L;
       _lastColorVec3 = _noColor;
       _lastEmissionColorFactor = 0f;
       _cacheIndex = -1;
-
-      _propertyBlock.Clear();
 
       _netView = GetComponent<ZNetView>();
 
@@ -66,8 +65,6 @@ namespace ColorfulPieces {
       Renderers.AddRange(gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(true));
 
       if (Renderers.Count != count) {
-        //ZLog.Log($"Caching prefab renderer count {Renderers.Count} for: {gameObject.name}");
-
         RendererCountCache[gameObject.name] = Renderers.Count;
         Renderers.Capacity = Renderers.Count;
       }
