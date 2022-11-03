@@ -9,16 +9,11 @@ namespace ColorfulPieces {
     public static readonly Dictionary<string, int> RendererCountCache = new();
     public static readonly List<PieceColor> PieceColorCache = new();
 
-    static readonly int _colorId = Shader.PropertyToID("_Color");
-    static readonly int _emissionColorId = Shader.PropertyToID("_EmissionColor");
-
-    public List<Renderer> Renderers { get; } = new(0);
     public Color TargetColor { get; set; } = Color.clear;
     public float TargetEmissionColorFactor { get; set; } = 0f;
 
-    static readonly Vector3 _noColor = Vector3.one * -1f;
-
-    readonly MaterialPropertyBlock _propertyBlock = new();
+    readonly List<Renderer> _renderers = new(0);
+    IPieceColorRenderer _pieceColorRenderer;
 
     int _cacheIndex;
     long _lastDataRevision;
@@ -27,11 +22,11 @@ namespace ColorfulPieces {
     ZNetView _netView;
 
     void Awake() {
-      _propertyBlock.Clear();
+      _renderers.Clear();
 
       _lastDataRevision = -1L;
-      _lastColorVec3 = _noColor;
-      _lastEmissionColorFactor = 0f;
+      _lastColorVec3 = -Vector3.one;
+      _lastEmissionColorFactor = -1f;
       _cacheIndex = -1;
 
       _netView = GetComponent<ZNetView>();
@@ -44,6 +39,15 @@ namespace ColorfulPieces {
       _cacheIndex = PieceColorCache.Count - 1;
 
       CacheRenderers();
+      _pieceColorRenderer = GetPieceColorRenderer(gameObject.name);
+    }
+
+    static IPieceColorRenderer GetPieceColorRenderer(string prefabName) {
+      return prefabName switch {
+        "guard_stone(Clone)" => new GuardStonePieceColorRenderer(),
+        "portal_wood(Clone)" => new PortalWoodPieceColorRenderer(),
+        _ => new DefaultPieceColorRenderer(),
+      };
     }
 
     void OnDestroy() {
@@ -53,20 +57,20 @@ namespace ColorfulPieces {
         PieceColorCache.RemoveAt(PieceColorCache.Count - 1);
       }
 
-      Renderers.Clear();
+      _renderers.Clear();
     }
 
     void CacheRenderers() {
       if (RendererCountCache.TryGetValue(gameObject.name, out int count)) {
-        Renderers.Capacity = count;
+        _renderers.Capacity = count;
       }
 
-      Renderers.AddRange(gameObject.GetComponentsInChildren<MeshRenderer>(true));
-      Renderers.AddRange(gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(true));
+      _renderers.AddRange(gameObject.GetComponentsInChildren<MeshRenderer>(true));
+      _renderers.AddRange(gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(true));
 
-      if (Renderers.Count != count) {
-        RendererCountCache[gameObject.name] = Renderers.Count;
-        Renderers.Capacity = Renderers.Count;
+      if (_renderers.Count != count) {
+        RendererCountCache[gameObject.name] = _renderers.Count;
+        _renderers.Capacity = _renderers.Count;
       }
     }
 
@@ -79,10 +83,20 @@ namespace ColorfulPieces {
         return;
       }
 
+      bool isColored = true;
       _lastDataRevision = _netView.m_zdo.m_dataRevision;
 
-      Vector3 colorVec3 = _netView.m_zdo.GetVec3(PieceColorHashCode, _noColor);
-      float factor = _netView.m_zdo.GetFloat(PieceEmissionColorFactorHashCode, 0f);
+      if (_netView.m_zdo.m_vec3 == null
+          || !_netView.m_zdo.m_vec3.TryGetValue(PieceColorHashCode, out Vector3 colorVec3)) {
+        colorVec3 = -Vector3.one;
+        isColored = false;
+      }
+
+      if (_netView.m_zdo.m_floats == null
+          || !_netView.m_zdo.m_floats.TryGetValue(PieceEmissionColorFactorHashCode, out float factor)) {
+        factor = -1f;
+        isColored = false;
+      }
 
       if (colorVec3 == _lastColorVec3 && factor == _lastEmissionColorFactor) {
         return;
@@ -91,33 +105,16 @@ namespace ColorfulPieces {
       _lastColorVec3 = colorVec3;
       _lastEmissionColorFactor = factor;
 
-      if (colorVec3 == _noColor) {
-        TargetColor = Color.clear;
-        TargetEmissionColorFactor = 0f;
-
-        ClearColors();
-      } else {
+      if (isColored) {
         TargetColor = Utils.Vec3ToColor(colorVec3);
         TargetEmissionColorFactor = factor;
 
-        SetColors();
-      }
-    }
+        _pieceColorRenderer.SetColors(_renderers, TargetColor, TargetColor * TargetEmissionColorFactor);
+      } else {
+        TargetColor = Color.clear;
+        TargetEmissionColorFactor = 0f;
 
-    public void SetColors() {
-      _propertyBlock.SetColor(_colorId, TargetColor);
-      _propertyBlock.SetColor(_emissionColorId, TargetColor * TargetEmissionColorFactor);
-
-      foreach (Renderer renderer in Renderers) {
-        renderer.SetPropertyBlock(_propertyBlock);
-      }
-    }
-
-    public void ClearColors() {
-      _propertyBlock.Clear();
-
-      foreach (Renderer renderer in Renderers) {
-        renderer.SetPropertyBlock(null);
+        _pieceColorRenderer.ClearColors(_renderers);
       }
     }
   }
