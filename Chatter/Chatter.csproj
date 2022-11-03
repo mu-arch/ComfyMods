@@ -79,6 +79,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
@@ -96,6 +99,8 @@
     <Compile Include="ChatMessage.cs" />
     <Compile Include="Chatter.cs" />
     <Compile Include="CircularQueue.cs" />
+    <Compile Include="Config\StringListConfigEntry.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="IsExternalInit.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="UI\UIExtensions.cs" />

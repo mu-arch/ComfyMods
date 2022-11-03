@@ -1,8 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 
 using HarmonyLib;
 
+using System;
+using System.IO;
 using System.Reflection;
 
 namespace BetterZeeRouter {
@@ -10,35 +13,44 @@ namespace BetterZeeRouter {
   public class BetterZeeRouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeerouter";
     public const string PluginName = "BetterZeeRouter";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
-    static ConfigEntry<bool> _isModEnabled;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; }
+
     Harmony _harmony;
+    TeleportToHandler _teleportToHandler;
 
     public void Awake() {
-      _isModEnabled =
+      IsModEnabled =
           Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
-      if (_isModEnabled.Value) {
+      if (IsModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
 
-        _routedRpcManager.AddHandler(_rpcWntHealthChangedHashCode, _wntHealthChangedHandler);
-        _routedRpcManager.AddHandler(_rpcDamageTextHashCode, _damageTextHandler);
+        _routedRpcManager.AddHandler(RpcWntHealthChangedHashCode, _wntHealthChangedHandler);
+        _routedRpcManager.AddHandler(RpcDamageTextHashCode, _damageTextHandler);
+
+        _teleportToHandler = new("TeleportToLog.txt");
+        _routedRpcManager.AddHandler(RpcTeleportToHashCode, _teleportToHandler);
       }
     }
 
     public void OnDestroy() {
+      _teleportToHandler?.Dispose();
       _harmony?.UnpatchSelf();
     }
 
-    static readonly int _rpcWntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
-    static readonly int _rpcDamageTextHashCode = "DamageText".GetStableHashCode();
+    public static readonly int RpcWntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
+    public static readonly int RpcDamageTextHashCode = "DamageText".GetStableHashCode();
+
+    // Yes, they actually prefixed it with `RPC_` in vanilla code.
+    public static readonly int RpcTeleportToHashCode = "RPC_TeleportTo".GetStableHashCode();
 
     static readonly RoutedRpcManager _routedRpcManager = RoutedRpcManager.Instance;
     static readonly WntHealthChangedHandler _wntHealthChangedHandler = new();
     static readonly DamageTextHandler _damageTextHandler = new();
 
-    class WntHealthChangedHandler : RpcMethodHandler {
+    public class WntHealthChangedHandler : RpcMethodHandler {
       public long WntHealthChangedCount { get; private set; }
 
       public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
@@ -47,7 +59,7 @@ namespace BetterZeeRouter {
       }
     }
 
-    class DamageTextHandler : RpcMethodHandler {
+    public class DamageTextHandler : RpcMethodHandler {
       public long DamageTextCount { get; private set; }
 
       public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
@@ -56,8 +68,34 @@ namespace BetterZeeRouter {
       }
     }
 
+    public sealed class TeleportToHandler : RpcMethodHandler, IDisposable {
+      readonly StreamWriter _teleportToWriter;
+
+      public TeleportToHandler(string teleportToLogFilename) {
+        _teleportToWriter =
+            File.AppendText(Path.Combine(Utils.GetSaveDataPath(FileHelpers.FileSource.Local), teleportToLogFilename));
+      }
+
+      public void Dispose() {
+        _teleportToWriter.Dispose();
+      }
+
+      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
+        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        long senderId = routedRpcData.m_senderPeerID;
+        long targetId = routedRpcData.m_targetPeerID;
+
+        _teleportToWriter.WriteLine($"{timestamp},{senderId},{targetId}");
+        _teleportToWriter.Flush();
+
+        ZLog.Log($"[{DateTimeOffset.Now}] RPC_TeleportTo attempted by {senderId} targeting {targetId}.");
+
+        return false;
+      }
+    }
+
     [HarmonyPatch(typeof(ZRoutedRpc))]
-    class ZRoutedRpcPatch {
+    static class ZRoutedRpcPatch {
       static readonly ZRoutedRpc.RoutedRPCData _routedRpcData = new();
 
       [HarmonyPostfix]

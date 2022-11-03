@@ -1,10 +1,8 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
-using UnityEngine;
+using HarmonyLib;
 
 using static ColorfulPieces.ColorfulPieces;
 using static ColorfulPieces.PluginConfig;
@@ -18,41 +16,33 @@ namespace ColorfulPieces {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))),
-              new CodeMatch(OpCodes.Stloc_0))
+              new CodeMatch(OpCodes.Ldarg_0),
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
           .Advance(offset: 2)
-          .InsertAndAdvance(new CodeInstruction(OpCodes.Ldloc_0))
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
-          .InsertAndAdvance(new CodeInstruction(OpCodes.Stloc_0))
           .InstructionEnumeration();
     }
 
-    static GameObject _hoverObject;
-
     static bool TakeInputDelegate(bool takeInputResult) {
-      if (!IsModEnabled.Value) {
-        return takeInputResult;
-      }
+      if (IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
+        if (ChangePieceColorShortcut.Value.IsDown()) {
+          if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
+            Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
+            return false;
+          }
+        }
 
-      _hoverObject = Player.m_localPlayer.Ref()?.m_hovering;
+        if (ClearPieceColorShortcut.Value.IsDown()
+            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear clearTarget)) {
+          Player.m_localPlayer.StartCoroutine(ClearPieceColorCoroutine(clearTarget));
+          return false;
+        }
 
-      if (!_hoverObject) {
-        return takeInputResult;
-      }
-
-      if (ChangePieceColorShortcut.Value.IsDown()) {
-        Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(_hoverObject));
-        return false;
-      }
-
-      if (ClearPieceColorShortcut.Value.IsDown()) {
-        Player.m_localPlayer.StartCoroutine(ClearPieceColorCoroutine(_hoverObject));
-        return false;
-      }
-
-      if (CopyPieceColorShortcut.Value.IsDown()) {
-        Player.m_localPlayer.StartCoroutine(CopyPieceColorCoroutine(_hoverObject));
-        return false;
+        if (CopyPieceColorShortcut.Value.IsDown()
+            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear copyTarget)) {
+          Player.m_localPlayer.StartCoroutine(CopyPieceColorCoroutine(copyTarget));
+          return false;
+        }
       }
 
       return takeInputResult;

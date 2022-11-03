@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
-using System;
+
+using ComfyLib;
 
 using UnityEngine;
 
@@ -73,6 +74,29 @@ namespace ColorfulPieces {
 
       ColorPromptFontSize =
           config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
+
+      BindUpdateColorsConfig(config);
+    }
+
+    public static ConfigEntry<int> UpdateColorsFrameLimit { get; private set; }
+    public static ConfigEntry<float> UpdateColorsWaitInterval { get; private set; }
+
+    static void BindUpdateColorsConfig(ConfigFile config) {
+      UpdateColorsFrameLimit =
+          config.BindInOrder(
+              "UpdateColors",
+              "updateColorsFrameLimit",
+              100,
+              "Limit for how many PieceColor.UpdateColors to process per update frame.",
+              new AcceptableValueRange<int>(50, 250));
+
+      UpdateColorsWaitInterval =
+          config.BindInOrder(
+              "UpdateColors",
+              "updateColorsWaitInterval",
+              2f,
+              "Interval to wait after each PieceColor.UpdateColors loop. *Restart required!*",
+              new AcceptableValueRange<float>(0.5f, 10f));
     }
 
     static void UpdateColorHexValue() {

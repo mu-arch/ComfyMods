@@ -13,10 +13,12 @@
 ### Thunderstore (manual install)
 
   * **Uninstall** any older versions of `ColorfulLights`.
-  * Go to Settings > Import local mod > Select `ColorfulLights_v1.6.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulLights_v1.7.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
-## Instructions
+## Features
+
+### Color any torch or fireplace
 
   * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulLights section.
     * Change the target color using the RGB sliders or using an HTML color code.
@@ -25,7 +27,30 @@
     * Prompt font-size can be configured with the `colorPromptFontSize` setting.
   * Hit the hot-key `LeftShift + E` (configurable) to change the color.
 
+### Launch colored fireworks
+
+  * Colors applied to any campfire, hearth or bonfire will also color any fireworks launched from that fireplace!
+  * Players without the mod will see the standard firework color.
+
+## Notes
+
+  * This is the *good enough* release with more features/options to be added later.
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulLights).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+
 ## Changelog
+
+### 1.7.1
+
+  * Fixed yet another small bug with the `Player.TakeInput()` transpiler not matching the same pattern as other mods.
+
+### 1.7.0
+
+  * Fixed a bug with the `Player.TakeInput()` transpiler blocking other inputs with the same keybind.
+  * Rewrote the entire fireplace-coloring system to use a new MonoBehaviour `FireplaceColor`.
+  * Fixed colorizing fireworks... it never worked properly before and now it does.
+  * Moved patch-related code into their own classes.
 
 ### 1.6.0
 

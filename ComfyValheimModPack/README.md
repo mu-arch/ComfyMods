@@ -16,6 +16,25 @@
 
 ## Changelog
 
+### 2.4.0
+
+  * Removed `ComfyMods-ComfyNameYourShip-1.0.0` from dependencies list as it is causing boat flipping issues.
+  * Updated dependencies list to latest version (where applicable).
+
+### 2.3.0
+
+  * Added `ComfyMods-ZoneScouter-1.0.1` to the dependencies list.
+
+### 2.2.0
+
+  * Added `Azumatt-Official_BepInEx_ConfigurationManager-17.0.0` to the dependencies list.
+
+### 2.1.0
+
+  * Added `ComfyMods-ComfyNameYourShip-1.0.0` to the dependencies list.
+  * Updated dependencies list to latest version (where applicable).
+  * Modified `quick_connect_servers.cfg` to point to new ComfyValheim address: `comfy.cybermancy.org`
+
 ### 2.0.1
 
   * Updated dependencies list to latest version (where applicable).

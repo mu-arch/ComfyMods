@@ -12,14 +12,14 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Chatter_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `Chatter_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
 
 ### New Features!
 
-  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below)!
+  * Chat filters with a dynamic UI.
 
 ### Features
 
@@ -30,6 +30,7 @@
   * Chat panel will auto-hide by dimming to 20% (configurable) after 10s (configurable).
   * Use any color for the chat panel background!
   * Move **and** resize the chat panel using the mouse (see below).
+  * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below).
 
 ### Move/Resize/Toggle
 
@@ -42,6 +43,16 @@
   * The message layout can be switched at anytime in configuration manager and messages will be rebuilt immediately.
 
     ![UI-Screenshot-04](https://i.imgur.com/7c5T3X8.png)
+
+### Chat Filters
+
+  * Add/edit/remove text filters for every type of chat message using a custom drawer in ConfigurationManager.
+
+    ![UI-Screenshot-05](https://imgur.com/vRmaiDe.png)
+
+  - Filters only affect messages in Chatter's window.
+  - Changing any text filters will only apply to **new** incoming messages.
+  - This is still an *experimental* custom drawer so please report any bugs.
 
 ### Configure
 
@@ -58,9 +69,13 @@
 
 ## Changelog
 
+### 1.2.1
+
+  * Fixed a bug where if no filters are defined it filters **everything** (sadface).
+
 ### 1.2.0
 
-  * UI! UI? UI!
+  * Added support for chat filters configurable using a custom drawer in ConfigurationManager.
 
 ### 1.1.0
 

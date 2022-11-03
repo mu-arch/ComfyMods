@@ -4,6 +4,36 @@
     * Coloring is very simple at the moment and will color all materials/textures on the object (to be refined later).
     * Those without the mod installed will still see the default vanilla materials/textures.
 
+## Instructions
+
+### Setting target color
+
+  * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
+  * Change the target color using the RGB sliders or using an HTML color code.
+  * Change the target emission color factor using the slider (this affects how bright the target color will be).
+
+### Changing piece colors
+
+  * Hover over any building piece ***that you are the owner of*** and a prompt will appear.
+  * Hit `LeftShift + R` to change the building piece color to the target color and emission factor.
+  * Hit `LeftAlt + R` to clear any existing colors from the building piece.
+  * Hit `LeftCtrl + R` to copy the existing color from a piece.
+
+  - This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
+  - Prompt font-size can be configured with the `colorPromptFontSize` setting.
+
+### Changing/clearing pieces in a radius
+
+These two commands still call the same action as the hotkey and so will obey all ward permissions.
+
+  * `/clearcolor <radius>` (in chatbox)
+  * `clearcolor <radius>` (in console)
+  * Clears any colors from all pieces in the specified radius from the player.
+
+  - `/changecolor <radius>` (in chatbox)
+  - `changecolor <radius>` (in console)
+  - Changes the color of all pieces in the radius from the player to the currently set target color.
+
 ## Installation
 
 ### Manual
@@ -12,27 +42,27 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.7.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.8.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
-## Instructions
+## Notes
 
-### Setting target color
-
-  * In-game, press F1 to bring up the ConfigurationManager and navigate to the ColorfulPieces section.
-    * Change the target color using the RGB sliders or using an HTML color code.
-    * Change the target emission color factor using the slider (this affects how bright the target color will be).
-
-### Changing piece colors
-
-  * Hover over any building piece ***that you are the owner of*** and a prompt will appear.
-    * Hit `LeftShift + R` to change the building piece color to the target color and emission factor.
-    * Hit `LeftAlt + R` to clear any existing colors from the building piece.
-    * Hit `LeftCtrl + R` to copy the existing color from a piece.
-    * This prompt can be hidden by disabling the `showChangeRemoveColorPrompt` setting.
-    * Prompt font-size can be configured with the `colorPromptFontSize` setting.
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.8.0
+
+  * Reduced overall memory and cpu usage!
+  * Refactored entire colorization mechanism to use a new `PieceColor` component and `PieceColorUpdater` loop.
+  * Removed prefab Material caching (which created instances) and instead make use of MaterialPropertyBlocks.
+  * Cleaned-up this README and added more instructions.
+
+### 1.7.1
+
+  * Fixed a bug with the `Player.TakeInput()` transpiler code blocking other inputs.
 
 ### 1.7.0
 
@@ -51,25 +81,15 @@
     * Added a cache variable for Utils.ColorToVector3() method calls.
 
 ### 1.5.2
+
   * Changed how hotkeys are detected from Player.TakeInput() prefix to better Player.Update() transpiler.
     * This eliminates the double hot-key firing when in debugfly mode.
   * Moved more config-related logic into PluginConfig class.
   * Moved ZDO extensions to a new ZdoExtensions class.
-  * Added two new Terminal.ConsoleCommand:
+  * Added two new Terminal.ConsoleCommands: /clearcolor and /changecolor
 
-  * /clearcolor <radius> (in chatbox)
-  * clearcolor <radius> (in console)
-    * Clears any colors from all pieces in the specified radius from the player.
-
-  * /changecolor <radius> (in chatbox)
-  * changecolor <radius> (in console)
-    * Changes the color of all pieces in the specified radius from the player to the currently set target color in configuration.
-
-  * These two commands still call the same action as the hotkey and so will obey all ward permissions.
-
-  * Update:
-    * Fixed a bug where I forgot to check for isModEnabled and showChangeRemoveColorPrompt flags in Hud.UpdateCrosshair() postfix.
-    * Fixed a bug where I forgot to add a yield return null condition in ChangeColorsInRadiusCoroutine().
+  - Fixed a missing check for isModEnabled and showChangeRemoveColorPrompt flags in Hud.UpdateCrosshair() postfix.
+  - Fixed a missing yield return null condition in ChangeColorsInRadiusCoroutine().
 
 ### 1.4.0
 

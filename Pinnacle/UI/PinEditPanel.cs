@@ -180,6 +180,8 @@ namespace Pinnacle {
     }
 
     void OnPinTypeValueChange(Minimap.PinType pinType) {
+      Minimap.m_instance.m_selectedType = pinType;
+
       if (TargetPin == null) {
         return;
       }

@@ -1,12 +1,11 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -17,7 +16,7 @@ namespace ColorfulWards {
   public class ColorfulWards : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulwards";
     public const string PluginName = "ColorfulWards";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.4.1";
 
     static readonly Dictionary<PrivateArea, PrivateAreaData> PrivateAreaDataCache = new();
 
