@@ -19,6 +19,8 @@ namespace ColorfulPieces {
     long _lastDataRevision;
     Vector3 _lastColorVec3;
     float _lastEmissionColorFactor;
+    Color _lastColor;
+    Color _lastEmissionColor;
     ZNetView _netView;
 
     void Awake() {
@@ -74,12 +76,12 @@ namespace ColorfulPieces {
       }
     }
 
-    public void UpdateColors() {
+    public void UpdateColors(bool forceUpdate = false) {
       if (!_netView || !_netView.IsValid()) {
         return;
       }
 
-      if (_lastDataRevision >= _netView.m_zdo.m_dataRevision) {
+      if (!forceUpdate && _lastDataRevision >= _netView.m_zdo.m_dataRevision) {
         return;
       }
 
@@ -98,7 +100,7 @@ namespace ColorfulPieces {
         isColored = false;
       }
 
-      if (colorVec3 == _lastColorVec3 && factor == _lastEmissionColorFactor) {
+      if (!forceUpdate && colorVec3 == _lastColorVec3 && factor == _lastEmissionColorFactor) {
         return;
       }
 
@@ -116,6 +118,20 @@ namespace ColorfulPieces {
 
         _pieceColorRenderer.ClearColors(_renderers);
       }
+
+      _lastColor = TargetColor;
+      _lastEmissionColor = TargetColor * TargetEmissionColorFactor;
+    }
+
+    public void OverrideColors(Color color, Color emissionColor) {
+      if (color == _lastColor && emissionColor == _lastEmissionColor) {
+        return;
+      }
+
+      _lastColor = color;
+      _lastEmissionColor = emissionColor;
+
+      _pieceColorRenderer.SetColors(_renderers, color, emissionColor);
     }
   }
 }
