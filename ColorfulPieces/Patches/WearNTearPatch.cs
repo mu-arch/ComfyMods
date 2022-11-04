@@ -39,7 +39,7 @@ namespace ColorfulPieces {
       Color color = new(0.6f, 0.8f, 1f);
 
       if (supportColorValue >= 0f) {
-        color = Color.Lerp(Color.red, Color.blue, supportColorValue);
+        color = Color.Lerp(PieceStabilityMinColor.Value, PieceStabilityMaxColor.Value, supportColorValue);
 
         Color.RGBToHSV(color, out float h, out _, out _);
 

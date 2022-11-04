@@ -76,6 +76,7 @@ namespace ColorfulPieces {
           config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
 
       BindUpdateColorsConfig(config);
+      BindPieceStabilityColorsConfig(config);
     }
 
     public static ConfigEntry<int> UpdateColorsFrameLimit { get; private set; }
@@ -97,6 +98,25 @@ namespace ColorfulPieces {
               2f,
               "Interval to wait after each PieceColor.UpdateColors loop. *Restart required!*",
               new AcceptableValueRange<float>(0.5f, 10f));
+    }
+
+    public static ConfigEntry<Color> PieceStabilityMinColor { get; private set; }
+    public static ConfigEntry<Color> PieceStabilityMaxColor { get; private set; }
+
+    static void BindPieceStabilityColorsConfig(ConfigFile config) {
+      PieceStabilityMinColor =
+          config.BindInOrder(
+              "PieceStabilityColors",
+              "pieceStabilityMinColor",
+              Color.red,
+              "Color for the Piece Stability highlighting gradient to use for minimum stability.");
+
+      PieceStabilityMaxColor =
+          config.BindInOrder(
+              "PieceStabilityColors",
+              "pieceStabilityMaxColor",
+              Color.green,
+              "Color for the Piece Stability highlighting gradient to use for maximum stability.");
     }
 
     static void UpdateColorHexValue() {
