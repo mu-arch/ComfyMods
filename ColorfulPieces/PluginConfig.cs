@@ -70,7 +70,7 @@ namespace ColorfulPieces {
                   new AcceptableValueRange<float>(0f, 0.8f)));
 
       ShowChangeRemoveColorPrompt =
-          config.Bind("Hud", "showChangeRemoveColorPrompt", true, "Show the 'change/remove/copy' color text prompt.");
+          config.Bind("Hud", "showChangeRemoveColorPrompt", false, "Show the 'change/remove/copy' color text prompt.");
 
       ColorPromptFontSize =
           config.Bind("Hud", "colorPromptFontSize", 15, "Font size for the 'change/remove/copy' color text prompt.");
@@ -95,7 +95,7 @@ namespace ColorfulPieces {
           config.BindInOrder(
               "UpdateColors",
               "updateColorsWaitInterval",
-              2f,
+              5f,
               "Interval to wait after each PieceColor.UpdateColors loop. *Restart required!*",
               new AcceptableValueRange<float>(0.5f, 10f));
     }

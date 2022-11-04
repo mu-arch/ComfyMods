@@ -58,6 +58,7 @@ These two commands still call the same action as the hotkey and so will obey all
   * Reduced overall memory and cpu usage!
   * Refactored entire colorization mechanism to use a new `PieceColor` component and `PieceColorUpdater` loop.
   * Removed prefab Material caching (which created instances) and instead make use of MaterialPropertyBlocks.
+  * Added configuration options to override the Piece stability highlight gradient colors.
   * Cleaned-up this README and added more instructions.
 
 ### 1.7.1
