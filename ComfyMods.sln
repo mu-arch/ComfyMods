@@ -99,6 +99,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BetterBattleUI", "BetterBat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulDamage", "ColorfulDamage\ColorfulDamage.csproj", "{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YellowPages", "YellowPages\YellowPages.csproj", "{7A717711-9106-4AB0-B129-66BCD25789C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -261,6 +263,10 @@ Global
 		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBD74EE8-6F2B-49CC-84EC-AECE295491E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A717711-9106-4AB0-B129-66BCD25789C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A717711-9106-4AB0-B129-66BCD25789C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A717711-9106-4AB0-B129-66BCD25789C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A717711-9106-4AB0-B129-66BCD25789C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
