@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
