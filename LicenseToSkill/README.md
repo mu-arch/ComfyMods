@@ -29,6 +29,10 @@
 
 ## Changelog
 
+### 1.1.1
+
+  * Interim fix for `v0.212.6` Mistlands PTB.
+
 ### 1.1.0
 
   * Moved this mod from private repo to the public ComfyMods repo.

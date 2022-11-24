@@ -1,8 +1,8 @@
-﻿using BepInEx;
+﻿using System.Reflection;
+
+using BepInEx;
 
 using HarmonyLib;
-
-using System.Reflection;
 
 using static LicenseToSkill.PluginConfig;
 
