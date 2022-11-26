@@ -2,9 +2,7 @@
 
 using ComfyLib;
 
-using System;
-
-namespace Entitlement {
+namespace Enhuddlement {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
     public static ConfigEntry<bool> ShowEnemyHealthValue { get; private set; }

@@ -11,9 +11,9 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-using static Entitlement.PluginConfig;
+using static Enhuddlement.PluginConfig;
 
-namespace Entitlement {
+namespace Enhuddlement {
   [HarmonyPatch(typeof(EnemyHud))]
   static class EnemyHudPatch {
     [HarmonyPrefix]
