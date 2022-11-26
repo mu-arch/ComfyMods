@@ -37,11 +37,6 @@ namespace Entitlement {
       } else {
         SetupEnemyHud(hudData);
       }
-
-      if (hudData.m_level3) {
-        hudData.m_level3.gameObject.SetActive(true);
-        hudData.m_level3 = default;
-      }
     }
 
     static readonly ConditionalWeakTable<EnemyHud.HudData, Text> _healthTextCache = new();
@@ -82,10 +77,10 @@ namespace Entitlement {
           .SetAnchorMin(new(0.5f, 0.5f))
           .SetAnchorMax(new(0.5f, 0.5f))
           .SetPivot(new(0.5f, 0f))
-          .SetPosition(new(0f, 8f));
+          .SetPosition(new(0f, 8f))
+          .SetSizeDelta(new(hudData.m_name.preferredWidth, hudData.m_name.preferredHeight));
 
       Transform healthTransform = hudData.m_gui.transform.Find("Health");
-
       healthTransform.GetComponent<RectTransform>()
           .SetAnchorMin(new(0.5f, 0.5f))
           .SetAnchorMax(new(0.5f, 0.5f))
@@ -109,8 +104,37 @@ namespace Entitlement {
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
 
-      Text healthText = UnityEngine.Object.Instantiate(hudData.m_name, healthTransform);
+      Text healthText = CreateEnemyHealthText(hudData, healthTransform, healthTextFontSize);
+      _healthTextCache.Add(hudData, healthText);
 
+      if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
+        CreateEnemyLevelText(hudData, hudData.m_name.transform);
+
+        hudData.m_level2?.gameObject.SetActive(false);
+        hudData.m_level3?.gameObject.SetActive(false);
+        hudData.m_level2 = default;
+        hudData.m_level3 = default;
+      } else {
+        hudData.m_level2?.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_level2?.GetComponent<RectTransform>()
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(12f, 0f))
+            .SetSizeDelta(Vector2.zero);
+
+        hudData.m_level3?.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_level3?.GetComponent<RectTransform>()
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(20f, 0f))
+            .SetSizeDelta(Vector2.zero);
+      }
+    }
+
+    static Text CreateEnemyHealthText(EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize) {
+      Text healthText = UnityEngine.Object.Instantiate(hudData.m_name, parentTransform);
       healthText.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.one)
@@ -125,7 +149,27 @@ namespace Entitlement {
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetResizeTextForBestFit(false);
 
-      _healthTextCache.Add(hudData, healthText);
+      return healthText;
+    }
+
+    static Text CreateEnemyLevelText(EnemyHud.HudData hudData, Transform parentTransform) {
+      Text levelText = UnityEngine.Object.Instantiate(hudData.m_name, parentTransform);
+
+      levelText.GetComponent<RectTransform>()
+          .SetAnchorMin(new(1f, 0.5f))
+          .SetAnchorMax(new(1f, 0.5f))
+          .SetPivot(new(0f, 0.5f))
+          .SetPosition(new(5f, 0f));
+
+      levelText
+          .SetName("LevelText")
+          .SetFontSize(Mathf.Clamp(levelText.fontSize, 18, levelText.fontSize))
+          .SetColor(new(1f, 0.85882f, 0.23137f, 1f))
+          .SetAlignment(TextAnchor.MiddleLeft)
+          .SetResizeTextForBestFit(false)
+          .SetText($"{hudData.m_character.m_level - 1}{EnemyLevelStarSymbol.Value}");
+
+      return levelText;
     }
 
     [HarmonyTranspiler]

@@ -7,9 +7,19 @@ namespace Entitlement {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
     public static ConfigEntry<bool> ShowEnemyHealthValue { get; private set; }
 
+    public static ConfigEntry<string> EnemyLevelStarSymbol { get; private set; }
+
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
       ShowEnemyHealthValue = config.BindInOrder("EnemyHud", "showEnemyHealthValue", true, "Show enemy health values.");
+
+      EnemyLevelStarSymbol =
+          config.BindInOrder(
+              "EnemyLevel",
+              "enemyLevelStarSymbol",
+              "\u2605",
+              "Symbol to use for 'star' for enemy levels.",
+              new AcceptableValueList<string>("\u2605", "\u272a", "\u2735", "\u272d", "\u272b"));
 
       BindEnemyHudConfig(config);
       BindBossHudConfig(config);

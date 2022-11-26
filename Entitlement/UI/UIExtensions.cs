@@ -2,10 +2,28 @@
 using UnityEngine.UI;
 
 namespace ComfyLib {
+  public static class CanvasGroupExtensions {
+    public static CanvasGroup SetAlpha(this CanvasGroup canvasGroup, float alpha) {
+      canvasGroup.alpha = alpha;
+      return canvasGroup;
+    }
+
+    public static CanvasGroup SetBlocksRaycasts(this CanvasGroup canvasGroup, bool blocksRaycasts) {
+      canvasGroup.blocksRaycasts = blocksRaycasts;
+      return canvasGroup;
+    }
+  }
+
   public static class ComponentExtensions {
     public static T SetName<T>(this T component, string name) where T : Component {
       component.gameObject.name = name;
       return component;
+    }
+  }
+
+  public static class ObjectExtensions {
+    public static T Ref<T>(this T o) where T : Object {
+      return o ? o : null;
     }
   }
 
