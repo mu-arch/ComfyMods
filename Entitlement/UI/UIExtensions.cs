@@ -55,6 +55,11 @@ namespace ComfyLib {
   }
 
   public static class TextExtensions {
+    public static float GetPreferredHeight(this Text text) {
+      return text.cachedTextGenerator.GetPreferredHeight(
+          text.text, text.GetGenerationSettings(text.rectTransform.rect.size));
+    }
+
     public static Text SetAlignment(this Text text, TextAnchor alignment) {
       text.alignment = alignment;
       return text;

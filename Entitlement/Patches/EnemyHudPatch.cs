@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
@@ -88,6 +89,24 @@ namespace Entitlement {
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
 
+      SetupHealthBars(hudData, healthBarWidth, healthBarHeight);
+
+      Text healthText = CreateEnemyHealthText(hudData, healthTransform, healthTextFontSize);
+      _healthTextCache.Add(hudData, healthText);
+
+      if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
+        CreateEnemyLevelText(hudData, healthTransform);
+
+        hudData.m_level2?.gameObject.SetActive(false);
+        hudData.m_level3?.gameObject.SetActive(false);
+        hudData.m_level2 = default;
+        hudData.m_level3 = default;
+      } else {
+        SetupEnemyLevelStars(hudData, healthTransform);
+      }
+    }
+
+    static void SetupHealthBars(EnemyHud.HudData hudData, float healthBarWidth, float healthBarHeight) {
       hudData.m_healthFast.SetWidth(healthBarWidth);
       hudData.m_healthFast.m_bar
           .SetAnchorMin(new(0.5f, 0.5f))
@@ -103,34 +122,6 @@ namespace Entitlement {
           .SetPivot(new(0.5f, 0.5f))
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
-
-      Text healthText = CreateEnemyHealthText(hudData, healthTransform, healthTextFontSize);
-      _healthTextCache.Add(hudData, healthText);
-
-      if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
-        CreateEnemyLevelText(hudData, hudData.m_name.transform);
-
-        hudData.m_level2?.gameObject.SetActive(false);
-        hudData.m_level3?.gameObject.SetActive(false);
-        hudData.m_level2 = default;
-        hudData.m_level3 = default;
-      } else {
-        hudData.m_level2?.SetParent(hudData.m_name.transform, worldPositionStays: false);
-        hudData.m_level2?.GetComponent<RectTransform>()
-            .SetAnchorMin(new(1f, 0.5f))
-            .SetAnchorMax(new(1f, 0.5f))
-            .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(12f, 0f))
-            .SetSizeDelta(Vector2.zero);
-
-        hudData.m_level3?.SetParent(hudData.m_name.transform, worldPositionStays: false);
-        hudData.m_level3?.GetComponent<RectTransform>()
-            .SetAnchorMin(new(1f, 0.5f))
-            .SetAnchorMax(new(1f, 0.5f))
-            .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(20f, 0f))
-            .SetSizeDelta(Vector2.zero);
-      }
     }
 
     static Text CreateEnemyHealthText(EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize) {
@@ -152,24 +143,94 @@ namespace Entitlement {
       return healthText;
     }
 
-    static Text CreateEnemyLevelText(EnemyHud.HudData hudData, Transform parentTransform) {
-      Text levelText = UnityEngine.Object.Instantiate(hudData.m_name, parentTransform);
-
-      levelText.GetComponent<RectTransform>()
-          .SetAnchorMin(new(1f, 0.5f))
-          .SetAnchorMax(new(1f, 0.5f))
-          .SetPivot(new(0f, 0.5f))
-          .SetPosition(new(5f, 0f));
+    static Text CreateEnemyLevelText(EnemyHud.HudData hudData, Transform healthTransform) {
+      Text levelText = UnityEngine.Object.Instantiate(hudData.m_name);
 
       levelText
           .SetName("LevelText")
-          .SetFontSize(Mathf.Clamp(levelText.fontSize, 18, levelText.fontSize))
+          .SetFontSize(Mathf.Clamp(levelText.fontSize, EnemyLevelTextMinFontSize.Value, 64))
           .SetColor(new(1f, 0.85882f, 0.23137f, 1f))
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetResizeTextForBestFit(false)
-          .SetText($"{hudData.m_character.m_level - 1}{EnemyLevelStarSymbol.Value}");
+          .SetResizeTextForBestFit(false);
+
+      if (EnemyLevelShowByName.Value) {
+        levelText.transform.SetParent(hudData.m_name.transform, worldPositionStays: false);
+
+        levelText.GetComponent<RectTransform>()
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(5f, 0f))
+            .SetSizeDelta(new(100f, levelText.GetPreferredHeight() + 5f));
+
+        levelText
+            .SetAlignment(TextAnchor.MiddleLeft)
+            .SetHorizontalOverflow(HorizontalWrapMode.Overflow)
+            .SetVerticalOverflow(VerticalWrapMode.Overflow);
+      } else {
+        levelText.transform.SetParent(healthTransform, worldPositionStays: false);
+
+        Vector2 sizeDelta = healthTransform.GetComponent<RectTransform>().sizeDelta;
+        sizeDelta.y = levelText.GetPreferredHeight() * 2f;
+
+        levelText.GetComponent<RectTransform>()
+            .SetAnchorMin(Vector2.zero)
+            .SetAnchorMax(Vector2.zero)
+            .SetPivot(Vector2.zero)
+            .SetPosition(new(0f, 0f - sizeDelta.y - 2f))
+            .SetSizeDelta(sizeDelta);
+
+        levelText
+            .SetAlignment(TextAnchor.UpperLeft)
+            .SetHorizontalOverflow(HorizontalWrapMode.Wrap)
+            .SetVerticalOverflow(VerticalWrapMode.Overflow);
+      }
+
+      int stars = hudData.m_character.m_level - 1;
+
+      levelText.SetText(
+          stars <= EnemyLevelStarCutoff.Value
+              ? string.Concat(Enumerable.Repeat(EnemyLevelStarSymbol.Value, stars))
+              : $"{stars}{EnemyLevelStarSymbol.Value}");
+
+      levelText.gameObject.AddComponent<VerticalGradient>();
 
       return levelText;
+    }
+
+    static void SetupEnemyLevelStars(EnemyHud.HudData hudData, Transform healthTransform) {
+      if (EnemyLevelShowByName.Value) {
+        hudData.m_level2?.SetParent(hudData.m_name.transform);
+        hudData.m_level2?
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(12f, 0f))
+            .SetSizeDelta(Vector2.zero);
+
+        hudData.m_level3?.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_level3?
+            .SetAnchorMin(new(1f, 0.5f))
+            .SetAnchorMax(new(1f, 0.5f))
+            .SetPivot(new(0f, 0.5f))
+            .SetPosition(new(20f, 0f))
+            .SetSizeDelta(Vector2.zero);
+      } else {
+        hudData.m_level2?.SetParent(healthTransform, worldPositionStays: false);
+        hudData.m_level2?
+            .SetAnchorMin(Vector2.zero)
+            .SetAnchorMax(Vector2.zero)
+            .SetPivot(Vector2.zero)
+            .SetPosition(new(7.5f, -10f))
+            .SetSizeDelta(Vector2.zero);
+
+        hudData.m_level3?.SetParent(healthTransform, worldPositionStays: false);
+        hudData.m_level3?
+            .SetAnchorMin(Vector2.zero)
+            .SetAnchorMax(Vector2.zero)
+            .SetPivot(Vector2.zero)
+            .SetPosition(new(15.5f, -10f))
+            .SetSizeDelta(Vector2.zero);
+      }
     }
 
     [HarmonyTranspiler]

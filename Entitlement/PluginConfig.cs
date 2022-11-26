@@ -2,31 +2,61 @@
 
 using ComfyLib;
 
+using System;
+
 namespace Entitlement {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
     public static ConfigEntry<bool> ShowEnemyHealthValue { get; private set; }
 
-    public static ConfigEntry<string> EnemyLevelStarSymbol { get; private set; }
-
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
       ShowEnemyHealthValue = config.BindInOrder("EnemyHud", "showEnemyHealthValue", true, "Show enemy health values.");
+
+      BindEnemyLevelConfig(config);
+      BindEnemyHudConfig(config);
+      BindBossHudConfig(config);
+    }
+
+    public static ConfigEntry<bool> EnemyLevelShowByName { get; private set; }
+    public static ConfigEntry<string> EnemyLevelStarSymbol { get; private set; }
+    public static ConfigEntry<int> EnemyLevelStarCutoff { get; private set; }
+    public static ConfigEntry<int> EnemyLevelTextMinFontSize { get; private set; }
+
+    public static void BindEnemyLevelConfig(ConfigFile config) {
+      EnemyLevelShowByName =
+        config.BindInOrder(
+        "EnemyLevel",
+        "enemyLevelShowByName",
+        false,
+        "If true, shows the enemy level after the name, otherwise below healthbar.");
 
       EnemyLevelStarSymbol =
           config.BindInOrder(
               "EnemyLevel",
               "enemyLevelStarSymbol",
               "\u2605",
-              "Symbol to use for 'star' for enemy levels.",
+              "Symbol to use for 'star' for enemy levels above vanilla 2*.",
               new AcceptableValueList<string>("\u2605", "\u272a", "\u2735", "\u272d", "\u272b"));
 
-      BindEnemyHudConfig(config);
-      BindBossHudConfig(config);
+      EnemyLevelStarCutoff =
+          config.BindInOrder(
+              "EnemyLevel",
+              "enemyLevelStarCutoff",
+              2,
+              "When showing enemy levels using stars, max stars to show before switching to 'X\u2605' format.",
+              new AcceptableValueRange<int>(0, 10));
+
+      EnemyLevelTextMinFontSize =
+          config.BindInOrder(
+              "EnemyLevel",
+              "enemyLevelMinFontSize",
+              20,
+              "Sets a minimum font size for the enemy level text which is inherited from enemy name text font size.",
+              new AcceptableValueRange<int>(0, 32));
     }
 
     public static ConfigEntry<int> EnemyHudNameTextFontSize { get; private set; }
-
     public static ConfigEntry<int> EnemyHudHealthTextFontSize { get; private set; }
     public static ConfigEntry<float> EnemyHudHealthBarWidth { get; private set; }
     public static ConfigEntry<float> EnemyHudHealthBarHeight { get; private set; }
