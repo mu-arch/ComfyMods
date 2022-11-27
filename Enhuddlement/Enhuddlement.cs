@@ -13,16 +13,16 @@ namespace Enhuddlement {
     public const string PluginName = "Enhuddlement";
     public const string PluginVersion = "1.0.0";
 
-    Harmony _harmony;
+    public static Harmony HarmonyInstance { get; private set; }
 
     public void Awake() {
       BindConfig(Config);
 
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      HarmonyInstance = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
     public void OnDestroy() {
-      _harmony?.UnpatchSelf();
+      HarmonyInstance?.UnpatchSelf();
     }
   }
 }

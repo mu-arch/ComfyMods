@@ -101,8 +101,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorfulDamage", "ColorfulD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YellowPages", "YellowPages\YellowPages.csproj", "{7A717711-9106-4AB0-B129-66BCD25789C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entitlement", "Entitlement\Entitlement.csproj", "{18882A55-C77A-41F0-8499-CBEA897B12AF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enhuddlement", "Enhuddlement\Enhuddlement.csproj", "{76613FB2-45A2-4253-B205-58D12F10984E}"
 EndProject
 Global
@@ -271,10 +269,6 @@ Global
 		{7A717711-9106-4AB0-B129-66BCD25789C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A717711-9106-4AB0-B129-66BCD25789C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A717711-9106-4AB0-B129-66BCD25789C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{18882A55-C77A-41F0-8499-CBEA897B12AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18882A55-C77A-41F0-8499-CBEA897B12AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{18882A55-C77A-41F0-8499-CBEA897B12AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{18882A55-C77A-41F0-8499-CBEA897B12AF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76613FB2-45A2-4253-B205-58D12F10984E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{76613FB2-45A2-4253-B205-58D12F10984E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76613FB2-45A2-4253-B205-58D12F10984E}.Release|Any CPU.ActiveCfg = Release|Any CPU
