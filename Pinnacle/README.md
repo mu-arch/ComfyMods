@@ -96,6 +96,12 @@
 
 ## Changelog
 
+### 1.1.0
+
+  * Added new commands for exporting pins to a file in binary or text format.
+  * Added new command for import pins from a binary file.
+  * Refactored plugin configuration code.
+
 ### 1.0.3
 
   * Fixed a bug where the PinEditPanel would not default the Pin.Icon to the last selected one.

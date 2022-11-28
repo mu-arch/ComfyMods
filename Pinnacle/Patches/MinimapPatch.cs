@@ -15,7 +15,6 @@ namespace Pinnacle {
     [HarmonyPatch(nameof(Minimap.Awake))]
     static void AwakePostfix(ref Minimap __instance) {
       if (IsModEnabled.Value) {
-        MinimapConfig.BindConfig(Config);
         MinimapConfig.SetMinimapPinFont();
 
         Pinnacle.TogglePinEditPanel(pinToEdit: null);
