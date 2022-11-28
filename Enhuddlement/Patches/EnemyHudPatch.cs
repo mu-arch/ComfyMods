@@ -49,6 +49,9 @@ namespace Enhuddlement {
           EnemyHudHealthTextFontSize.Value,
           EnemyHudHealthBarWidth.Value,
           EnemyHudHealthBarHeight.Value);
+
+      hudData.m_healthFast.SetColor(
+          hudData.m_character.IsTamed() ? EnemyHudHealthBarTamedColor.Value : EnemyHudHealthBarColor.Value);
     }
 
     static void SetupBossHud(EnemyHud.HudData hudData) {
@@ -58,6 +61,8 @@ namespace Enhuddlement {
           BossHudHealthTextFontSize.Value,
           BossHudHealthBarWidth.Value,
           BossHudHealthBarHeight.Value);
+
+      hudData.m_healthFast.SetColor(BossHudHealthBarColor.Value);
 
       if (BossHudNameUseGradientEffect.Value) {
         hudData.m_name.gameObject.AddComponent<VerticalGradient>();
@@ -107,19 +112,33 @@ namespace Enhuddlement {
     }
 
     static void SetupHealthBars(EnemyHud.HudData hudData, float healthBarWidth, float healthBarHeight) {
-      hudData.m_healthFast.SetWidth(healthBarWidth);
+      hudData.m_healthFast.m_width = healthBarWidth;
+      hudData.m_healthFast.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(Vector2.zero);
+
       hudData.m_healthFast.m_bar
-          .SetAnchorMin(new(0.5f, 0.5f))
-          .SetAnchorMax(new(0.5f, 0.5f))
-          .SetPivot(new(0.5f, 0.5f))
+          .SetAnchorMin(new(0f, 0.5f))
+          .SetAnchorMax(new(0f, 0.5f))
+          .SetPivot(new(0f, 0.5f))
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
 
-      hudData.m_healthSlow.SetWidth(healthBarWidth);
+      hudData.m_healthSlow.m_width = healthBarWidth;
+      hudData.m_healthSlow.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(Vector2.zero)
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(Vector2.zero);
+
       hudData.m_healthSlow.m_bar
-          .SetAnchorMin(new(0.5f, 0.5f))
-          .SetAnchorMax(new(0.5f, 0.5f))
-          .SetPivot(new(0.5f, 0.5f))
+          .SetAnchorMin(new(0f, 0.5f))
+          .SetAnchorMax(new(0f, 0.5f))
+          .SetPivot(new(0f, 0.5f))
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
     }

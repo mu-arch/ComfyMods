@@ -2,6 +2,8 @@
 
 using ComfyLib;
 
+using UnityEngine;
+
 namespace Enhuddlement {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
@@ -59,6 +61,9 @@ namespace Enhuddlement {
     public static ConfigEntry<float> EnemyHudHealthBarWidth { get; private set; }
     public static ConfigEntry<float> EnemyHudHealthBarHeight { get; private set; }
 
+    public static ConfigEntry<Color> EnemyHudHealthBarColor { get; private set; }
+    public static ConfigEntry<Color> EnemyHudHealthBarTamedColor { get; private set; }
+
     public static void BindEnemyHudConfig(ConfigFile config) {
       EnemyHudNameTextFontSize =
           config.BindInOrder(
@@ -91,6 +96,20 @@ namespace Enhuddlement {
               22f,
               "EnemyHud.HealthBar height (vanilla: 5).",
               new AcceptableValueRange<float>(0f, 90f));
+
+      EnemyHudHealthBarColor =
+          config.BindInOrder(
+              "EnemyHud.HealthBar",
+              "healthBarColor",
+              new Color(1f, 0.333f, 0.333f, 1f),
+              "EnemyHud.HealthBar fast color for regular mobs.");
+
+      EnemyHudHealthBarTamedColor =
+          config.BindInOrder(
+              "EnemyHud.HealthBar",
+              "healthBarTamedColor",
+              Color.green,
+              "EnemyHud.HealthBar fast color for tamed mobs.");
     }
 
     public static ConfigEntry<bool> FloatingBossHud { get; private set; }
@@ -101,6 +120,8 @@ namespace Enhuddlement {
     public static ConfigEntry<int> BossHudHealthTextFontSize { get; private set; }
     public static ConfigEntry<float> BossHudHealthBarWidth { get; private set; }
     public static ConfigEntry<float> BossHudHealthBarHeight { get; private set; }
+
+    public static ConfigEntry<Color> BossHudHealthBarColor { get; private set; }
 
     public static void BindBossHudConfig(ConfigFile config) {
       FloatingBossHud =
@@ -145,6 +166,13 @@ namespace Enhuddlement {
               30f,
               "BossHud.HealthBar height (vanilla: 15).",
               new AcceptableValueRange<float>(0f, 90f));
+
+      BossHudHealthBarColor =
+          config.BindInOrder(
+              "BossHud.HealthBar",
+              "healthBarColor",
+              new Color(1f, 0f, 0.3931f, 1f),
+              "BossHud.HealthBar fast color.");
     }
   }
 }
