@@ -21,12 +21,6 @@ namespace ComfyLib {
     }
   }
 
-  public static class ObjectExtensions {
-    public static T Ref<T>(this T o) where T : Object {
-      return o ? o : null;
-    }
-  }
-
   public static class RectTransformExtensions {
     public static RectTransform SetAnchorMin(this RectTransform rectTransform, Vector2 anchorMin) {
       rectTransform.anchorMin = anchorMin;

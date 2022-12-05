@@ -76,6 +76,7 @@ namespace Enhuddlement {
         float healthBarWidth,
         float healthBarHeight) {
       hudData.m_name
+          .SetColor(EnemyHudNameTextColor.Value)
           .SetFontSize(nameFontSize)
           .SetAlignment(TextAnchor.LowerCenter);
 
@@ -155,7 +156,7 @@ namespace Enhuddlement {
           .SetName("HealthText")
           .SetText(string.Empty)
           .SetFontSize(healthTextFontSize)
-          .SetColor(Color.white)
+          .SetColor(EnemyHudHealthTextColor.Value)
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetResizeTextForBestFit(false);
 
@@ -255,7 +256,14 @@ namespace Enhuddlement {
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(EnemyHud.UpdateHuds))]
     static IEnumerable<CodeInstruction> UpdateHudsTranspiler(IEnumerable<CodeInstruction> instructions) {
+
       return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldloc_S),
+              new CodeMatch(
+                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_character))))
+          .SaveOperand(out object hudDataLocal)
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldloc_S),
@@ -271,6 +279,42 @@ namespace Enhuddlement {
           .Advance(offset: 6)
           .InsertAndAdvance(
               Transpilers.EmitDelegate<Func<EnemyHud.HudData, EnemyHud.HudData>>(NameSetTextPostDelegate))
+          //.MatchForward(
+          //    useEnd: false,
+          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.HaveTarget))))
+          //.Advance(offset: 1)
+          //.SaveOperand(out object haveTargetLocal)
+          //.MatchForward(
+          //    useEnd: false,
+          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.IsAlerted))))
+          //.Advance(offset: 1)
+          //.SaveOperand(out object isAlertedLocal)
+          //.Advance(offset: 1)
+          //.InsertAndAdvance(
+          //    new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
+          //    new CodeInstruction(OpCodes.Ldloc_S, haveTargetLocal),
+          //    new CodeInstruction(OpCodes.Ldloc_S, isAlertedLocal),
+          //    Transpilers.EmitDelegate<Action<EnemyHud.HudData, bool, bool>>(SetAlertedActivePreDelegate))
+          //.MatchForward(
+          //    useEnd: false,
+          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
+          //.ThrowIfInvalid("Could not match: value.m_alerted.gameobject.SetActive()")
+          //.InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(
+          //      active => (!IsModEnabled.Value || !EnemyHudUseNameForStatus.Value) && active))
+          //.MatchForward(
+          //    useEnd: false,
+          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
+          //.ThrowIfInvalid("Could not match: value.m_aware.gameobject.SetActive()")
+          //.InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(
+          //      active => (!IsModEnabled.Value || !EnemyHudUseNameForStatus.Value) && active))
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldloc_S),
+              new CodeMatch(
+                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_healthSlow))))
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
+              Transpilers.EmitDelegate<Action<EnemyHud.HudData>>(HealthSlowPreDelegate))
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldloc_S),
@@ -295,6 +339,18 @@ namespace Enhuddlement {
       }
 
       return hudData;
+    }
+
+    static void HealthSlowPreDelegate(EnemyHud.HudData hudData) {
+      if (IsModEnabled.Value && EnemyHudUseNameForStatus.Value && hudData.m_character.m_baseAI) {
+        bool aware = hudData.m_character.m_baseAI.HaveTarget();
+        bool alerted = hudData.m_character.m_baseAI.IsAlerted();
+
+        hudData.m_name.SetColor(
+            (aware || alerted)
+                ? (alerted ? EnemyHudNameTextAlertedColor.Value : EnemyHudNameTextAwareColor.Value)
+                : EnemyHudHealthTextColor.Value);
+      }
     }
 
     static bool IsBossDelegate(bool value) {

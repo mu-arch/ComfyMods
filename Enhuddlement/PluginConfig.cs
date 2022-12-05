@@ -57,7 +57,15 @@ namespace Enhuddlement {
     }
 
     public static ConfigEntry<int> EnemyHudNameTextFontSize { get; private set; }
+    public static ConfigEntry<Color> EnemyHudNameTextColor { get; private set; }
+
+    public static ConfigEntry<bool> EnemyHudUseNameForStatus { get; private set; }
+    public static ConfigEntry<Color> EnemyHudNameTextAlertedColor { get; private set; }
+    public static ConfigEntry<Color> EnemyHudNameTextAwareColor { get; private set; }
+
+    public static ConfigEntry<Color> EnemyHudHealthTextColor { get; private set; }
     public static ConfigEntry<int> EnemyHudHealthTextFontSize { get; private set; }
+
     public static ConfigEntry<float> EnemyHudHealthBarWidth { get; private set; }
     public static ConfigEntry<float> EnemyHudHealthBarHeight { get; private set; }
 
@@ -73,13 +81,48 @@ namespace Enhuddlement {
               "EnemyHud.Name text font size (vanilla: 16).",
               new AcceptableValueRange<int>(0, 32));
 
+      EnemyHudNameTextColor =
+          config.BindInOrder(
+              "EnemyHud.Name",
+              "nameTextColor",
+              Color.white,
+              "EnemyHud.Name text color (vanilla: white).");
+
+      EnemyHudUseNameForStatus =
+          config.BindInOrder(
+              "EnemyHud.Name.Status",
+              "useNameForStatus",
+              true,
+              "Use the EnemyHud.Name text color for alerted/aware status.");
+
+      EnemyHudNameTextAlertedColor =
+          config.BindInOrder(
+              "EnemyHud.Name.Status",
+              "nameTextAlertedColor",
+              Color.red,
+              "EnemyHud.Name text color for alerted status.");
+
+      EnemyHudNameTextAwareColor =
+          config.BindInOrder(
+              "EnemyHud.Name.Status",
+              "nameTextAwareColor",
+              Color.yellow,
+              "EnemyHud.Name text color for aware status.");
+
       EnemyHudHealthTextFontSize =
           config.BindInOrder(
-              "EnemyHud.HealthBar",
+              "EnemyHud.HealthText",
               "healthTextFontSize",
               14,
-              "EnemyHud.HealthText font size.",
+              "EnemyHud.HealthText text font size.",
               new AcceptableValueRange<int>(0, 32));
+
+      EnemyHudHealthTextColor =
+          config.BindInOrder(
+              "EnemyHud.HealthText",
+              "healthTextColor",
+              Color.white,
+              "EnemyHud.HealthText text color.");
 
       EnemyHudHealthBarWidth =
           config.BindInOrder(
