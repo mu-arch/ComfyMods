@@ -15,7 +15,7 @@ namespace Atlas {
   public class Atlas : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.atlas";
     public const string PluginName = "Atlas";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     Harmony _harmony;
 
