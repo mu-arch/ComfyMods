@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `LetMePlay_v1.4.0.zip`.
+  * Go to Settings > Import local mod > Select `LetMePlay_v1.5.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -54,7 +54,15 @@
 
   * Removes any null prefabs in in `SpawnArea.m_prefabs` on `SpawnArea.Awake()`.
 
+### Game
+
+  * Disable the Game's 'pause' effect when the Menu is shown.
+
 ## Changelog
+
+### 1.5.0
+
+  * Add an option to ignore 'pausing' the game when Menu is shown.
 
 ### 1.4.0
 
