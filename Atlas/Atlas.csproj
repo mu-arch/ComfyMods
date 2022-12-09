@@ -80,8 +80,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Atlas.cs" />
+    <Compile Include="Patches\ZDOManPatch.cs" />
+    <Compile Include="Patches\ZNetPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
+    <Compile Include="PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Copy" AfterTargets="Build">

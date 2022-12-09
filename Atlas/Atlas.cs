@@ -1,8 +1,4 @@
-﻿using BepInEx;
-
-using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,12 +6,16 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using BepInEx;
+
+using HarmonyLib;
+
 namespace Atlas {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Atlas : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.atlas";
     public const string PluginName = "Atlas";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     Harmony _harmony;
 
@@ -27,39 +27,7 @@ namespace Atlas {
       _harmony?.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(ZNet))]
-    class ZNetPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZNet.SaveWorld))]
-      static bool SaveWorldPrefix(ref ZNet __instance, ref bool sync) {
-        if (sync) {
-          return true;
-        }
-
-        __instance.StartCoroutine(SaveWorldCoroutine(__instance));
-        return false;
-      }
-    }
-
-    [HarmonyPatch(typeof(ZDOMan))]
-    class ZDOManPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZDOMan.Load))]
-      static bool LoadPrefix(ref ZDOMan __instance, ref BinaryReader reader, ref int version) {
-        reader.ReadInt64();
-        uint nextUid = reader.ReadUInt32();
-
-        LoadZdos(ref __instance, ref reader, ref version, ref nextUid);
-        LoadDeadZdos(ref __instance, ref reader, ref nextUid);
-
-        __instance.RemoveOldGeneratedZDOS();
-        __instance.m_nextUid = nextUid;
-
-        return false;
-      }
-    }
-
-    static void LoadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref int version, ref uint nextUid) {
+    public static void LoadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref int version, ref uint nextUid) {
       ZDOPool.Release(zdoMan.m_objectsByID);
 
       zdoMan.m_objectsByID.Clear();
@@ -101,7 +69,7 @@ namespace Atlas {
       ZLog.Log($"Finished loading {zdoMan.m_objectsByID.Count} ZDOs in {stopwatch.ElapsedMilliseconds} ms.");
     }
 
-    static void LoadDeadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref uint nextUid) {
+    public static void LoadDeadZdos(ref ZDOMan zdoMan, ref BinaryReader reader, ref uint nextUid) {
       zdoMan.m_deadZDOs.Clear();
 
       int deadZdoCount = reader.ReadInt32();
@@ -122,7 +90,7 @@ namespace Atlas {
       zdoMan.CapDeadZDOList();
     }
 
-    static IEnumerator SaveWorldCoroutine(ZNet zNet) {
+    public static IEnumerator SaveWorldCoroutine(ZNet zNet) {
       yield return SaveWorldAsync(zNet).ToIEnumerator();
     }
 
@@ -133,6 +101,9 @@ namespace Atlas {
             ZoneSystem.instance.PrepareSave();
             RandEventSystem.instance.PrepareSave();
             zNet.SaveWorldThread();
+
+            ZLog.Log($"Garbage collecting now...");
+            GC.Collect();
           })
           .ConfigureAwait(continueOnCapturedContext: false);
     }
@@ -152,8 +123,8 @@ namespace Atlas {
       }
 
       zdoMan.m_saveData = saveData;
-
     }
+
     static List<ZDO> CloneZdos(ref ZDOMan zdoMan) {
       List<ZDO> clonedZdos = new(capacity: zdoMan.m_objectsByID.Count);
 
@@ -196,18 +167,6 @@ namespace Atlas {
       ZLog.Log($"Finished cloning {clonedZdos.Count} ZDOs in {stopwatch.ElapsedMilliseconds} ms.");
 
       return clonedZdos;
-    }
-  }
-
-  public static class TaskExtensions {
-    public static IEnumerator ToIEnumerator(this Task task) {
-      while (!task.IsCompleted) {
-        yield return null;
-      }
-
-      if (task.IsFaulted) {
-        throw task.Exception;
-      }
     }
   }
 }

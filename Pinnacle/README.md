@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.3.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
