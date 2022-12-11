@@ -34,6 +34,12 @@ namespace Dramamist {
 
       ParticleMist particleMist = ParticleMist.m_instance;
 
+      ParticleSystem.TriggerModule trigger = particleMist.m_ps.trigger;
+      trigger.enabled = TriggerEnabled.Value;
+
+      trigger.inside = ParticleSystemOverlapAction.Kill;
+      trigger.colliderQueryMode = ParticleSystemColliderQueryMode.Disabled;
+
       ParticleSystem.MainModule main = particleMist.m_ps.main;
       main.duration = MainDuration.Value;
       main.startLifetime = MainStartLifetime.Value;
@@ -51,10 +57,6 @@ namespace Dramamist {
       rotationOverLifetime.xMultiplier = RotationOverLifetimeXMultiplier.Value;
       rotationOverLifetime.yMultiplier = RotationOverLifetimeYMultiplier.Value;
       rotationOverLifetime.zMultiplier = RotationOverLifetimeZMultiplier.Value;
-
-      //ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleMist.m_ps.colorOverLifetime;
-      //colorOverLifetime.enabled = ColorOverLifetimeEnabled.Value;
-      //colorOverLifetime.color = ColorOverLifetimeColor.Value;
     }
 
     public static void UpdateDemisterSettings() {
@@ -62,15 +64,18 @@ namespace Dramamist {
         return;
       }
 
-      Vector3 forceFieldDirection = DemisterForceFieldDirection.Value;
-
       foreach (Demister demister in Demister.m_instances) {
-        demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
-
-        demister.m_forceField.directionX = forceFieldDirection.x;
-        demister.m_forceField.directionY = forceFieldDirection.y;
-        demister.m_forceField.directionZ = forceFieldDirection.z;
+        UpdateDemisterSettings(demister);
       }
+    }
+
+    public static void UpdateDemisterSettings(Demister demister) {
+      demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
+
+      Vector3 forceFieldDirection = DemisterForceFieldDirection.Value;
+      demister.m_forceField.directionX = forceFieldDirection.x;
+      demister.m_forceField.directionY = forceFieldDirection.y;
+      demister.m_forceField.directionZ = forceFieldDirection.z;
     }
   }
 }

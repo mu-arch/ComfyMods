@@ -18,10 +18,6 @@ namespace Dramamist {
 
       if (IsModEnabled.Value) {
         Dramamist.UpdateParticleMistSettings();
-
-        if (__instance.TryGetComponentInParent(out FollowPlayer followPlayer)) {
-          followPlayer.m_follow = FollowPlayer.Type.Player;
-        }
       }
     }
 
@@ -52,30 +48,5 @@ namespace Dramamist {
 
       return upperClamp;
     }
-
-    //[HarmonyPrefix]
-    //[HarmonyPatch(nameof(ParticleMist.Emit))]
-    //static bool EmitPrefix(ref Demister pf) {
-    //  if (IsModEnabled.Value && !pf) {
-    //    return false;
-    //  }
-
-    //  return true;
-    //}
-
-    //[HarmonyPrefix]
-    //[HarmonyPatch(nameof(ParticleMist.Emit))]
-    //static bool EmitPrefix(
-    //    ref ParticleMist __instance,
-    //    ref Vector3 center,
-    //    ref float radius,
-    //    ref float thickness,
-    //    ref int toEmit,
-    //    ref List<Demister> fields,
-    //    ref Demister pf,
-    //    ref float minAlt) {
-
-    //  return false;
-    //}
   }
 }

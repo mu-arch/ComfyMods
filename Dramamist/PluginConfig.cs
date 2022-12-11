@@ -18,6 +18,8 @@ namespace Dramamist {
 
     public static ConfigEntry<float> UpdateCombinedMovementUpperClamp { get; private set; }
 
+    public static ConfigEntry<bool> TriggerEnabled { get; private set; }
+
     public static ConfigEntry<float> MainDuration { get; private set; }
     public static ConfigEntry<float> MainStartLifetime { get; private set; }
 
@@ -32,9 +34,6 @@ namespace Dramamist {
     public static ConfigEntry<float> RotationOverLifetimeXMultiplier { get; private set; }
     public static ConfigEntry<float> RotationOverLifetimeYMultiplier { get; private set; }
     public static ConfigEntry<float> RotationOverLifetimeZMultiplier { get; private set; }
-
-    public static ConfigEntry<bool> ColorOverLifetimeEnabled { get; private set; }
-    public static ConfigEntry<Color> ColorOverLifetimeColor { get; private set; }
 
     public static ConfigEntry<string> DemisterBallPrefab { get; private set; }
     public static ConfigEntry<bool> DemisterBallLockPosition { get; private set; }
@@ -55,9 +54,20 @@ namespace Dramamist {
           config.BindInOrder(
               "Update.CombinedMovement",
               "updateCombinedMovementUpperClamp",
-              1000f, // vanilla: 10f
+              10f, // vanilla: 10f
               "ParticleMist.Update() -- upper value clamp on ParticleMist.m_combinedMovement",
               new AcceptableValueRange<float>(0f, 1000f));
+
+      // Trigger
+
+      TriggerEnabled =
+          config.Bind(
+              "Trigger",
+              "triggerEnabled",
+              true,
+              "ParticleMist.m_ps.trigger.enabled");
+
+      TriggerEnabled.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
 
       ParticleSystem.MainModule main = particleMist.m_ps.main;
 
@@ -185,26 +195,9 @@ namespace Dramamist {
 
       RotationOverLifetimeZMultiplier.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
 
-      // ColorOverLifetime
-      //ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleMist.m_ps.colorOverLifetime;
-
-      //ColorOverLifetimeEnabled =
-      //    config.BindInOrder(
-      //        "ColorOverLifetime",
-      //        "colorOverLifetimeEnabled",
-      //        false,
-      //        "ColorOverLifetime.enabled (vanilla: ???)");
-
-      //ColorOverLifetimeEnabled.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
-
-      //ColorOverLifetimeColor =
-      //    config.BindInOrder(
-      //        "ColorOverLifetime",
-      //        "colorOverLifetimeColor",
-      //        colorOverLifetime.color.color,
-      //        "ColorOverLifetime.color (vanilla: ???)");
-
-      //ColorOverLifetimeColor.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
+      string[] ballPrefabs = new string[] {
+        "demister_ball",
+      };
 
       // DemisterBall
       DemisterBallPrefab =
@@ -213,13 +206,7 @@ namespace Dramamist {
               "demisterBallPrefab",
               "demister_ball",
               "SE_Demister.m_ballPrefab",
-              new AcceptableValueList<string>(new string[] { "demister_ball", }));
-              //new AcceptableValueList<string>(
-              //    ZNetScene.m_instance.m_namedPrefabs.Values
-              //        .Where(prefab => prefab.GetComponent<ZSyncTransform>())
-              //        .OrderBy(prefab => prefab.name)
-              //        .Select(prefab => prefab.name)
-              //        .ToArray()));
+              new AcceptableValueList<string>(ballPrefabs));
 
       DemisterBallLockPosition =
           config.BindInOrder(
@@ -232,7 +219,7 @@ namespace Dramamist {
           config.BindInOrder(
               "DemisterBall",
               "demisterBallLockOffset",
-              new Vector3(-0.1f, 0f, 0f),
+              new Vector3(-0.2f, 0.5f, 0f),
               "SE_Demister.m_ballPrefab.transform.position offset when locked to player head.");
 
       // Demister
@@ -240,7 +227,7 @@ namespace Dramamist {
           config.BindInOrder(
               "Demister.ForceField",
               "demisterForceFieldGravity",
-              -3f,
+              -5f,
               "Demister.m_forceField.gravity (vanilla: -0.08)",
               new AcceptableValueRange<float>(-100f, 100f));
 
