@@ -307,14 +307,14 @@ namespace Enhuddlement {
           //.ThrowIfInvalid("Could not match: value.m_aware.gameobject.SetActive()")
           //.InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(
           //      active => (!IsModEnabled.Value || !EnemyHudUseNameForStatus.Value) && active))
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldloc_S),
-              new CodeMatch(
-                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_healthSlow))))
-          .InsertAndAdvance(
-              new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
-              Transpilers.EmitDelegate<Action<EnemyHud.HudData>>(HealthSlowPreDelegate))
+          //.MatchForward(
+          //    useEnd: false,
+          //    new CodeMatch(OpCodes.Ldloc_S),
+          //    new CodeMatch(
+          //        OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_healthSlow))))
+          //.InsertAndAdvance(
+          //    new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
+          //    Transpilers.EmitDelegate<Action<EnemyHud.HudData>>(HealthSlowPreDelegate))
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldloc_S),
