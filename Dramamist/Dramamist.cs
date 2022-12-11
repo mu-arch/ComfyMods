@@ -37,7 +37,7 @@ namespace Dramamist {
       ParticleSystem.TriggerModule trigger = particleMist.m_ps.trigger;
       trigger.enabled = TriggerEnabled.Value;
 
-      trigger.inside = ParticleSystemOverlapAction.Kill;
+      trigger.inside = ParticleSystemOverlapAction.Callback;
       trigger.colliderQueryMode = ParticleSystemColliderQueryMode.Disabled;
 
       ParticleSystem.MainModule main = particleMist.m_ps.main;

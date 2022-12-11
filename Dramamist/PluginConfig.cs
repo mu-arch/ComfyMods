@@ -68,6 +68,16 @@ namespace Dramamist {
               "ParticleMist.m_ps.trigger.enabled");
 
       TriggerEnabled.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
+      TriggerEnabled.SettingChanged += (_, _) => {
+        foreach (Demister demister in Demister.m_instances) {
+          if (demister
+              && demister.m_forceField
+              && demister.m_forceField.TryGetComponent(out SphereCollider collider)) {
+            collider.enabled = TriggerEnabled.Value;
+          }
+        }
+      };
+
 
       ParticleSystem.MainModule main = particleMist.m_ps.main;
 

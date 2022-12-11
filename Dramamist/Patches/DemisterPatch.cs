@@ -14,7 +14,9 @@ namespace Dramamist {
         Dramamist.UpdateDemisterSettings(__instance);
 
         SphereCollider collider = __instance.m_forceField.gameObject.AddComponent<SphereCollider>();
+        collider.enabled = TriggerEnabled.Value;
         collider.radius = __instance.m_forceField.endRange;
+        collider.isTrigger = true;
       }
     }
 
