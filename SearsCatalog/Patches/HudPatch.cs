@@ -18,41 +18,53 @@ namespace SearsCatalog {
     [HarmonyPatch(nameof(Hud.Awake))]
     static void AwakePostfix(ref Hud __instance) {
       if (IsModEnabled.Value) {
-        Transform pieceListParent = __instance.m_pieceListRoot.parent;
-
-        DefaultControls.Resources resources = new();
-        resources.standard = UIResources.GetSprite("UISprite");
-
-        Scrollbar scrollbar = DefaultControls.CreateScrollbar(resources).GetComponent<Scrollbar>();
-        scrollbar.transform.SetParent(pieceListParent, worldPositionStays: false);
-
-        scrollbar.GetComponent<RectTransform>()
-            .SetAnchorMin(Vector2.right)
-            .SetAnchorMax(Vector2.one)
-            .SetPivot(Vector2.one)
-            .SetPosition(Vector2.zero)
-            .SetSizeDelta(new(10f, 0f));
-
-        scrollbar.direction = Scrollbar.Direction.BottomToTop;
-        scrollbar.GetComponent<Image>().SetColor(new(0f, 0f, 0f, 0.6f));
-        scrollbar.handleRect.GetComponent<Image>().SetColor(new(1f, 1f, 1f, 0.9f));
-
-        pieceListParent.GetComponent<RectTransform>()
-            .OffsetSizeDelta(new(10f, 0f));
-
-        ScrollRect scrollRect = pieceListParent.gameObject.AddComponent<ScrollRect>();
-        scrollRect.content = __instance.m_pieceListRoot;
-        scrollRect.viewport = pieceListParent.GetComponent<RectTransform>();
-        scrollRect.verticalScrollbar = scrollbar;
-        scrollRect.movementType = ScrollRect.MovementType.Clamped;
-        scrollRect.inertia = false;
-        scrollRect.scrollSensitivity = __instance.m_pieceIconSpacing;
-        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
-
-        SearsCatalog.BuildHudScrollbar = scrollbar;
-        SearsCatalog.BuildHudScrollRect = scrollRect;
-        SearsCatalog.BuildHudNeedRefresh = true;
+        SetupPieceSelectionWindow(__instance);
+        SearsCatalog.SetupBuildHudPanel();
       }
+    }
+
+    static void SetupPieceSelectionWindow(Hud hud) {
+      Transform parentTransform = hud.m_pieceListRoot.parent;
+
+      DefaultControls.Resources resources = new();
+      resources.standard = UIResources.GetSprite("UISprite");
+
+      Scrollbar scrollbar = DefaultControls.CreateScrollbar(resources).GetComponent<Scrollbar>();
+      scrollbar.transform.SetParent(parentTransform, worldPositionStays: false);
+
+      scrollbar.GetComponent<RectTransform>()
+          .SetAnchorMin(Vector2.right)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(Vector2.one)
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(10f, 0f));
+
+      scrollbar.direction = Scrollbar.Direction.BottomToTop;
+      scrollbar.GetComponent<Image>().SetColor(new(0f, 0f, 0f, 0.6f));
+      scrollbar.handleRect.GetComponent<Image>().SetColor(new(1f, 1f, 1f, 0.9f));
+
+      parentTransform.GetComponent<RectTransform>()
+          .OffsetSizeDelta(new(10f, 0f));
+
+      ScrollRect scrollRect = parentTransform.gameObject.AddComponent<ScrollRect>();
+      scrollRect.content = hud.m_pieceListRoot;
+      scrollRect.viewport = parentTransform.GetComponent<RectTransform>();
+      scrollRect.verticalScrollbar = scrollbar;
+      scrollRect.movementType = ScrollRect.MovementType.Clamped;
+      scrollRect.inertia = false;
+      scrollRect.scrollSensitivity = hud.m_pieceIconSpacing;
+      scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+
+      GameObject panel = hud.m_pieceSelectionWindow.transform.parent.gameObject;
+      RectTransform panelTransform = panel.RectTransform();
+
+      PanelDragger panelDragger = panel.AddComponent<PanelDragger>();
+      panelDragger.TargetRectTransform = panelTransform;
+
+      SearsCatalog.BuildHudPanelTransform = panelTransform;
+      SearsCatalog.BuildHudScrollbar = scrollbar;
+      SearsCatalog.BuildHudScrollRect = scrollRect;
+      SearsCatalog.BuildHudNeedRefresh = true;
     }
 
     [HarmonyPostfix]
@@ -152,7 +164,7 @@ namespace SearsCatalog {
         hud.m_pieceListRoot.sizeDelta =
             new(
                 hud.m_pieceIconSpacing * SearsCatalog.BuildHudColumns,
-                (hud.m_pieceIconSpacing * SearsCatalog.BuildHudRows) + 16);
+                hud.m_pieceIconSpacing * SearsCatalog.BuildHudRows);
 
         SearsCatalog.BuildHudNeedRefresh = false;
         SearsCatalog.BuildHudNeedIconLayoutRefresh = true;

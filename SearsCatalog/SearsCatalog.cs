@@ -2,6 +2,8 @@
 
 using BepInEx;
 
+using ComfyLib;
+
 using HarmonyLib;
 
 using UnityEngine;
@@ -35,8 +37,23 @@ namespace SearsCatalog {
     public static bool BuildHudNeedIconLayoutRefresh { get; set; } = false;
     public static bool BuildHudNeedIconRecenter { get; set; } = false;
 
+    public static RectTransform BuildHudPanelTransform { get; set; }
     public static Scrollbar BuildHudScrollbar { get; set; }
     public static ScrollRect BuildHudScrollRect { get; set; }
+
+    public static void SetupBuildHudPanel() {
+      if (Hud.m_instance && BuildHudPanelTransform) {
+        BuildHudColumns = BuildHudPanelColumns.Value;
+        BuildHudRows = 0;
+
+        float spacing = Hud.m_instance.m_pieceIconSpacing;
+
+        BuildHudPanelTransform.SetSizeDelta(
+            new(BuildHudPanelColumns.Value * spacing + 35f, BuildHudPanelRows.Value * spacing + 70f));
+
+        BuildHudNeedRefresh = true;
+      }
+    }
 
     public static void CenterOnSelectedIndex() {
       if (!Player.m_localPlayer.Ref()?.m_buildPieces || !Hud.m_instance) {
