@@ -145,7 +145,9 @@ namespace SearsCatalog {
 
     static List<Piece> GetBuildPiecesDelegate(List<Piece> buildPieces) {
       if (IsModEnabled.Value) {
-        SearsCatalog.BuildHudRows = (buildPieces.Count / SearsCatalog.BuildHudColumns) + 1;
+        SearsCatalog.BuildHudRows =
+            (buildPieces.Count / SearsCatalog.BuildHudColumns)
+                + (buildPieces.Count % SearsCatalog.BuildHudColumns == 0 ? 0 : 1);
       }
 
       return buildPieces;
