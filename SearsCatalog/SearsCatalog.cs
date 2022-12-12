@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
 using BepInEx;
 
-using ComfyLib;
-
 using HarmonyLib;
+
+using UnityEngine;
+using UnityEngine.UI;
 
 using static SearsCatalog.PluginConfig;
 
@@ -30,38 +28,35 @@ namespace SearsCatalog {
       _harmony?.UnpatchSelf();
     }
 
-    public static PieceListPanel PieceListPanel { get; private set; }
+    public static int BuildHudColumns { get; set; } = 13;
+    public static int BuildHudRows { get; set; } = 0;
 
-    public static void TogglePieceListPanel(bool toggleOn) {
-      if (!PieceListPanel?.Panel) {
-        PieceListPanel = new(Hud.m_instance.transform);
+    public static bool BuildHudNeedRefresh { get; set; } = false;
+    public static bool BuildHudNeedIconLayoutRefresh { get; set; } = false;
+    public static bool BuildHudNeedIconRecenter { get; set; } = false;
 
-        PieceListPanel.Panel.RectTransform()
-            .SetAnchorMin(new(0f, 0.5f))
-            .SetAnchorMax(new(0f, 0.5f))
-            .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(25f, 0f))
-            .SetSizeDelta(new(300f, 400f));
+    public static Scrollbar BuildHudScrollbar { get; set; }
+    public static ScrollRect BuildHudScrollRect { get; set; }
+
+    public static void CenterOnSelectedIndex() {
+      if (!Player.m_localPlayer.Ref()?.m_buildPieces || !Hud.m_instance) {
+        return;
       }
 
-      PieceListPanel.Panel.SetActive(toggleOn);
-    }
+      Vector2Int gridIndex = Player.m_localPlayer.m_buildPieces.GetSelectedIndex();
+      int index = (BuildHudColumns * gridIndex.y) + gridIndex.x;
 
-    static readonly List<PieceListRow> PieceListRows = new();
-
-    public static void RefreshPieceListPanel() {
-      foreach (PieceListRow row in PieceListRows) {
-        Destroy(row.Row);
+      if (index >= Hud.m_instance.m_pieceIcons.Count) {
+        return;
       }
 
-      PieceListRows.Clear();
+      Hud.PieceIconData pieceIcon = Hud.m_instance.m_pieceIcons[index];
 
-      foreach (Piece piece in Player.m_localPlayer.GetBuildPieces()) {
-        PieceListRow row = new(PieceListPanel.Content.transform);
-        row.SetContent(piece);
-
-        PieceListRows.Add(row);
+      if (!pieceIcon.m_go) {
+        return;
       }
+
+      BuildHudScrollRect.EnsureVisibility(pieceIcon.m_go.GetComponent<RectTransform>());
     }
   }
 }

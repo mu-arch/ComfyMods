@@ -377,6 +377,11 @@ namespace ComfyLib {
   }
 
   public static class RectTransformExtensions {
+    public static RectTransform OffsetSizeDelta(this RectTransform rectTransform, Vector2 offset) {
+      rectTransform.sizeDelta += offset;
+      return rectTransform;
+    }
+
     public static RectTransform SetAnchorMin(this RectTransform rectTransform, Vector2 anchorMin) {
       rectTransform.anchorMin = anchorMin;
       return rectTransform;

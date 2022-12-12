@@ -10,8 +10,8 @@
 
 ### Thunderstore (manual)
 
-  2. Go to Settings > Import local mod > Select `SearsCatalog_v1.0.0.zip`.
-  3. Click "OK/Import local mod" on the pop-up for information.
+  * Go to Settings > Import local mod > Select `SearsCatalog_v1.0.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
 
