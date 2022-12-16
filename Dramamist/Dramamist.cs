@@ -27,36 +27,53 @@ namespace Dramamist {
       _harmony?.UnpatchSelf();
     }
 
+    static ParticleSystemProfile _particleMistProfile;
+    static readonly ParticleSystem.MinMaxCurve _zeroCurve = new(0f);
+    static ParticleSystem.MinMaxGradient _flatStartColor;
+
     public static void UpdateParticleMistSettings() {
       if (!ParticleMist.m_instance) {
         return;
       }
 
       ParticleMist particleMist = ParticleMist.m_instance;
-
+      ParticleSystem.MainModule main = particleMist.m_ps.main;
       ParticleSystem.TriggerModule trigger = particleMist.m_ps.trigger;
-      trigger.enabled = TriggerEnabled.Value;
+      ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = particleMist.m_ps.velocityOverLifetime;
+      ParticleSystem.RotationOverLifetimeModule rotationOverLifetime = particleMist.m_ps.rotationOverLifetime;
 
+      if (_particleMistProfile == null) {
+        _particleMistProfile ??= new(particleMist.m_ps);
+        _flatStartColor = new ParticleSystem.MinMaxGradient(main.startColor.colorMax);
+      }
+
+      if (IsModEnabled.Value && ParticleMistReduceMotion.Value) {
+        main.startRotation = _zeroCurve;
+        main.startColor = _flatStartColor;
+
+        velocityOverLifetime.x = _zeroCurve;
+        velocityOverLifetime.y = _zeroCurve;
+        velocityOverLifetime.z = _zeroCurve;
+
+        rotationOverLifetime.x = _zeroCurve;
+        rotationOverLifetime.y = _zeroCurve;
+        rotationOverLifetime.z = _zeroCurve;
+      } else {
+        main.startRotation = _particleMistProfile.StartRotation;
+        main.startColor = _particleMistProfile.StartColor;
+
+        velocityOverLifetime.x = _particleMistProfile.VelocityOverLifetimeX;
+        velocityOverLifetime.y = _particleMistProfile.VelocityOverLifetimeY;
+        velocityOverLifetime.z = _particleMistProfile.VelocityOverLifetimeZ;
+
+        rotationOverLifetime.x = _particleMistProfile.RotationOverLifetimeX;
+        rotationOverLifetime.y = _particleMistProfile.RotationOverLifetimeY;
+        rotationOverLifetime.z = _particleMistProfile.RotationOverLifetimeZ;
+      }
+
+      trigger.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;
       trigger.inside = ParticleSystemOverlapAction.Callback;
       trigger.colliderQueryMode = ParticleSystemColliderQueryMode.Disabled;
-
-      ParticleSystem.MainModule main = particleMist.m_ps.main;
-      main.duration = MainDuration.Value;
-      main.startLifetime = MainStartLifetime.Value;
-
-      ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = particleMist.m_ps.velocityOverLifetime;
-      velocityOverLifetime.enabled = VelocityOverLifetimeEnabled.Value;
-      velocityOverLifetime.speedModifierMultiplier = VelocityOverLifetimeSpeedModiferMultiplier.Value;
-      velocityOverLifetime.radialMultiplier = VelocityOverLifetimeRadialMultiplier.Value;
-      velocityOverLifetime.xMultiplier = VelocityOverLifetimeXMultiplier.Value;
-      velocityOverLifetime.yMultiplier = VelocityOverLifetimeYMultiplier.Value;
-      velocityOverLifetime.zMultiplier = VelocityOverLifetimeZMultiplier.Value;
-
-      ParticleSystem.RotationOverLifetimeModule rotationOverLifetime = particleMist.m_ps.rotationOverLifetime;
-      rotationOverLifetime.enabled = RotationOverLifetimeEnabled.Value;
-      rotationOverLifetime.xMultiplier = RotationOverLifetimeXMultiplier.Value;
-      rotationOverLifetime.yMultiplier = RotationOverLifetimeYMultiplier.Value;
-      rotationOverLifetime.zMultiplier = RotationOverLifetimeZMultiplier.Value;
     }
 
     public static void UpdateDemisterSettings() {
@@ -72,10 +89,10 @@ namespace Dramamist {
     public static void UpdateDemisterSettings(Demister demister) {
       demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
 
-      Vector3 forceFieldDirection = DemisterForceFieldDirection.Value;
-      demister.m_forceField.directionX = forceFieldDirection.x;
-      demister.m_forceField.directionY = forceFieldDirection.y;
-      demister.m_forceField.directionZ = forceFieldDirection.z;
+      demister.m_forceField.GetOrAddComponent<SphereCollider>()
+          .SetRadius(demister.m_forceField.endRange)
+          .SetIsTrigger(true)
+          .SetEnabled(IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value);
     }
   }
 }

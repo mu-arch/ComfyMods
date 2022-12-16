@@ -12,11 +12,6 @@ namespace Dramamist {
     static void AwakePostfix(ref Demister __instance) {
       if (IsModEnabled.Value && ParticleMist.m_instance) {
         Dramamist.UpdateDemisterSettings(__instance);
-
-        SphereCollider collider = __instance.m_forceField.gameObject.AddComponent<SphereCollider>();
-        collider.enabled = TriggerEnabled.Value;
-        collider.radius = __instance.m_forceField.endRange;
-        collider.isTrigger = true;
       }
     }
 

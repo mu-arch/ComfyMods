@@ -93,6 +93,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\ParticleSystemProfile.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Dramamist.cs" />
     <Compile Include="Patches\DemisterPatch.cs" />
