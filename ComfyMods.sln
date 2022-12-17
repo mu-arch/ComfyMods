@@ -105,6 +105,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enhuddlement", "Enhuddlemen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dramamist", "Dramamist\Dramamist.csproj", "{07CAC1E2-0584-44D6-B196-7CBA1E28B628}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeyListen", "HeyListen\HeyListen.csproj", "{EB95ADE7-560B-4C07-9FCF-6E94DE32FDAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +281,10 @@ Global
 		{07CAC1E2-0584-44D6-B196-7CBA1E28B628}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07CAC1E2-0584-44D6-B196-7CBA1E28B628}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07CAC1E2-0584-44D6-B196-7CBA1E28B628}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB95ADE7-560B-4C07-9FCF-6E94DE32FDAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB95ADE7-560B-4C07-9FCF-6E94DE32FDAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB95ADE7-560B-4C07-9FCF-6E94DE32FDAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB95ADE7-560B-4C07-9FCF-6E94DE32FDAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
