@@ -10,7 +10,7 @@ namespace Dramamist {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Demister.Awake))]
     static void AwakePostfix(ref Demister __instance) {
-      if (IsModEnabled.Value && ParticleMist.m_instance) {
+      if (IsModEnabled.Value && ParticleMist.m_instance && Dramamist.IsLocalPlayerDemisterBall(__instance)) {
         Dramamist.UpdateDemisterSettings(__instance);
       }
     }

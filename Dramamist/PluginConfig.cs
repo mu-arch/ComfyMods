@@ -2,8 +2,6 @@
 
 using ComfyLib;
 
-using UnityEngine;
-
 namespace Dramamist {
   public static class PluginConfig {
     public static ConfigFile Config { get; private set; }
@@ -13,10 +11,6 @@ namespace Dramamist {
 
     public static ConfigEntry<float> DemisterForceFieldGravity { get; private set; }
     public static ConfigEntry<bool> DemisterTriggerFadeOutParticleMist { get; private set; }
-
-    public static ConfigEntry<string> DemisterBallPrefab { get; private set; }
-    public static ConfigEntry<bool> DemisterBallLockPosition { get; private set; }
-    public static ConfigEntry<Vector3> DemisterBallLockOffset { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -49,33 +43,6 @@ namespace Dramamist {
 
       DemisterTriggerFadeOutParticleMist.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
       DemisterTriggerFadeOutParticleMist.SettingChanged += (_, _) => Dramamist.UpdateDemisterSettings();
-
-      string[] ballPrefabs = new string[] {
-        "demister_ball",
-      };
-
-      // DemisterBall
-      DemisterBallPrefab =
-          config.BindInOrder(
-              "DemisterBall",
-              "demisterBallPrefab",
-              "demister_ball",
-              "SE_Demister.m_ballPrefab",
-              new AcceptableValueList<string>(ballPrefabs));
-
-      DemisterBallLockPosition =
-          config.BindInOrder(
-              "DemisterBall",
-              "demisterBallLockPosition",
-              true,
-              "SE_Demister.m_ballPrefab.transform.position lock to player head.");
-
-      DemisterBallLockOffset =
-          config.BindInOrder(
-              "DemisterBall",
-              "demisterBallLockOffset",
-              new Vector3(-0.2f, 0.5f, 0f),
-              "SE_Demister.m_ballPrefab.transform.position offset when locked to player head.");
     }
   }
 }

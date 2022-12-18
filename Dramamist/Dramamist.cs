@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 using BepInEx;
 
@@ -87,12 +88,27 @@ namespace Dramamist {
     }
 
     public static void UpdateDemisterSettings(Demister demister) {
-      demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
+      if (demister.gameObject.layer == EffectLayer.Value && IsLocalPlayerDemisterBall(demister)) {
+        demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
 
-      demister.m_forceField.GetOrAddComponent<SphereCollider>()
-          .SetRadius(demister.m_forceField.endRange)
-          .SetIsTrigger(true)
-          .SetEnabled(IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value);
+        demister.m_forceField.GetOrAddComponent<SphereCollider>()
+            .SetRadius(demister.m_forceField.endRange)
+            .SetIsTrigger(true)
+            .SetEnabled(IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value);
+      }
+    }
+
+    public static readonly Lazy<int> EffectLayer = new(() => LayerMask.NameToLayer("effect"));
+
+    public static bool IsLocalPlayerDemisterBall(Demister demister) {
+      GameObject ballInstance =
+          ((SE_Demister) GetStatusEffect(Player.m_localPlayer, "Demister")).Ref()?.m_ballInstance;
+
+      return ballInstance && ballInstance == demister.transform.root.gameObject;
+    }
+
+    public static StatusEffect GetStatusEffect(Player player, string statusEffectName) {
+      return Player.m_localPlayer.Ref()?.m_seman.GetStatusEffect(statusEffectName);
     }
   }
 }
