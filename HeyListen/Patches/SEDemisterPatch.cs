@@ -7,14 +7,6 @@ namespace HeyListen {
   [HarmonyPatch(typeof(SE_Demister))]
   static class SEDemisterPatch {
     [HarmonyPrefix]
-    [HarmonyPatch(nameof(SE_Demister.Setup))]
-    static void SetupPrefix(ref SE_Demister __instance, ref Character character) {
-      if (IsModEnabled.Value && !__instance.m_ballPrefab.GetComponent<DemisterBallControl>()) {
-
-      }
-    }
-
-    [HarmonyPrefix]
     [HarmonyPatch(nameof(SE_Demister.UpdateStatusEffect))]
     static void UpdateStatusEffectPrefix(ref SE_Demister __instance, ref bool __state) {
       if (IsModEnabled.Value) {

@@ -21,9 +21,23 @@
       return component.TryGetComponent(out T componentOut) ? componentOut : component.gameObject.AddComponent<T>();
     }
 
+    public static bool TryGetComponentInChildren<T>(
+        this UnityEngine.Component component, out T componentOut) where T : UnityEngine.Component {
+      componentOut = component.GetComponentInChildren<T>();
+      return componentOut;
+    }
+
     public static bool TryGetComponentInParent<T>(
         this UnityEngine.Component component, out T componentOut) where T : UnityEngine.Component {
       componentOut = component.GetComponentInParent<T>();
+      return componentOut;
+    }
+  }
+
+  public static class GameObjectExtensions {
+    public static bool TryGetComponentInChildren<T>(
+        this UnityEngine.GameObject gameObject, out T componentOut) where T : UnityEngine.Component {
+      componentOut = gameObject.GetComponentInChildren<T>();
       return componentOut;
     }
   }
