@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 using BepInEx.Configuration;
 
@@ -13,12 +12,12 @@ namespace ComfyLib {
   }
 
   public class InputField {
-    string _textFieldText = string.Empty;
+    string _textFieldText;
     Color _textFieldColor;
 
     public void Drawer(ConfigEntryBase configEntry) {
-      if (GUIFocus.HasChanged()) {
-        _textFieldText = Convert.ToString(configEntry.BoxedValue, CultureInfo.InvariantCulture);
+      if (GUIFocus.HasChanged() || GUIHelper.IsEnterPressed()) {
+        _textFieldText = configEntry.GetSerializedValue();
         _textFieldColor = GUI.color;
       }
 
@@ -33,11 +32,17 @@ namespace ComfyLib {
       _textFieldText = value;
 
       try {
-        configEntry.BoxedValue = Convert.ChangeType(value, configEntry.SettingType, CultureInfo.InvariantCulture);
-        _textFieldColor = GUI.color;
+        configEntry.BoxedValue = TomlTypeConverter.ConvertToValue(value, configEntry.SettingType);
+        _textFieldColor = configEntry.GetSerializedValue() == value ? GUI.color : Color.yellow;
       } catch {
         _textFieldColor = Color.red;
       }
+    }
+  }
+
+  public class Vector3Field {
+    public void Drawer(ConfigEntryBase configEntry) {
+
     }
   }
 }
