@@ -31,6 +31,7 @@ namespace Dramamist {
     static ParticleSystemProfile _particleMistProfile;
     static readonly ParticleSystem.MinMaxCurve _zeroCurve = new(0f);
     static ParticleSystem.MinMaxGradient _flatStartColor;
+    static ParticleSystem.MinMaxGradient _flatColorOverLifetime;
 
     public static void UpdateParticleMistSettings() {
       if (!ParticleMist.m_instance) {
@@ -42,10 +43,19 @@ namespace Dramamist {
       ParticleSystem.TriggerModule trigger = particleMist.m_ps.trigger;
       ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = particleMist.m_ps.velocityOverLifetime;
       ParticleSystem.RotationOverLifetimeModule rotationOverLifetime = particleMist.m_ps.rotationOverLifetime;
+      ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleMist.m_ps.colorOverLifetime;
 
       if (_particleMistProfile == null) {
         _particleMistProfile ??= new(particleMist.m_ps);
         _flatStartColor = new ParticleSystem.MinMaxGradient(main.startColor.colorMax);
+
+        Gradient gradient = colorOverLifetime.color.gradient;
+        Gradient flatGradient = new() {
+          alphaKeys = new GradientAlphaKey[] { new(0f, 0f), new(1f, 0.1f), new(1f, 0.9f), new(0f, 1f) },
+          colorKeys = gradient.colorKeys
+        };
+
+        _flatColorOverLifetime = new ParticleSystem.MinMaxGradient(flatGradient);
       }
 
       if (IsModEnabled.Value && ParticleMistReduceMotion.Value) {
@@ -59,6 +69,8 @@ namespace Dramamist {
         rotationOverLifetime.x = _zeroCurve;
         rotationOverLifetime.y = _zeroCurve;
         rotationOverLifetime.z = _zeroCurve;
+
+        colorOverLifetime.color = _flatColorOverLifetime;
       } else {
         main.startRotation = _particleMistProfile.StartRotation;
         main.startColor = _particleMistProfile.StartColor;
@@ -70,6 +82,8 @@ namespace Dramamist {
         rotationOverLifetime.x = _particleMistProfile.RotationOverLifetimeX;
         rotationOverLifetime.y = _particleMistProfile.RotationOverLifetimeY;
         rotationOverLifetime.z = _particleMistProfile.RotationOverLifetimeZ;
+
+        colorOverLifetime.color = _particleMistProfile.ColorOverLifetimeColor;
       }
 
       trigger.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;
@@ -88,10 +102,10 @@ namespace Dramamist {
     }
 
     public static void UpdateDemisterSettings(Demister demister) {
-      if (demister.m_forceField.TryGetComponent(out SphereCollider sphereCollider)) {
-        sphereCollider.SetEnabled(IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value);
+      demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
 
-        demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
+      if (demister.TryGetComponent(out FadeOutParticleMist fadeOut)) {
+        fadeOut.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;
       }
     }
   }

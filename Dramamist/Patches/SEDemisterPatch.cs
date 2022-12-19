@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
 
-using UnityEngine;
-
 using static Dramamist.PluginConfig;
 
 namespace Dramamist {
@@ -21,18 +19,10 @@ namespace Dramamist {
       if (IsModEnabled.Value
           && __instance.m_ballInstance
           && !__state
-          && __instance.m_character == Player.m_localPlayer
           && __instance.m_ballInstance.TryGetComponentInChildren(out Demister demister)) {
-        ZLog.Log($"Adding ForceField to local Player Demister.");
+        ZLog.Log($"Adding FadeOutParticleMist to player Demister.");
 
-        Collider collider =
-            demister.m_forceField.GetOrAddComponent<SphereCollider>()
-                .SetRadius(demister.m_forceField.endRange)
-                .SetIsTrigger(true);
-
-        ParticleSystem.TriggerModule trigger = ParticleMist.m_instance.m_ps.trigger;
-        trigger.AddCollider(collider);
-
+        demister.GetOrAddComponent<FadeOutParticleMist>();
         Dramamist.UpdateDemisterSettings(demister);
       }
     }
