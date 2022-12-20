@@ -2,6 +2,8 @@
 
 using ComfyLib;
 
+using System;
+
 using UnityEngine;
 
 namespace HeyListen {
@@ -14,6 +16,21 @@ namespace HeyListen {
     public static ConfigEntry<Color> DemisterBallBodyColor { get; private set; }
     public static ConfigEntry<float> DemisterBallBodyBrightness { get; private set; }
     public static ConfigEntry<Color> DemisterBallPointLightColor { get; private set; }
+
+    [Flags]
+    public enum FlameEffects {
+      None = 0,
+      Flames = 1,
+      FlamesLocal = 2,
+      Flare = 4,
+      Embers = 8,
+      Distortion = 16,
+      Energy = 32,
+      Energy2 = 64,
+      SparcsFront = 128
+    }
+
+    public static ConfigEntry<FlameEffects> DemisterBallFlameEffectsEnabled { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -59,6 +76,17 @@ namespace HeyListen {
               "SE_Demister.m_ballPrefab/effects/Point light.color");
 
       DemisterBallPointLightColor.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBall();
+
+      DemisterBallFlameEffectsEnabled =
+          config.BindInOrder(
+              "DemisterBall.FlameEffects",
+              "DemisterBallFlameEffectsEnabled",
+              FlameEffects.Flare | FlameEffects.Embers | FlameEffects.Energy2 | FlameEffects.SparcsFront,
+              "SE_Demister.m_ballPrefab/effectrs/flame/...");
+
+      DemisterBallFlameEffectsEnabled.SettingChanged += (_, _) => {
+        HeyListen.LocalPlayerDemisterBall?.Ref().UpdateFlameEffects(forceUpdate: false);
+      };
     }
   }
 }

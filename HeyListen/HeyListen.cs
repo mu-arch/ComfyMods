@@ -33,7 +33,6 @@ namespace HeyListen {
     public static void UpdateLocalPlayerDemisterBall() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
         ZNetView netView = LocalPlayerDemisterBallNetView;
-
         netView.m_zdo.Set(DemisterBallBodyColorHashCode, Utils.ColorToVec3(DemisterBallBodyColor.Value));
         netView.m_zdo.Set(DemisterBallBodyBrightnessHashCode, DemisterBallBodyBrightness.Value);
         netView.m_zdo.Set(
@@ -46,6 +45,7 @@ namespace HeyListen {
     public static readonly int ColorShaderId = Shader.PropertyToID("_Color");
     public static readonly int EmissionColorShaderId = Shader.PropertyToID("_EmissionColor");
 
+    public static readonly int DemisterBallControlRevisionHashCode = "DemisterBallControlRevision".GetStableHashCode();
     public static readonly int DemisterBallBodyColorHashCode = "DemisterBallBodyColor".GetStableHashCode();
     public static readonly int DemisterBallBodyBrightnessHashCode = "DemisterBallBodyBrightness".GetStableHashCode();
     public static readonly int DemisterBallPointLightColorHashCode = "DemisterBallPointLightColor".GetStableHashCode();

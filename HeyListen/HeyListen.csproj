@@ -82,6 +82,9 @@
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -92,6 +95,7 @@
   <ItemGroup>
     <Compile Include="Components\DemisterBallControl.cs" />
     <Compile Include="Components\LightSetting.cs" />
+    <Compile Include="Components\ParticleSystemSetting.cs" />
     <Compile Include="Components\RendererSetting.cs" />
     <Compile Include="Config\ConfigDrawer.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
