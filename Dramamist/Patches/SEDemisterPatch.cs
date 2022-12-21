@@ -21,9 +21,7 @@ namespace Dramamist {
           && !__state
           && __instance.m_ballInstance.TryGetComponentInChildren(out Demister demister)) {
         ZLog.Log($"Adding FadeOutParticleMist to player Demister.");
-
         demister.GetOrAddComponent<FadeOutParticleMist>();
-        Dramamist.UpdateDemisterSettings(demister);
       }
     }
   }

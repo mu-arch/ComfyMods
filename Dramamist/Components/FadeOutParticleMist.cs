@@ -11,21 +11,19 @@ namespace Dramamist {
       _collider =
           _demister.m_forceField.GetOrAddComponent<SphereCollider>()
               .SetRadius(_demister.m_forceField.endRange)
-              .SetIsTrigger(true);          
+              .SetIsTrigger(true);
+
+      Dramamist.UpdateDemisterSettings(_demister);
     }
 
     void OnEnable() {
       _collider.SetEnabled(true);
-
-      ParticleSystem.TriggerModule trigger = ParticleMist.m_instance.m_ps.trigger;
-      trigger.AddCollider(_collider);
+      ParticleMist.m_instance.m_ps.trigger.AddCollider(_collider);
     }
 
     void OnDisable() {
       _collider.SetEnabled(false);
-
-      ParticleSystem.TriggerModule trigger = ParticleMist.m_instance.m_ps.trigger;
-      trigger.RemoveCollider(_collider);
+      ParticleMist.m_instance.m_ps.trigger.RemoveCollider(_collider);
     }
   }
 }

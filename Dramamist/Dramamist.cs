@@ -45,11 +45,11 @@ namespace Dramamist {
       if (_particleMistProfile == null) {
         _particleMistProfile ??= new(particleMist.m_ps);
         _flatStartColor = new ParticleSystem.MinMaxGradient(main.startColor.colorMax);
+        ZLog.Log($"Default ParticleMist.m_distantEmissionMaxVel is: {particleMist.m_distantEmissionMaxVel}");
       }
 
       if (IsModEnabled.Value && ParticleMistReduceMotion.Value) {
         main.startRotation = _zeroCurve;
-        main.startColor = _flatStartColor;
 
         velocityOverLifetime.x = _zeroCurve;
         velocityOverLifetime.y = _zeroCurve;
@@ -60,7 +60,6 @@ namespace Dramamist {
         rotationOverLifetime.z = _zeroCurve;
       } else {
         main.startRotation = _particleMistProfile.StartRotation;
-        main.startColor = _particleMistProfile.StartColor;
 
         velocityOverLifetime.x = _particleMistProfile.VelocityOverLifetimeX;
         velocityOverLifetime.y = _particleMistProfile.VelocityOverLifetimeY;
@@ -71,8 +70,15 @@ namespace Dramamist {
         rotationOverLifetime.z = _particleMistProfile.RotationOverLifetimeZ;
       }
 
+      if (IsModEnabled.Value && ParticleMistUseFlatMistStartColor.Value) {
+        main.startColor = _flatStartColor;
+      } else {
+        main.startColor = _particleMistProfile.StartColor;
+      }
+
       trigger.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;
       trigger.inside = ParticleSystemOverlapAction.Callback;
+      trigger.enter = ParticleSystemOverlapAction.Callback;
       trigger.colliderQueryMode = ParticleSystemColliderQueryMode.Disabled;
     }
 
