@@ -13,8 +13,6 @@ namespace Dramamist {
     public ParticleSystem.MinMaxCurve RotationOverLifetimeY { get; }
     public ParticleSystem.MinMaxCurve RotationOverLifetimeZ { get; }
 
-    public ParticleSystem.MinMaxGradient ColorOverLifetimeColor { get; }
-
     public ParticleSystemProfile(ParticleSystem particleSystem) {
       ParticleSystem.MainModule main = particleSystem.main;
       StartRotation = main.startRotation;
@@ -29,9 +27,6 @@ namespace Dramamist {
       RotationOverLifetimeX = rotationOverLifetime.x;
       RotationOverLifetimeY = rotationOverLifetime.y;
       RotationOverLifetimeZ = rotationOverLifetime.z;
-
-      ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleSystem.colorOverLifetime;
-      ColorOverLifetimeColor = colorOverLifetime.color;
     }
   }
 
