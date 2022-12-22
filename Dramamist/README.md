@@ -1,6 +1,55 @@
 # Dramamist
 
-*Mistlands ParticleMist effect reduction and configuration.*
+*Mistlands ParticleMist effect reduction.*
+
+![Splash](https://i.imgur.com/MGP8kyQ.png)
+
+## Features
+
+All configuration options can be toggled in-game and will take effect immediately.
+
+![Configuration](https://i.imgur.com/A96oDo4.png)
+
+### ParticleMist
+
+#### ParticleMistReduceMotion
+
+  * Modifies **all** ParticleMist particle Velocity/Rotation multipliers to 0.
+  * Modifies ParticleMist particle StartRotation to 0.
+  * Default: `true`
+
+#### ParticleMistUseFlatMistStartColor
+
+  * Modifies ParticleMist particle StartColor to use only the MinColor value instead of a MinColor/MaxColor range.
+  * Default: `false`
+
+#### ParticleMistDistantEmissionMaxVelocity
+
+  * Modifies ParticleMist (distant) particle maximum starting Velocity (for Misters outside of player range).
+  * Default: `2.0` (vanilla: `2.0`)
+
+### Demister
+
+#### DemisterForceFieldGravity
+
+  * Modifies every Demister's force-field to apply a *negative* gravity effect to incoming ParticleMist particles.
+  * **Moves ParticleMist particles away as quick as you move.**
+  * Does not increase view distance but relies on particle motion for effect.
+  * Default: `-5.0` (vanilla: `-0.08`)
+
+### DemisterBall
+
+#### DemisterTriggerFadeOutParticleMist
+
+  * Adds a Sphere collider to DemisterBall (Wisp) Demisters that trigger a *fade-out* effect to particles inside.
+  * **Increases view distance greater than vanilla but uses no particle motion for effect.**
+  * Default: `true`
+
+#### DemisterTriggerFadeOutMultiplier
+
+  * Multiplier used for the FadeOutParticleMist option.
+  * At `0%` particles will instantly fade-out and at `100%` particles will not fade-out.
+  * Default: `85%`
 
 ## Installation
 
@@ -13,36 +62,12 @@
   * Go to Settings > Import local mod > Select `Dramamist_v1.0.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
-## Reference
+## Notes
 
-### ParticleMist Default Values
-
-  * Main
-    * startColor = TwoColors
-      * colorMin = 0.1984, 0.3754, 0.4, 1
-      * colorMax = 0.3954, 0.298, 0.502, 1
-    * startRotation = 6.2832
-    * startRotationMultiplier = 6.2832
-    * startRotationZMultiplier = 6.2832
-    * startSize
-    * startSizeMultiplier = 8
-    * startSizeX = 8
-    * startSizeXMultiplier = 8
-    * startSizeY = 1
-    * startSizeYMultiplier = 1
-    * startSizeZ = 1
-    * startSizeZMultiplier = 1
-
-  * RotationOverLifetime
-    * z = 0.0873
-    * zMultiplier = 0.0873
-
-  * VelocityOverLifetime
-    * speedModifier = 1
-    * xMultiplier = -0.0653
-    * yMultiplier = 0
-    * zMultiplier = -0.3459
-
+  * This is the *good enough* release with more features/options to be added later.
+  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Dramamist).
+  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
 

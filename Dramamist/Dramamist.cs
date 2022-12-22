@@ -78,7 +78,6 @@ namespace Dramamist {
 
       trigger.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;
       trigger.inside = ParticleSystemOverlapAction.Callback;
-      trigger.enter = ParticleSystemOverlapAction.Callback;
       trigger.colliderQueryMode = ParticleSystemColliderQueryMode.Disabled;
     }
 
@@ -93,7 +92,7 @@ namespace Dramamist {
     }
 
     public static void UpdateDemisterSettings(Demister demister) {
-      demister.m_forceField.gravity = DemisterForceFieldGravity.Value;
+      demister.m_forceField.gravity = IsModEnabled.Value ? DemisterForceFieldGravity.Value : -0.08f;
 
       if (demister.TryGetComponent(out FadeOutParticleMist fadeOut)) {
         fadeOut.enabled = IsModEnabled.Value && DemisterTriggerFadeOutParticleMist.Value;

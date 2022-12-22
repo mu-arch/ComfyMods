@@ -18,6 +18,9 @@ namespace Dramamist {
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      IsModEnabled.SettingChanged += (_, _) => Dramamist.UpdateParticleMistSettings();
+      IsModEnabled.SettingChanged += (_, _) => Dramamist.UpdateDemisterSettings();
+
       ParticleMistReduceMotion =
           config.BindInOrder(
               "ParticleMist",
