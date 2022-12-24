@@ -21,16 +21,18 @@ namespace HeyListen {
     public enum FlameEffects {
       None = 0,
       Flames = 1,
-      FlamesLocal = 2,
+      FlamesL = 2,
       Flare = 4,
       Embers = 8,
       Distortion = 16,
       Energy = 32,
-      Energy2 = 64,
-      SparcsFront = 128
+      EnergyII = 64,
+      SparcsF = 128
     }
 
     public static ConfigEntry<FlameEffects> DemisterBallFlameEffectsEnabled { get; private set; }
+    public static ConfigEntry<Color> DemisterBallFlameEffectsColor { get; private set; }
+    public static ConfigEntry<Color> DemisterBallFlameEffectBrightness { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -52,7 +54,7 @@ namespace HeyListen {
       DemisterBallBodyColor =
           config.BindInOrder(
               "DemisterBall.Body",
-              "demisterBallBodyColor",
+              "bodyColor",
               new Color(0f, 0.832f, 1f, 1f),
               "SE Demister.m_ballPrefab.color");
 
@@ -61,17 +63,17 @@ namespace HeyListen {
       DemisterBallBodyBrightness =
           config.BindInOrder(
               "DemisterBall.Body",
-              "demisterBallBodyBrightness",
-              1f,
+              "bodyBrightness",
+              1.2f,
               "SE_Demister.m_ballPrefab.brightness",
-              new AcceptableValueRange<float>(0f, 1f));
+              new AcceptableValueRange<float>(0f, 2f));
 
-      DemisterBallBodyColor.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBall();
+      DemisterBallBodyBrightness.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBall();
 
       DemisterBallPointLightColor =
           config.BindInOrder(
               "DemisterBall.PointLight",
-              "demisterBallPointLightColor",
+              "pointLightColor",
               new Color(0.482f, 0.803f, 1f, 1f),
               "SE_Demister.m_ballPrefab/effects/Point light.color");
 
@@ -80,13 +82,20 @@ namespace HeyListen {
       DemisterBallFlameEffectsEnabled =
           config.BindInOrder(
               "DemisterBall.FlameEffects",
-              "DemisterBallFlameEffectsEnabled",
-              FlameEffects.Flare | FlameEffects.Embers | FlameEffects.Energy2 | FlameEffects.SparcsFront,
-              "SE_Demister.m_ballPrefab/effectrs/flame/...");
+              "flameEffectsEnabled",
+              FlameEffects.Flare | FlameEffects.Embers | FlameEffects.EnergyII | FlameEffects.SparcsF,
+              "SE_Demister.m_ballPrefab/effects/flame/...");
 
-      DemisterBallFlameEffectsEnabled.SettingChanged += (_, _) => {
-        HeyListen.LocalPlayerDemisterBall?.Ref().UpdateFlameEffects(forceUpdate: false);
-      };
+      DemisterBallFlameEffectsEnabled.SettingChanged += (_, _) =>
+          HeyListen.LocalPlayerDemisterBall?.Ref().UpdateFlameEffects(forceUpdate: false);
+
+      DemisterBallFlameEffectsColor =
+          config.BindInOrder(
+              "DemisterBall.FlameEffects",
+              "flameEffectsColor",
+              new Color(0.482f, 0.803f, 1f, 1f),
+              "SE_Demister.m_ballPrefab/effects/flame/... color.",
+              customDrawer: new ExtendedColorSetting().DrawColor);
     }
   }
 }

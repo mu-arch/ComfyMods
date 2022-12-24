@@ -33,10 +33,9 @@ namespace HeyListen {
     public static void UpdateLocalPlayerDemisterBall() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
         ZNetView netView = LocalPlayerDemisterBallNetView;
-        netView.m_zdo.Set(DemisterBallBodyColorHashCode, Utils.ColorToVec3(DemisterBallBodyColor.Value));
+        netView.m_zdo.Set(DemisterBallBodyColorHashCode, DemisterBallBodyColor.Value);
         netView.m_zdo.Set(DemisterBallBodyBrightnessHashCode, DemisterBallBodyBrightness.Value);
-        netView.m_zdo.Set(
-            DemisterBallPointLightColorHashCode, Utils.ColorToVec3(DemisterBallPointLightColor.Value));
+        netView.m_zdo.Set(DemisterBallPointLightColorHashCode, DemisterBallPointLightColor.Value);
 
         LocalPlayerDemisterBall.UpdateDemisterBall(forceUpdate: true);
       }

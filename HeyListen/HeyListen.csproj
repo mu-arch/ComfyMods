@@ -101,6 +101,7 @@
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Config\GUIFocus.cs" />
     <Compile Include="Config\GUIHelper.cs" />
+    <Compile Include="Config\Texture2d.cs" />
     <Compile Include="HeyListen.cs" />
     <Compile Include="Patches\SEDemisterPatch.cs" />
     <Compile Include="PluginConfig.cs" />

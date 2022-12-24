@@ -35,7 +35,8 @@ namespace ComfyLib {
         string key,
         T defaultValue,
         string description,
-        System.Action<ConfigEntryBase> customDrawer) {
+        System.Action<ConfigEntryBase> customDrawer,
+        bool hideDefaultButton = false) {
       return config.Bind(
           section,
           key,
@@ -43,7 +44,11 @@ namespace ComfyLib {
           new ConfigDescription(
               description,
               null,
-              new ConfigurationManagerAttributes { CustomDrawer = customDrawer, Order = GetSettingOrder(section) }));
+              new ConfigurationManagerAttributes {
+                CustomDrawer = customDrawer,
+                HideDefaultButton = hideDefaultButton,
+                Order = GetSettingOrder(section)
+              }));
     }
 
     public static ConfigEntry<T> BindInOrder<T>(
@@ -63,6 +68,7 @@ namespace ComfyLib {
 
     internal sealed class ConfigurationManagerAttributes {
       public System.Action<ConfigEntryBase> CustomDrawer;
+      public bool? HideDefaultButton;
       public int? Order;
     }
   }

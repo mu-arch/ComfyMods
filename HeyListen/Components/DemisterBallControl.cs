@@ -10,11 +10,13 @@ using static HeyListen.PluginConfig;
 
 namespace HeyListen {
   public class DemisterBallControl : MonoBehaviour {
+    public static readonly Color NoColor = new(-1f, -1f, -1f, -1f);
+
     ZNetView _netView;
     long _lastDataRevision;
-    Vector3 _lastBodyColorVec;
+    Color _lastBodyColor;
     float _lastBodyBrightness;
-    Vector3 _lastPointLightColorVec;
+    Color _lastPointLightColor;
 
     RendererSetting _demisterBallRenderer;
     LightSetting _effectsPointLight;
@@ -29,9 +31,9 @@ namespace HeyListen {
 
     void Awake() {
       _lastDataRevision = -1L;
-      _lastBodyColorVec = -Vector3.one;
+      _lastBodyColor = NoColor;
       _lastBodyBrightness = -1f;
-      _lastPointLightColorVec = -Vector3.one;
+      _lastPointLightColor = NoColor;
 
       _demisterBallRenderer = new(transform.Find("demister_ball").GetComponent<MeshRenderer>());
       _effectsPointLight = new(transform.Find("effects/Point light").GetComponent<Light>());
@@ -45,6 +47,7 @@ namespace HeyListen {
       _flameEffectsEnergy2 = new(transform.Find("effects/flame/energy (1)").GetComponent<ParticleSystem>());
       _flameEffectsSparcsFront = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystem>());
 
+      ZLog.Log($"Renderer original color is: {_demisterBallRenderer.OriginalColor}");
       ZLog.Log($"Renderer original emissionColor is: {_demisterBallRenderer.OriginalEmissionColor}");
       ZLog.Log($"Point light original color is: {_effectsPointLight.OriginalColor}");
 
@@ -83,37 +86,34 @@ namespace HeyListen {
     }
 
     void UpdateBodyColor(bool forceUpdate = false) {
-      Vector3 colorVec = _netView.m_zdo.GetVec3(DemisterBallBodyColorHashCode, -Vector3.one);
-      float brightness = Mathf.Clamp(_netView.m_zdo.GetFloat(DemisterBallBodyBrightnessHashCode, -1f), -1f, 1f);
+      Color color = _netView.m_zdo.GetColor(DemisterBallBodyColorHashCode, NoColor);
+      float brightness = Mathf.Clamp(_netView.m_zdo.GetFloat(DemisterBallBodyBrightnessHashCode, -1f), -1f, 2f);
 
-      if (!forceUpdate && colorVec == _lastBodyColorVec && brightness == _lastBodyBrightness) {
+      if (!forceUpdate && color == _lastBodyColor && brightness == _lastBodyBrightness) {
         return;
       }
 
-      if (brightness >= 0f && colorVec != -Vector3.one) {
-        Color color = Utils.Vec3ToColor(colorVec);
-        color.a = brightness;
-
-        _demisterBallRenderer.SetEmissionColor(color);
+      if (brightness >= 0f && color != NoColor) {
+        _demisterBallRenderer.SetColor(color);
+        _demisterBallRenderer.SetEmissionColor(color * new Color(brightness, brightness, brightness, 1f));
       } else {
+        _demisterBallRenderer.SetColor(_demisterBallRenderer.OriginalColor);
         _demisterBallRenderer.SetEmissionColor(_demisterBallRenderer.OriginalEmissionColor);
       }
 
-      _lastBodyColorVec = colorVec;
+      _lastBodyColor = color;
       _lastBodyBrightness = brightness;
     }
 
     void UpdatePointLightColor(bool forceUpdate) {
-      Vector3 colorVec = _netView.m_zdo.GetVec3(DemisterBallPointLightColorHashCode, -Vector3.one);
+      Color color = _netView.m_zdo.GetColor(DemisterBallPointLightColorHashCode, NoColor);
 
-      if (!forceUpdate && colorVec == _lastPointLightColorVec) {
+      if (!forceUpdate && color == _lastPointLightColor) {
         return;
       }
 
-      _effectsPointLight.SetColor(
-          colorVec == -Vector3.one ? _effectsPointLight.OriginalColor : Utils.Vec3ToColor(colorVec));
-
-      _lastPointLightColorVec = colorVec;
+      _effectsPointLight.SetColor(color == NoColor ? _effectsPointLight.OriginalColor : color);
+      _lastPointLightColor = color;
     }
 
     public void UpdateFlameEffects(bool forceUpdate) {
@@ -121,7 +121,7 @@ namespace HeyListen {
 
       // ColorOverLifetime
       _flameEffectsFlames.SetActive(effects.HasFlag(FlameEffects.Flames));
-      _flameEffectsFlamesLocal.SetActive(effects.HasFlag(FlameEffects.FlamesLocal));
+      _flameEffectsFlamesLocal.SetActive(effects.HasFlag(FlameEffects.FlamesL));
 
       // ParticleSystem.main.startColor: keep alpha to 0.1 or less
       _flameEffectsFlare.SetActive(effects.HasFlag(FlameEffects.Flare));
@@ -132,10 +132,10 @@ namespace HeyListen {
       _flameEffectsEnergy.SetActive(effects.HasFlag(FlameEffects.Energy));
 
       // ParticleSystem.main.startColor: keep alpha to 0.1 or less
-      _flameEffectsEnergy2.SetActive(effects.HasFlag(FlameEffects.Energy2));
+      _flameEffectsEnergy2.SetActive(effects.HasFlag(FlameEffects.EnergyII));
 
       // ParticleSystemRenderer.material._EmissionColor: drives this color
-      _flameEffectsSparcsFront.SetActive(effects.HasFlag(FlameEffects.SparcsFront));
+      _flameEffectsSparcsFront.SetActive(effects.HasFlag(FlameEffects.SparcsF));
     }
   }
 }
