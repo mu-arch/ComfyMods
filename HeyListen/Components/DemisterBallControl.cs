@@ -1,6 +1,5 @@
 ﻿using ComfyLib;
 
-using System;
 using System.Collections;
 
 using UnityEngine;
@@ -23,7 +22,10 @@ namespace HeyListen {
     ParticleSystemSetting _flameEffectsFlames;
     ParticleSystemSetting _flameEffectsFlamesLocal;
     ParticleSystemSetting _flameEffectsFlare;
-    ParticleSystemSetting _flameEffectsEmbers;
+
+    //ParticleSystemSetting _flameEffectsEmbers;
+    RendererSetting _flameEffectsEmbers;
+
     ParticleSystemSetting _flameEffectsDistortion;
     ParticleSystemSetting _flameEffectsEnergy;
     ParticleSystemSetting _flameEffectsEnergy2;
@@ -39,12 +41,21 @@ namespace HeyListen {
       _effectsPointLight = new(transform.Find("effects/Point light").GetComponent<Light>());
 
       _flameEffectsFlames = new(transform.Find("effects/flame/flames").GetComponent<ParticleSystem>());
+      ZLog.Log($"Flames default is: {_flameEffectsFlames.OriginalColorOveLifetimeColor.ToDebugString()}");
+
       _flameEffectsFlamesLocal = new(transform.Find("effects/flame/flames_local").GetComponent<ParticleSystem>());
+      ZLog.Log($"FlamesLocal default is: {_flameEffectsFlamesLocal.OriginalColorOveLifetimeColor.ToDebugString()}");
+
       _flameEffectsFlare = new(transform.Find("effects/flame/flare").GetComponent<ParticleSystem>());
-      _flameEffectsEmbers = new(transform.Find("effects/flame/embers").GetComponent<ParticleSystem>());
+      ZLog.Log($"Flare default is: {_flameEffectsFlare.OriginalStartColor.ToDebugString()}");
+
+      _flameEffectsEmbers = new(transform.Find("effects/flame/embers").GetComponent<ParticleSystemRenderer>());
+      ZLog.Log($"Embers default is: {_flameEffectsEmbers.OriginalColor:F3}, {_flameEffectsEmbers.OriginalEmissionColor:F3}");
+
       _flameEffectsDistortion = new(transform.Find("effects/flame/distortiion").GetComponent<ParticleSystem>());
       _flameEffectsEnergy = new(transform.Find("effects/flame/energy").GetComponent<ParticleSystem>());
       _flameEffectsEnergy2 = new(transform.Find("effects/flame/energy (1)").GetComponent<ParticleSystem>());
+      ZLog.Log($"FlameEffectsEnergy2 default is: {_flameEffectsEnergy2.OriginalStartColor.ToDebugString()}");
       _flameEffectsSparcsFront = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystem>());
 
       _netView = GetComponent<ZNetView>();
@@ -115,23 +126,31 @@ namespace HeyListen {
     public void UpdateFlameEffects(FlameEffects effectsEnabled, Color effectsColor) {
       FlameEffects effects = DemisterBallFlameEffectsEnabled.Value;
 
-      // ColorOverLifetime
+      // ParticleSystem.ColorOverLifetime.color
       _flameEffectsFlames.SetActive(effects.HasFlag(FlameEffects.Flames));
       _flameEffectsFlames.SetColorOverLifetimeColor(effectsColor);
 
+      // ParticleSystem.ColorOverLifetime.color
       _flameEffectsFlamesLocal.SetActive(effects.HasFlag(FlameEffects.FlamesL));
       _flameEffectsFlamesLocal.SetColorOverLifetimeColor(effectsColor);
 
       // ParticleSystem.main.startColor: keep alpha to 0.1 or less
       _flameEffectsFlare.SetActive(effects.HasFlag(FlameEffects.Flare));
+      _flameEffectsFlare.SetStartColor(effectsColor.SetAlpha(0.1f)); // <--
 
       // ParticleSystemRenderer.material._EmissionColor: drives this color
-      _flameEffectsEmbers.SetActive(effects.HasFlag(FlameEffects.Embers));
+      _flameEffectsEmbers
+          .SetActive(effects.HasFlag(FlameEffects.Embers))
+          .SetColor(effectsColor)
+          .SetEmissionColor(effectsColor);
+
+      // ParticleSystemRenderer.material._EmissionColor: drives this color
       _flameEffectsDistortion.SetActive(effects.HasFlag(FlameEffects.Distortion));
       _flameEffectsEnergy.SetActive(effects.HasFlag(FlameEffects.Energy));
 
       // ParticleSystem.main.startColor: keep alpha to 0.1 or less
       _flameEffectsEnergy2.SetActive(effects.HasFlag(FlameEffects.EnergyII));
+      _flameEffectsEnergy2.SetStartColor(effectsColor.SetAlpha(0.1f)); // <--
 
       // ParticleSystemRenderer.material._EmissionColor: drives this color
       _flameEffectsSparcsFront.SetActive(effects.HasFlag(FlameEffects.SparcsF));

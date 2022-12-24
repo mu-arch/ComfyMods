@@ -23,6 +23,11 @@ namespace ComfyLib {
       CurrentEmissionColor = CurrentEmissionColor;
     }
 
+    public RendererSetting SetActive(bool active) {
+      _renderer.gameObject.SetActive(active);
+      return this;
+    }
+
     public RendererSetting SetColor(Color color) {
       if (color != CurrentColor) {
         CurrentColor = color;
