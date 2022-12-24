@@ -6,7 +6,14 @@ using BepInEx.Configuration;
 using UnityEngine;
 
 namespace ComfyLib {
+  public static class ConfigGUILayout {
+    public static bool DefaultButton() {
+      GUILayout.Space(5);
+      return GUILayout.Button("Reset", GUILayout.ExpandWidth(false));
+    }
 
+    
+  }
 
   public class ExtendedColorSetting {
     public ExtendedColorSetting() {
@@ -33,6 +40,8 @@ namespace ComfyLib {
       _alphaInput.SetValue(value.a);
       _hexInput.SetValue(value);
     }
+
+    static readonly Lazy<GUIStyle> _boxStyle = new(() => new(GUI.skin.box) { padding = new(3, 3, 3, 3) });
     
     public void DrawColor(ConfigEntryBase configEntry) {
       Color configColor = (Color) configEntry.BoxedValue;
@@ -41,7 +50,7 @@ namespace ComfyLib {
         SetValue(configColor);
       }
 
-      GUILayout.BeginVertical();
+      GUILayout.BeginVertical(_boxStyle.Value);
       GUILayout.BeginHorizontal();
       _hexInput.DrawField();
 
@@ -50,26 +59,35 @@ namespace ComfyLib {
       GUI.DrawTexture(GUILayoutUtility.GetLastRect(), _colorTexture);
       GUIHelper.EndColor();
 
-      if (GUILayout.Button(
-            _showSliders ? "\u25BC" : "\u25C4", GUILayout.MinWidth(50f), GUILayout.ExpandWidth(false))) {
+      if (GUILayout.Button(_showSliders ? "\u2228" : "\u2261", GUILayout.MinWidth(40f), GUILayout.ExpandWidth(false))) {
         _showSliders = !_showSliders;
       }
 
       GUILayout.EndHorizontal();
 
       if (_showSliders) {
-        GUILayout.Space(5f);
+        GUILayout.Space(4f);
         GUILayout.BeginHorizontal();
 
-        _redInput.Draw();
-        _greenInput.Draw();
-        _blueInput.Draw();
-        _alphaInput.Draw();
+        _redInput.DrawField();
+        GUILayout.Space(2f);
+        _greenInput.DrawField();
+        GUILayout.Space(2f);
+        _blueInput.DrawField();
+        GUILayout.Space(2f);
+        _alphaInput.DrawField();
 
         GUILayout.EndHorizontal();
       }
 
       GUILayout.EndVertical();
+
+      if (ConfigGUILayout.DefaultButton()) {
+        Color defaultColor = (Color) configEntry.DefaultValue;
+        configEntry.BoxedValue = defaultColor;
+        SetValue(defaultColor);
+        return;
+      }
 
       Color sliderColor =
           new(_redInput.CurrentValue, _greenInput.CurrentValue, _blueInput.CurrentValue, _alphaInput.CurrentValue);
@@ -102,20 +120,18 @@ namespace ComfyLib {
 
     Color _currentColor = GUI.color;
 
-    static readonly Lazy<GUIStyle> _centeredLabelStyle =
-        new(() => new(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
-
-    public void Draw() {
+    public void DrawField() {
       GUILayout.BeginVertical();
 
       GUILayout.BeginHorizontal();
-      GUILayout.Label(FieldLabel, _centeredLabelStyle.Value, GUILayout.ExpandWidth(false));
+      GUILayout.Label(FieldLabel, GUILayout.ExpandWidth(false));
 
       GUIHelper.BeginColor(_currentColor);
-      string textValue = GUILayout.TextField(CurrentText, GUILayout.MinWidth(50f), GUILayout.ExpandWidth(true));
+      string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(50f), GUILayout.ExpandWidth(false));
       GUIHelper.EndColor();
 
       GUILayout.EndHorizontal();
+      GUILayout.Space(2f);
 
       float sliderValue =
           GUILayout.HorizontalSlider(CurrentValue, 0f, 1f, GUILayout.ExpandWidth(true));
@@ -159,7 +175,7 @@ namespace ComfyLib {
 
     public void DrawField() {
       GUIHelper.BeginColor(_textColor);
-      string textValue = GUILayout.TextField(CurrentText, GUILayout.MinWidth(100f), GUILayout.ExpandWidth(false));
+      string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(100f), GUILayout.ExpandWidth(false));
       GUIHelper.EndColor();
 
       if (textValue == CurrentText) {

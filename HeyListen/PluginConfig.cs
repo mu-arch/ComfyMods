@@ -95,7 +95,8 @@ namespace HeyListen {
               "flameEffectsColor",
               new Color(0.482f, 0.803f, 1f, 1f),
               "SE_Demister.m_ballPrefab/effects/flame/... color.",
-              customDrawer: new ExtendedColorSetting().DrawColor);
+              customDrawer: new ExtendedColorSetting().DrawColor,
+              hideDefaultButton: true);
     }
   }
 }
