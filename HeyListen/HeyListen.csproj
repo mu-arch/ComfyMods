@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="Components\DemisterBallControl.cs" />
     <Compile Include="Components\LightSetting.cs" />
+    <Compile Include="Components\ParticleSystemExtensions.cs" />
     <Compile Include="Components\ParticleSystemSetting.cs" />
     <Compile Include="Components\RendererSetting.cs" />
     <Compile Include="Config\ExtendedColorConfig.cs" />

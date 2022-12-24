@@ -47,10 +47,6 @@ namespace HeyListen {
       _flameEffectsEnergy2 = new(transform.Find("effects/flame/energy (1)").GetComponent<ParticleSystem>());
       _flameEffectsSparcsFront = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystem>());
 
-      ZLog.Log($"Renderer original color is: {_demisterBallRenderer.OriginalColor}");
-      ZLog.Log($"Renderer original emissionColor is: {_demisterBallRenderer.OriginalEmissionColor}");
-      ZLog.Log($"Point light original color is: {_effectsPointLight.OriginalColor}");
-
       _netView = GetComponent<ZNetView>();
 
       if (!_netView || !_netView.IsValid()) {
@@ -121,7 +117,10 @@ namespace HeyListen {
 
       // ColorOverLifetime
       _flameEffectsFlames.SetActive(effects.HasFlag(FlameEffects.Flames));
+      _flameEffectsFlames.SetColorOverLifetimeColor(effectsColor);
+
       _flameEffectsFlamesLocal.SetActive(effects.HasFlag(FlameEffects.FlamesL));
+      _flameEffectsFlamesLocal.SetColorOverLifetimeColor(effectsColor);
 
       // ParticleSystem.main.startColor: keep alpha to 0.1 or less
       _flameEffectsFlare.SetActive(effects.HasFlag(FlameEffects.Flare));
