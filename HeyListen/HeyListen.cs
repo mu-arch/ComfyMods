@@ -41,6 +41,13 @@ namespace HeyListen {
       }
     }
 
+    public static void UpdateLocalPlayerDemisterBallFlameEffects() {
+      if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
+        LocalPlayerDemisterBall.UpdateFlameEffects(
+            DemisterBallFlameEffectsEnabled.Value, DemisterBallFlameEffectsColor.Value);
+      }
+    }
+
     public static readonly int ColorShaderId = Shader.PropertyToID("_Color");
     public static readonly int EmissionColorShaderId = Shader.PropertyToID("_EmissionColor");
 

@@ -116,7 +116,7 @@ namespace HeyListen {
       _lastPointLightColor = color;
     }
 
-    public void UpdateFlameEffects(bool forceUpdate) {
+    public void UpdateFlameEffects(FlameEffects effectsEnabled, Color effectsColor) {
       FlameEffects effects = DemisterBallFlameEffectsEnabled.Value;
 
       // ColorOverLifetime

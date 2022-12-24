@@ -6,17 +6,8 @@ using BepInEx.Configuration;
 using UnityEngine;
 
 namespace ComfyLib {
-  public static class ConfigGUILayout {
-    public static bool DefaultButton() {
-      GUILayout.Space(5);
-      return GUILayout.Button("Reset", GUILayout.ExpandWidth(false));
-    }
-
-    
-  }
-
-  public class ExtendedColorSetting {
-    public ExtendedColorSetting() {
+  public class ExtendedColorConfig {
+    public ExtendedColorConfig() {
       _redInput = new("R");
       _greenInput = new("G");
       _blueInput = new("B");
@@ -147,6 +138,7 @@ namespace ComfyLib {
         return;
       }
 
+      // TODO(redseiko@): extract the range-check into a parameter for the constructor.
       if (float.TryParse(textValue, NumberStyles.Any, CultureInfo.InvariantCulture, out float result)
           && result >= 0f
           && result <= 1f) {
@@ -190,6 +182,13 @@ namespace ComfyLib {
       } else {
         _textColor = Color.red;
       }
+    }
+  }
+
+  public static class ConfigGUILayout {
+    public static bool DefaultButton() {
+      GUILayout.Space(5);
+      return GUILayout.Button("Reset", GUILayout.ExpandWidth(false));
     }
   }
 }

@@ -52,7 +52,7 @@ namespace HeyListen {
               "SE_Demister.m_ballPrefab.transform.position offset when locked to player.");
 
       DemisterBallBodyColor =
-          config.BindInOrder(
+          config.BindColorInOrder(
               "DemisterBall.Body",
               "bodyColor",
               new Color(0f, 0.832f, 1f, 1f),
@@ -71,7 +71,7 @@ namespace HeyListen {
       DemisterBallBodyBrightness.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBall();
 
       DemisterBallPointLightColor =
-          config.BindInOrder(
+          config.BindColorInOrder(
               "DemisterBall.PointLight",
               "pointLightColor",
               new Color(0.482f, 0.803f, 1f, 1f),
@@ -86,17 +86,16 @@ namespace HeyListen {
               FlameEffects.Flare | FlameEffects.Embers | FlameEffects.EnergyII | FlameEffects.SparcsF,
               "SE_Demister.m_ballPrefab/effects/flame/...");
 
-      DemisterBallFlameEffectsEnabled.SettingChanged += (_, _) =>
-          HeyListen.LocalPlayerDemisterBall?.Ref().UpdateFlameEffects(forceUpdate: false);
+      DemisterBallFlameEffectsEnabled.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBallFlameEffects();
 
       DemisterBallFlameEffectsColor =
-          config.BindInOrder(
+          config.BindColorInOrder(
               "DemisterBall.FlameEffects",
               "flameEffectsColor",
               new Color(0.482f, 0.803f, 1f, 1f),
-              "SE_Demister.m_ballPrefab/effects/flame/... color.",
-              customDrawer: new ExtendedColorSetting().DrawColor,
-              hideDefaultButton: true);
+              "SE_Demister.m_ballPrefab/effects/flame/... color.");
+
+      DemisterBallFlameEffectsColor.SettingChanged += (_, _) => HeyListen.UpdateLocalPlayerDemisterBallFlameEffects();
     }
   }
 }

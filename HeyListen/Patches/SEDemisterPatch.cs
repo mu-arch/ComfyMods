@@ -28,7 +28,7 @@ namespace HeyListen {
 
             ZLog.Log($"Setting DemisterBallControl to local config.");
             UpdateLocalPlayerDemisterBall();
-            LocalPlayerDemisterBall.UpdateFlameEffects(false);
+            UpdateLocalPlayerDemisterBallFlameEffects();
           }
 
           demisterBallControl.UpdateDemisterBall(forceUpdate: true);
