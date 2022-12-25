@@ -2,6 +2,9 @@
 
 namespace ComfyLib {
   public class LightSetting {
+    public Vector3 OriginalScale { get; }
+    public Vector3 CurrentScale { get; private set; }
+
     public Color OriginalColor { get; }
     public Color CurrentColor { get; private set; }
 
@@ -10,8 +13,20 @@ namespace ComfyLib {
     public LightSetting(Light light) {
       _light = light;
 
+      OriginalScale = light.transform.localScale;
+      CurrentScale = OriginalScale;
+
       OriginalColor = light.color;
       CurrentColor = OriginalColor;
+    }
+
+    public LightSetting SetScale(Vector3 scale) {
+      if (scale != CurrentScale) {
+        CurrentScale = scale;
+        _light.transform.localScale = scale;
+      }
+
+      return this;
     }
 
     public LightSetting SetColor(Color color) {

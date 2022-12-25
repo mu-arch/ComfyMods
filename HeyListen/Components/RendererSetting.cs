@@ -5,6 +5,9 @@ namespace ComfyLib {
     static readonly int _colorShaderId = Shader.PropertyToID("_Color");
     static readonly int _emissionColorShaderId = Shader.PropertyToID("_EmissionColor");
 
+    public Vector3 OriginalScale { get; }
+    public Vector3 CurrentScale { get; private set; }
+
     public Color OriginalColor { get; }
     public Color OriginalEmissionColor { get; }
 
@@ -16,15 +19,26 @@ namespace ComfyLib {
     public RendererSetting(Renderer renderer) {
       _renderer = renderer;
 
+      OriginalScale = _renderer.transform.localScale;
       OriginalColor = _renderer.material.GetColor(_colorShaderId);
       OriginalEmissionColor = _renderer.material.GetColor(_emissionColorShaderId);
 
       CurrentColor = OriginalColor;
       CurrentEmissionColor = CurrentEmissionColor;
+      CurrentScale = OriginalScale;
     }
 
     public RendererSetting SetActive(bool active) {
       _renderer.gameObject.SetActive(active);
+      return this;
+    }
+
+    public RendererSetting SetScale(Vector3 scale) {
+      if (scale != CurrentScale) {
+        CurrentScale = scale;
+        _renderer.transform.localScale = scale;
+      }
+
       return this;
     }
 

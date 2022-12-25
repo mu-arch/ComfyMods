@@ -2,6 +2,9 @@
 
 namespace ComfyLib {
   public class ParticleSystemSetting {
+    public Vector3 OriginalScale { get; }
+    public Vector3 CurrentScale { get; private set; }
+
     public ParticleSystem.MinMaxGradient OriginalStartColor { get; }
     public ParticleSystem.MinMaxGradient CurrentStartColor { get; private set; }
 
@@ -12,6 +15,9 @@ namespace ComfyLib {
 
     public ParticleSystemSetting(ParticleSystem particleSystem) {
       _particleSystem = particleSystem;
+
+      OriginalScale = particleSystem.transform.localScale;
+      CurrentScale = OriginalScale;
 
       ParticleSystem.MainModule main = particleSystem.main;
       OriginalStartColor = main.startColor;
@@ -24,6 +30,15 @@ namespace ComfyLib {
 
     public ParticleSystemSetting SetActive(bool active) {
       _particleSystem.gameObject.SetActive(active);
+      return this;
+    }
+
+    public ParticleSystemSetting SetScale(Vector3 scale) {
+      if (scale != CurrentScale) {
+        CurrentScale = scale;
+        _particleSystem.transform.localScale = scale;
+      }
+
       return this;
     }
 

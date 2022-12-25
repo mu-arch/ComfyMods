@@ -27,12 +27,17 @@ namespace HeyListen {
       _harmony?.UnpatchSelf();
     }
 
+    public static void UpdateUseCustomSettings() {
+
+    }
+
     public static DemisterBallControl LocalPlayerDemisterBall { get; set; }
     public static ZNetView LocalPlayerDemisterBallNetView { get; set; }
 
     public static void UpdateLocalPlayerDemisterBall() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
         ZNetView netView = LocalPlayerDemisterBallNetView;
+        netView.m_zdo.Set(DemisterBallBodyScaleHashCode, DemisterBallBodyScale.Value);
         netView.m_zdo.Set(DemisterBallBodyColorHashCode, DemisterBallBodyColor.Value);
         netView.m_zdo.Set(DemisterBallBodyBrightnessHashCode, DemisterBallBodyBrightness.Value);
         netView.m_zdo.Set(DemisterBallPointLightColorHashCode, DemisterBallPointLightColor.Value);
@@ -44,7 +49,12 @@ namespace HeyListen {
     public static void UpdateLocalPlayerDemisterBallFlameEffects() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
         LocalPlayerDemisterBall.UpdateFlameEffects(
-            DemisterBallFlameEffectsEnabled.Value, DemisterBallFlameEffectsColor.Value);
+            DemisterBallFlameEffectsEnabled.Value,
+            DemisterBallFlameEffectsColor.Value,
+            FlameEffectsEmbersColor.Value,
+            FlameEffectsEmbersBrightness.Value,
+            FlameEffectsSparcsColor.Value,
+            FlameEffectsSparcsBrightness.Value);
       }
     }
 
@@ -52,6 +62,7 @@ namespace HeyListen {
     public static readonly int EmissionColorShaderId = Shader.PropertyToID("_EmissionColor");
 
     public static readonly int DemisterBallControlRevisionHashCode = "DemisterBallControlRevision".GetStableHashCode();
+    public static readonly int DemisterBallBodyScaleHashCode = "DemisterBallBodyScale".GetStableHashCode();
     public static readonly int DemisterBallBodyColorHashCode = "DemisterBallBodyColor".GetStableHashCode();
     public static readonly int DemisterBallBodyBrightnessHashCode = "DemisterBallBodyBrightness".GetStableHashCode();
     public static readonly int DemisterBallPointLightColorHashCode = "DemisterBallPointLightColor".GetStableHashCode();

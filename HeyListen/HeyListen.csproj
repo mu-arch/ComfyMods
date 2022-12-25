@@ -104,6 +104,7 @@
     <Compile Include="Config\GUIHelper.cs" />
     <Compile Include="HeyListen.cs" />
     <Compile Include="Patches\SEDemisterPatch.cs" />
+    <Compile Include="Patches\SEManPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

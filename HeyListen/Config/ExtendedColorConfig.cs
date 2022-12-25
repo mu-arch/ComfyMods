@@ -31,8 +31,6 @@ namespace ComfyLib {
       _alphaInput.SetValue(value.a);
       _hexInput.SetValue(value);
     }
-
-    static readonly Lazy<GUIStyle> _boxStyle = new(() => new(GUI.skin.box) { padding = new(3, 3, 3, 3) });
     
     public void DrawColor(ConfigEntryBase configEntry) {
       Color configColor = (Color) configEntry.BoxedValue;
@@ -41,14 +39,16 @@ namespace ComfyLib {
         SetValue(configColor);
       }
 
-      GUILayout.BeginVertical(_boxStyle.Value);
+      GUILayout.BeginVertical();
       GUILayout.BeginHorizontal();
       _hexInput.DrawField();
 
+      GUILayout.Space(3f);
       GUIHelper.BeginColor(configColor);
       GUILayout.Label(string.Empty, GUILayout.ExpandWidth(true));
       GUI.DrawTexture(GUILayoutUtility.GetLastRect(), _colorTexture);
       GUIHelper.EndColor();
+      GUILayout.Space(3f);
 
       if (GUILayout.Button(_showSliders ? "\u2228" : "\u2261", GUILayout.MinWidth(40f), GUILayout.ExpandWidth(false))) {
         _showSliders = !_showSliders;
@@ -61,11 +61,11 @@ namespace ComfyLib {
         GUILayout.BeginHorizontal();
 
         _redInput.DrawField();
-        GUILayout.Space(2f);
+        GUILayout.Space(3f);
         _greenInput.DrawField();
-        GUILayout.Space(2f);
+        GUILayout.Space(3f);
         _blueInput.DrawField();
-        GUILayout.Space(2f);
+        GUILayout.Space(3f);
         _alphaInput.DrawField();
 
         GUILayout.EndHorizontal();

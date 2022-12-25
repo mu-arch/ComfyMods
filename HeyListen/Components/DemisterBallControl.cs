@@ -13,6 +13,7 @@ namespace HeyListen {
 
     ZNetView _netView;
     long _lastDataRevision;
+    float _lastBodyScale;
     Color _lastBodyColor;
     float _lastBodyBrightness;
     Color _lastPointLightColor;
@@ -22,17 +23,15 @@ namespace HeyListen {
     ParticleSystemSetting _flameEffectsFlames;
     ParticleSystemSetting _flameEffectsFlamesLocal;
     ParticleSystemSetting _flameEffectsFlare;
-
-    //ParticleSystemSetting _flameEffectsEmbers;
     RendererSetting _flameEffectsEmbers;
-
-    ParticleSystemSetting _flameEffectsDistortion;
-    ParticleSystemSetting _flameEffectsEnergy;
+    RendererSetting _flameEffectsDistortion;
+    RendererSetting _flameEffectsEnergy;
     ParticleSystemSetting _flameEffectsEnergy2;
-    ParticleSystemSetting _flameEffectsSparcsFront;
+    RendererSetting _flameEffectsSparcs;
 
     void Awake() {
       _lastDataRevision = -1L;
+      _lastBodyScale = -1f;
       _lastBodyColor = NoColor;
       _lastBodyBrightness = -1f;
       _lastPointLightColor = NoColor;
@@ -41,22 +40,13 @@ namespace HeyListen {
       _effectsPointLight = new(transform.Find("effects/Point light").GetComponent<Light>());
 
       _flameEffectsFlames = new(transform.Find("effects/flame/flames").GetComponent<ParticleSystem>());
-      ZLog.Log($"Flames default is: {_flameEffectsFlames.OriginalColorOveLifetimeColor.ToDebugString()}");
-
       _flameEffectsFlamesLocal = new(transform.Find("effects/flame/flames_local").GetComponent<ParticleSystem>());
-      ZLog.Log($"FlamesLocal default is: {_flameEffectsFlamesLocal.OriginalColorOveLifetimeColor.ToDebugString()}");
-
       _flameEffectsFlare = new(transform.Find("effects/flame/flare").GetComponent<ParticleSystem>());
-      ZLog.Log($"Flare default is: {_flameEffectsFlare.OriginalStartColor.ToDebugString()}");
-
       _flameEffectsEmbers = new(transform.Find("effects/flame/embers").GetComponent<ParticleSystemRenderer>());
-      ZLog.Log($"Embers default is: {_flameEffectsEmbers.OriginalColor:F3}, {_flameEffectsEmbers.OriginalEmissionColor:F3}");
-
-      _flameEffectsDistortion = new(transform.Find("effects/flame/distortiion").GetComponent<ParticleSystem>());
-      _flameEffectsEnergy = new(transform.Find("effects/flame/energy").GetComponent<ParticleSystem>());
+      _flameEffectsDistortion = new(transform.Find("effects/flame/distortiion").GetComponent<ParticleSystemRenderer>());
+      _flameEffectsEnergy = new(transform.Find("effects/flame/energy").GetComponent<ParticleSystemRenderer>());
       _flameEffectsEnergy2 = new(transform.Find("effects/flame/energy (1)").GetComponent<ParticleSystem>());
-      ZLog.Log($"FlameEffectsEnergy2 default is: {_flameEffectsEnergy2.OriginalStartColor.ToDebugString()}");
-      _flameEffectsSparcsFront = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystem>());
+      _flameEffectsSparcs = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystemRenderer>());      
 
       _netView = GetComponent<ZNetView>();
 
@@ -88,8 +78,25 @@ namespace HeyListen {
 
       _lastDataRevision = _netView.m_zdo.m_dataRevision;
 
+      UpdateBodyScale(forceUpdate);
       UpdateBodyColor(forceUpdate);
       UpdatePointLightColor(forceUpdate);
+    }
+
+    void UpdateBodyScale(bool forceUpdate = false) {
+      float scale = _netView.m_zdo.GetFloat(DemisterBallBodyScaleHashCode, -1f);
+
+      if (!forceUpdate && scale == _lastBodyScale) {
+        return;
+      }
+
+      _lastBodyScale = scale;
+      Vector3 localScale = Vector3.one * scale;
+
+      transform.localScale = localScale;
+      _flameEffectsFlames.SetScale(localScale);
+      _flameEffectsFlamesLocal.SetScale(localScale);
+      _flameEffectsEmbers.SetScale(localScale);
     }
 
     void UpdateBodyColor(bool forceUpdate = false) {
@@ -123,7 +130,13 @@ namespace HeyListen {
       _lastPointLightColor = color;
     }
 
-    public void UpdateFlameEffects(FlameEffects effectsEnabled, Color effectsColor) {
+    public void UpdateFlameEffects(
+        FlameEffects effectsEnabled,
+        Color effectsColor,
+        Color embersColor,
+        float embersBrightness,
+        Color sparcsColor,
+        float sparcsBrightness) {
       FlameEffects effects = DemisterBallFlameEffectsEnabled.Value;
 
       // ParticleSystem.ColorOverLifetime.color
@@ -141,8 +154,8 @@ namespace HeyListen {
       // ParticleSystemRenderer.material._EmissionColor: drives this color
       _flameEffectsEmbers
           .SetActive(effects.HasFlag(FlameEffects.Embers))
-          .SetColor(effectsColor)
-          .SetEmissionColor(effectsColor);
+          .SetColor(embersColor)
+          .SetEmissionColor(embersColor * new Color(embersBrightness, embersBrightness, embersBrightness, 1f));
 
       // ParticleSystemRenderer.material._EmissionColor: drives this color
       _flameEffectsDistortion.SetActive(effects.HasFlag(FlameEffects.Distortion));
@@ -153,7 +166,10 @@ namespace HeyListen {
       _flameEffectsEnergy2.SetStartColor(effectsColor.SetAlpha(0.1f)); // <--
 
       // ParticleSystemRenderer.material._EmissionColor: drives this color
-      _flameEffectsSparcsFront.SetActive(effects.HasFlag(FlameEffects.SparcsF));
+      _flameEffectsSparcs
+          .SetActive(effects.HasFlag(FlameEffects.SparcsF))
+          .SetColor(sparcsColor)
+          .SetEmissionColor(sparcsColor * new Color(sparcsBrightness, sparcsBrightness, sparcsBrightness, 1f));
     }
   }
 }
