@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 using BepInEx.Configuration;
 
@@ -20,9 +19,11 @@ namespace ComfyLib {
     readonly FloatInputField _blueInput;
     readonly FloatInputField _alphaInput;
     readonly HexColorField _hexInput;
-    readonly Texture2D _colorTexture = new(20, 20, TextureFormat.ARGB32, mipChain: false);
+    readonly Texture2D _colorTexture = new(10, 10, TextureFormat.ARGB32, mipChain: false);
 
     bool _showSliders = false;
+
+    readonly static RectOffset _zeroOffset = new(0, 0, 0, 0);
 
     void SetValue(Color value) {
       _redInput.SetValue(value.r);
@@ -39,7 +40,11 @@ namespace ComfyLib {
         SetValue(configColor);
       }
 
-      GUILayout.BeginVertical();
+      // TODO(redseiko@): this is dumb and using it as a style in the BeginVertical doesn't seem to work.
+      RectOffset boxMargin = GUI.skin.box.margin;
+      GUI.skin.box.margin = _zeroOffset;
+
+      GUILayout.BeginVertical(GUI.skin.box);
       GUILayout.BeginHorizontal();
       _hexInput.DrawField();
 
@@ -90,6 +95,8 @@ namespace ComfyLib {
         configEntry.BoxedValue = _hexInput.CurrentValue;
         SetValue(_hexInput.CurrentValue);
       }
+
+      GUI.skin.box.margin = boxMargin;
     }
   }
 
@@ -115,7 +122,7 @@ namespace ComfyLib {
       GUILayout.BeginVertical();
 
       GUILayout.BeginHorizontal();
-      GUILayout.Label(FieldLabel, GUILayout.ExpandWidth(false));
+      GUILayout.Label(FieldLabel, GUILayout.ExpandWidth(true));
 
       GUIHelper.BeginColor(_currentColor);
       string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(50f), GUILayout.ExpandWidth(false));

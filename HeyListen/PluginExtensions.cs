@@ -35,5 +35,24 @@
 
       return defaultValue;
     }
+
+    public static bool TryGetColor(this ZDO zdo, int key, out UnityEngine.Color result) {
+      if (zdo.m_quats != null && zdo.m_quats.TryGetValue(key, out UnityEngine.Quaternion quat)) {
+        result = new(quat.x, quat.y, quat.z, quat.w);
+        return true;
+      }
+
+      result = default;
+      return false;
+    }
+
+    public static bool TryGetFloat(this ZDO zdo, int key, out float result) {
+      if (zdo.m_floats != null && zdo.m_floats.TryGetValue(key, out result)) {
+        return true;
+      }
+
+      result = default;
+      return false;
+    }
   }
 }

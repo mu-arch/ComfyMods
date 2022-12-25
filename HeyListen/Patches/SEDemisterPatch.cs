@@ -30,21 +30,11 @@ namespace HeyListen {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(SE_Demister.UpdateStatusEffect))]
     static void UpdateStatusEffectPostfix(ref SE_Demister __instance, ref bool __state) {
-      if (IsModEnabled.Value && DemisterBallUseCustomSettings.Value && __instance.m_ballInstance) {
-        if (!__state && !__instance.m_ballInstance.TryGetComponent(out DemisterBallControl _)) {
-          ZLog.Log($"Adding DemisterBallControl to m_ballInstance.");
-          DemisterBallControl demisterBallControl = __instance.m_ballInstance.AddComponent<DemisterBallControl>();
-
-          if (__instance.m_character == Player.m_localPlayer) {
-            LocalPlayerDemisterBall = demisterBallControl;
-            LocalPlayerDemisterBallNetView = __instance.m_ballInstance.GetComponent<ZNetView>();
-
-            ZLog.Log($"Setting DemisterBallControl to local config.");
-            UpdateLocalPlayerDemisterBall();
-            UpdateLocalPlayerDemisterBallFlameEffects();
-          }
-
-          demisterBallControl.UpdateDemisterBall(forceUpdate: true);
+      if (IsModEnabled.Value && __instance.m_ballInstance) {
+        if (!__state
+            && DemisterBallUseCustomSettings.Value
+            && !__instance.m_ballInstance.TryGetComponent(out DemisterBallControl _)) {
+          AddDemisterBallControl(__instance);
         }
 
         if (DemisterBallLockPosition.Value && __instance.m_character) {

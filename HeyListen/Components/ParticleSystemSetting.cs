@@ -43,14 +43,22 @@ namespace ComfyLib {
     }
 
     public ParticleSystemSetting SetStartColor(Color color) {
-      CurrentStartColor = new(color);
+      return SetStartColor(new ParticleSystem.MinMaxGradient(color));
+    }
+
+    public ParticleSystemSetting SetStartColor(ParticleSystem.MinMaxGradient color) {
+      CurrentStartColor = color;
       _particleSystem.Main().SetStartColor(CurrentStartColor);
 
       return this;
     }
 
     public ParticleSystemSetting SetColorOverLifetimeColor(Color color) {
-      CurrentColorOverLifetimeColor = new(color);
+      return SetColorOverLifetimeColor(new ParticleSystem.MinMaxGradient(color));
+    }
+
+    public ParticleSystemSetting SetColorOverLifetimeColor(ParticleSystem.MinMaxGradient color) {
+      CurrentColorOverLifetimeColor = color;
       _particleSystem.ColorOverLifetime().SetColor(CurrentColorOverLifetimeColor);
 
       return this;
