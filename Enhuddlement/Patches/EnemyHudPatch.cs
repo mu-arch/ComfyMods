@@ -110,6 +110,31 @@ namespace Enhuddlement {
       } else {
         SetupEnemyLevelStars(hudData, healthTransform);
       }
+
+      SetupAlerted(hudData);
+      SetupAware(hudData);
+    }
+
+    static void SetupAlerted(EnemyHud.HudData hudData) {
+      hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
+
+      Text alertedText = hudData.m_alerted.GetComponent<Text>();
+
+      hudData.m_alerted
+          .SetAnchorMin(new(0.5f, 1f))
+          .SetAnchorMax(new(0.5f, 1f))
+          .SetPivot(new(0.5f, 0f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
+    }
+
+    static void SetupAware(EnemyHud.HudData hudData) {
+      hudData.m_aware.SetParent(hudData.m_name.transform, worldPositionStays: false);
+      hudData.m_aware.SetAnchorMin(new(0.5f, 1f))
+          .SetAnchorMax(new(0.5f, 1f))
+          .SetPivot(new(0.5f, 0f))
+          .SetPosition(Vector2.zero)
+          .SetSizeDelta(new(30f, 30f));
     }
 
     static void SetupHealthBars(EnemyHud.HudData hudData, float healthBarWidth, float healthBarHeight) {
