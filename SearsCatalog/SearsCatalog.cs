@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 
 using BepInEx;
 
@@ -45,14 +46,64 @@ namespace SearsCatalog {
       if (Hud.m_instance && BuildHudPanelTransform) {
         BuildHudColumns = BuildHudPanelColumns.Value;
         BuildHudRows = 0;
-
+         
         float spacing = Hud.m_instance.m_pieceIconSpacing;
 
         BuildHudPanelTransform.SetSizeDelta(
-            new(BuildHudPanelColumns.Value * spacing + 35f, BuildHudPanelRows.Value * spacing + 70f));
+            new(BuildHudColumns * spacing + 35f, BuildHudPanelRows.Value * spacing + 70f));
 
         BuildHudNeedRefresh = true;
+
+        SetupPieceSelectionWindow();
       }
+    }
+
+    static RectTransform _tabBorderRectTransform;
+    static RectTransform _inputHelpLeftRectTransform;
+    static RectTransform _inputHelpRightRectTransform;
+
+    public static void SetupPieceSelectionWindow() {
+      if (!Hud.m_instance || !BuildHudPanelTransform) {
+        return;
+      }
+
+      float width = BuildHudPanelTransform.sizeDelta.x;
+      float height = BuildHudPanelTransform.sizeDelta.y;
+
+      Hud.m_instance.m_pieceCategoryRoot.Ref()?
+          .GetComponent<RectTransform>()
+          .SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width + CategoryRootSizeWidthOffset.Value);
+
+      if (!_tabBorderRectTransform) {
+        _tabBorderRectTransform =
+            Hud.m_instance.m_pieceSelectionWindow.transform
+                .Find("TabBorder").Ref()?
+                .GetComponent<RectTransform>();
+      }
+
+      _tabBorderRectTransform.Ref()?
+          .SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width + TabBorderSizeWidthOffset.Value);
+
+      float xOffset = width + InputHelpSizeDeltaOffset.Value.x;
+      float yOffset = (height / 2f) + InputHelpSizeDeltaOffset.Value.y;
+
+      if (!_inputHelpLeftRectTransform) {
+        _inputHelpLeftRectTransform =
+             Hud.m_instance.m_pieceSelectionWindow.transform
+                .Find("InputHelp/MK hints/Left").Ref()?
+                .GetComponent<RectTransform>();
+      }
+
+      _inputHelpLeftRectTransform.Ref()?.SetPosition(new(xOffset / -2f, yOffset));
+
+      if (!_inputHelpRightRectTransform) {
+        _inputHelpRightRectTransform =
+            Hud.m_instance.m_pieceSelectionWindow.transform
+                .Find("InputHelp/MK hints/Right").Ref()?
+                .GetComponent<RectTransform>();
+      }
+
+      _inputHelpRightRectTransform.Ref()?.SetPosition(new(xOffset / 2f, yOffset));
     }
 
     public static void CenterOnSelectedIndex() {

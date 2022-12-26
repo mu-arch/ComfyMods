@@ -2,12 +2,18 @@
 
 using ComfyLib;
 
+using UnityEngine;
+
 namespace SearsCatalog {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     public static ConfigEntry<int> BuildHudPanelRows { get; private set; }
     public static ConfigEntry<int> BuildHudPanelColumns { get; private set; }
+
+    public static ConfigEntry<float> CategoryRootSizeWidthOffset { get; private set; }
+    public static ConfigEntry<float> TabBorderSizeWidthOffset { get; private set; }
+    public static ConfigEntry<Vector2> InputHelpSizeDeltaOffset { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -31,6 +37,33 @@ namespace SearsCatalog {
               new AcceptableValueRange<int>(1, 26));
 
       BuildHudPanelColumns.SettingChanged += (_, _) => SearsCatalog.SetupBuildHudPanel();
+
+      CategoryRootSizeWidthOffset =
+          config.BindInOrder(
+              "BuildHud.Panel.PieceSelection",
+              "categoryRootSizeWidthOffset",
+              defaultValue: -155f,
+              "BuildHud.Panel.CategoryRoot.sizeDelta width offset relative to panel width.");
+
+      CategoryRootSizeWidthOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();
+
+      TabBorderSizeWidthOffset =
+          config.BindInOrder(
+              "BuildHud.Panel.PieceSelection",
+              "tabBorderSizeWidthOffset",
+              defaultValue: -45f,
+              "BuildHud.Panel.PieceSelection.TabBorder.sizeDelta width offset relative to panel width.");
+
+      TabBorderSizeWidthOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();
+
+      InputHelpSizeDeltaOffset =
+          config.BindInOrder(
+              "BuildHud.Panel.PieceSelection",
+              "inputHelpSizeWidthOffset",
+              defaultValue: new Vector2(-85f, -40f),
+              "BuildHud.Panel.PieceSelection.InputHelp.sizeDelta offset relative to panel size.");
+
+      InputHelpSizeDeltaOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();
     }
   }
 }

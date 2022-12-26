@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
@@ -19,8 +20,13 @@ namespace SearsCatalog {
     static void AwakePostfix(ref Hud __instance) {
       if (IsModEnabled.Value) {
         SetupPieceSelectionWindow(__instance);
-        SearsCatalog.SetupBuildHudPanel();
+        __instance.StartCoroutine(SetupBuildHudPanelDelayed(1f));
       }
+    }
+
+    static IEnumerator SetupBuildHudPanelDelayed(float delay) {
+      yield return new WaitForSeconds(seconds: delay);
+      SearsCatalog.SetupBuildHudPanel();
     }
 
     static void SetupPieceSelectionWindow(Hud hud) {
