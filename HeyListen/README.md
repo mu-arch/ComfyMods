@@ -2,6 +2,12 @@
 
 *Wisp configuration and control.*
 
+![Splash](https://i.imgur.com/rkMGerT.png)
+
+## Configuration
+
+![Configuration](https://i.imgur.com/Duojf6X.png)
+
 ## Installation
 
 ### Manual

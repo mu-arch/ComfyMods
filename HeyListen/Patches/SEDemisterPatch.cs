@@ -31,10 +31,10 @@ namespace HeyListen {
     [HarmonyPatch(nameof(SE_Demister.UpdateStatusEffect))]
     static void UpdateStatusEffectPostfix(ref SE_Demister __instance, ref bool __state) {
       if (IsModEnabled.Value && __instance.m_ballInstance) {
-        if (!__state
-            && DemisterBallUseCustomSettings.Value
-            && !__instance.m_ballInstance.TryGetComponent(out DemisterBallControl _)) {
-          AddDemisterBallControl(__instance);
+        if ((!__state || !LocalPlayerDemisterBall)
+            && __instance.m_character == Player.m_localPlayer
+            && __instance.m_ballInstance.TryGetComponent(out DemisterBallControl demisterBallControl)) {
+          SetLocalPlayerDemisterBallControl(demisterBallControl);
         }
 
         if (DemisterBallLockPosition.Value && __instance.m_character) {

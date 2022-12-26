@@ -20,6 +20,13 @@ namespace ComfyLib {
       CurrentColor = OriginalColor;
     }
 
+    public LightSetting Reset() {
+      SetScale(OriginalScale);
+      SetColor(OriginalColor);
+
+      return this;
+    }
+
     public LightSetting SetScale(Vector3 scale) {
       if (scale != CurrentScale) {
         CurrentScale = scale;

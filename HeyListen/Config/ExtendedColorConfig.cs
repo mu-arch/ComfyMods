@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 using BepInEx.Configuration;
 
@@ -23,8 +24,6 @@ namespace ComfyLib {
 
     bool _showSliders = false;
 
-    readonly static RectOffset _zeroOffset = new(0, 0, 0, 0);
-
     void SetValue(Color value) {
       _redInput.SetValue(value.r);
       _greenInput.SetValue(value.g);
@@ -40,10 +39,6 @@ namespace ComfyLib {
         SetValue(configColor);
       }
 
-      // TODO(redseiko@): this is dumb and using it as a style in the BeginVertical doesn't seem to work.
-      RectOffset boxMargin = GUI.skin.box.margin;
-      GUI.skin.box.margin = _zeroOffset;
-
       GUILayout.BeginVertical(GUI.skin.box);
       GUILayout.BeginHorizontal();
       _hexInput.DrawField();
@@ -51,7 +46,11 @@ namespace ComfyLib {
       GUILayout.Space(3f);
       GUIHelper.BeginColor(configColor);
       GUILayout.Label(string.Empty, GUILayout.ExpandWidth(true));
-      GUI.DrawTexture(GUILayoutUtility.GetLastRect(), _colorTexture);
+
+      if (Event.current.type == EventType.Repaint) {
+        GUI.DrawTexture(GUILayoutUtility.GetLastRect(), _colorTexture);
+      }
+
       GUIHelper.EndColor();
       GUILayout.Space(3f);
 
@@ -95,8 +94,6 @@ namespace ComfyLib {
         configEntry.BoxedValue = _hexInput.CurrentValue;
         SetValue(_hexInput.CurrentValue);
       }
-
-      GUI.skin.box.margin = boxMargin;
     }
   }
 
@@ -125,7 +122,7 @@ namespace ComfyLib {
       GUILayout.Label(FieldLabel, GUILayout.ExpandWidth(true));
 
       GUIHelper.BeginColor(_currentColor);
-      string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(50f), GUILayout.ExpandWidth(false));
+      string textValue = GUILayout.TextField(CurrentText, GUILayout.MaxWidth(45f), GUILayout.ExpandWidth(true));
       GUIHelper.EndColor();
 
       GUILayout.EndHorizontal();
@@ -174,7 +171,7 @@ namespace ComfyLib {
 
     public void DrawField() {
       GUIHelper.BeginColor(_textColor);
-      string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(100f), GUILayout.ExpandWidth(false));
+      string textValue = GUILayout.TextField(CurrentText, GUILayout.Width(90f), GUILayout.ExpandWidth(false));
       GUIHelper.EndColor();
 
       if (textValue == CurrentText) {

@@ -103,6 +103,7 @@
     <Compile Include="Config\GUIFocus.cs" />
     <Compile Include="Config\GUIHelper.cs" />
     <Compile Include="HeyListen.cs" />
+    <Compile Include="Patches\DemisterPatch.cs" />
     <Compile Include="Patches\SEDemisterPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />

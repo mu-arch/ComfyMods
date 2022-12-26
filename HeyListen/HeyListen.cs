@@ -32,51 +32,62 @@ namespace HeyListen {
 
     public static void UpdatePlayerDemisterBall() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
-        ZNetView netView = LocalPlayerDemisterBallNetView;
-        netView.m_zdo.Set(DemisterBallBodyScaleHashCode, DemisterBallBodyScale.Value);
-        netView.m_zdo.Set(DemisterBallBodyColorHashCode, DemisterBallBodyColor.Value);
-        netView.m_zdo.Set(DemisterBallBodyBrightnessHashCode, DemisterBallBodyBrightness.Value);
-        netView.m_zdo.Set(DemisterBallPointLightColorHashCode, DemisterBallPointLightColor.Value);
-
+        UpdateDemisterBallControlZdo(LocalPlayerDemisterBallNetView.m_zdo);
         LocalPlayerDemisterBall.UpdateDemisterBall(forceUpdate: true);
       }
     }
 
     public static void UpdatePlayerDemisterBallFlameEffects() {
       if (LocalPlayerDemisterBall && LocalPlayerDemisterBallNetView) {
-        ZDO zdo = LocalPlayerDemisterBallNetView.m_zdo;
-
-        zdo.Set(FlameEffectsEnabledHashCode, (int) DemisterBallFlameEffectsEnabled.Value);
-        zdo.Set(FlameEffectsColorHashCode, DemisterBallFlameEffectsColor.Value);
-        zdo.Set(FlameEffectsEmbersColorHashCode, FlameEffectsEmbersColor.Value);
-        zdo.Set(FlameEffectsEmbersBrightnessHashCode, FlameEffectsEmbersBrightness.Value);
-        zdo.Set(FlameEffectsSparcsColorHashCode, FlameEffectsSparcsColor.Value);
-        zdo.Set(FlameEffectsSparcsBrightnessHashCode, FlameEffectsSparcsBrightness.Value);
-
+        UpdateDemisterBallControlZdo(LocalPlayerDemisterBallNetView.m_zdo);
         LocalPlayerDemisterBall.UpdateFlameEffects();
       }
     }
 
     public static void UpdateUseCustomSettings() {
-      foreach (DemisterBallControl control in DemisterBallControl.Instances) {
-        Destroy(control.gameObject);
+      foreach (Demister demister in Demister.m_instances) {
+        GameObject prefab = demister.transform.root.gameObject;
+
+        if (!prefab.name.StartsWith("demister_ball", System.StringComparison.Ordinal)) {
+          continue;
+        }
+
+        if (prefab.TryGetComponent(out DemisterBallControl demisterBallControl)) {
+          if (!DemisterBallUseCustomSettings.Value) {
+            Destroy(demisterBallControl);
+          }
+        } else if (DemisterBallUseCustomSettings.Value) {
+          prefab.AddComponent<DemisterBallControl>();
+        }
+      }
+
+      if (!DemisterBallUseCustomSettings.Value) {
+        LocalPlayerDemisterBall = default;
+        LocalPlayerDemisterBallNetView = default;
       }
     }
 
-    public static void AddDemisterBallControl(SE_Demister demister) {
-      ZLog.Log($"Adding DemisterBallControl to m_ballInstance.");
-      DemisterBallControl demisterBallControl = demister.m_ballInstance.AddComponent<DemisterBallControl>();
+    public static void SetLocalPlayerDemisterBallControl(DemisterBallControl demisterBallControl) {
+      ZLog.Log($"Setting DemisterBallControl to local config.");
+      LocalPlayerDemisterBall = demisterBallControl;
+      LocalPlayerDemisterBallNetView = demisterBallControl.NetView;
 
-      if (demister.m_character == Player.m_localPlayer) {
-        LocalPlayerDemisterBall = demisterBallControl;
-        LocalPlayerDemisterBallNetView = demister.m_ballInstance.GetComponent<ZNetView>();
+      UpdateDemisterBallControlZdo(LocalPlayerDemisterBallNetView.m_zdo);
+      LocalPlayerDemisterBall.UpdateDemisterBall(forceUpdate: true);
+    }
 
-        ZLog.Log($"Setting DemisterBallControl to local config.");
-        UpdatePlayerDemisterBall();
-        UpdatePlayerDemisterBallFlameEffects();
-      } else {
-        demisterBallControl.UpdateDemisterBall(forceUpdate: true);
-      }
+    static void UpdateDemisterBallControlZdo(ZDO zdo) {
+      zdo.Set(DemisterBallBodyScaleHashCode, DemisterBallBodyScale.Value);
+      zdo.Set(DemisterBallBodyColorHashCode, DemisterBallBodyColor.Value);
+      zdo.Set(DemisterBallBodyBrightnessHashCode, DemisterBallBodyBrightness.Value);
+      zdo.Set(DemisterBallPointLightColorHashCode, DemisterBallPointLightColor.Value);
+
+      zdo.Set(FlameEffectsEnabledHashCode, (int) DemisterBallFlameEffectsEnabled.Value);
+      zdo.Set(FlameEffectsColorHashCode, DemisterBallFlameEffectsColor.Value);
+      zdo.Set(FlameEffectsEmbersColorHashCode, FlameEffectsEmbersColor.Value);
+      zdo.Set(FlameEffectsEmbersBrightnessHashCode, FlameEffectsEmbersBrightness.Value);
+      zdo.Set(FlameEffectsSparcsColorHashCode, FlameEffectsSparcsColor.Value);
+      zdo.Set(FlameEffectsSparcsBrightnessHashCode, FlameEffectsSparcsBrightness.Value);
     }
 
     public static readonly int ColorShaderId = Shader.PropertyToID("_Color");

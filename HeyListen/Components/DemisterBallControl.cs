@@ -1,7 +1,6 @@
-﻿using ComfyLib;
+﻿using System.Collections;
 
-using System.Collections;
-using System.Collections.Generic;
+using ComfyLib;
 
 using UnityEngine;
 
@@ -10,10 +9,10 @@ using static HeyListen.PluginConfig;
 
 namespace HeyListen {
   public class DemisterBallControl : MonoBehaviour {
-    public static List<DemisterBallControl> Instances { get; } = new(capacity: 4);
     public static readonly Color NoColor = new(-1f, -1f, -1f, -1f);
 
-    ZNetView _netView;
+    public ZNetView NetView { get; private set; }
+
     long _lastDataRevision;
     float _lastBodyScale;
     Color _lastBodyColor;
@@ -32,8 +31,6 @@ namespace HeyListen {
     RendererSetting _flameEffectsSparcs;
 
     void Awake() {
-      Instances.Add(this);
-
       _lastDataRevision = -1L;
       _lastBodyScale = -1f;
       _lastBodyColor = NoColor;
@@ -52,9 +49,9 @@ namespace HeyListen {
       _flameEffectsEnergy2 = new(transform.Find("effects/flame/energy (1)").GetComponent<ParticleSystem>());
       _flameEffectsSparcs = new(transform.Find("effects/flame/sparcs_front").GetComponent<ParticleSystemRenderer>());      
 
-      _netView = GetComponent<ZNetView>();
+      NetView = GetComponent<ZNetView>();
 
-      if (!_netView || !_netView.IsValid()) {
+      if (!NetView || !NetView.IsValid()) {
         return;
       }
 
@@ -62,29 +59,41 @@ namespace HeyListen {
     }
 
     void OnDestroy() {
-      Instances.Remove(this);
+      transform.localScale = Vector3.one;
+
+      _demisterBallRenderer.Reset();
+      _effectsPointLight.Reset();
+
+      _flameEffectsFlames.Reset();
+      _flameEffectsFlames2.Reset();
+      _flameEffectsFlare.Reset();
+      _flameEffectsEmbers.Reset();
+      _flameEffectsDistortion.Reset();
+      _flameEffectsEnergy.Reset();
+      _flameEffectsEnergy2.Reset();
+      _flameEffectsSparcs.Reset();
     }
 
     IEnumerator UpdateDemisterBallCoroutine() {
       ZLog.Log($"Starting UpdateDemisterBallCoroutine.");
       WaitForSeconds waitInterval = new(seconds: 2f);
 
-      while (_netView && _netView.IsValid()) {
+      while (NetView && NetView.IsValid()) {
         UpdateDemisterBall(forceUpdate: false);
         yield return waitInterval;
       }
     }
 
     public void UpdateDemisterBall(bool forceUpdate = false) {
-      if (!_netView || !_netView.IsValid() || !IsModEnabled.Value) {
+      if (!NetView || !NetView.IsValid() || !IsModEnabled.Value) {
         return;
       }
 
-      if (!forceUpdate && _lastDataRevision >= _netView.m_zdo.m_dataRevision) {
+      if (!forceUpdate && _lastDataRevision >= NetView.m_zdo.m_dataRevision) {
         return;
       }
 
-      _lastDataRevision = _netView.m_zdo.m_dataRevision;
+      _lastDataRevision = NetView.m_zdo.m_dataRevision;
 
       UpdateBodyScale(forceUpdate);
       UpdateBodyColor(forceUpdate);
@@ -93,7 +102,7 @@ namespace HeyListen {
     }
 
     void UpdateBodyScale(bool forceUpdate = false) {
-      float scale = _netView.m_zdo.GetFloat(DemisterBallBodyScaleHashCode, -1f);
+      float scale = NetView.m_zdo.GetFloat(DemisterBallBodyScaleHashCode, -1f);
 
       if (!forceUpdate && scale == _lastBodyScale) {
         return;
@@ -114,8 +123,8 @@ namespace HeyListen {
     }
 
     void UpdateBodyColor(bool forceUpdate = false) {
-      Color color = _netView.m_zdo.GetColor(DemisterBallBodyColorHashCode, NoColor);
-      float brightness = Mathf.Clamp(_netView.m_zdo.GetFloat(DemisterBallBodyBrightnessHashCode, -1f), -1f, 2f);
+      Color color = NetView.m_zdo.GetColor(DemisterBallBodyColorHashCode, NoColor);
+      float brightness = Mathf.Clamp(NetView.m_zdo.GetFloat(DemisterBallBodyBrightnessHashCode, -1f), -1f, 2f);
 
       if (!forceUpdate && color == _lastBodyColor && brightness == _lastBodyBrightness) {
         return;
@@ -134,7 +143,7 @@ namespace HeyListen {
     }
 
     void UpdatePointLightColor(bool forceUpdate) {
-      Color color = _netView.m_zdo.GetColor(DemisterBallPointLightColorHashCode, NoColor);
+      Color color = NetView.m_zdo.GetColor(DemisterBallPointLightColorHashCode, NoColor);
 
       if (!forceUpdate && color == _lastPointLightColor) {
         return;
@@ -146,7 +155,7 @@ namespace HeyListen {
 
     public void UpdateFlameEffects() {
       FlameEffects effectsEnabled =
-           (FlameEffects) _netView.m_zdo.GetInt(FlameEffectsEnabledHashCode, (int) DefaultFlameEffects);
+           (FlameEffects) NetView.m_zdo.GetInt(FlameEffectsEnabledHashCode, (int) DefaultFlameEffects);
 
       _flameEffectsFlames.SetActive(effectsEnabled.HasFlag(FlameEffects.Flames));
       _flameEffectsFlames2.SetActive(effectsEnabled.HasFlag(FlameEffects.FlamesL));
@@ -172,7 +181,7 @@ namespace HeyListen {
       // ParticleSystemRenderer.material._EmissionColor: drives this color
       _flameEffectsSparcs.SetActive(effectsEnabled.HasFlag(FlameEffects.Sparcs));
 
-      if (_netView.m_zdo.TryGetColor(FlameEffectsColorHashCode, out Color effectsColor)) {
+      if (NetView.m_zdo.TryGetColor(FlameEffectsColorHashCode, out Color effectsColor)) {
         _flameEffectsFlames.SetColorOverLifetimeColor(effectsColor);
         _flameEffectsFlames2.SetColorOverLifetimeColor(effectsColor);
         _flameEffectsFlare.SetStartColor(effectsColor.SetAlpha(0.1f)); // <--
@@ -192,8 +201,8 @@ namespace HeyListen {
     }
 
     void UpdateFlameEffectsRenderer(RendererSetting rendererSetting, int colorHashCode, int brightnessHashCode) {
-      if (_netView.m_zdo.TryGetColor(colorHashCode, out Color color)
-          && _netView.m_zdo.TryGetFloat(brightnessHashCode, out float brightness)) {
+      if (NetView.m_zdo.TryGetColor(colorHashCode, out Color color)
+          && NetView.m_zdo.TryGetFloat(brightnessHashCode, out float brightness)) {
         rendererSetting
             .SetColor(color)
             .SetEmissionColor(color * new Color(brightness, brightness, brightness, 1f));

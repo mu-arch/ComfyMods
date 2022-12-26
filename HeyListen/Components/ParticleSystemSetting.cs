@@ -28,6 +28,14 @@ namespace ComfyLib {
       CurrentColorOverLifetimeColor = OriginalColorOveLifetimeColor;
     }
 
+    public ParticleSystemSetting Reset() {
+      SetScale(OriginalScale);
+      SetStartColor(OriginalStartColor);
+      SetColorOverLifetimeColor(OriginalColorOveLifetimeColor);
+
+      return this;
+    }
+
     public ParticleSystemSetting SetActive(bool active) {
       _particleSystem.gameObject.SetActive(active);
       return this;

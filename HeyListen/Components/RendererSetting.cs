@@ -23,9 +23,17 @@ namespace ComfyLib {
       OriginalColor = _renderer.material.GetColor(_colorShaderId);
       OriginalEmissionColor = _renderer.material.GetColor(_emissionColorShaderId);
 
+      CurrentScale = OriginalScale;
       CurrentColor = OriginalColor;
       CurrentEmissionColor = CurrentEmissionColor;
-      CurrentScale = OriginalScale;
+    }
+
+    public RendererSetting Reset() {
+      SetScale(OriginalScale);
+      SetColor(OriginalColor);
+      SetEmissionColor(OriginalEmissionColor);
+
+      return this;
     }
 
     public RendererSetting SetActive(bool active) {
