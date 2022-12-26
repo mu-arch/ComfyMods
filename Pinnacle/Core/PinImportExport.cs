@@ -135,7 +135,7 @@ namespace Pinnacle {
       }
 
       if (args.Length >= 3) {
-        pins = FilterPins(pins, args[3]);
+        pins = FilterPins(pins, args[2]);
       }
 
       LogInfo($"Imported {pins.Count} pins from file: {filename}");
