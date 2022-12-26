@@ -45,6 +45,8 @@ namespace HeyListen {
     }
 
     public static void UpdateUseCustomSettings() {
+      bool useCustomSettings = IsModEnabled.Value && DemisterBallUseCustomSettings.Value;
+
       foreach (Demister demister in Demister.m_instances) {
         GameObject prefab = demister.transform.root.gameObject;
 
@@ -53,15 +55,15 @@ namespace HeyListen {
         }
 
         if (prefab.TryGetComponent(out DemisterBallControl demisterBallControl)) {
-          if (!DemisterBallUseCustomSettings.Value) {
+          if (!useCustomSettings) {
             Destroy(demisterBallControl);
           }
-        } else if (DemisterBallUseCustomSettings.Value) {
+        } else if (useCustomSettings) {
           prefab.AddComponent<DemisterBallControl>();
         }
       }
 
-      if (!DemisterBallUseCustomSettings.Value) {
+      if (useCustomSettings) {
         LocalPlayerDemisterBall = default;
         LocalPlayerDemisterBallNetView = default;
       }

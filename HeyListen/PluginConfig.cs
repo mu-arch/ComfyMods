@@ -41,6 +41,8 @@ namespace HeyListen {
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      IsModEnabled.SettingChanged += (_, _) => HeyListen.UpdateUseCustomSettings();
+
       DemisterBallLockPosition =
           config.BindInOrder(
               "DemisterBall",
