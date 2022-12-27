@@ -11,6 +11,8 @@ namespace SearsCatalog {
     public static ConfigEntry<int> BuildHudPanelRows { get; private set; }
     public static ConfigEntry<int> BuildHudPanelColumns { get; private set; }
 
+    public static ConfigEntry<Vector2> BuildHudPanelPosition { get; private set; }
+
     public static ConfigEntry<float> CategoryRootSizeWidthOffset { get; private set; }
     public static ConfigEntry<float> TabBorderSizeWidthOffset { get; private set; }
     public static ConfigEntry<Vector2> InputHelpSizeDeltaOffset { get; private set; }
@@ -37,6 +39,13 @@ namespace SearsCatalog {
               new AcceptableValueRange<int>(1, 26));
 
       BuildHudPanelColumns.SettingChanged += (_, _) => SearsCatalog.SetupBuildHudPanel();
+
+      BuildHudPanelPosition =
+          config.BindInOrder(
+              "BuildHud.Panel",
+              "buildHudPanelPosition",
+              Vector2.zero,
+              "BuildHud.Panel position relative to center of the screen.");
 
       CategoryRootSizeWidthOffset =
           config.BindInOrder(

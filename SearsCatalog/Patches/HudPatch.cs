@@ -62,10 +62,13 @@ namespace SearsCatalog {
       scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
 
       GameObject panel = hud.m_pieceSelectionWindow.transform.parent.gameObject;
+
       RectTransform panelTransform = panel.RectTransform();
+      panelTransform.SetPosition(BuildHudPanelPosition.Value);
 
       PanelDragger panelDragger = panel.AddComponent<PanelDragger>();
       panelDragger.TargetRectTransform = panelTransform;
+      panelDragger.OnPanelEndDrag += (_, position) => BuildHudPanelPosition.Value = position;
 
       SearsCatalog.BuildHudPanelTransform = panelTransform;
       SearsCatalog.BuildHudScrollbar = scrollbar;

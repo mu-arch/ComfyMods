@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 
 using BepInEx;
 
@@ -19,16 +18,16 @@ namespace SearsCatalog {
     public const string PluginName = "SearsCatalog";
     public const string PluginVersion = "1.0.0";
 
-    Harmony _harmony;
+    public static Harmony HarmonyInstance { get; private set; }
 
     public void Awake() {
       BindConfig(Config);
 
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      HarmonyInstance = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
     public void OnDestroy() {
-      _harmony?.UnpatchSelf();
+      HarmonyInstance?.UnpatchSelf();
     }
 
     public static int BuildHudColumns { get; set; } = 13;
