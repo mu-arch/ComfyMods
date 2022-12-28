@@ -16,6 +16,12 @@
 
 ## Changelog
 
+### 2.5.0
+
+  * Removed `ComfyMods-ComfyBuildExpansion-1.1.0` and replaced with `ComfyMods-SearsCatalog-1.0.0` (better).
+  * Added `JereKuusela-Server_Sync_Fix-1.2.0`.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.4.0
 
   * Removed `ComfyMods-ComfyNameYourShip-1.0.0` from dependencies list as it is causing boat flipping issues.
