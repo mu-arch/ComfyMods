@@ -41,14 +41,14 @@ namespace SearsCatalog {
       BuildHudPanelColumns.SettingChanged += (_, _) => SearsCatalog.SetupBuildHudPanel();
 
       BuildHudPanelPosition =
-          config.BindInOrder(
+          config.BindVector2InOrder(
               "BuildHud.Panel",
               "buildHudPanelPosition",
               Vector2.zero,
               "BuildHud.Panel position relative to center of the screen.");
 
       CategoryRootSizeWidthOffset =
-          config.BindInOrder(
+          config.BindFloatInOrder(
               "BuildHud.Panel.PieceSelection",
               "categoryRootSizeWidthOffset",
               defaultValue: -155f,
@@ -57,7 +57,7 @@ namespace SearsCatalog {
       CategoryRootSizeWidthOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();
 
       TabBorderSizeWidthOffset =
-          config.BindInOrder(
+          config.BindFloatInOrder(
               "BuildHud.Panel.PieceSelection",
               "tabBorderSizeWidthOffset",
               defaultValue: -45f,
@@ -66,7 +66,7 @@ namespace SearsCatalog {
       TabBorderSizeWidthOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();
 
       InputHelpSizeDeltaOffset =
-          config.BindInOrder(
+          config.BindVector2InOrder(
               "BuildHud.Panel.PieceSelection",
               "inputHelpSizeWidthOffset",
               defaultValue: new Vector2(-85f, -40f),
