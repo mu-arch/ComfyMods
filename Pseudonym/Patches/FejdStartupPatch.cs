@@ -5,12 +5,6 @@ using UnityEngine;
 namespace Pseudonym {
   [HarmonyPatch(typeof(FejdStartup))]
   static class FejdStartupPatch {
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(FejdStartup.Awake))]
-    static void AwakePostfix(ref FejdStartup __instance) {
-      //
-    }
-
     static PlayerProfile _editingPlayerProfile;
 
     [HarmonyPrefix]
@@ -27,23 +21,35 @@ namespace Pseudonym {
         __instance.m_csNewCharacterName.text = profile.GetName();
         __instance.SetupCharacterPreview(profile);
 
-        Player player = __instance.m_playerInstance.Ref()?.GetComponent<Player>();
-
-        PlayerCustomizaton playerCustomization =
-            __instance.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true);
-
-        if (player && playerCustomization) {
-          float skinHue =
-              InverseLerp(playerCustomization.m_skinColor0, playerCustomization.m_skinColor1, player.m_skinColor);
-          ZLog.Log($"SkinHue is: {skinHue}");
-          playerCustomization.m_skinHue.SetValueWithoutNotify(skinHue);
-        }
+        SetupPlayerCustomization(
+            __instance.m_playerInstance.Ref()?.GetComponent<Player>(),
+            __instance.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true));
 
         return false;
       }
 
       _editingPlayerProfile = null;
       return true;
+    }
+
+    static void SetupPlayerCustomization(Player player, PlayerCustomizaton customization) {
+      if (player && customization) {
+        float skinHue =
+            InverseLerp(
+                customization.m_skinColor0, customization.m_skinColor1, Utils.Vec3ToColor(player.m_skinColor));
+
+        customization.m_skinHue.SetValueWithoutNotify(skinHue);
+
+        float hairLevel = player.m_hairColor.x;
+        Color hairColor = Utils.Vec3ToColor(player.m_hairColor / hairLevel);
+        float hairTone = InverseLerp(customization.m_hairColor0, customization.m_hairColor1, hairColor);
+
+        customization.m_hairTone.SetValueWithoutNotify(hairTone);
+        customization.m_hairLevel.SetValueWithoutNotify(
+            Mathf.InverseLerp(customization.m_hairMinLevel, customization.m_hairMaxLevel, hairLevel));
+      } else {
+        ZLog.LogWarning($"Could not setup player customization for editing.");
+      }
     }
 
     static float InverseLerp(Vector4 a, Vector4 b, Vector4 value) {
@@ -56,21 +62,21 @@ namespace Pseudonym {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(FejdStartup.OnNewCharacterDone))]
     static bool OnNewCharacterDonePrefix(ref FejdStartup __instance) {
-      if (_editingPlayerProfile == null) {
+      if (_editingPlayerProfile != null) {
+        string playerName = __instance.m_csNewCharacterName.text;
+        ZLog.Log($"Saving existing player: {_editingPlayerProfile.GetName()} -> {playerName}");
+
+        _editingPlayerProfile.SetName(playerName);
+        _editingPlayerProfile.SavePlayerData(__instance.m_playerInstance.GetComponent<Player>());
+        _editingPlayerProfile.SavePlayerToDisk();
+        _editingPlayerProfile = null;
+
+        __instance.m_selectCharacterPanel.SetActive(true);
+        __instance.m_newCharacterPanel.SetActive(false);
+        __instance.UpdateCharacterList();
+
         return true;
       }
-
-      string playerName = __instance.m_csNewCharacterName.text;
-      ZLog.Log($"Saving existing player: {_editingPlayerProfile.GetName()} -> {playerName}");
-
-      _editingPlayerProfile.SetName(playerName);
-      _editingPlayerProfile.SavePlayerData(__instance.m_playerInstance.GetComponent<Player>());
-      _editingPlayerProfile.SavePlayerToDisk();
-      _editingPlayerProfile = null;
-
-      __instance.m_selectCharacterPanel.SetActive(true);
-      __instance.m_newCharacterPanel.SetActive(false);
-      __instance.UpdateCharacterList();
 
       return false;
     }
