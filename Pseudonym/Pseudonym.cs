@@ -4,6 +4,8 @@ using BepInEx;
 
 using HarmonyLib;
 
+using static Pseudonym.PluginConfig;
+
 namespace Pseudonym {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class Pseudonym : BaseUnityPlugin {
@@ -14,6 +16,8 @@ namespace Pseudonym {
     Harmony _harmony;
 
     public void Awake() {
+      BindConfig(Config);
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
@@ -21,6 +25,4 @@ namespace Pseudonym {
       _harmony?.UnpatchSelf();
     }
   }
-
-
 }

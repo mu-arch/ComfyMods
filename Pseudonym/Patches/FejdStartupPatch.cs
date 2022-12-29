@@ -1,35 +1,52 @@
 ﻿using HarmonyLib;
 
 using UnityEngine;
+using UnityEngine.UI;
+
+using static Pseudonym.PluginConfig;
 
 namespace Pseudonym {
   [HarmonyPatch(typeof(FejdStartup))]
   static class FejdStartupPatch {
     static PlayerProfile _editingPlayerProfile;
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(FejdStartup.OnCharacterNew))]
-    static bool OnCharacterNewPrefix(ref FejdStartup __instance) {
-      if (Input.GetKey(KeyCode.LeftShift) && __instance.TryGetPlayerProfile(out PlayerProfile profile)) {
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(FejdStartup.Start))]
+    static void StartPostfix(ref FejdStartup __instance) {
+      if (IsModEnabled.Value) {
+        CreateEditButton(__instance);
+      }
+    }
+
+    static void CreateEditButton(FejdStartup fejdStartup) {
+      Button editButton =
+          UnityEngine.Object.Instantiate(fejdStartup.m_csNewButton, fejdStartup.m_csNewButton.transform.parent);
+
+      editButton.onClick.RemoveAllListeners();
+      editButton.onClick.AddListener(() => OnEditCharacter(fejdStartup));
+
+      editButton.GetComponentInChildren<Text>().text = "Edit";
+      editButton.GetComponent<RectTransform>().anchoredPosition += new Vector2(200f, 0f);
+    }
+
+    static void OnEditCharacter(FejdStartup fejdStartup) {
+      if (fejdStartup.TryGetPlayerProfile(out PlayerProfile profile)) {
         ZLog.Log($"Editing existing player: {profile.GetName()}");
         _editingPlayerProfile = profile;
 
-        __instance.m_newCharacterPanel.SetActive(true);
-        __instance.m_newCharacterError.SetActive(false);
-        __instance.m_selectCharacterPanel.SetActive(false);
+        fejdStartup.m_newCharacterPanel.SetActive(true);
+        fejdStartup.m_newCharacterError.SetActive(false);
+        fejdStartup.m_selectCharacterPanel.SetActive(false);
 
-        __instance.m_csNewCharacterName.text = profile.GetName();
-        __instance.SetupCharacterPreview(profile);
+        fejdStartup.m_csNewCharacterName.text = profile.GetName();
+        fejdStartup.SetupCharacterPreview(profile);
 
         SetupPlayerCustomization(
-            __instance.m_playerInstance.Ref()?.GetComponent<Player>(),
-            __instance.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true));
-
-        return false;
+            fejdStartup.m_playerInstance.Ref()?.GetComponent<Player>(),
+            fejdStartup.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true));
+      } else {
+        _editingPlayerProfile = null;
       }
-
-      _editingPlayerProfile = null;
-      return true;
     }
 
     static void SetupPlayerCustomization(Player player, PlayerCustomizaton customization) {
@@ -78,10 +95,10 @@ namespace Pseudonym {
         __instance.m_newCharacterPanel.SetActive(false);
         __instance.UpdateCharacterList();
 
-        return true;
+        return false;
       }
 
-      return false;
+      return true;
     }
 
     [HarmonyPrefix]
