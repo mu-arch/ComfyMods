@@ -34,6 +34,9 @@ namespace Pseudonym {
 
     static void SetupPlayerCustomization(Player player, PlayerCustomizaton customization) {
       if (player && customization) {
+        customization.m_maleToggle.SetIsOnWithoutNotify(player.m_modelIndex == 0);
+        customization.m_femaleToggle.SetIsOnWithoutNotify(player.m_modelIndex == 1);
+
         float skinHue =
             InverseLerp(
                 customization.m_skinColor0, customization.m_skinColor1, Utils.Vec3ToColor(player.m_skinColor));
