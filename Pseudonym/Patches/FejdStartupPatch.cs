@@ -8,6 +8,7 @@ using static Pseudonym.PluginConfig;
 namespace Pseudonym {
   [HarmonyPatch(typeof(FejdStartup))]
   static class FejdStartupPatch {
+    static Button _editButton;
     static PlayerProfile _editingPlayerProfile;
 
     [HarmonyPostfix]
@@ -19,14 +20,22 @@ namespace Pseudonym {
     }
 
     static void CreateEditButton(FejdStartup fejdStartup) {
-      Button editButton =
+      UnityEngine.Object.Destroy(_editButton);
+
+      _editButton =
           UnityEngine.Object.Instantiate(fejdStartup.m_csNewButton, fejdStartup.m_csNewButton.transform.parent);
 
-      editButton.onClick.RemoveAllListeners();
-      editButton.onClick.AddListener(() => OnEditCharacter(fejdStartup));
+      _editButton.onClick.RemoveAllListeners();
+      _editButton.onClick.AddListener(() => OnEditCharacter(fejdStartup));
 
-      editButton.GetComponentInChildren<Text>().text = "Edit";
-      editButton.GetComponent<RectTransform>().anchoredPosition += new Vector2(200f, 0f);
+      _editButton.GetComponentInChildren<Text>().text = "Edit";
+      _editButton.GetComponent<RectTransform>().anchoredPosition += new Vector2(190f, 0f);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(FejdStartup.UpdateCharacterList))]
+    static void UpdateCharacterList(ref FejdStartup __instance) {
+      _editButton.Ref()?.gameObject.SetActive(__instance.m_profiles.Count > 0);
     }
 
     static void OnEditCharacter(FejdStartup fejdStartup) {
