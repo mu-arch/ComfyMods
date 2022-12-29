@@ -3,20 +3,33 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-using static Pseudonym.PluginConfig;
-
 namespace Pseudonym {
   [HarmonyPatch(typeof(FejdStartup))]
   static class FejdStartupPatch {
     static Button _editButton;
     static PlayerProfile _editingPlayerProfile;
 
+    static Text _newCharacterPanelTopicText;
+    static Button.ButtonClickedEvent _onNewCharacterDoneEvent;
+    static PlayerCustomizaton _playerCustomization;
+
+    static string _topicText;
+    static int _characterLimit;
+    static InputField.ContentType _contentType;
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(FejdStartup.Start))]
     static void StartPostfix(ref FejdStartup __instance) {
-      if (IsModEnabled.Value) {
-        CreateEditButton(__instance);
-      }
+      CreateEditButton(__instance);
+
+      _newCharacterPanelTopicText = __instance.m_newCharacterPanel.transform.Find("Topic").Ref()?.GetComponent<Text>();
+      _onNewCharacterDoneEvent = __instance.m_csNewCharacterDone.onClick;
+
+      _characterLimit = __instance.m_csNewCharacterName.characterLimit;
+      _contentType = __instance.m_csNewCharacterName.contentType;
+
+      _playerCustomization =
+          __instance.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true);
     }
 
     static void CreateEditButton(FejdStartup fejdStartup) {
@@ -47,12 +60,19 @@ namespace Pseudonym {
         fejdStartup.m_newCharacterError.SetActive(false);
         fejdStartup.m_selectCharacterPanel.SetActive(false);
 
+        _topicText = Localization.m_instance.textStrings[_newCharacterPanelTopicText];
+        Localization.m_instance.textStrings[_newCharacterPanelTopicText] = $"Edit Character: {profile.GetName()}";
+
+        fejdStartup.m_csNewCharacterDone.onClick = new();
+        fejdStartup.m_csNewCharacterDone.onClick.AddListener(() => OnEditCharacterDone(fejdStartup));
+
+        fejdStartup.m_csNewCharacterName.characterLimit = 20;
+        fejdStartup.m_csNewCharacterName.contentType = InputField.ContentType.Alphanumeric;
         fejdStartup.m_csNewCharacterName.text = profile.GetName();
+
         fejdStartup.SetupCharacterPreview(profile);
 
-        SetupPlayerCustomization(
-            fejdStartup.m_playerInstance.Ref()?.GetComponent<Player>(),
-            fejdStartup.m_newCharacterPanel.GetComponentInChildren<PlayerCustomizaton>(includeInactive: true));
+        SetupPlayerCustomization(fejdStartup.m_playerInstance.Ref()?.GetComponent<Player>(), _playerCustomization);
       } else {
         _editingPlayerProfile = null;
       }
@@ -89,31 +109,32 @@ namespace Pseudonym {
     }
 
     [HarmonyPrefix]
-    [HarmonyPatch(nameof(FejdStartup.OnNewCharacterDone))]
-    static bool OnNewCharacterDonePrefix(ref FejdStartup __instance) {
+    [HarmonyPatch(nameof(FejdStartup.OnNewCharacterCancel))]
+    static void OnNewCharacterCancel(ref FejdStartup __instance) {
+      _editingPlayerProfile = null;
+      OnEditCharacterDone(__instance);
+    }
+
+    static void OnEditCharacterDone(FejdStartup fejdStartup) {
       if (_editingPlayerProfile != null) {
-        string playerName = __instance.m_csNewCharacterName.text;
+        string playerName = fejdStartup.m_csNewCharacterName.text;
         ZLog.Log($"Saving existing player: {_editingPlayerProfile.GetName()} -> {playerName}");
 
         _editingPlayerProfile.SetName(playerName);
-        _editingPlayerProfile.SavePlayerData(__instance.m_playerInstance.GetComponent<Player>());
+        _editingPlayerProfile.SavePlayerData(fejdStartup.m_playerInstance.GetComponent<Player>());
         _editingPlayerProfile.SavePlayerToDisk();
-        _editingPlayerProfile = null;
-
-        __instance.m_selectCharacterPanel.SetActive(true);
-        __instance.m_newCharacterPanel.SetActive(false);
-        __instance.UpdateCharacterList();
-
-        return false;
       }
 
-      return true;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(FejdStartup.OnNewCharacterCancel))]
-    static void OnNewCharacterCancel() {
       _editingPlayerProfile = null;
+
+      Localization.m_instance.textStrings[_newCharacterPanelTopicText] = _topicText;
+      fejdStartup.m_csNewCharacterDone.onClick = _onNewCharacterDoneEvent;
+      fejdStartup.m_csNewCharacterName.characterLimit = _characterLimit;
+      fejdStartup.m_csNewCharacterName.contentType = _contentType;
+
+      fejdStartup.m_selectCharacterPanel.SetActive(true);
+      fejdStartup.m_newCharacterPanel.SetActive(false);
+      fejdStartup.UpdateCharacterList();
     }
   }
 }

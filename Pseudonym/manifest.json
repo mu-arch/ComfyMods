@@ -2,7 +2,7 @@
   "name": "Pseudonym",
   "version_number": "1.0.0",
   "author": "ComfyMods",
-  "description": "Player profile editing.",
+  "description": "Player customization editor.",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/Pseudonym",
   "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
 }

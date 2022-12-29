@@ -18,7 +18,9 @@ namespace Pseudonym {
     public void Awake() {
       BindConfig(Config);
 
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      if (IsModEnabled.Value) {
+        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      }
     }
 
     public void OnDestroy() {
