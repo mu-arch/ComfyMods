@@ -18,6 +18,11 @@ namespace Keysential {
     IEnumerator VendorPlayerProximityCoroutine(Vector3 vendorPosition) {
       ZLog.Log($"Starting VendorPlayProximity coroutine at position: {vendorPosition}");
 
+      if (TryGetNearbyVendorZdo(vendorPosition, 10f, out ZDO vendorZdo)) {
+        ZLog.Log($"Using nearby Vendor ZDO position: {vendorZdo.m_position}");
+        vendorPosition = vendorZdo.m_position;
+      }
+
       List<string> originalKeys = new(ZoneSystem.m_instance.m_globalKeys);
       List<string> nearbyKeys = new(capacity: originalKeys.Count);
       nearbyKeys.AddRange(originalKeys);
@@ -39,7 +44,10 @@ namespace Keysential {
               nearbyPeers.Add(netPeer.m_uid);
 
               SendChatMessage(
-                  netPeer, vendorPosition, "Haldor", _nearbyChatMessages[Random.Range(0, _nearbyChatMessages.Length)]);
+                  netPeer,
+                  vendorPosition,
+                  "<color=green>Haldor</color>",
+                  _nearbyChatMessages[Random.Range(0, _nearbyChatMessages.Length)]);
             }
           } else {
             if (nearbyPeers.Contains(netPeer.m_uid)) {
@@ -54,6 +62,26 @@ namespace Keysential {
 
         yield return waitInterval;
       }
+    }
+
+    static readonly int _haldorPrefabHashCode = "Haldor".GetStableHashCode();
+
+    static bool TryGetNearbyVendorZdo(Vector3 vendorPosition, float radius, out ZDO vendorZdo) {
+      vendorZdo = null;
+      float closestDistance = radius;
+
+      foreach (ZDO zdo in ZDOMan.m_instance.m_objectsByID.Values) {
+        if (zdo.m_prefab == _haldorPrefabHashCode) {
+          float distance = Vector3.Distance(zdo.m_position, vendorPosition);
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            vendorZdo = zdo;
+          }
+        }
+      }
+
+      return vendorZdo != null;
     }
 
     static readonly string[] _nearbyChatMessages = new string[] {
