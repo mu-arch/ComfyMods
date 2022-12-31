@@ -3,29 +3,24 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+using static Keysential.PluginConfig;
+
 namespace Keysential {
   public class VendorKeyManager : MonoBehaviour {
-    static readonly string _vendorPrefabName = "Vendor_BlackForest";
-    static readonly float _vendorNearbyDistance = 5f;
+    static readonly float _vendorNearbyDistance = 8f;
     static readonly string _vendorNearbyGlobalKey = "defeated_goblinking";
 
     void Awake() {
-      if (ZNet.m_isServer && ZoneSystem.m_instance.GetLocationIcon(_vendorPrefabName, out Vector3 vendorPosition)) {
-        StartCoroutine(VendorPlayerProximityCoroutine(vendorPosition));
+      if (ZNet.m_isServer && VendorKeyManagerPosition.Value != Vector3.zero) {
+        StartCoroutine(VendorPlayerProximityCoroutine(VendorKeyManagerPosition.Value));
       }
     }
 
     IEnumerator VendorPlayerProximityCoroutine(Vector3 vendorPosition) {
       ZLog.Log($"Starting VendorPlayProximity coroutine at position: {vendorPosition}");
 
-      if (TryGetNearbyVendorZdo(vendorPosition, 10f, out ZDO vendorZdo)) {
-        ZLog.Log($"Using nearby Vendor ZDO position: {vendorZdo.m_position}");
-        vendorPosition = vendorZdo.m_position;
-      }
-
       List<string> originalKeys = new(ZoneSystem.m_instance.m_globalKeys);
-      List<string> nearbyKeys = new(capacity: originalKeys.Count);
-      nearbyKeys.AddRange(originalKeys);
+      List<string> nearbyKeys = new(originalKeys);
       nearbyKeys.Add(_vendorNearbyGlobalKey);
 
       HashSet<long> nearbyPeers = new(capacity: 256);
@@ -62,26 +57,6 @@ namespace Keysential {
 
         yield return waitInterval;
       }
-    }
-
-    static readonly int _haldorPrefabHashCode = "Haldor".GetStableHashCode();
-
-    static bool TryGetNearbyVendorZdo(Vector3 vendorPosition, float radius, out ZDO vendorZdo) {
-      vendorZdo = null;
-      float closestDistance = radius;
-
-      foreach (ZDO zdo in ZDOMan.m_instance.m_objectsByID.Values) {
-        if (zdo.m_prefab == _haldorPrefabHashCode) {
-          float distance = Vector3.Distance(zdo.m_position, vendorPosition);
-
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            vendorZdo = zdo;
-          }
-        }
-      }
-
-      return vendorZdo != null;
     }
 
     static readonly string[] _nearbyChatMessages = new string[] {
