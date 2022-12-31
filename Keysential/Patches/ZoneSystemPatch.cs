@@ -29,8 +29,10 @@ namespace Keysential {
         ZLog.Log($"Overriding ZoneSystem.m_globalKeys to:\n{string.Join(",", __instance.m_globalKeys)}");
       }
 
-      ZLog.Log($"Adding VendorKeyManager component to ZoneSystem...");
-      __instance.gameObject.AddComponent<VendorKeyManager>();
+      if (VendorKeyManagerEnabled.Value) {
+        ZLog.Log($"Adding VendorKeyManager component to ZoneSystem...");
+        __instance.gameObject.AddComponent<VendorKeyManager>();
+      }
     }
 
     [HarmonyPrefix]

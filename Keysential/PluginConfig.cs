@@ -5,6 +5,8 @@ namespace Keysential {
     public static ConfigEntry<string> GlobalKeysOverrideList { get; private set; }
     public static ConfigEntry<string> GlobalKeysAllowedList { get; private set; }
 
+    public static ConfigEntry<bool> VendorKeyManagerEnabled { get; private set; }
+
     public static void BindConfig(ConfigFile config) {
       GlobalKeysOverrideList =
           config.Bind(
@@ -19,6 +21,13 @@ namespace Keysential {
               "globalKeysAllowedList",
               string.Empty,
               "If set, server will only accept these global keys (comma-delimited) in RPC_SetGlobalKey().");
+
+      VendorKeyManagerEnabled =
+          config.Bind(
+              "VendorKeyManager",
+              "vendorKeyManagerEnabled",
+              false,
+              "If true, will start the VendorKeyManager coroutine at the vendor position.");
     }
   }
 }

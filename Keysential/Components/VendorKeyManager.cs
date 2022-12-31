@@ -87,8 +87,12 @@ namespace Keysential {
     static readonly string[] _nearbyChatMessages = new string[] {
       "I'm egg-traordinary!",
       "I'm feeling egg-cellent today!",
-      "I'm egg-traordinary, egg-ceptional, and egg-cellent!",
+      "I'm egg-ceptional!",
       "I'm egg-cited to see you!",
+      "You're so eggs-tra!",
+      "My wares are in-eggs-pensive!",
+      "I'm egg-static!",
+      "Egg-cuse me?",
     };
 
     void SendChatMessage(ZNetPeer netPeer, Vector3 position, string name, string message) {
