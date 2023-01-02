@@ -2,6 +2,8 @@
 
 using BepInEx.Configuration;
 
+using UnityEngine;
+
 namespace ComfyLib {
   public static class ConfigFileExtensions {
     static readonly Dictionary<string, int> _sectionToSettingOrder = new();
@@ -44,7 +46,31 @@ namespace ComfyLib {
               description, acceptableValues, new ConfigurationManagerAttributes { Order = GetSettingOrder(section) }));
     }
 
+    public static ConfigEntry<T> BindInOrder<T>(
+        this ConfigFile config,
+        string section,
+        string key,
+        T defaultValue,
+        string description,
+        System.Action<ConfigEntryBase> customDrawer,
+        bool hideDefaultButton = false) {
+      return config.Bind(
+          section,
+          key,
+          defaultValue,
+          new ConfigDescription(
+              description,
+              null,
+              new ConfigurationManagerAttributes {
+                CustomDrawer = customDrawer,
+                HideDefaultButton = hideDefaultButton,
+                Order = GetSettingOrder(section)
+              }));
+    }
+
     internal sealed class ConfigurationManagerAttributes {
+      public System.Action<ConfigEntryBase> CustomDrawer;
+      public bool? HideDefaultButton;
       public int? Order;
     }
   }

@@ -12,14 +12,13 @@ namespace ColorfulPieces {
     public static ConfigEntry<KeyboardShortcut> ClearPieceColorShortcut { get; private set; }
     public static ConfigEntry<KeyboardShortcut> CopyPieceColorShortcut { get; private set; }
 
-    public static ConfigEntry<Color> TargetPieceColor { get; private set; }
-    public static ConfigEntry<string> TargetPieceColorHex { get; private set; }
+    public static ExtendedColorConfigEntry TargetPieceColor { get; private set; }
     public static ConfigEntry<float> TargetPieceEmissionColorFactor { get; private set; }
 
     public static ConfigEntry<bool> ShowChangeRemoveColorPrompt { get; private set; }
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
-    public static Vector3 TargetPieceColorAsVec3 = Vector3.zero;
+    public static Vector3 TargetPieceColorAsVec3 { get; set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -46,19 +45,13 @@ namespace ColorfulPieces {
               "Shortcut to copy the color of the hovered piece.");
 
       TargetPieceColor =
-          config.Bind("Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
+          new(config, "Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
 
+      // Lock alpha to 1f as ZDO only saves as Vector3 (RGB) value for now.
+      TargetPieceColor.AlphaInput.SetValueRange(1f, 1f);
+
+      TargetPieceColor.ConfigEntry.SettingChanged += (_, _) => Utils.ColorToVec3(TargetPieceColor.Value);
       TargetPieceColorAsVec3 = Utils.ColorToVec3(TargetPieceColor.Value);
-
-      TargetPieceColorHex =
-          config.Bind(
-              "Color",
-              "targetPieceColorHex",
-              $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
-              "Target color to set the piece material to, in HTML hex form (alpha unsupported).");
-
-      TargetPieceColor.SettingChanged += (s, e) => UpdateColorHexValue();
-      TargetPieceColorHex.SettingChanged += (s, e) => UpdateColorValue();
 
       TargetPieceEmissionColorFactor =
           config.Bind(
@@ -100,41 +93,25 @@ namespace ColorfulPieces {
               new AcceptableValueRange<float>(0.5f, 10f));
     }
 
-    public static ConfigEntry<Color> PieceStabilityMinColor { get; private set; }
-    public static ConfigEntry<Color> PieceStabilityMaxColor { get; private set; }
+    public static ExtendedColorConfigEntry PieceStabilityMinColor { get; private set; }
+    public static ExtendedColorConfigEntry PieceStabilityMaxColor { get; private set; }
 
     static void BindPieceStabilityColorsConfig(ConfigFile config) {
       PieceStabilityMinColor =
-          config.BindInOrder(
+          new(
+              config,
               "PieceStabilityColors",
               "pieceStabilityMinColor",
               Color.red,
               "Color for the Piece Stability highlighting gradient to use for minimum stability.");
 
       PieceStabilityMaxColor =
-          config.BindInOrder(
+          new(
+              config,
               "PieceStabilityColors",
               "pieceStabilityMaxColor",
               Color.green,
               "Color for the Piece Stability highlighting gradient to use for maximum stability.");
-    }
-
-    static void UpdateColorHexValue() {
-      Color color = TargetPieceColor.Value;
-      color.a = 1.0f;
-
-      TargetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(color)}";
-      TargetPieceColor.Value = color;
-      TargetPieceColorAsVec3 = Utils.ColorToVec3(color);
-    }
-
-    static void UpdateColorValue() {
-      if (ColorUtility.TryParseHtmlString(TargetPieceColorHex.Value, out Color color)) {
-        color.a = 1.0f;
-
-        TargetPieceColor.Value = color;
-        TargetPieceColorAsVec3 = Utils.ColorToVec3(color);
-      }
     }
   }
 }

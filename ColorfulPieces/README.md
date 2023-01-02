@@ -53,6 +53,11 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ## Changelog
 
+### 1.9.0
+
+  * Overhauled config options to use `ExtendedColorConfigEntry` for any color options.
+  * Added `PieceLastColoredByHost` ZDO string field filled by player's `NetworkuserId` when modifying piece color.
+
 ### 1.8.0
 
   * Reduced overall memory and cpu usage!
