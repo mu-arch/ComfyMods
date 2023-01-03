@@ -45,7 +45,7 @@ namespace ColorfulPieces {
               "Shortcut to copy the color of the hovered piece.");
 
       TargetPieceColor =
-          new(config, "Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.");
+          new(config, "Color", "targetPieceColor", Color.cyan, "Target color to set the piece material to.", true);
 
       // Lock alpha to 1f as ZDO only saves as Vector3 (RGB) value for now.
       TargetPieceColor.AlphaInput.SetValueRange(1f, 1f);

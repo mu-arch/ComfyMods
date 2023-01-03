@@ -1,8 +1,8 @@
 # ColorfulPieces
 
   * You can color any building piece that can be built using the Hammer using RGB or HTML color codes.
-    * Coloring is very simple at the moment and will color all materials/textures on the object (to be refined later).
-    * Those without the mod installed will still see the default vanilla materials/textures.
+  * Coloring is very simple at the moment and will color all materials/textures on the object (to be refined later).
+  * Those without the mod installed will still see the default vanilla materials/textures.
 
 ## Instructions
 
@@ -56,6 +56,7 @@ These two commands still call the same action as the hotkey and so will obey all
 ### 1.9.0
 
   * Overhauled config options to use `ExtendedColorConfigEntry` for any color options.
+  * Add ColorPalette feature for ExtendedColorConfigEntry.
   * Added `PieceLastColoredByHost` ZDO string field filled by player's `NetworkuserId` when modifying piece color.
 
 ### 1.8.0

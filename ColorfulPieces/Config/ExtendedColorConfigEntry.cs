@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 using BepInEx.Configuration;
 
@@ -6,6 +8,8 @@ using UnityEngine;
 
 namespace ComfyLib {
   public class ExtendedColorConfigEntry {
+    static readonly Texture2D _colorTexture = GUIBuilder.CreateColorTexture(10, 10, Color.white);
+
     public ConfigEntry<Color> ConfigEntry { get; }
     public Color Value { get; private set; }
 
@@ -15,14 +19,31 @@ namespace ComfyLib {
     public ColorFloatTextField AlphaInput { get; } = new("A");
 
     readonly HexColorTextField _hexInput = new();
-    readonly Texture2D _colorTexture = new(10, 10, TextureFormat.ARGB32, mipChain: false);
+    readonly ColorPalette _colorPalette;
 
     bool _showSliders = false;
 
     public ExtendedColorConfigEntry(
-        ConfigFile config, string section, string key, Color defaultValue, string description) {
+        ConfigFile config,
+        string section,
+        string key,
+        Color defaultValue,
+        string description,
+        bool useColorPalette = false) {
       ConfigEntry = config.BindInOrder(section, key, defaultValue, description, Drawer);
-      SetValue(defaultValue);
+      SetValue(ConfigEntry.Value);
+
+      if (useColorPalette) {
+        ConfigEntry<string> paletteConfigEntry =
+            config.BindInOrder(
+                section,
+                $"{key}.Palette",
+                $"{ColorUtility.ToHtmlStringRGBA(defaultValue)},FF0000FF,00FF00FF,0000FFFF",
+                $"Color palette for ConfigEntry: {section} - {key}",
+                browsable: false);
+
+        _colorPalette = new(this, paletteConfigEntry);
+      }
     }
 
     public void SetValue(Color value) {
@@ -57,7 +78,8 @@ namespace ComfyLib {
       GUIHelper.EndColor();
       GUILayout.Space(3f);
 
-      if (GUILayout.Button(_showSliders ? "\u2228" : "\u2261", GUILayout.MinWidth(40f), GUILayout.ExpandWidth(false))) {
+      if (GUILayout.Button(
+            _showSliders ? "\u2228" : "\u2261", GUILayout.MinWidth(40f), GUILayout.ExpandWidth(false))) {
         _showSliders = !_showSliders;
       }
 
@@ -78,6 +100,11 @@ namespace ComfyLib {
         GUILayout.EndHorizontal();
       }
 
+      if (_colorPalette != null) {
+        GUILayout.Space(5f);
+        _colorPalette.DrawColorPalette();
+      }
+
       GUILayout.EndVertical();
 
       Color sliderColor =
@@ -90,6 +117,108 @@ namespace ComfyLib {
         configEntry.BoxedValue = _hexInput.CurrentValue;
         SetValue(_hexInput.CurrentValue);
       }
+    }
+  }
+
+  public class ColorPalette {
+    static readonly char[] _partSeparator = { ',' };
+    static readonly string _partJoiner = ",";
+    static readonly Texture2D _colorTexture = GUIBuilder.CreateColorTexture(10, 10, Color.white);
+
+    readonly ExtendedColorConfigEntry _colorConfigEntry;
+    readonly ConfigEntry<string> _paletteConfigEntry;
+    readonly List<Color> _paletteColors;
+
+    public ColorPalette(ExtendedColorConfigEntry colorConfigEntry, ConfigEntry<string> paletteConfigEntry) {
+      _colorConfigEntry = colorConfigEntry;
+      _paletteConfigEntry = paletteConfigEntry;
+      _paletteColors = new();
+
+      LoadPalette();
+    }
+
+    void LoadPalette() {
+      _paletteColors.Clear();
+
+      foreach (
+          string part in
+              _paletteConfigEntry.Value.Split(_partSeparator, System.StringSplitOptions.RemoveEmptyEntries)) {
+        if (ColorUtility.TryParseHtmlString($"#{part}", out Color color)) {
+          _paletteColors.Add(color);
+        }
+      }
+    }
+
+    void SavePalette() {
+      _paletteConfigEntry.BoxedValue =
+          string.Join(_partJoiner, _paletteColors.Select(color => ColorUtility.ToHtmlStringRGBA(color)));
+    }
+
+    bool PaletteColorButtons(out int colorIndex) {
+      Texture2D original = GUI.skin.button.normal.background;
+      GUI.skin.button.normal.background = _colorTexture;
+      colorIndex = -1;
+
+      for (int i = 0; i < _paletteColors.Count; i++) {
+        GUIHelper.BeginColor(_paletteColors[i]);
+
+        if (GUILayout.Button(string.Empty, GUILayout.Width(20f))) {
+          colorIndex = i;
+        }
+
+        GUIHelper.EndColor();
+      }
+
+      GUI.skin.button.normal.background = original;
+      return colorIndex >= 0;
+    }
+
+    bool AddColorButton() {
+      return GUILayout.Button("\u002B", GUILayout.MinWidth(25f), GUILayout.ExpandWidth(false));
+    }
+
+    bool RemoveColorButton() {
+      return GUILayout.Button("\u2212", GUILayout.MinWidth(25f), GUILayout.ExpandWidth(false));
+    }
+
+    bool ResetColorsButton() {
+      return GUILayout.Button("\u2747", GUILayout.MinWidth(25f), GUILayout.ExpandWidth(false));
+    }
+
+    public void DrawColorPalette() {
+      GUILayout.BeginHorizontal();
+
+      if (AddColorButton()) {
+        _paletteColors.Add(_colorConfigEntry.Value);
+        SavePalette();
+      }
+
+      GUILayout.Space(2f);
+
+      if (PaletteColorButtons(out int colorIndex)) {
+        if (Event.current.button == 0) {
+          _colorConfigEntry.SetValue(_paletteColors[colorIndex]);
+        } else if (Event.current.button == 1 && colorIndex >= 0 && colorIndex < _paletteColors.Count) {
+          _paletteColors.RemoveAt(colorIndex);
+          SavePalette();
+        }
+      }
+
+      GUILayout.FlexibleSpace();
+
+      if (_paletteColors.Count > 0) {
+        if (RemoveColorButton()) {
+          _paletteColors.RemoveAt(_paletteColors.Count - 1);
+          SavePalette();
+        }
+      } else {
+        if (ResetColorsButton()) {
+          _paletteConfigEntry.BoxedValue = _paletteConfigEntry.DefaultValue;
+          LoadPalette();
+        }
+      }
+
+      GUILayout.EndHorizontal();
     }
   }
 

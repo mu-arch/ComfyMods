@@ -135,6 +135,7 @@ namespace ColorfulPieces {
       if (wearNTear.m_nview.m_zdo.RemoveVec3(PieceColorHashCode)
           || wearNTear.m_nview.m_zdo.RemoveFloat(PieceEmissionColorFactorHashCode)) {
         wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+        wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
         wearNTear.m_nview.m_zdo.IncreseDataRevision();
       }
 
