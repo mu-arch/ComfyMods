@@ -91,7 +91,7 @@ namespace ColorfulPieces {
     }
 
     static void ChangePieceColorZdo(ZNetView netView) {
-      netView.m_zdo.Set(PieceColorHashCode, TargetPieceColorAsVec3);
+      netView.m_zdo.Set(PieceColorHashCode, Utils.ColorToVec3(TargetPieceColor.Value));
       netView.m_zdo.Set(PieceEmissionColorFactorHashCode, TargetPieceEmissionColorFactor.Value);
       netView.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
       netView.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());

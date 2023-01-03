@@ -18,8 +18,6 @@ namespace ColorfulPieces {
     public static ConfigEntry<bool> ShowChangeRemoveColorPrompt { get; private set; }
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
-    public static Vector3 TargetPieceColorAsVec3 { get; set; }
-
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
@@ -49,9 +47,6 @@ namespace ColorfulPieces {
 
       // Lock alpha to 1f as ZDO only saves as Vector3 (RGB) value for now.
       TargetPieceColor.AlphaInput.SetValueRange(1f, 1f);
-
-      TargetPieceColor.ConfigEntry.SettingChanged += (_, _) => Utils.ColorToVec3(TargetPieceColor.Value);
-      TargetPieceColorAsVec3 = Utils.ColorToVec3(TargetPieceColor.Value);
 
       TargetPieceEmissionColorFactor =
           config.Bind(
