@@ -41,6 +41,12 @@
 
 ## Changelog
 
+### 1.8.0
+
+  * Converted color config option to use `ExtendedColorConfigEntry` and `ColorPalette`.
+  * Added `PieceLastColoredByHost` ZDO string field filled by player's `NetworkuserId` when modifying light color.
+  * Modified the `Player.TakeInput()` patch to also check that taking input is allowed.
+
 ### 1.7.1
 
   * Fixed yet another small bug with the `Player.TakeInput()` transpiler not matching the same pattern as other mods.

@@ -15,11 +15,12 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.7.1";
+    public const string PluginVersion = "1.8.0";
 
     public static readonly int FirePlaceColorHashCode = "FireplaceColor".GetStableHashCode();
     public static readonly int FireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
     public static readonly int LightLastColoredByHashCode = "LightLastColoredBy".GetStableHashCode();
+    public static readonly int LightLastColoredByHostHashCode = "LightLastColoredByHost".GetStableHashCode();
 
     public static ManualLogSource PluginLogger { get; private set; }
 
@@ -60,6 +61,7 @@ namespace ColorfulLights {
       targetFireplace.m_nview.m_zdo.Set(FirePlaceColorHashCode, colorVec3);
       targetFireplace.m_nview.m_zdo.Set(FireplaceColorAlphaHashCode, colorAlpha);
       targetFireplace.m_nview.m_zdo.Set(LightLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      targetFireplace.m_nview.m_zdo.Set(LightLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
 
       targetFireplace.m_fuelAddedEffects?.Create(
           targetFireplace.transform.position, targetFireplace.transform.rotation);
