@@ -103,8 +103,8 @@ namespace Enhuddlement {
       if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
         CreateEnemyLevelText(hudData, healthTransform);
 
-        hudData.m_level2?.gameObject.SetActive(false);
-        hudData.m_level3?.gameObject.SetActive(false);
+        hudData.m_level2.Ref()?.gameObject.SetActive(false);
+        hudData.m_level3.Ref()?.gameObject.SetActive(false);
         hudData.m_level2 = default;
         hudData.m_level3 = default;
       } else {
@@ -116,25 +116,32 @@ namespace Enhuddlement {
     }
 
     static void SetupAlerted(EnemyHud.HudData hudData) {
-      hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
+      if (hudData.m_alerted) {
+        Text alertedText = hudData.m_alerted.GetComponent<Text>();
 
-      Text alertedText = hudData.m_alerted.GetComponent<Text>();
+        hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_alerted
+            .SetAnchorMin(new(0.5f, 1f))
+            .SetAnchorMax(new(0.5f, 1f))
+            .SetPivot(new(0.5f, 0f))
+            .SetPosition(Vector2.zero)
+            .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
 
-      hudData.m_alerted
-          .SetAnchorMin(new(0.5f, 1f))
-          .SetAnchorMax(new(0.5f, 1f))
-          .SetPivot(new(0.5f, 0f))
-          .SetPosition(Vector2.zero)
-          .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
+        hudData.m_alerted.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
+      }
     }
 
     static void SetupAware(EnemyHud.HudData hudData) {
-      hudData.m_aware.SetParent(hudData.m_name.transform, worldPositionStays: false);
-      hudData.m_aware.SetAnchorMin(new(0.5f, 1f))
-          .SetAnchorMax(new(0.5f, 1f))
-          .SetPivot(new(0.5f, 0f))
-          .SetPosition(Vector2.zero)
-          .SetSizeDelta(new(30f, 30f));
+      if (hudData.m_aware) {
+        hudData.m_aware.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_aware.SetAnchorMin(new(0.5f, 1f))
+            .SetAnchorMax(new(0.5f, 1f))
+            .SetPivot(new(0.5f, 0f))
+            .SetPosition(Vector2.zero)
+            .SetSizeDelta(new(30f, 30f));
+
+        hudData.m_aware.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
+      }
     }
 
     static void SetupHealthBars(EnemyHud.HudData hudData, float healthBarWidth, float healthBarHeight) {
@@ -153,6 +160,8 @@ namespace Enhuddlement {
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
 
+      hudData.m_healthFast.gameObject.SetActive(true);
+
       hudData.m_healthSlow.m_width = healthBarWidth;
       hudData.m_healthSlow.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
@@ -167,6 +176,11 @@ namespace Enhuddlement {
           .SetPivot(new(0f, 0.5f))
           .SetPosition(Vector2.zero)
           .SetSizeDelta(new(healthBarWidth, healthBarHeight));
+
+      hudData.m_healthSlow.gameObject.SetActive(true);
+
+      // TODO: friendly bars.
+      hudData.m_healthFastFriendly.Ref()?.gameObject.SetActive(false);
     }
 
     static Text CreateEnemyHealthText(EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize) {
@@ -243,147 +257,60 @@ namespace Enhuddlement {
     }
 
     static void SetupEnemyLevelStars(EnemyHud.HudData hudData, Transform healthTransform) {
-      if (EnemyLevelShowByName.Value) {
-        hudData.m_level2?.SetParent(hudData.m_name.transform);
-        hudData.m_level2?
-            .SetAnchorMin(new(1f, 0.5f))
-            .SetAnchorMax(new(1f, 0.5f))
-            .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(12f, 0f))
-            .SetSizeDelta(Vector2.zero);
+      if (hudData.m_level2) {
+        if (EnemyLevelShowByName.Value) {
+          hudData.m_level2.SetParent(hudData.m_name.transform);
+          hudData.m_level2
+              .SetAnchorMin(new(1f, 0.5f))
+              .SetAnchorMax(new(1f, 0.5f))
+              .SetPivot(new(0f, 0.5f))
+              .SetPosition(new(12f, 0f))
+              .SetSizeDelta(Vector2.zero);
+        } else {
+          hudData.m_level2.SetParent(healthTransform, worldPositionStays: false);
+          hudData.m_level2
+              .SetAnchorMin(Vector2.zero)
+              .SetAnchorMax(Vector2.zero)
+              .SetPivot(Vector2.zero)
+              .SetPosition(new(7.5f, -10f))
+              .SetSizeDelta(Vector2.zero);
+        }
 
-        hudData.m_level3?.SetParent(hudData.m_name.transform, worldPositionStays: false);
-        hudData.m_level3?
-            .SetAnchorMin(new(1f, 0.5f))
-            .SetAnchorMax(new(1f, 0.5f))
-            .SetPivot(new(0f, 0.5f))
-            .SetPosition(new(20f, 0f))
-            .SetSizeDelta(Vector2.zero);
-      } else {
-        hudData.m_level2?.SetParent(healthTransform, worldPositionStays: false);
-        hudData.m_level2?
-            .SetAnchorMin(Vector2.zero)
-            .SetAnchorMax(Vector2.zero)
-            .SetPivot(Vector2.zero)
-            .SetPosition(new(7.5f, -10f))
-            .SetSizeDelta(Vector2.zero);
+        hudData.m_level2.gameObject.SetActive(hudData.m_character.GetLevel() == 2);
+      }
 
-        hudData.m_level3?.SetParent(healthTransform, worldPositionStays: false);
-        hudData.m_level3?
-            .SetAnchorMin(Vector2.zero)
-            .SetAnchorMax(Vector2.zero)
-            .SetPivot(Vector2.zero)
-            .SetPosition(new(15.5f, -10f))
-            .SetSizeDelta(Vector2.zero);
+      if (hudData.m_level3) {
+        if (EnemyLevelShowByName.Value) {
+          hudData.m_level3.SetParent(hudData.m_name.transform, worldPositionStays: false);
+          hudData.m_level3
+              .SetAnchorMin(new(1f, 0.5f))
+              .SetAnchorMax(new(1f, 0.5f))
+              .SetPivot(new(0f, 0.5f))
+              .SetPosition(new(20f, 0f))
+              .SetSizeDelta(Vector2.zero);
+        } else {
+          hudData.m_level3.SetParent(healthTransform, worldPositionStays: false);
+          hudData.m_level3
+              .SetAnchorMin(Vector2.zero)
+              .SetAnchorMax(Vector2.zero)
+              .SetPivot(Vector2.zero)
+              .SetPosition(new(15.5f, -10f))
+              .SetSizeDelta(Vector2.zero);
+        }
+
+        hudData.m_level3.gameObject.SetActive(hudData.m_character.GetLevel() == 3);
       }
     }
 
-    [HarmonyTranspiler]
+    [HarmonyPrefix]
     [HarmonyPatch(nameof(EnemyHud.UpdateHuds))]
-    static IEnumerable<CodeInstruction> UpdateHudsTranspiler(IEnumerable<CodeInstruction> instructions) {
-
-      return new CodeMatcher(instructions)
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldloc_S),
-              new CodeMatch(
-                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_character))))
-          .SaveOperand(out object hudDataLocal)
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldloc_S),
-              new CodeMatch(
-                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_character))),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.GetHoverName))),
-              new CodeMatch(
-                  OpCodes.Callvirt,
-                  AccessTools.Method(
-                      typeof(Localization), nameof(Localization.Localize), new Type[] { typeof(string) })),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Text), "set_text")),
-              new CodeMatch(OpCodes.Ldloc_S))
-          .Advance(offset: 6)
-          .InsertAndAdvance(
-              Transpilers.EmitDelegate<Func<EnemyHud.HudData, EnemyHud.HudData>>(NameSetTextPostDelegate))
-          //.MatchForward(
-          //    useEnd: false,
-          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.HaveTarget))))
-          //.Advance(offset: 1)
-          //.SaveOperand(out object haveTargetLocal)
-          //.MatchForward(
-          //    useEnd: false,
-          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(BaseAI), nameof(BaseAI.IsAlerted))))
-          //.Advance(offset: 1)
-          //.SaveOperand(out object isAlertedLocal)
-          //.Advance(offset: 1)
-          //.InsertAndAdvance(
-          //    new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
-          //    new CodeInstruction(OpCodes.Ldloc_S, haveTargetLocal),
-          //    new CodeInstruction(OpCodes.Ldloc_S, isAlertedLocal),
-          //    Transpilers.EmitDelegate<Action<EnemyHud.HudData, bool, bool>>(SetAlertedActivePreDelegate))
-          //.MatchForward(
-          //    useEnd: false,
-          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
-          //.ThrowIfInvalid("Could not match: value.m_alerted.gameobject.SetActive()")
-          //.InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(
-          //      active => (!IsModEnabled.Value || !EnemyHudUseNameForStatus.Value) && active))
-          //.MatchForward(
-          //    useEnd: false,
-          //    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
-          //.ThrowIfInvalid("Could not match: value.m_aware.gameobject.SetActive()")
-          //.InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(
-          //      active => (!IsModEnabled.Value || !EnemyHudUseNameForStatus.Value) && active))
-          //.MatchForward(
-          //    useEnd: false,
-          //    new CodeMatch(OpCodes.Ldloc_S),
-          //    new CodeMatch(
-          //        OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_healthSlow))))
-          //.InsertAndAdvance(
-          //    new CodeInstruction(OpCodes.Ldloc_S, hudDataLocal),
-          //    Transpilers.EmitDelegate<Action<EnemyHud.HudData>>(HealthSlowPreDelegate))
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldloc_S),
-              new CodeMatch(
-                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_character))),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.IsBoss))),
-              new CodeMatch(OpCodes.Brtrue),
-              new CodeMatch(OpCodes.Ldloc_S),
-              new CodeMatch(
-                  OpCodes.Ldfld, AccessTools.Field(typeof(EnemyHud.HudData), nameof(EnemyHud.HudData.m_gui))),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), "get_activeSelf")))
-          .Advance(offset: 3)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(value => IsBossDelegate(value)))
-          .InstructionEnumeration();
-    }
-
-    static EnemyHud.HudData NameSetTextPostDelegate(EnemyHud.HudData hudData) {
-      if (IsModEnabled.Value
-          && ShowEnemyHealthValue.Value
-          && _healthTextCache.TryGetValue(hudData, out Text healthText)) {
-        healthText.SetText($"{hudData.m_character.GetHealth():N0} / {hudData.m_character.GetMaxHealth():N0}");
-      }
-
-      return hudData;
-    }
-
-    static void HealthSlowPreDelegate(EnemyHud.HudData hudData) {
-      if (IsModEnabled.Value && EnemyHudUseNameForStatus.Value && hudData.m_character.m_baseAI) {
-        bool aware = hudData.m_character.m_baseAI.HaveTarget();
-        bool alerted = hudData.m_character.m_baseAI.IsAlerted();
-
-        hudData.m_name.SetColor(
-            (aware || alerted)
-                ? (alerted ? EnemyHudNameTextAlertedColor.Value : EnemyHudNameTextAwareColor.Value)
-                : EnemyHudHealthTextColor.Value);
-      }
-    }
-
-    static bool IsBossDelegate(bool value) {
-      if (IsModEnabled.Value && FloatingBossHud.Value) {
+    static bool UpdateHudsPrefix(ref EnemyHud __instance, ref Player player, ref Sadle sadle, float dt) {
+      if (IsModEnabled.Value) {
+        EnemyHudUpdater.UpdateHuds(ref __instance, ref player, ref sadle, dt, _healthTextCache);
         return false;
       }
 
-      return value;
+      return true;
     }
   }
 }

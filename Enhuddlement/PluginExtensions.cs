@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace ComfyLib {
+namespace Enhuddlement {
   public static class CodeMatcherExtensions {
     public static CodeMatcher SaveOperand(this CodeMatcher matcher, out object operand) {
       operand = matcher.Operand;
