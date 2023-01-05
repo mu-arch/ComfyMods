@@ -36,7 +36,6 @@ namespace Enhuddlement {
         if (!character || !enemyHud.TestShow(character, isVisible: true) || character == sadleCharacter) {
           _keysToRemove.Add(character);
           UnityEngine.Object.Destroy(hudData.m_gui);
-          ZLog.Log($"Removing EnemyHud for : {hudData.m_character.Ref()?.m_name}");
           continue;
         }
 
