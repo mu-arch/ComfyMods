@@ -30,7 +30,7 @@ namespace Enhuddlement {
       }
 
       if (c.IsPlayer()) {
-        // Nothing.
+        SetupPlayerHud(hudData);
       } else if (c.IsBoss()) {
         SetupBossHud(hudData);
       } else if (isMount) {
@@ -42,11 +42,26 @@ namespace Enhuddlement {
 
     static readonly ConditionalWeakTable<EnemyHud.HudData, Text> _healthTextCache = new();
 
+    static void SetupPlayerHud(EnemyHud.HudData hudData) {
+      SetupHud(
+          hudData,
+          PlayerHudNameTextFontSize.Value,
+          PlayerHudNameTextColor.Value,
+          PlayerHudHealthTextFontSize.Value,
+          PlayerHudHealthTextColor.Value,
+          PlayerHudHealthBarWidth.Value,
+          PlayerHudHealthBarHeight.Value);
+
+      hudData.m_healthFast.SetColor(PlayerHudHealthBarColor.Value);
+    }
+
     static void SetupEnemyHud(EnemyHud.HudData hudData) {
       SetupHud(
           hudData,
           EnemyHudNameTextFontSize.Value,
+          EnemyHudNameTextColor.Value,
           EnemyHudHealthTextFontSize.Value,
+          EnemyHudHealthTextColor.Value,
           EnemyHudHealthBarWidth.Value,
           EnemyHudHealthBarHeight.Value);
 
@@ -58,7 +73,9 @@ namespace Enhuddlement {
       SetupHud(
           hudData,
           BossHudNameTextFontSize.Value,
+          EnemyHudNameTextColor.Value,
           BossHudHealthTextFontSize.Value,
+          EnemyHudHealthTextColor.Value,
           BossHudHealthBarWidth.Value,
           BossHudHealthBarHeight.Value);
 
@@ -71,13 +88,15 @@ namespace Enhuddlement {
 
     static void SetupHud(
         EnemyHud.HudData hudData,
-        int nameFontSize,
+        int nameTextFontSize,
+        Color nameTextColor,
         int healthTextFontSize,
+        Color healthTextFontColor,
         float healthBarWidth,
         float healthBarHeight) {
       hudData.m_name
-          .SetColor(EnemyHudNameTextColor.Value)
-          .SetFontSize(nameFontSize)
+          .SetColor(nameTextColor)
+          .SetFontSize(nameTextFontSize)
           .SetAlignment(TextAnchor.LowerCenter);
 
       hudData.m_name.GetComponent<RectTransform>()
@@ -97,7 +116,7 @@ namespace Enhuddlement {
 
       SetupHealthBars(hudData, healthBarWidth, healthBarHeight);
 
-      Text healthText = CreateEnemyHealthText(hudData, healthTransform, healthTextFontSize);
+      Text healthText = CreateHealthText(hudData, healthTransform, healthTextFontSize, healthTextFontColor);
       _healthTextCache.Add(hudData, healthText);
 
       if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
@@ -183,7 +202,8 @@ namespace Enhuddlement {
       hudData.m_healthFastFriendly.Ref()?.gameObject.SetActive(false);
     }
 
-    static Text CreateEnemyHealthText(EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize) {
+    static Text CreateHealthText(
+        EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize, Color healthTextFontColor) {
       Text healthText = UnityEngine.Object.Instantiate(hudData.m_name, parentTransform);
       healthText.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
@@ -195,7 +215,7 @@ namespace Enhuddlement {
           .SetName("HealthText")
           .SetText(string.Empty)
           .SetFontSize(healthTextFontSize)
-          .SetColor(EnemyHudHealthTextColor.Value)
+          .SetColor(healthTextFontColor)
           .SetAlignment(TextAnchor.MiddleCenter)
           .SetResizeTextForBestFit(false);
 
@@ -311,6 +331,30 @@ namespace Enhuddlement {
       }
 
       return true;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(EnemyHud.LateUpdate))]
+    static IEnumerable<CodeInstruction> LateUpdateTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Stloc_3),
+              new CodeMatch(OpCodes.Ldloc_3),
+              new CodeMatch(OpCodes.Ldloc_1),
+              new CodeMatch(OpCodes.Call))
+          .Advance(offset: 3)
+          .SetInstructionAndAdvance(
+              Transpilers.EmitDelegate<Func<Character, Player, bool>>(CharacterLocalPlayerEqualityDelegate))
+          .InstructionEnumeration();
+    }
+
+    static bool CharacterLocalPlayerEqualityDelegate(Character character, Player player) {
+      if (PlayerHudShowLocalPlayer.Value) {
+        return false;
+      }
+
+      return character == player;
     }
   }
 }

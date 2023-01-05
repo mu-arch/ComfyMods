@@ -13,9 +13,84 @@ namespace Enhuddlement {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
       ShowEnemyHealthValue = config.BindInOrder("EnemyHud", "showEnemyHealthValue", true, "Show enemy health values.");
 
+      BindPlayerHudConfig(config);
       BindEnemyLevelConfig(config);
       BindEnemyHudConfig(config);
       BindBossHudConfig(config);
+    }
+
+    public static ConfigEntry<bool> PlayerHudShowLocalPlayer { get; private set; }
+
+    public static ConfigEntry<int> PlayerHudNameTextFontSize { get; private set; }
+    public static ConfigEntry<Color> PlayerHudNameTextColor { get; private set; }
+
+    public static ConfigEntry<int> PlayerHudHealthTextFontSize { get; private set; }
+    public static ConfigEntry<Color> PlayerHudHealthTextColor { get; private set; }
+
+    public static ConfigEntry<float> PlayerHudHealthBarWidth { get; private set; }
+    public static ConfigEntry<float> PlayerHudHealthBarHeight { get; private set; }
+    public static ConfigEntry<Color> PlayerHudHealthBarColor { get; private set; }
+
+    public static void BindPlayerHudConfig(ConfigFile config) {
+      PlayerHudShowLocalPlayer =
+          config.BindInOrder(
+              "PlayerHud.Other",
+              "showLocalPlayer",
+              false,
+              "If true, shows a PlayerHud for the local player.");
+
+      PlayerHudNameTextFontSize =
+          config.BindInOrder(
+              "PlayerHud.Name",
+              "nameTextFontSize",
+              20,
+              "PlayerHud.Name text font size.",
+              new AcceptableValueRange<int>(0, 32));
+
+      PlayerHudNameTextColor =
+          config.BindInOrder(
+              "PlayerHud.Name",
+              "nameTextColor",
+              new Color(1f, 0.7176f, 0.3603f, 1f),
+              "PlayerHud.Name text color.");
+
+      PlayerHudHealthTextFontSize =
+          config.BindInOrder(
+              "PlayerHud.HealthText",
+              "healthTextFontSize",
+              14,
+              "PlayerHud.HealthText text font size.",
+              new AcceptableValueRange<int>(0, 32));
+
+      PlayerHudHealthTextColor =
+          config.BindInOrder(
+              "EnemPlayerHudyHud.HealthText",
+              "healthTextColor",
+              Color.white,
+              "PlayerHud.HealthText text color.");
+
+      PlayerHudHealthBarWidth =
+          config.BindInOrder(
+              "PlayerHud.HealthBar",
+              "healthBarWidth",
+              125f,
+              "PlayerHud.HealthBar width (vanilla: 100).",
+              new AcceptableValueRange<float>(0f, 1200f));
+
+      PlayerHudHealthBarHeight =
+          config.BindInOrder(
+              "PlayerHud.HealthBar",
+              "healthBarHeight",
+              22f,
+              "PlayerHud.HealthBar height (vanilla: 5).",
+              new AcceptableValueRange<float>(0f, 90f));
+
+      PlayerHudHealthBarColor =
+          config.BindInOrder(
+              "PlayerHud.HealthBar",
+              "healthBarColor",
+              new Color(0.2638f, 1f, 0.125f, 1f),
+              "PlayerHud.HealthBar fast color for regular players.");
     }
 
     public static ConfigEntry<bool> EnemyLevelShowByName { get; private set; }
@@ -25,11 +100,11 @@ namespace Enhuddlement {
 
     public static void BindEnemyLevelConfig(ConfigFile config) {
       EnemyLevelShowByName =
-        config.BindInOrder(
-        "EnemyLevel",
-        "enemyLevelShowByName",
-        false,
-        "If true, shows the enemy level after the name, otherwise below healthbar.");
+          config.BindInOrder(
+              "EnemyLevel",
+              "enemyLevelShowByName",
+              false,
+              "If true, shows the enemy level after the name, otherwise below healthbar.");
 
       EnemyLevelStarSymbol =
           config.BindInOrder(
