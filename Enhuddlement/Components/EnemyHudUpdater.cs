@@ -98,13 +98,13 @@ namespace Enhuddlement {
           Vector3 position;
 
           if (character.IsPlayer()) {
-            position = character.GetHeadPoint() + (Vector3.up * 0.3f);
+            position = character.GetHeadPoint() + PlayerHudPositionOffset.Value;
           } else if (character.IsBoss()) {
-            position = character.GetTopPoint() + (Vector3.up * 0.5f);
+            position = character.GetTopPoint() + BossHudPositionOffset.Value;
           } else if (hudData.m_isMount && player) {
             position = player.transform.transform.position - (player.transform.up * 0.5f);
           } else {
-            position = character.GetTopPoint();
+            position = character.GetTopPoint() + EnemyHudPositionOffset.Value;
           }
 
           Vector3 point = camera.WorldToScreenPoint(position);

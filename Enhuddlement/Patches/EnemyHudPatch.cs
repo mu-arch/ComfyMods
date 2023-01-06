@@ -43,10 +43,10 @@ namespace Enhuddlement {
     static readonly ConditionalWeakTable<EnemyHud.HudData, Text> _healthTextCache = new();
 
     static void SetupPlayerHud(EnemyHud.HudData hudData) {
+      SetupName(hudData, PlayerHudNameTextFontSize.Value, PlayerHudNameTextColor.Value);
+
       SetupHud(
           hudData,
-          PlayerHudNameTextFontSize.Value,
-          PlayerHudNameTextColor.Value,
           PlayerHudHealthTextFontSize.Value,
           PlayerHudHealthTextColor.Value,
           PlayerHudHealthBarWidth.Value,
@@ -55,45 +55,42 @@ namespace Enhuddlement {
       hudData.m_healthFast.SetColor(PlayerHudHealthBarColor.Value);
     }
 
-    static void SetupEnemyHud(EnemyHud.HudData hudData) {
-      SetupHud(
-          hudData,
-          EnemyHudNameTextFontSize.Value,
-          EnemyHudNameTextColor.Value,
-          EnemyHudHealthTextFontSize.Value,
-          EnemyHudHealthTextColor.Value,
-          EnemyHudHealthBarWidth.Value,
-          EnemyHudHealthBarHeight.Value);
-
-      hudData.m_healthFast.SetColor(
-          hudData.m_character.IsTamed() ? EnemyHudHealthBarTamedColor.Value : EnemyHudHealthBarColor.Value);
-    }
-
     static void SetupBossHud(EnemyHud.HudData hudData) {
+      SetupName(hudData, BossHudNameTextFontSize.Value, BossHudNameTextColor.Value);
+
       SetupHud(
           hudData,
-          BossHudNameTextFontSize.Value,
-          EnemyHudNameTextColor.Value,
           BossHudHealthTextFontSize.Value,
-          EnemyHudHealthTextColor.Value,
+          BossHudHealthTextFontColor.Value,
           BossHudHealthBarWidth.Value,
           BossHudHealthBarHeight.Value);
 
       hudData.m_healthFast.SetColor(BossHudHealthBarColor.Value);
 
       if (BossHudNameUseGradientEffect.Value) {
-        hudData.m_name.gameObject.AddComponent<VerticalGradient>();
+        hudData.m_name.gameObject.AddComponent<VerticalGradient>()
+            .SetEffectGradient(Color.gray, BossHudNameTextColor.Value);
       }
     }
 
-    static void SetupHud(
-        EnemyHud.HudData hudData,
-        int nameTextFontSize,
-        Color nameTextColor,
-        int healthTextFontSize,
-        Color healthTextFontColor,
-        float healthBarWidth,
-        float healthBarHeight) {
+    static void SetupEnemyHud(EnemyHud.HudData hudData) {
+      SetupName(hudData, EnemyHudNameTextFontSize.Value, EnemyHudNameTextColor.Value);
+
+      SetupHud(
+          hudData,
+          EnemyHudHealthTextFontSize.Value,
+          EnemyHudHealthTextColor.Value,
+          EnemyHudHealthBarWidth.Value,
+          EnemyHudHealthBarHeight.Value);
+
+      SetupAlerted(hudData);
+      SetupAware(hudData);
+
+      hudData.m_healthFast.SetColor(
+          hudData.m_character.IsTamed() ? EnemyHudHealthBarTamedColor.Value : EnemyHudHealthBarColor.Value);
+    }
+
+    static void SetupName(EnemyHud.HudData hudData, int nameTextFontSize, Color nameTextColor) {
       hudData.m_name
           .SetColor(nameTextColor)
           .SetFontSize(nameTextFontSize)
@@ -105,7 +102,14 @@ namespace Enhuddlement {
           .SetPivot(new(0.5f, 0f))
           .SetPosition(new(0f, 8f))
           .SetSizeDelta(new(hudData.m_name.preferredWidth, hudData.m_name.preferredHeight));
+    }
 
+    static void SetupHud(
+        EnemyHud.HudData hudData,
+        int healthTextFontSize,
+        Color healthTextFontColor,
+        float healthBarWidth,
+        float healthBarHeight) {
       Transform healthTransform = hudData.m_gui.transform.Find("Health");
       healthTransform.GetComponent<RectTransform>()
           .SetAnchorMin(new(0.5f, 0.5f))
@@ -119,48 +123,7 @@ namespace Enhuddlement {
       Text healthText = CreateHealthText(hudData, healthTransform, healthTextFontSize, healthTextFontColor);
       _healthTextCache.Add(hudData, healthText);
 
-      if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
-        CreateEnemyLevelText(hudData, healthTransform);
-
-        hudData.m_level2.Ref()?.gameObject.SetActive(false);
-        hudData.m_level3.Ref()?.gameObject.SetActive(false);
-        hudData.m_level2 = default;
-        hudData.m_level3 = default;
-      } else {
-        SetupEnemyLevelStars(hudData, healthTransform);
-      }
-
-      SetupAlerted(hudData);
-      SetupAware(hudData);
-    }
-
-    static void SetupAlerted(EnemyHud.HudData hudData) {
-      if (hudData.m_alerted) {
-        Text alertedText = hudData.m_alerted.GetComponent<Text>();
-
-        hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
-        hudData.m_alerted
-            .SetAnchorMin(new(0.5f, 1f))
-            .SetAnchorMax(new(0.5f, 1f))
-            .SetPivot(new(0.5f, 0f))
-            .SetPosition(Vector2.zero)
-            .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
-
-        hudData.m_alerted.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
-      }
-    }
-
-    static void SetupAware(EnemyHud.HudData hudData) {
-      if (hudData.m_aware) {
-        hudData.m_aware.SetParent(hudData.m_name.transform, worldPositionStays: false);
-        hudData.m_aware.SetAnchorMin(new(0.5f, 1f))
-            .SetAnchorMax(new(0.5f, 1f))
-            .SetPivot(new(0.5f, 0f))
-            .SetPosition(Vector2.zero)
-            .SetSizeDelta(new(30f, 30f));
-
-        hudData.m_aware.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
-      }
+      SetupLevel(hudData, healthTransform);
     }
 
     static void SetupHealthBars(EnemyHud.HudData hudData, float healthBarWidth, float healthBarHeight) {
@@ -200,6 +163,46 @@ namespace Enhuddlement {
 
       // TODO: friendly bars.
       hudData.m_healthFastFriendly.Ref()?.gameObject.SetActive(false);
+    }
+
+    static void SetupLevel(EnemyHud.HudData hudData, Transform healthTransform) {
+      if (hudData.m_character.m_level > (hudData.m_character.IsBoss() ? 1 : 3)) {
+        CreateEnemyLevelText(hudData, healthTransform);
+
+        hudData.m_level2.Ref()?.gameObject.SetActive(false);
+        hudData.m_level3.Ref()?.gameObject.SetActive(false);
+      } else {
+        SetupEnemyLevelStars(hudData, healthTransform);
+      }
+    }
+
+    static void SetupAlerted(EnemyHud.HudData hudData) {
+      if (hudData.m_alerted) {
+        Text alertedText = hudData.m_alerted.GetComponent<Text>();
+
+        hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_alerted
+            .SetAnchorMin(new(0.5f, 1f))
+            .SetAnchorMax(new(0.5f, 1f))
+            .SetPivot(new(0.5f, 0f))
+            .SetPosition(Vector2.zero)
+            .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
+
+        hudData.m_alerted.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
+      }
+    }
+
+    static void SetupAware(EnemyHud.HudData hudData) {
+      if (hudData.m_aware) {
+        hudData.m_aware.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        hudData.m_aware.SetAnchorMin(new(0.5f, 1f))
+            .SetAnchorMax(new(0.5f, 1f))
+            .SetPivot(new(0.5f, 0f))
+            .SetPosition(Vector2.zero)
+            .SetSizeDelta(new(30f, 30f));
+
+        hudData.m_aware.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
+      }
     }
 
     static Text CreateHealthText(
@@ -355,6 +358,14 @@ namespace Enhuddlement {
       }
 
       return character == player;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(EnemyHud.TestShow))]
+    static void TestShowPostfix(ref EnemyHud __instance, ref Character c, ref bool __result) {
+      if (__result && c == Player.m_localPlayer) {
+        __result = IsModEnabled.Value && PlayerHudShowLocalPlayer.Value;
+      }
     }
   }
 }
