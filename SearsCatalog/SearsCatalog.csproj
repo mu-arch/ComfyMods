@@ -85,8 +85,14 @@
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.PhysicsModule.dll</HintPath>
@@ -102,6 +108,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Config\FloatConfigEntry.cs" />
+    <Compile Include="Config\GUIFocus.cs" />
+    <Compile Include="Config\GUIHelper.cs" />
+    <Compile Include="Config\VectorConfigEntry.cs" />
+    <Compile Include="Patches\FejdStartupPatch.cs" />
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="Patches\PieceTablePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />

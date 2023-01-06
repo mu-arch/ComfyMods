@@ -80,11 +80,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BetterZeeRouter.cs" />
+    <Compile Include="Handlers\DamageTextHandler.cs" />
+    <Compile Include="Handlers\SetTargetHandler.cs" />
+    <Compile Include="Handlers\TeleportToHandler.cs" />
+    <Compile Include="Handlers\WntHealthChangedHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoutedRpcDataExtensions.cs" />
     <Compile Include="RpcMethodHandler.cs" />
     <Compile Include="RoutedRpcManager.cs" />
     <Compile Include="ZPackageExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Copy" AfterTargets="Build">

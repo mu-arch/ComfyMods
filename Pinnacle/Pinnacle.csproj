@@ -103,7 +103,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CenterMapHelper.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Core\PinImportExport.cs" />
     <Compile Include="Patches\MinimapPatch.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Pinnacle.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginExtensions.cs" />

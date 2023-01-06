@@ -377,6 +377,16 @@ namespace ComfyLib {
   }
 
   public static class RectTransformExtensions {
+    public static RectTransform OffsetPosition(this RectTransform rectTransform, Vector2 offset) {
+      rectTransform.anchoredPosition += offset;
+      return rectTransform;
+    }
+
+    public static RectTransform OffsetSizeDelta(this RectTransform rectTransform, Vector2 offset) {
+      rectTransform.sizeDelta += offset;
+      return rectTransform;
+    }
+
     public static RectTransform SetAnchorMin(this RectTransform rectTransform, Vector2 anchorMin) {
       rectTransform.anchorMin = anchorMin;
       return rectTransform;
@@ -394,6 +404,11 @@ namespace ComfyLib {
 
     public static RectTransform SetPosition(this RectTransform rectTransform, Vector2 position) {
       rectTransform.anchoredPosition = position;
+      return rectTransform;
+    }
+
+    public static RectTransform SetPositionX(this RectTransform rectTransform, float x) {
+      rectTransform.anchoredPosition = new(x, rectTransform.anchoredPosition.y);
       return rectTransform;
     }
 

@@ -8,7 +8,7 @@ namespace LicenseToSkill {
     static readonly string StatusEffectSoftDeath = "SoftDeath";
 
     [HarmonyPostfix]
-    [HarmonyPatch(nameof(SEMan.AddStatusEffect), typeof(string), typeof(bool))]
+    [HarmonyPatch(nameof(SEMan.AddStatusEffect), typeof(string), typeof(bool), typeof(int), typeof(float))]
     static void AddStatusEffectPostfix(
         ref SEMan __instance, ref StatusEffect __result, string name, bool resetTime) {
       if (!IsModEnabled.Value

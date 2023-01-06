@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.0.3.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -95,6 +95,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Added new commands for exporting pins to a file in binary or text format.
+  * Added new command for import pins from a binary file.
+  * Refactored plugin configuration code.
 
 ### 1.0.3
 

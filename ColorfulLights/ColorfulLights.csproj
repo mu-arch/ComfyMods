@@ -76,6 +76,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
@@ -84,6 +87,11 @@
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="ColorfulLights.cs" />
     <Compile Include="Components\FireplaceColor.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Config\ExtendedColorConfigEntry.cs" />
+    <Compile Include="Config\GUI\GUIBuilder.cs" />
+    <Compile Include="Config\GUI\GUIFocus.cs" />
+    <Compile Include="Config\GUI\GUIHelper.cs" />
     <Compile Include="Patches\FireplacePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\ZNetScenePatch.cs" />

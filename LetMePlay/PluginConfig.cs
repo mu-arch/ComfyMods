@@ -2,13 +2,15 @@
 
 namespace LetMePlay {
   public class PluginConfig {
-    public static ConfigEntry<bool> IsModEnabled;
-    public static ConfigEntry<bool> DisableWardShieldFlash;
-    public static ConfigEntry<bool> DisableCameraSwayWhileSitting;
-    public static ConfigEntry<bool> DisableBuildPlacementMarker;
+    public static ConfigEntry<bool> IsModEnabled { get; private set; }
+    public static ConfigEntry<bool> DisableWardShieldFlash { get; private set; }
+    public static ConfigEntry<bool> DisableCameraSwayWhileSitting { get; private set; }
+    public static ConfigEntry<bool> DisableBuildPlacementMarker { get; private set; }
 
-    public static ConfigEntry<bool> DisableWeatherSnowParticles;
-    public static ConfigEntry<bool> DisableWeatherAshParticles;
+    public static ConfigEntry<bool> DisableWeatherSnowParticles { get; private set; }
+    public static ConfigEntry<bool> DisableWeatherAshParticles { get; private set; }
+
+    public static ConfigEntry<bool> DisableGameMenuPause { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
@@ -39,6 +41,10 @@ namespace LetMePlay {
               "disableWeatherAshParticles",
               false,
               "Disables ALL ash particles during ash rain weather.");
+
+      DisableGameMenuPause =
+          config.Bind(
+              "Pause", "disableGameMenuPause", false, "Disable the Game 'pause' effect when the Menu is shown.");
     }
   }
 }

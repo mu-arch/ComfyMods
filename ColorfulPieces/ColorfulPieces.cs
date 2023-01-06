@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -17,13 +16,12 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.8.0";
+    public const string PluginVersion = "1.9.0";
 
     public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
     public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
     public static readonly int PieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
-
-    static readonly ConcurrentDictionary<Vector3, Color> _vectorToColorCache = new();
+    public static readonly int PieceLastColoredByHostHashCode = "PieceLastColoredByHost".GetStableHashCode();
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -63,17 +61,16 @@ namespace ColorfulPieces {
         return;
       }
 
-      wearNTear.m_nview.m_zdo.Set(PieceColorHashCode, TargetPieceColorAsVec3);
-      wearNTear.m_nview.m_zdo.Set(PieceEmissionColorFactorHashCode, TargetPieceEmissionColorFactor.Value);
-      wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      ChangePieceColorZdo(wearNTear.m_nview);
 
       if (wearNTear.TryGetComponent(out PieceColor pieceColor)) {
         pieceColor.UpdateColors();
       }
 
-      wearNTear.m_piece?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+      wearNTear.m_piece.Ref()?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
     }
 
+    // TODO(redseiko@): this is for applying PieceColor to other components than Piece.
     public static void ChangePieceColorAction(PieceColor pieceColor) {
       if (!pieceColor.TryGetComponent(out ZNetView netView)
           || !netView
@@ -83,9 +80,7 @@ namespace ColorfulPieces {
       }
 
       netView.ClaimOwnership();
-      netView.m_zdo.Set(PieceColorHashCode, TargetPieceColorAsVec3);
-      netView.m_zdo.Set(PieceEmissionColorFactorHashCode, TargetPieceEmissionColorFactor.Value);
-      netView.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      ChangePieceColorZdo(netView);
 
       pieceColor.UpdateColors();
 
@@ -93,6 +88,13 @@ namespace ColorfulPieces {
           ZNetScene.m_instance.GetPrefab("vfx_boar_love"),
           pieceColor.transform.position,
           pieceColor.transform.rotation);
+    }
+
+    static void ChangePieceColorZdo(ZNetView netView) {
+      netView.m_zdo.Set(PieceColorHashCode, Utils.ColorToVec3(TargetPieceColor.Value));
+      netView.m_zdo.Set(PieceEmissionColorFactorHashCode, TargetPieceEmissionColorFactor.Value);
+      netView.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      netView.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
     }
 
     static readonly List<Piece> _piecesCache = new();
@@ -133,6 +135,7 @@ namespace ColorfulPieces {
       if (wearNTear.m_nview.m_zdo.RemoveVec3(PieceColorHashCode)
           || wearNTear.m_nview.m_zdo.RemoveFloat(PieceEmissionColorFactorHashCode)) {
         wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+        wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
         wearNTear.m_nview.m_zdo.IncreseDataRevision();
       }
 
@@ -140,7 +143,7 @@ namespace ColorfulPieces {
         pieceColor.UpdateColors();
       }
 
-      wearNTear.m_piece?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
+      wearNTear.m_piece.Ref()?.m_placeEffect?.Create(wearNTear.transform.position, wearNTear.transform.rotation);
     }
 
     public static IEnumerator ClearColorsInRadiusCoroutine(Vector3 position, float radius) {
@@ -178,8 +181,8 @@ namespace ColorfulPieces {
         return;
       }
 
-      TargetPieceColor.Value = _vectorToColorCache.GetOrAdd(colorAsVector, Utils.Vec3ToColor);
-      TargetPieceColorHex.Value = $"#{ColorUtility.ToHtmlStringRGB(TargetPieceColor.Value)}";
+      Color color = Utils.Vec3ToColor(colorAsVector);
+      TargetPieceColor.SetValue(color);
 
       if (wearNTear.m_nview.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)) {
         TargetPieceEmissionColorFactor.Value = factor;
@@ -187,7 +190,7 @@ namespace ColorfulPieces {
 
       MessageHud.m_instance.ShowMessage(
           MessageHud.MessageType.TopLeft,
-          $"Copied piece color: {TargetPieceColorHex.Value} (f: {TargetPieceEmissionColorFactor.Value})");
+          $"Copied piece color: #{ColorUtility.ToHtmlStringRGB(color)} (f: {TargetPieceEmissionColorFactor.Value})");
     }
   }
 }

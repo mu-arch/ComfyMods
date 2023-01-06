@@ -24,7 +24,8 @@ namespace ColorfulLights {
     }
 
     static bool TakeInputDelegate(bool takeInputResult) {
-      if (IsModEnabled.Value
+      if (takeInputResult
+          && IsModEnabled.Value
           && ChangeColorActionShortcut.Value.IsDown()
           && Player.m_localPlayer
           && Player.m_localPlayer.m_hovering) {

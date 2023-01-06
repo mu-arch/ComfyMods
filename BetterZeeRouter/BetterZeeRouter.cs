@@ -1,19 +1,16 @@
-﻿using BepInEx;
+﻿using System.Reflection;
+
+using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System;
-using System.IO;
-using System.Reflection;
 
 namespace BetterZeeRouter {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class BetterZeeRouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeerouter";
     public const string PluginName = "BetterZeeRouter";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
@@ -29,6 +26,7 @@ namespace BetterZeeRouter {
 
         _routedRpcManager.AddHandler(RpcWntHealthChangedHashCode, _wntHealthChangedHandler);
         _routedRpcManager.AddHandler(RpcDamageTextHashCode, _damageTextHandler);
+        _routedRpcManager.AddHandler(RpcSetTargetHashCode, _setTargetHandler);
 
         _teleportToHandler = new("TeleportToLog.txt");
         _routedRpcManager.AddHandler(RpcTeleportToHashCode, _teleportToHandler);
@@ -43,56 +41,14 @@ namespace BetterZeeRouter {
     public static readonly int RpcWntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
     public static readonly int RpcDamageTextHashCode = "DamageText".GetStableHashCode();
 
-    // Yes, they actually prefixed it with `RPC_` in vanilla code.
+    // Yes, these ones are actually prefixed `RPC_` in vanilla code.
     public static readonly int RpcTeleportToHashCode = "RPC_TeleportTo".GetStableHashCode();
+    public static readonly int RpcSetTargetHashCode = "RPC_SetTarget".GetStableHashCode();
 
     static readonly RoutedRpcManager _routedRpcManager = RoutedRpcManager.Instance;
     static readonly WntHealthChangedHandler _wntHealthChangedHandler = new();
     static readonly DamageTextHandler _damageTextHandler = new();
-
-    public class WntHealthChangedHandler : RpcMethodHandler {
-      public long WntHealthChangedCount { get; private set; }
-
-      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
-        WntHealthChangedCount++;
-        return false;
-      }
-    }
-
-    public class DamageTextHandler : RpcMethodHandler {
-      public long DamageTextCount { get; private set; }
-
-      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
-        DamageTextCount++;
-        return false;
-      }
-    }
-
-    public sealed class TeleportToHandler : RpcMethodHandler, IDisposable {
-      readonly StreamWriter _teleportToWriter;
-
-      public TeleportToHandler(string teleportToLogFilename) {
-        _teleportToWriter =
-            File.AppendText(Path.Combine(Utils.GetSaveDataPath(FileHelpers.FileSource.Local), teleportToLogFilename));
-      }
-
-      public void Dispose() {
-        _teleportToWriter.Dispose();
-      }
-
-      public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
-        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        long senderId = routedRpcData.m_senderPeerID;
-        long targetId = routedRpcData.m_targetPeerID;
-
-        _teleportToWriter.WriteLine($"{timestamp},{senderId},{targetId}");
-        _teleportToWriter.Flush();
-
-        ZLog.Log($"[{DateTimeOffset.Now}] RPC_TeleportTo attempted by {senderId} targeting {targetId}.");
-
-        return false;
-      }
-    }
+    static readonly SetTargetHandler _setTargetHandler = new();
 
     [HarmonyPatch(typeof(ZRoutedRpc))]
     static class ZRoutedRpcPatch {

@@ -5,10 +5,10 @@ using System;
 
 namespace ComfyLib {
   public class PanelDragger : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
-    public RectTransform TargetRectTransform;
-    public event EventHandler<Vector3> PanelOnEndDrag;
-
     Vector2 _lastMousePosition;
+
+    public RectTransform TargetRectTransform;
+    public event EventHandler<Vector3> OnPanelEndDrag;
 
     public void OnBeginDrag(PointerEventData eventData) {
       _lastMousePosition = eventData.position;
@@ -26,7 +26,7 @@ namespace ComfyLib {
 
     public void OnEndDrag(PointerEventData eventData) {
       if (TargetRectTransform) {
-        PanelOnEndDrag?.Invoke(this, TargetRectTransform.anchoredPosition);
+        OnPanelEndDrag?.Invoke(this, TargetRectTransform.anchoredPosition);
       }
     }
   }
