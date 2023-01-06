@@ -24,6 +24,7 @@ namespace Enhuddlement {
 
     public static ConfigEntry<int> PlayerHudNameTextFontSize { get; private set; }
     public static ConfigEntry<Color> PlayerHudNameTextColor { get; private set; }
+    public static ConfigEntry<Color> PlayerHudNameTextPvPColor { get; private set; }
 
     public static ConfigEntry<int> PlayerHudHealthTextFontSize { get; private set; }
     public static ConfigEntry<Color> PlayerHudHealthTextColor { get; private set; }
@@ -61,6 +62,13 @@ namespace Enhuddlement {
               "nameTextColor",
               new Color(1f, 0.7176f, 0.3603f, 1f),
               "PlayerHud.Name text color.");
+
+      PlayerHudNameTextPvPColor =
+          config.BindInOrder(
+              "PlayerHud.Name",
+              "nameTextPvPColor",
+              Color.red,
+              "PlayerHud.Name text color when player has PvP enabled.");
 
       PlayerHudHealthTextFontSize =
           config.BindInOrder(
@@ -204,6 +212,7 @@ namespace Enhuddlement {
     public static ConfigEntry<float> EnemyHudHealthBarHeight { get; private set; }
 
     public static ConfigEntry<Color> EnemyHudHealthBarColor { get; private set; }
+    public static ConfigEntry<Color> EnemyHudHealthBarFriendlyColor { get; private set; }
     public static ConfigEntry<Color> EnemyHudHealthBarTamedColor { get; private set; }
 
     public static void BindEnemyHudConfig(ConfigFile config) {
@@ -287,6 +296,13 @@ namespace Enhuddlement {
               "healthBarColor",
               new Color(1f, 0.333f, 0.333f, 1f),
               "EnemyHud.HealthBar fast color for regular mobs.");
+
+      EnemyHudHealthBarFriendlyColor =
+          config.BindInOrder(
+              "EnemyHud.HealthBar",
+              "healthBarFriendlyColor",
+              new Color(0.2638f, 1f, 0.125f, 1f),
+              "EnemyHud.HealthBar fast color for friendly (but not tamed) mobs.");
 
       EnemyHudHealthBarTamedColor =
           config.BindInOrder(

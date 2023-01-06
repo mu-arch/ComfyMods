@@ -86,8 +86,8 @@ namespace Enhuddlement {
       SetupAlerted(hudData);
       SetupAware(hudData);
 
-      hudData.m_healthFast.SetColor(
-          hudData.m_character.IsTamed() ? EnemyHudHealthBarTamedColor.Value : EnemyHudHealthBarColor.Value);
+      // Default to regular color as it can change in updater.
+      hudData.m_healthFast.SetColor(EnemyHudHealthBarColor.Value);
     }
 
     static void SetupName(EnemyHud.HudData hudData, int nameTextFontSize, Color nameTextColor) {
@@ -161,7 +161,7 @@ namespace Enhuddlement {
 
       hudData.m_healthSlow.gameObject.SetActive(true);
 
-      // TODO: friendly bars.
+      // Turn these off as we'll just colorize the regular bar.
       hudData.m_healthFastFriendly.Ref()?.gameObject.SetActive(false);
     }
 

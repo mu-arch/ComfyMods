@@ -52,7 +52,10 @@ namespace Enhuddlement {
           hudData.m_gui.SetActive(true);
           hudData.m_name.text = Localization.m_instance.Localize(character.GetHoverName());
 
-          if (character.m_baseAI && !character.IsBoss() && !character.IsPlayer()) {
+          if (character.IsPlayer()) {
+            hudData.m_name.SetColor(
+                character.IsPVPEnabled() ? PlayerHudNameTextPvPColor.Value : PlayerHudNameTextColor.Value);
+          } else if (character.m_baseAI && !character.IsBoss()) {
             bool aware = character.m_baseAI.HaveTarget();
             bool alerted = character.m_baseAI.IsAlerted();
 
@@ -82,7 +85,12 @@ namespace Enhuddlement {
         hudData.m_healthFast.SetValue(healthPercentage);
 
         if (hudData.m_healthFastFriendly) {
-          // TODO: healthFastFriendly bar setup
+          hudData.m_healthFast.SetColor(
+              character.IsTamed()
+                  ? EnemyHudHealthBarTamedColor.Value
+                  : player && !BaseAI.IsEnemy(player, character)
+                        ? EnemyHudHealthBarFriendlyColor.Value
+                        : EnemyHudHealthBarColor.Value);
         }
 
         if (hudData.m_isMount && sadle) {
