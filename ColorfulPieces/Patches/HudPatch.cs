@@ -6,7 +6,7 @@ using static ColorfulPieces.PluginConfig;
 
 namespace ColorfulPieces {
   [HarmonyPatch(typeof(Hud))]
-  public class HudPatch {
+  static class HudPatch {
     static readonly string HoverNameTextTemplate =
       "{0}{1}"
           + "<size={9}>"

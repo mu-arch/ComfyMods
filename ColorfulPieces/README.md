@@ -42,7 +42,7 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.8.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.9.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -52,6 +52,12 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.9.1
+
+  * Fixed a bug with the CopyPieceColorAction not working correctly and converted it to a regular method.
+  * Organized some of the config files and other small clean-up.
+  * Modified the `Player.TakeInput()` patch to also check that taking input is allowed.
 
 ### 1.9.0
 

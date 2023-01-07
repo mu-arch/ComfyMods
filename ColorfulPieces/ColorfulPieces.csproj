@@ -99,9 +99,9 @@
     <Compile Include="Components\PieceColorUpdater.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Config\ExtendedColorConfigEntry.cs" />
-    <Compile Include="Config\GUIBuilder.cs" />
-    <Compile Include="Config\GUIFocus.cs" />
-    <Compile Include="Config\GUIHelper.cs" />
+    <Compile Include="Config\GUI\GUIBuilder.cs" />
+    <Compile Include="Config\GUI\GUIFocus.cs" />
+    <Compile Include="Config\GUI\GUIHelper.cs" />
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\StaticPhysicsPatch.cs" />
