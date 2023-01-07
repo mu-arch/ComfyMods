@@ -16,6 +16,11 @@
 
 ## Changelog
 
+### 2.6.0
+
+  * Added `ComfyMods-LicensePlate-1.0.0` to the dependencies list.
+  * Updated several ComfyMod versions to the latest that were missed.
+
 ### 2.5.0
 
   * Removed `ComfyMods-ComfyBuildExpansion-1.1.0` and replaced with `ComfyMods-SearsCatalog-1.0.0` (better).
