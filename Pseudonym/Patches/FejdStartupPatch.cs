@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 
+using System.Text.RegularExpressions;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +25,8 @@ namespace Pseudonym {
       CreateEditButton(__instance);
 
       _newCharacterPanelTopicText = __instance.m_newCharacterPanel.transform.Find("Topic").Ref()?.GetComponent<Text>();
+      _topicText = Localization.m_instance.textStrings[_newCharacterPanelTopicText];
+
       _onNewCharacterDoneEvent = __instance.m_csNewCharacterDone.onClick;
 
       _characterLimit = __instance.m_csNewCharacterName.characterLimit;
@@ -51,6 +55,8 @@ namespace Pseudonym {
       _editButton.Ref()?.gameObject.SetActive(__instance.m_profiles.Count > 0);
     }
 
+    static readonly Regex _nameRegex = new("[a-zA-Z0-9 _]", RegexOptions.CultureInvariant);
+
     static void OnEditCharacter(FejdStartup fejdStartup) {
       if (fejdStartup.TryGetPlayerProfile(out PlayerProfile profile)) {
         ZLog.Log($"Editing existing player: {profile.GetName()}");
@@ -60,14 +66,14 @@ namespace Pseudonym {
         fejdStartup.m_newCharacterError.SetActive(false);
         fejdStartup.m_selectCharacterPanel.SetActive(false);
 
-        _topicText = Localization.m_instance.textStrings[_newCharacterPanelTopicText];
         Localization.m_instance.textStrings[_newCharacterPanelTopicText] = $"Edit Character: {profile.GetName()}";
 
         fejdStartup.m_csNewCharacterDone.onClick = new();
         fejdStartup.m_csNewCharacterDone.onClick.AddListener(() => OnEditCharacterDone(fejdStartup));
 
         fejdStartup.m_csNewCharacterName.characterLimit = 20;
-        fejdStartup.m_csNewCharacterName.contentType = InputField.ContentType.Alphanumeric;
+        fejdStartup.m_csNewCharacterName.contentType = InputField.ContentType.Standard;
+        fejdStartup.m_csNewCharacterName.onValidateInput += OnEditCharacterNameValidateInput;
         fejdStartup.m_csNewCharacterName.text = profile.GetName();
 
         fejdStartup.SetupCharacterPreview(profile);
@@ -76,6 +82,15 @@ namespace Pseudonym {
       } else {
         _editingPlayerProfile = null;
       }
+    }
+
+    static char OnEditCharacterNameValidateInput(string text, int charIndex, char addedChar) {
+      ZLog.Log($"Validating: '{addedChar}' at index: {charIndex}, text: {text}");
+
+      return
+          _nameRegex.IsMatch(char.ToString(addedChar)) && (charIndex > 0 || addedChar != ' ')
+              ? addedChar
+              : '\0';
     }
 
     static void SetupPlayerCustomization(Player player, PlayerCustomizaton customization) {
@@ -131,6 +146,7 @@ namespace Pseudonym {
       fejdStartup.m_csNewCharacterDone.onClick = _onNewCharacterDoneEvent;
       fejdStartup.m_csNewCharacterName.characterLimit = _characterLimit;
       fejdStartup.m_csNewCharacterName.contentType = _contentType;
+      fejdStartup.m_csNewCharacterName.onValidateInput -= OnEditCharacterNameValidateInput;
 
       fejdStartup.m_selectCharacterPanel.SetActive(true);
       fejdStartup.m_newCharacterPanel.SetActive(false);

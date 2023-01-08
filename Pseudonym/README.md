@@ -38,6 +38,11 @@
 
 ## Changelog
 
+### 1.0.1
+
+  * Fixed a bug where spaces were not allowed in the name.
+  * Fixed another minor bug.
+
 ### 1.0.0
 
   * Initial release.

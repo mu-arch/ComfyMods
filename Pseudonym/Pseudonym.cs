@@ -11,7 +11,7 @@ namespace Pseudonym {
   public class Pseudonym : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.pseudonym";
     public const string PluginName = "Pseudonym";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.0.1";
 
     Harmony _harmony;
 
