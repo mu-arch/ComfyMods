@@ -1,8 +1,8 @@
-﻿using BepInEx;
+﻿using System.Reflection;
+
+using BepInEx;
 
 using HarmonyLib;
-
-using System.Reflection;
 
 using static LetMePlay.PluginConfig;
 
@@ -11,7 +11,7 @@ namespace LetMePlay {
   public class LetMePlay : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.letmeplay";
     public const string PluginName = "LetMePlay";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.4.0";
     
     Harmony _harmony;
 

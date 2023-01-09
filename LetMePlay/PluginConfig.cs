@@ -10,8 +10,6 @@ namespace LetMePlay {
     public static ConfigEntry<bool> DisableWeatherSnowParticles { get; private set; }
     public static ConfigEntry<bool> DisableWeatherAshParticles { get; private set; }
 
-    public static ConfigEntry<bool> DisableGameMenuPause { get; private set; }
-
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
@@ -41,10 +39,6 @@ namespace LetMePlay {
               "disableWeatherAshParticles",
               false,
               "Disables ALL ash particles during ash rain weather.");
-
-      DisableGameMenuPause =
-          config.Bind(
-              "Pause", "disableGameMenuPause", false, "Disable the Game 'pause' effect when the Menu is shown.");
     }
   }
 }
