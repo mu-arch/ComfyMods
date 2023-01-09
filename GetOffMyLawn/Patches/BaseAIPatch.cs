@@ -6,16 +6,16 @@ using static GetOffMyLawn.PluginConfig;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(BaseAI))]
-  public class BaseAIPatch {
-    static readonly string[] TargetRayMask = new string[] {
-        "Default", "static_solid", "Default_small", "vehicle",
-      };
+  static class BaseAIPatch {
+    static readonly string[] TargetRayMask = {
+      "Default", "static_solid", "Default_small", "vehicle",
+    };
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(BaseAI.Awake))]
     static void AwakePostfix(ref BaseAI __instance) {
       if (IsModEnabled.Value) {
-        __instance.m_monsterTargetRayMask = LayerMask.GetMask(TargetRayMask);
+        BaseAI.m_monsterTargetRayMask = LayerMask.GetMask(TargetRayMask);
       }
     }
 

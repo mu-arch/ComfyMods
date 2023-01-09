@@ -3,17 +3,6 @@
   * Set the health of player-placed items in the game to a configurable value.
   * Reduces monster attacks on player objects.
 
-## Installation
-
-### Manual
-
-  * Un-zip `GetOffMyLawn.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.4.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### User Interface
@@ -64,13 +53,30 @@
   * [EulersRuler](https://valheim.thunderstore.io/package/ComfyMods/EulersRuler/)﻿
     * See piece health, stability and other information while building.
 
+## Installation
+
+### Manual
+
+  * Un-zip `GetOffMyLawn.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual)
+
+  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.5.0.zip`.
+  * Click "Import local mod" on the pop-up for information.
+
 ### Notes
 
-  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/GetOffMyLawn).
+  * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/GetOffMyLawn).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Modified TargetPieceHealth config setting to use FloatConfigEntry with custom text-to-float parsing/validation.
+  * Removed the ApplyDamageCount logging since it's no longer needed info.
+  * Minor code clean up.
 
 ### 1.4.1
 

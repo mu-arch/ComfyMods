@@ -21,9 +21,6 @@ namespace GetOffMyLawn {
         __result = false;
         return false;
       } else if (health >= PieceHealthDamageThreshold) {
-        ApplyDamageCount++;
-        ApplyDamageCountLastMin++;
-
         __result = false;
         return false;
       }

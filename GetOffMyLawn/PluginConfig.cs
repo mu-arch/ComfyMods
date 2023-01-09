@@ -1,9 +1,11 @@
 ﻿using BepInEx.Configuration;
 
+using ComfyLib;
+
 namespace GetOffMyLawn {
-  public class PluginConfig {
+  public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
-    public static ConfigEntry<float> PieceHealth { get; private set; }
+    public static FloatConfigEntry TargetPieceHealth { get; private set; }
 
     public static ConfigEntry<bool> EnablePieceHealthDamageThreshold { get; private set; }
 
@@ -11,31 +13,32 @@ namespace GetOffMyLawn {
     public static ConfigEntry<bool> ShowRepairEffectOnWardActivation { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
-      IsModEnabled = config.Bind("Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
-      PieceHealth =
-          config.Bind(
+      TargetPieceHealth =
+          new(
+              config,
               "PieceValue",
               "targetPieceHealth",
               100_000_000_000_000_000f,
               "Target value to set piece health to when creating and repairing.");
 
       EnablePieceHealthDamageThreshold =
-          config.Bind(
+          config.BindInOrder(
               "Optimization",
               "enablePieceHealthDamageThreshold",
               true,
               "If piece health exceeds 100K, DO NOT execute ApplyDamage() or send WNTHealthChanged messages.");
 
       ShowTopLeftMessageOnPieceRepair =
-          config.Bind(
+          config.BindInOrder(
               "Indicators",
               "showTopLeftMessageOnPieceRepair",
               false,
               "Shows a message in the top-left message area on piece repair.");
 
       ShowRepairEffectOnWardActivation =
-          config.Bind(
+          config.BindInOrder(
               "Indicators",
               "showRepairEffectOnWardActivation",
               false,

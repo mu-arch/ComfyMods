@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(Player))]
-  public class PlayerPatch {
+  static class PlayerPatch {
     static readonly HashSet<string> RemovablePieceOverrides =
         new() {
           "$tool_cart",
@@ -45,12 +45,12 @@ namespace GetOffMyLawn {
         return;
       }
 
-      hoveringPiece.m_nview.GetZDO().Set(HealthHashCode, PieceHealth.Value);
-      PluginLogger.LogInfo($"Repaired piece '{pieceName}' to health: {PieceHealth.Value}");
+      hoveringPiece.m_nview.GetZDO().Set(HealthHashCode, TargetPieceHealth.Value);
+      PluginLogger.LogInfo($"Repaired piece '{pieceName}' to health: {TargetPieceHealth.Value}");
 
       if (ShowTopLeftMessageOnPieceRepair.Value) {
         __instance.Message(
-            MessageHud.MessageType.TopLeft, $"Repaired piece '{pieceName}' to health: {PieceHealth.Value}");
+            MessageHud.MessageType.TopLeft, $"Repaired piece '{pieceName}' to health: {TargetPieceHealth.Value}");
       }
 
       hoveringPiece.GetComponent<WearNTear>().m_lastRepair = Time.time;
