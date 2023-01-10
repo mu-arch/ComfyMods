@@ -113,6 +113,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pseudonym", "Pseudonym\Pseu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keysential", "Keysential\Keysential.csproj", "{342157BB-E50E-416C-8033-605D8845BCFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlaCarte", "AlaCarte\AlaCarte.csproj", "{33773053-20A8-4803-8B21-1F2AC61EF480}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -303,6 +305,10 @@ Global
 		{342157BB-E50E-416C-8033-605D8845BCFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{342157BB-E50E-416C-8033-605D8845BCFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{342157BB-E50E-416C-8033-605D8845BCFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33773053-20A8-4803-8B21-1F2AC61EF480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33773053-20A8-4803-8B21-1F2AC61EF480}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33773053-20A8-4803-8B21-1F2AC61EF480}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33773053-20A8-4803-8B21-1F2AC61EF480}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
