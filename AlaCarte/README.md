@@ -2,6 +2,8 @@
 
 *Menu enhancement and customization.*
 
+![Splash](https://i.imgur.com/eB2JEkY.png)
+
 ## Features
 
 ### Change the menu dialog type
@@ -16,6 +18,12 @@
 ### Disable Game 'pause' on menu
 
   * Disables the 'pause' feature that occurs in single-player/cheats mode when the menu is shown.
+
+## Configuration
+
+Changes to any of the configuration options requires opening and closing the menu to take effect.
+
+![Configuration](https://i.imgur.com/gxqQoaK.png)
 
 ## Installation
 
