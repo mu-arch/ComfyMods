@@ -96,27 +96,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChatMessage.cs" />
+    <Compile Include="Core\ChatMessage.cs" />
     <Compile Include="Chatter.cs" />
-    <Compile Include="CircularQueue.cs" />
+    <Compile Include="UI\ContentRow.cs" />
+    <Compile Include="Utils\CircularQueue.cs" />
     <Compile Include="Config\StringListConfigEntry.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
-    <Compile Include="IsExternalInit.cs" />
+    <Compile Include="Utils\IsExternalInit.cs" />
     <Compile Include="PluginExtensions.cs" />
-    <Compile Include="UI\UIExtensions.cs" />
+    <Compile Include="UI\Core\UIExtensions.cs" />
     <Compile Include="Patches\ChatPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\ChatPanel.cs" />
-    <Compile Include="UI\PanelDragger.cs" />
-    <Compile Include="UI\PanelResizer.cs" />
+    <Compile Include="UI\Components\PanelDragger.cs" />
+    <Compile Include="UI\Components\PanelResizer.cs" />
+    <Compile Include="Core\TerminalCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />

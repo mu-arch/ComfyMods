@@ -4,22 +4,12 @@
 
 ![UI-Screenshot-01](https://i.imgur.com/SPeqjsu.png)
 
-## Installation
-
-### Manual
-
-  * Un-zip `Chatter.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Chatter_v1.2.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### New Features!
 
-  * Chat filters with a dynamic UI.
+  * Set the default chat message type from say to say/shout/whisper!
+  * Set the default content row toggles to enable on start!
 
 ### Features
 
@@ -31,6 +21,7 @@
   * Use any color for the chat panel background!
   * Move **and** resize the chat panel using the mouse (see below).
   * Change change layouts on the fly between `WithHeaderRow` and `SingleRow` layouts (see below).
+  * Chat filters with a dynamic UI.
 
 ### Move/Resize/Toggle
 
@@ -54,20 +45,44 @@
   - Changing any text filters will only apply to **new** incoming messages.
   - This is still an *experimental* custom drawer so please report any bugs.
 
-### Configure
+### Change default chat message type
 
-  * Almost every component of the UI is configurable.
+  * Change the default chat message type: type `/say` or `/shout` or `/whisper` and press Enter.
+  * Set the initial default message type to use at game start with config option `chatPanelDefaultMessageTypeToUse`.
+
+### Configuration
+
+  * Almost every component of the UI is configurable and mosty changes will be reflected immediately.
 
     ![UI-Screenshot-02](https://i.imgur.com/XUzlkmp.png)
 
+## Installation
+
+### Manual
+
+  * Un-zip `Chatter.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual)
+
+  * Go to Settings > Import local mod > Select `Chatter_v1.3.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ### Notes
 
-  * This has reached a point of 'good-enough' for the initial release with more features to come later.
-  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Chatter).
+  * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/Chatter).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.3.0
+
+  * Modified `ShouldCreateDivider()` to also check if the username is different.
+  * Added new feature to change the default message type from [say] to one of [say/shout/whisper] via chat command.
+  * Added new config option 'chatPanelContentRowTogglesToEnable' to use for enabling/disable the toggles at start.
+  * Added new config option 'chatPanelDefaultMessageTypeToUse' to use for initial default chat message type at start.
+  * Added `CachedValues` to `StringListConfigEntry` and use that for message filtering.
+  * Some code-refactoring and organizing.
 
 ### 1.2.1
 

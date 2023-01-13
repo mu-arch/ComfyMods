@@ -3,13 +3,15 @@
 using UnityEngine;
 
 namespace Chatter {
+  [Flags]
   public enum ChatMessageType {
-    Text,
-    HudCenter,
-    Say,
-    Shout,
-    Whisper,
-    Ping
+    None = 0,
+    Text = 1,
+    HudCenter = 2,
+    Say = 4,
+    Shout = 8,
+    Whisper = 16,
+    Ping = 32
   }
 
   public class ChatMessage {

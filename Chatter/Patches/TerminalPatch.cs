@@ -1,17 +1,17 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+
+using HarmonyLib;
 
 using UnityEngine;
 
 using static Chatter.Chatter;
 using static Chatter.PluginConfig;
 
-namespace Chatter.Patches {
+namespace Chatter {
   [HarmonyPatch(typeof(Terminal))]
-  class TerminalPatch {
+  static class TerminalPatch {
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Terminal.UpdateInput))]
     static IEnumerable<CodeInstruction> UpdateInputTranspiler(IEnumerable<CodeInstruction> instructions) {

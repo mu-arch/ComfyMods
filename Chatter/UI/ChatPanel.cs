@@ -378,15 +378,17 @@ namespace Chatter {
 
       inputFieldPlaceholder.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
-          .SetAnchorMax(Vector2.zero)
-          .SetPivot(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0f, 0.5f))
           .SetPosition(Vector2.zero);
 
       inputFieldPlaceholder.GetComponent<Text>()
           .SetAlignment(TextAnchor.MiddleLeft)
+          .SetColor(new(1f, 1f, 1f, 0.3f))
           .SetText("...");
 
-      inputFieldPlaceholder.AddComponent<LayoutElement>();
+      inputFieldPlaceholder.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
 
       InputField inputField = inputFieldRow.AddComponent<InputField>();
       inputField.textComponent = inputFieldText.GetComponent<Text>();

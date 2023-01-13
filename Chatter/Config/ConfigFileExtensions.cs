@@ -20,13 +20,18 @@ namespace ComfyLib {
         string section,
         string key,
         T defaultValue,
-        string description) {
+        string description,
+        AcceptableValueBase acceptableValues) {
       return config.Bind(
           section,
           key,
           defaultValue,
           new ConfigDescription(
-              description, null, new ConfigurationManagerAttributes { Order = GetSettingOrder(section) }));
+              description,
+              acceptableValues,
+              new ConfigurationManagerAttributes {
+                Order = GetSettingOrder(section)
+              }));
     }
 
     public static ConfigEntry<T> BindInOrder<T>(
@@ -35,13 +40,22 @@ namespace ComfyLib {
         string key,
         T defaultValue,
         string description,
-        AcceptableValueBase acceptableValues) {
+        System.Action<ConfigEntryBase> customDrawer = null,
+        bool browsable = true,
+        bool hideDefaultButton = false) {
       return config.Bind(
           section,
           key,
           defaultValue,
           new ConfigDescription(
-              description, acceptableValues, new ConfigurationManagerAttributes { Order = GetSettingOrder(section) }));
+              description,
+              null,
+              new ConfigurationManagerAttributes {
+                Browsable = true,
+                CustomDrawer = customDrawer,
+                HideDefaultButton = hideDefaultButton,
+                Order = GetSettingOrder(section)
+              }));
     }
 
     public static StringListConfigEntry BindInOrder(
@@ -50,6 +64,9 @@ namespace ComfyLib {
     }
 
     internal sealed class ConfigurationManagerAttributes {
+      public System.Action<ConfigEntryBase> CustomDrawer;
+      public bool? Browsable;
+      public bool? HideDefaultButton;
       public int? Order;
     }
   }

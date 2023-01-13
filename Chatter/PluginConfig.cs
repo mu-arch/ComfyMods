@@ -21,6 +21,10 @@ namespace Chatter {
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
 
+    // Defaults
+    public static ConfigEntry<Talker.Type> ChatPanelDefaultMessageTypeToUse { get; private set; }
+    public static ConfigEntry<ChatMessageType> ChatPanelContentRowTogglesToEnable { get; private set; }
+
     // Filters
     public static StringListConfigEntry SayTextFilterList { get; private set; }
     public static StringListConfigEntry ShoutTextFilterList { get; private set; }
@@ -73,7 +77,7 @@ namespace Chatter {
       IsModEnabled ??= config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       // Behaviour
-      HideChatPanelDelay =
+      HideChatPanelDelay ??=
           config.Bind(
               "Behaviour",
               "hideChatPanelDelay",
@@ -92,19 +96,39 @@ namespace Chatter {
       BindFilters(config);
 
       // Content
-      ShowMessageHudCenterMessages =
-          config.Bind(
+      ShowMessageHudCenterMessages ??=
+          config.BindInOrder(
               "Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      ShowChatPanelMessageDividers =
-          config.Bind(
+      ShowChatPanelMessageDividers ??=
+          config.BindInOrder(
               "Content",
               "showChatPanelMessageDividers",
               defaultValue: true,
               "Show the horizontal dividers between groups of messages.");
+
+      // Defaults
+      ChatPanelDefaultMessageTypeToUse ??=
+          config.BindInOrder(
+              "Defaults",
+              "chatPanelDefaultMessageTypeToUse",
+              defaultValue: Talker.Type.Normal,
+              "ChatPanel input default message type to use on game start. Ping value is ignored.");
+
+      ChatPanelContentRowTogglesToEnable ??=
+          config.BindInOrder(
+              "Defaults",
+              "chatPanelContentRowTogglesToEnable",
+              defaultValue:
+                  ChatMessageType.Say
+                  | ChatMessageType.Shout
+                  | ChatMessageType.Whisper
+                  | ChatMessageType.HudCenter
+                  | ChatMessageType.Text,
+              "ChatPanel content row toggles to enable on game start.");
 
       // Layout
       ChatMessageLayout ??=

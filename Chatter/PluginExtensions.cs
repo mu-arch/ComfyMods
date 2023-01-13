@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using UnityEngine.UI;
+
 namespace Chatter {
   public static class ConfigEntryExtensions {
     public static void OnSettingChanged<T>(
@@ -24,6 +26,15 @@ namespace Chatter {
   public static class ObjectExtensions {
     public static T Ref<T>(this T o) where T : UnityEngine.Object {
       return o ? o : null;
+    }
+  }
+
+  public static class ToggleExtensions {
+    public static Toggle SetIsOn(this Toggle toggle, bool isOn) {
+      toggle.SetIsOnWithoutNotify(isOn);
+      toggle.onValueChanged?.Invoke(isOn);
+
+      return toggle;
     }
   }
 }

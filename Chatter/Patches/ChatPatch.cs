@@ -11,9 +11,9 @@ using UnityEngine.UI;
 using static Chatter.Chatter;
 using static Chatter.PluginConfig;
 
-namespace Chatter.Patches {
+namespace Chatter {
   [HarmonyPatch(typeof(Chat))]
-  class ChatPatch {
+  static class ChatPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.Awake))]
     static void AwakePostfix(ref Chat __instance) {
@@ -22,6 +22,24 @@ namespace Chatter.Patches {
       BindChatConfig(__instance, _chatPanel);
       MessageRows.ClearItems();
       ToggleChatter(IsModEnabled.Value);
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(Chat.InputText))]
+    static IEnumerable<CodeInstruction> InputTextTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(useEnd: true, new CodeMatch(OpCodes.Ldstr, "say "))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(PrefixSayDelegate))
+          .InstructionEnumeration();
+    }
+
+    static string PrefixSayDelegate(string value) {
+      if (IsModEnabled.Value) {
+        return ChatInputTextDefaultPrefix;
+      }
+
+      return value;
     }
 
     [HarmonyPrefix]
