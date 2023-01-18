@@ -21,13 +21,13 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.4.1";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    static Piece.PieceCategory _prefabPieceCategory;
-    static Piece.PieceCategory _cultivatorPrefabPieceCategory;
+    static Piece.PieceCategory _hammerCreatorShopCategory;
+    static Piece.PieceCategory _cultivatorCreatorShopCategory;
     static Sprite _standardPrefabIconSprite;
     static Quaternion _prefabIconRenderRotation;
 
@@ -40,24 +40,19 @@ namespace PotteryBarn {
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
-
-      _prefabPieceCategory = PieceManager.Instance.AddPieceCategory("_HammerPieceTable", "CreatorShop");
-      _cultivatorPrefabPieceCategory = PieceManager.Instance.AddPieceCategory("_CultivatorPieceTable", "CreatorShop");
     }
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    public static IEnumerator AddPieces() {
-      yield return AddHammerPieces(GetPieceTable("_HammerPieceTable"));
+    public static void AddPieces() {
+      AddHammerPieces(PieceManager.Instance.GetPieceTable("_HammerPieceTable"));
+      AddCultivatorPieces(PieceManager.Instance.GetPieceTable("_CultivatorPieceTable"));
     }
 
-    static IEnumerator AddHammerPieces(PieceTable pieceTable) {
-      if (!pieceTable) {
-        _logger.LogError($"Could not find HammerPieceTable!");
-        yield break;
-      }
+    static void AddHammerPieces(PieceTable pieceTable) {
+      _hammerCreatorShopCategory = PieceManager.Instance.AddPieceCategory("_HammerPieceTable", "CreatorShop");
 
       _standardPrefabIconSprite = _standardPrefabIconSprite ??= CreateColorSprite(new Color32(34, 132, 73, 64));
       _prefabIconRenderRotation = Quaternion.Euler(0f, -45f, 0f);
@@ -78,25 +73,37 @@ namespace PotteryBarn {
 
       foreach (
           KeyValuePair<string, Dictionary<string, int>> entry in
-              Requirements.hammerCreatorShopItems.OrderBy(o => o.Key).ToList()) {
+              Requirements.HammerCreatorShopItems.OrderBy(o => o.Key).ToList()) {
+
         GetOrAddPieceComponent(entry.Key, pieceTable)
             .SetResources(CreateRequirements(entry.Value))
-            .SetCategory(_prefabPieceCategory)
+            .SetCategory(_hammerCreatorShopCategory)
             .SetCraftingStation(GetCraftingStation(entry.Key))
             .SetCanBeRemoved(true)
             .SetTargetNonPlayerBuilt(false);
       }
+    }
 
-      //foreach (
-      //    KeyValuePair<string, Dictionary<string, int>> entry in
-      //        Requirements.cultivatorCreatorShopItems.OrderBy(o => o.Key).ToList()) {
-      //  GetOrAddPieceComponent(entry.Key, GetPieceTable("_CultivatorPieceTable"), true)
-      //      .SetResources(CreateRequirements(entry.Value))
-      //      .SetCanBeRemoved(false)
-      //      .SetTargetNonPlayerBuilt(false)
-      //      .SetGroundOnly(true)
-      //      .AddPlantComponent();
-      //}
+    static void AddCultivatorPieces(PieceTable pieceTable) {
+      pieceTable.m_useCategories = true;
+
+      PieceManager.Instance.AddPieceCategory("_CultivatorPieceTable", "Misc");
+
+      _cultivatorCreatorShopCategory =
+          PieceManager.Instance.AddPieceCategory("_CultivatorPieceTable", "CreatorShop");
+
+      ZLog.Log($"_Cultivator.CreatorShop.Category id is: {_cultivatorCreatorShopCategory}");
+
+      foreach (
+          KeyValuePair<string, Dictionary<string, int>> entry in
+              Requirements.CultivatorCreatorShopItems.OrderBy(o => o.Key).ToList()) {
+        GetOrAddPieceComponent(entry.Key, pieceTable)
+            .SetResources(CreateRequirements(entry.Value))
+            .SetCategory(_cultivatorCreatorShopCategory)
+            .SetCraftingStation(GetCraftingStation(entry.Key))
+            .SetCanBeRemoved(true)
+            .SetTargetNonPlayerBuilt(false);
+      }
     }
 
     static Piece.Requirement[] CreateRequirements(Dictionary<string, int> data) {
@@ -195,7 +202,7 @@ namespace PotteryBarn {
     }
 
     public static bool IsCreatorShopPiece(Piece piece) {
-      if (Requirements.hammerCreatorShopItems.Keys.Contains(piece.m_description)) {
+      if (Requirements.HammerCreatorShopItems.Keys.Contains(piece.m_description)) {
         return true;
       }
 
@@ -203,7 +210,7 @@ namespace PotteryBarn {
     }
 
     public static bool IsDestructibleCreatorShopPiece(string prefabName) {
-      if (Requirements.hammerCreatorShopItems.Keys.Contains(prefabName)) {
+      if (Requirements.HammerCreatorShopItems.Keys.Contains(prefabName)) {
         return true;
       }
 
@@ -211,7 +218,7 @@ namespace PotteryBarn {
     }
 
     public static bool IsDestructibleCreatorShopPiece(Piece piece) {
-      if (Requirements.hammerCreatorShopItems.Keys.Contains(piece.m_description)) {
+      if (Requirements.HammerCreatorShopItems.Keys.Contains(piece.m_description)) {
         return true;
       }
 
@@ -219,7 +226,7 @@ namespace PotteryBarn {
     }
 
     public static bool IsBuildHammerItem(string prefabName) {
-      if (Requirements.hammerCreatorShopItems.Keys.Contains(prefabName)) {
+      if (Requirements.HammerCreatorShopItems.Keys.Contains(prefabName)) {
         return true;
       }
 

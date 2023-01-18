@@ -2,17 +2,6 @@
 
 *Public build extension that adds existing game prefabs to the Hammer.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `PotteryBarn.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.4.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
   * New prefabs (that exist in the game) will be available to build!
@@ -72,6 +61,17 @@
   * There is a `Change Pose` switch at the base of the stand.
   * PotteryBarn fixes the error that prevents changing poses in vanilla.
 
+## Installation
+
+### Manual
+
+  * Un-zip `PotteryBarn.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `PotteryBarn_v1.5.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ### Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn).
@@ -79,6 +79,13 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Moved 'Vines' and 'GlowingMushroom' to Cultivator under custom 'CreatorShop' category.
+  * Added support for showing categories to Cultivator.
+  * Code-clean up and refactoring.
+  * Updated JVL dependency to `v2.10.3`.
 
 ### 1.4.0
 

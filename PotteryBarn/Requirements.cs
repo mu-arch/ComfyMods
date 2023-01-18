@@ -2,7 +2,7 @@
 
 namespace PotteryBarn {
   public class Requirements {
-    public static readonly Dictionary<string, Dictionary<string, int>> hammerCreatorShopItems = new() {
+    public static readonly Dictionary<string, Dictionary<string, int>> HammerCreatorShopItems = new() {
       // Goblin items
       {"goblin_banner", new Dictionary<string, int>() {
           {"FineWood", 2 },
@@ -93,12 +93,18 @@ namespace PotteryBarn {
           {"ElderBark", 2 }}},
        {"root12", new Dictionary<string, int>() {
           {"ElderBark", 2 }}},
-       {"vines", new Dictionary<string, int>() {
-          {"Wood", 2 }}},
-       {"GlowingMushroom", new Dictionary<string, int>() {
-          {"MushroomYellow", 3 },
-          {"MushroomBlue", 1 }}}
+
     };
+
+    public static readonly Dictionary<string, Dictionary<string, int>> CultivatorCreatorShopItems =
+        new() {
+          { "vines",
+            new() { {"Wood", 2 }} },
+          { "GlowingMushroom",
+            new() {
+              { "MushroomYellow", 3 },
+              { "MushroomBlue", 1 }} }
+        };
 
     //public static readonly Dictionary<string, Dictionary<string, int>> cultivatorCreatorShopItems = new() {
     //   // Natural Items

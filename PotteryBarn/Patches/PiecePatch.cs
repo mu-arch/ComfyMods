@@ -15,7 +15,7 @@ namespace PotteryBarn {
     public static bool DropResourcePrefix(Piece __instance) {
       // Should not need to check against cultivator creator shop items here because they do not pass the
       // Player.CanRemovePiece check.
-      if (Requirements.hammerCreatorShopItems.Keys.Contains(__instance.m_description)) {
+      if (Requirements.HammerCreatorShopItems.Keys.Contains(__instance.m_description)) {
         if (__instance.IsCreator()) {
           IsDropTableDisabled = true;
           return true;
