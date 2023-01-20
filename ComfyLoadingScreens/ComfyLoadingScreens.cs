@@ -8,6 +8,7 @@ using BepInEx;
 using HarmonyLib;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using static ComfyLoadingScreens.PluginConfig;
 
@@ -22,18 +23,28 @@ namespace ComfyLoadingScreens {
     public static Harmony HarmonyInstance { get; private set; }
 
     public void Awake() {
+      PluginInstance = this;
       BindConfig(Config);
 
-      PluginInstance = this;
-      HarmonyInstance = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      if (IsModEnabled.Value) {
+        CustomLoadingTips.Clear();
+        CustomLoadingTips.AddRange(GetCustomLoadingTips());
+
+        CustomLoadingImageFiles.Clear();
+        CustomLoadingImageFiles.AddRange(GetCustomLoadingImageFiles());
+
+        HarmonyInstance = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      }
     }
 
     public void OnDestroy() {
       HarmonyInstance?.UnpatchSelf();
     }
 
+    public static List<string> CustomLoadingTips { get; } = new();
+
     public static IEnumerable<string> GetCustomLoadingTips() {
-      string path = Path.Combine(Path.GetDirectoryName(PluginInstance.Info.Location), $"{PluginName}/loadingtips.txt");
+      string path = Path.Combine(Path.GetDirectoryName(PluginInstance.Info.Location), $"{PluginName}/tips.txt");
 
       if (File.Exists(path)) {
         string[] loadingTips = File.ReadAllLines(path);
@@ -49,6 +60,41 @@ namespace ComfyLoadingScreens {
       return Array.Empty<string>();
     }
 
+    public static void SetCustomLoadingTip(Text tipText) {
+      if (tipText && CustomLoadingTips.Count > 0) {
+        string customTip = CustomLoadingTips.RandomElement();
+        ZLog.Log($"Using custom tip: {customTip}");
+        tipText.text = customTip;
+      }
+    }
+
+    public static void SetupTipText(Text tipText) {
+      if (!tipText) {
+        return;
+      }
+
+      tipText.alignment = TextAnchor.UpperCenter;
+      tipText.horizontalOverflow = HorizontalWrapMode.Overflow;
+      tipText.fontSize = LoadingTipTextFontSize.Value;
+      tipText.color = LoadingTipTextColor.Value;
+
+      Outline outline = tipText.GetComponent<Outline>();
+      outline.enabled = false;
+
+      if (!tipText.gameObject.TryGetComponent(out Shadow shadow)) {
+        shadow = tipText.gameObject.AddComponent<Shadow>();
+      }
+
+      shadow.enabled = true;
+      shadow.effectColor = LoadingTipShadowEffectColor.Value;
+      shadow.effectDistance = LoadingTipShadowEffectDistance.Value;
+
+      RectTransform rectTransform = tipText.GetComponent<RectTransform>();
+      rectTransform.anchorMin = new(0.5f, 0f);
+      rectTransform.anchorMax = new(0.5f, 0f);
+      rectTransform.anchoredPosition = LoadingTipTextPosition.Value;
+    }
+
     public static IEnumerable<string> GetCustomLoadingImageFiles() {
       string path = Path.Combine(Path.GetDirectoryName(PluginInstance.Info.Location), PluginName);
       Directory.CreateDirectory(path);
@@ -58,6 +104,8 @@ namespace ComfyLoadingScreens {
 
       return loadingImageFiles;
     }
+
+    public static List<string> CustomLoadingImageFiles { get; } = new();
 
     static readonly Dictionary<string, Sprite> _customLoadingImageCache = new();
 
@@ -74,15 +122,29 @@ namespace ComfyLoadingScreens {
       }
 
       Texture2D texture = new(1, 1);
-      texture.name = $"{imageFile}-texture";
+      texture.name = $"{Path.GetFileName(imageFile)}.texture";
       texture.LoadImage(File.ReadAllBytes(imageFile));
 
       sprite = Sprite.Create(texture, new(0, 0, texture.width, texture.height), Vector2.zero, 1);
-      sprite.name = $"{imageFile}-sprite";
+      sprite.name = $"{Path.GetFileName(imageFile)}.sprite";
 
       _customLoadingImageCache[imageFile] = sprite;
 
       return sprite;
+    }
+
+    public static void SetCustomLoadingImage(Image loadingImage) {
+      if (loadingImage && CustomLoadingImageFiles.Count > 0) {
+        Sprite customImageSprite = GetCustomLoadingImage(CustomLoadingImageFiles.RandomElement());
+
+        if (customImageSprite) {
+          ZLog.Log($"Using custom image sprite: {customImageSprite.name}");
+          loadingImage.sprite = customImageSprite;
+          loadingImage.type = Image.Type.Simple;
+          loadingImage.color = Color.white;
+          loadingImage.preserveAspect = true;
+        }
+      }
     }
   }
 }
