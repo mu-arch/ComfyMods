@@ -37,7 +37,7 @@ namespace ComfyLoadingScreens {
           config.BindInOrder(
               "LoadingImage.ScaleLerp",
               "lerpEndScale",
-              1.1f,
+              1.05f,
               "Image.scale ending factor for the scale lerp animation.",
               new AcceptableValueRange<float>(0.5f, 1.5f));
 
