@@ -8,8 +8,8 @@ namespace ComfyLoadingScreens {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(FejdStartup.LoadMainScene))]
     static void LoadMainScene(ref FejdStartup __instance) {
-      ComfyLoadingScreens.SetCustomLoadingImage(
-      __instance.m_loading.transform.Find("Bkg").Ref()?.GetComponent<Image>());
+      Image loadingImage = __instance.m_loading.transform.Find("Bkg").Ref()?.GetComponent<Image>();
+      ComfyLoadingScreens.SetCustomLoadingImage(loadingImage);
 
       Text loadingText = __instance.m_loading.transform.Find("Text").Ref()?.GetComponent<Text>();
 

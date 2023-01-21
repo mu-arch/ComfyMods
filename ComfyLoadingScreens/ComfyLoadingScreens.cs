@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -145,6 +146,23 @@ namespace ComfyLoadingScreens {
           loadingImage.preserveAspect = true;
         }
       }
+    }
+
+    public static IEnumerator ScaleLerp(Transform transform, Vector3 startScale, Vector3 endScale, float lerpDuration) {
+      transform.localScale = startScale;
+      float timeElapsed = 0f;
+
+      while (timeElapsed < lerpDuration) {
+        float t = timeElapsed / lerpDuration;
+        t = t * t * (3f - (2f * t));
+
+        transform.localScale = Vector3.Lerp(startScale, endScale, t);
+        timeElapsed += Time.deltaTime;
+
+        yield return null;
+      }
+
+      transform.localScale = endScale;
     }
   }
 }
