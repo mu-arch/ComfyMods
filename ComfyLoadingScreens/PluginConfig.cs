@@ -14,6 +14,9 @@ namespace ComfyLoadingScreens {
     public static ConfigEntry<float> LoadingImageScaleLerpEndScale { get; private set; }
     public static ConfigEntry<float> LoadingImageScaleLerpDuration { get; private set; }
 
+    public static ConfigEntry<bool> LoadingScreenShowPanelSeparator { get; private set; }
+    public static ConfigEntry<Vector2> LoadingScreenPanelSeparatorPosition { get; private set; }
+
     public static ConfigEntry<Vector2> LoadingTipTextPosition { get; private set; }
     public static ConfigEntry<int> LoadingTipTextFontSize { get; private set; }
     public static ConfigEntry<Color> LoadingTipTextColor { get; private set; }
@@ -93,10 +96,32 @@ namespace ComfyLoadingScreens {
               "LoadingTip.Text.Shadow.effectDistance value.");
 
       LoadingTipShadowEffectDistance.SettingChanged += OnLoadingTipConfigChanged;
+
+      LoadingScreenShowPanelSeparator =
+          config.BindInOrder(
+              "LoadingScreen.PanelSeparator",
+              "showPanelSeparator",
+              true,
+              "Show the panel separator image on the loading screen.");
+
+      LoadingScreenShowPanelSeparator.SettingChanged += OnLoadingScreenConfigChanged;
+
+      LoadingScreenPanelSeparatorPosition =
+          config.BindInOrder(
+              "LoadingScreen.PanelSeparator",
+              "panelSeparatorPosition",
+              new Vector2(0f, 150f),
+              "The position of the panel separator image on the loading screen.");
+
+      LoadingScreenPanelSeparatorPosition.SettingChanged += OnLoadingScreenConfigChanged;
     }
 
     static void OnLoadingTipConfigChanged(object sender, EventArgs args) {
       ComfyLoadingScreens.SetupTipText(Hud.m_instance.Ref()?.m_loadingTip);
+    }
+
+    static void OnLoadingScreenConfigChanged(object sender, EventArgs args) {
+      ComfyLoadingScreens.SetupHudLoadingScreen(Hud.m_instance);
     }
   }
 }

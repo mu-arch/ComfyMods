@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 using static ComfyLoadingScreens.PluginConfig;
 
@@ -17,10 +18,16 @@ namespace ComfyLoadingScreens {
       __instance.m_loadingProgress.transform.Find("TopFade").Ref()?.gameObject.SetActive(false);
       __instance.m_loadingProgress.transform.Find("BottomFade").Ref()?.gameObject.SetActive(false);
       __instance.m_loadingProgress.transform.Find("text_darken").Ref()?.gameObject.SetActive(false);
-      __instance.m_loadingProgress.transform.Find("panel_separator").Ref()?.gameObject.SetActive(false);
+
+      ComfyLoadingScreens.SetupHudLoadingScreen(__instance);
 
       __instance.m_teleportingProgress = __instance.m_loadingProgress;
       __instance.m_useRandomImages = ComfyLoadingScreens.CustomLoadingImageFiles.Count <= 0;
+
+      Transform loadingBlackBkg = __instance.transform.Find("LoadingBlack/Bkg");
+      ComfyLoadingScreens.SetCustomLoadingImage(loadingBlackBkg.GetComponent<Image>());
+      ComfyLoadingScreens.SetCustomLoadingTip(UnityEngine.Object.Instantiate(__instance.m_loadingTip, loadingBlackBkg));
+      UnityEngine.Object.Instantiate(__instance.m_loadingProgress.transform.Find("panel_separator"), loadingBlackBkg);
     }
 
     static bool _teleportingProgressState;

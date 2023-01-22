@@ -94,6 +94,7 @@ namespace ComfyLoadingScreens {
       rectTransform.anchorMin = new(0.5f, 0f);
       rectTransform.anchorMax = new(0.5f, 0f);
       rectTransform.anchoredPosition = LoadingTipTextPosition.Value;
+      rectTransform.sizeDelta = new(700f, 78f);
     }
 
     public static IEnumerable<string> GetCustomLoadingImageFiles() {
@@ -163,6 +164,21 @@ namespace ComfyLoadingScreens {
       }
 
       transform.localScale = endScale;
+    }
+
+    public static void SetupHudLoadingScreen(Hud hud) {
+      SetupPanelSeparator(hud.Ref()?.m_loadingProgress.transform.Find("panel_separator"));
+    }
+
+    public static void SetupPanelSeparator(Transform panelSeparator) {
+      if (panelSeparator) {
+        panelSeparator.gameObject.SetActive(LoadingScreenShowPanelSeparator.Value);
+
+        RectTransform rectTransform = panelSeparator.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new(0.5f, 0f);
+        rectTransform.anchorMax = new(0.5f, 0f);
+        rectTransform.anchoredPosition = LoadingScreenPanelSeparatorPosition.Value;
+      }
     }
   }
 }
