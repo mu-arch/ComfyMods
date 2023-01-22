@@ -1,13 +1,14 @@
 ﻿using HarmonyLib;
 
 using UnityEngine;
-using UnityEngine.UI;
 
 using static ComfyLoadingScreens.PluginConfig;
 
 namespace ComfyLoadingScreens {
   [HarmonyPatch(typeof(Hud))]
   static class HudPatch {
+    static Transform _panelTransform;
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Hud.Awake))]
     static void AwakePostfix(ref Hud __instance) {
@@ -24,10 +25,12 @@ namespace ComfyLoadingScreens {
       __instance.m_teleportingProgress = __instance.m_loadingProgress;
       __instance.m_useRandomImages = ComfyLoadingScreens.CustomLoadingImageFiles.Count <= 0;
 
-      Transform loadingBlackBkg = __instance.transform.Find("LoadingBlack/Bkg");
-      ComfyLoadingScreens.SetCustomLoadingImage(loadingBlackBkg.GetComponent<Image>());
-      ComfyLoadingScreens.SetCustomLoadingTip(UnityEngine.Object.Instantiate(__instance.m_loadingTip, loadingBlackBkg));
-      UnityEngine.Object.Instantiate(__instance.m_loadingProgress.transform.Find("panel_separator"), loadingBlackBkg);
+      Transform loadingBlack = __instance.transform.Find("LoadingBlack");
+      __instance.m_loadingImage.transform.SetParent(loadingBlack, false);
+      __instance.m_loadingTip.transform.SetParent(loadingBlack, false);
+
+      _panelTransform = __instance.m_loadingProgress.transform.Find("panel_separator");
+      _panelTransform.SetParent(loadingBlack, false);
     }
 
     static bool _teleportingProgressState;
@@ -47,6 +50,12 @@ namespace ComfyLoadingScreens {
     static void UpdateBlackScreenPostfix(ref Hud __instance) {
       if ((!_haveSetupLoadScreenState && __instance.m_haveSetupLoadScreen)
           || (!_teleportingProgressState && __instance.m_teleportingProgress.activeInHierarchy)) {
+        if (Player.m_localPlayer) {
+          __instance.m_loadingImage.transform.SetParent(__instance.m_loadingProgress.transform, false);
+          __instance.m_loadingTip.transform.SetParent(__instance.m_loadingProgress.transform, false);
+          _panelTransform.SetParent(__instance.m_loadingProgress.transform, false);
+        }
+
         ComfyLoadingScreens.SetCustomLoadingImage(__instance.m_loadingImage);
         ComfyLoadingScreens.SetCustomLoadingTip(__instance.m_loadingTip);
 
