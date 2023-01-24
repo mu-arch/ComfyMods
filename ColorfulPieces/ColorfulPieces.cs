@@ -16,7 +16,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.9.1";
+    public const string PluginVersion = "1.9.2";
 
     public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
     public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -180,7 +180,8 @@ namespace ColorfulPieces {
         TargetPieceEmissionColorFactor.Value = factor;
       }
 
-      LogMessage(
+      MessageHud.m_instance.Ref()?.ShowMessage(
+          MessageHud.MessageType.TopLeft,
           $"Copied piece color: #{ColorUtility.ToHtmlStringRGB(color)} (f: {TargetPieceEmissionColorFactor.Value})");
 
       return true;
