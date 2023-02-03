@@ -43,11 +43,7 @@ namespace Intermission {
 
     public static void SetLoadingImage(Image loadingImage) {
       if (loadingImage && CustomAssets.GetRandomLoadingImage(out Sprite loadingImageSprite)) {
-        loadingImage
-            .SetSprite(loadingImageSprite)
-            .SetType(Image.Type.Simple)
-            .SetColor(Color.white)
-            .SetPreserveAspect(true);
+        loadingImage.SetSprite(loadingImageSprite);
       }
     }
 
@@ -83,6 +79,23 @@ namespace Intermission {
           .SetSizeDelta(new(700f, 78f));
     }
 
+    static Image _cachedLoadingImage;
+
+    public static void SetupLoadingImage(Image loadingImage = default) {
+      if (loadingImage) {
+        _cachedLoadingImage = loadingImage;
+      } else if (_cachedLoadingImage) {
+        loadingImage = _cachedLoadingImage;
+      } else {
+        return;
+      }
+
+      loadingImage
+          .SetType(Image.Type.Simple)
+          .SetColor(LoadingImageBaseColor.Value)
+          .SetPreserveAspect(true);
+    }
+
     static Transform _cachedPanelSeparator;
 
     public static void SetupPanelSeparator(Transform panelSeparator = default) {
@@ -99,6 +112,25 @@ namespace Intermission {
           .SetAnchorMin(new(0.5f, 0f))
           .SetAnchorMax(new(0.5f, 0f))
           .SetPosition(LoadingScreenPanelSeparatorPosition.Value);
+    }
+
+    static Coroutine _scaleLerpCoroutine;
+
+    public static void ScaleLerpLoadingImage(Image loadingImage) {
+      if (_scaleLerpCoroutine != null) {
+        Hud.m_instance.Ref()?.StopCoroutine(_scaleLerpCoroutine);
+        _scaleLerpCoroutine = null;
+      }
+
+      if (LoadingImageUseScaleLerp.Value && loadingImage) {
+        _scaleLerpCoroutine = 
+            Hud.m_instance.Ref()?.StartCoroutine(
+                ScaleLerp(
+                    loadingImage.transform,
+                    Vector3.one,
+                    Vector3.one * LoadingImageScaleLerpEndScale.Value,
+                    LoadingImageScaleLerpDuration.Value));
+      }
     }
 
     public static IEnumerator ScaleLerp(

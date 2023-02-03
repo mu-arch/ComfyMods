@@ -4,17 +4,20 @@ using HarmonyLib;
 
 using UnityEngine;
 
-using static Intermission.PluginConfig;
-
 namespace Intermission {
   [HarmonyPatch(typeof(Hud))]
   static class HudPatch {
-    static Transform _panelTransform;
+    static Transform _panelSeparator;
+    static Transform _loadingBlack;
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Hud.Awake))]
     static void AwakePostfix(ref Hud __instance) {
       Intermission.SetupTipText(__instance.m_loadingTip);
+      Intermission.SetupLoadingImage(__instance.m_loadingImage);
+
+      _panelSeparator = __instance.m_loadingProgress.transform.Find("panel_separator");
+      Intermission.SetupPanelSeparator(_panelSeparator);
 
       Intermission.SetLoadingTip(__instance.m_loadingTip);
       Intermission.SetLoadingImage(__instance.m_loadingImage);
@@ -26,14 +29,10 @@ namespace Intermission {
       __instance.m_teleportingProgress = __instance.m_loadingProgress;
       __instance.m_useRandomImages = CustomAssets.LoadingImageFiles.Count <= 0;
 
-      Transform loadingBlack = __instance.transform.Find("LoadingBlack");
-      __instance.m_loadingImage.transform.SetParent(loadingBlack, false);
-      __instance.m_loadingTip.transform.SetParent(loadingBlack, false);
-
-      _panelTransform = __instance.m_loadingProgress.transform.Find("panel_separator");
-      _panelTransform.SetParent(loadingBlack, false);
-
-      Intermission.SetupPanelSeparator(_panelTransform);
+      _loadingBlack = __instance.transform.Find("LoadingBlack");
+      __instance.m_loadingImage.transform.SetParent(_loadingBlack, false);
+      __instance.m_loadingTip.transform.SetParent(_loadingBlack, false);
+      _panelSeparator.SetParent(_loadingBlack, false);
     }
 
     static bool _teleportingProgressState;
@@ -46,35 +45,21 @@ namespace Intermission {
       _haveSetupLoadScreenState = __instance.m_haveSetupLoadScreen;
     }
 
-    static Coroutine _scaleLerpCoroutine;
-
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Hud.UpdateBlackScreen))]
     static void UpdateBlackScreenPostfix(ref Hud __instance) {
       if ((!_haveSetupLoadScreenState && __instance.m_haveSetupLoadScreen)
           || (!_teleportingProgressState && __instance.m_teleportingProgress.activeInHierarchy)) {
-        if (Player.m_localPlayer) {
-          __instance.m_loadingImage.transform.SetParent(__instance.m_loadingProgress.transform, false);
-          __instance.m_loadingTip.transform.SetParent(__instance.m_loadingProgress.transform, false);
-          _panelTransform.SetParent(__instance.m_loadingProgress.transform, false);
-        }
+        Transform parentTransform = Player.m_localPlayer ? __instance.m_loadingProgress.transform : _loadingBlack;
+
+        __instance.m_loadingImage.transform.SetParent(parentTransform, false);
+        __instance.m_loadingTip.transform.SetParent(parentTransform, false);
+        _panelSeparator.SetParent(parentTransform, false);
 
         Intermission.SetLoadingImage(__instance.m_loadingImage);
         Intermission.SetLoadingTip(__instance.m_loadingTip);
 
-        if (_scaleLerpCoroutine != null) {
-          __instance.StopCoroutine(_scaleLerpCoroutine);
-        }
-
-        if (LoadingImageUseScaleLerp.Value) {
-          _scaleLerpCoroutine =
-              __instance.StartCoroutine(
-                  Intermission.ScaleLerp(
-                      __instance.m_loadingImage.transform,
-                      Vector3.one,
-                      Vector3.one * LoadingImageScaleLerpEndScale.Value,
-                      LoadingImageScaleLerpDuration.Value));
-        }
+        Intermission.ScaleLerpLoadingImage(__instance.m_loadingImage);
       }
     }
   }

@@ -29,7 +29,7 @@ namespace Intermission {
         return loadingTips;
       } else {
         ZLog.Log($"Creating new empty custom tips file: {path}");
-        Directory.CreateDirectory(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.Create(path);
 
         return Array.Empty<string>();
@@ -37,9 +37,9 @@ namespace Intermission {
     }
 
     public static IEnumerable<string> ReadLoadingImageFiles(string path) {
-      Directory.CreateDirectory(path);
+      Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-      string[] loadingImageFiles = Directory.GetFiles(path, "*.png", SearchOption.AllDirectories);
+      string[] loadingImageFiles = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
       ZLog.Log($"Found {loadingImageFiles.Length} custom loading images in directory: {path}");
 
       return loadingImageFiles;

@@ -19,10 +19,11 @@ namespace Intermission {
               __instance.m_menuList.transform.Find("ornament"), __instance.m_loading.transform);
 
       Intermission.SetupTipText(_loadingText);
+      Intermission.SetupLoadingImage(_loadingImage);
       Intermission.SetupPanelSeparator(_panelSeparator);
 
-      Intermission.SetLoadingImage(_loadingImage);
       Intermission.SetLoadingTip(_loadingText);
+      Intermission.SetLoadingImage(_loadingImage);
     }
   }
 }

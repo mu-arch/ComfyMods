@@ -10,6 +10,8 @@ namespace Intermission {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
+    public static ConfigEntry<Color> LoadingImageBaseColor { get; private set; }
+
     public static ConfigEntry<bool> LoadingImageUseScaleLerp { get; private set; }
     public static ConfigEntry<float> LoadingImageScaleLerpEndScale { get; private set; }
     public static ConfigEntry<float> LoadingImageScaleLerpDuration { get; private set; }
@@ -28,6 +30,14 @@ namespace Intermission {
       IsModEnabled =
           config.BindInOrder(
               "_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+
+      // LoadingImage.Image
+      LoadingImageBaseColor =
+          config.BindInOrder(
+              "LoadingImage.Image",
+              "baseColor",
+              Color.white,
+              "The base color to apply to the loading image.");
 
       // LoadingImage.ScaleLerp
       LoadingImageUseScaleLerp =
