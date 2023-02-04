@@ -16,6 +16,11 @@
 
 ## Changelog
 
+### 2.7.0
+
+  * Added `ComfyMods-Intermission-1.0.1` to the dependencies list.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.6.0
 
   * Added `ComfyMods-LicensePlate-1.0.0` to the dependencies list.
