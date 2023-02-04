@@ -51,7 +51,7 @@ namespace Intermission {
       }
 
       if (File.Exists(imageFile)) {
-        ZLog.Log($"Reading custom loading image: {imageFile}");
+        ZLog.DevLog($"Reading custom loading image: {imageFile}");
       } else {
         ZLog.LogError($"Could not find custom loading image: {imageFile}");
         return null;
