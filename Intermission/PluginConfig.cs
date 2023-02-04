@@ -39,6 +39,8 @@ namespace Intermission {
               Color.white,
               "The base color to apply to the loading image.");
 
+      LoadingImageBaseColor.SettingChanged += OnLoadingImageConfigChanged;
+
       // LoadingImage.ScaleLerp
       LoadingImageUseScaleLerp =
           config.BindInOrder(
@@ -118,7 +120,7 @@ namespace Intermission {
               true,
               "Show the panel separator image on the loading screen.");
 
-      LoadingScreenShowPanelSeparator.SettingChanged += OnLoadingScreenConfigChanged;
+      LoadingScreenShowPanelSeparator.SettingChanged += OnPanelSeparatorConfigChanged;
 
       LoadingScreenPanelSeparatorPosition =
           config.BindInOrder(
@@ -127,15 +129,19 @@ namespace Intermission {
               new Vector2(0f, 150f),
               "The position of the panel separator image on the loading screen.");
 
-      LoadingScreenPanelSeparatorPosition.SettingChanged += OnLoadingScreenConfigChanged;
+      LoadingScreenPanelSeparatorPosition.SettingChanged += OnPanelSeparatorConfigChanged;
+    }
+
+    static void OnLoadingImageConfigChanged(object sender, EventArgs args) {
+      Intermission.SetupLoadingImage();
     }
 
     static void OnLoadingTipConfigChanged(object sender, EventArgs args) {
       Intermission.SetupTipText();
     }
 
-    static void OnLoadingScreenConfigChanged(object sender, EventArgs args) {
-      //ComfyLoadingScreens.SetupHudLoadingScreen(Hud.m_instance);
+    static void OnPanelSeparatorConfigChanged(object sender, EventArgs args) {
+      Intermission.SetupPanelSeparator();
     }
   }
 }

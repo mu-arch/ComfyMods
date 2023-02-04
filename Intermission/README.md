@@ -56,7 +56,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Intermission_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `Intermission_v1.0.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -66,6 +66,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.0.1
+
+  * Fixed a bug where config changes to LoadingImage and PanelSeparator were not reflected accurately.
 
 ### 1.0.0
 
