@@ -1,19 +1,23 @@
 # ComfyLoadingScreens
 
-*CustomLoadingScreens (by aedenthorn) configured for Comfy Valheim.*
+*Intermission content mod for the Comfy Valheim server.*
 
 ## Installation
 
 ### Manual
 
-  * Un-zip `ComfyLoadingSrceens.dll` to your `/Valheim/BepInEx/plugins/` folder.
+  * Un-zip the `/config/` folder into your `/Valheim/BepInEx/` folder.
 
 ### Thunderstore (manual)
 
   * Go to Settings > Import local mod > Select `ComfyLoadingScreens_v1.0.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
-### Notes
+## Dependencies
+
+ * [ComfyMods-Intermission-1.0.1](https://valheim.thunderstore.io/package/ComfyMods/Intermission/)
+
+## Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/ComfyLoadingScreens).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
@@ -23,8 +27,10 @@
 
 ### 1.0.0
 
-  * Recreated mod from scratch.
+  * Converted entire mod into a content mod for Intermission.
+  * The main plugin file `ComfyLoadingScreens.cs` is only kept for easy build versioning.
   * Added new lines to `tips.txt` and new custom images.
+  * Added `ComfyMods-Intermission-1.0.1` as a dependency in `manifest.json`.
 
 ### 0.4.2
 

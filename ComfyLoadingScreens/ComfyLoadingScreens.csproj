@@ -91,11 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComfyLoadingScreens.cs" />
-    <Compile Include="Config\ConfigFileExtensions.cs" />
-    <Compile Include="Patches\FejdStartupPatch.cs" />
-    <Compile Include="Patches\HudPatch.cs" />
-    <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -104,12 +99,50 @@
     <None Include="icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Components\" />
+    <None Include="config\Intermission\Atreus.png" />
+    <None Include="config\Intermission\eriel.png" />
+    <None Include="config\Intermission\faenor.png" />
+    <None Include="config\Intermission\gimle-the-wide-4.png" />
+    <None Include="config\Intermission\gimle-the-wide1.png" />
+    <None Include="config\Intermission\gimle-the-wide2.png" />
+    <None Include="config\Intermission\gimle-the-wide3.png" />
+    <None Include="config\Intermission\Jord.png" />
+    <None Include="config\Intermission\kittykat1.png" />
+    <None Include="config\Intermission\kittykat2.png" />
+    <None Include="config\Intermission\Kittykat3.png" />
+    <None Include="config\Intermission\kittykat4.png" />
+    <None Include="config\Intermission\kittykat5.png" />
+    <None Include="config\Intermission\kittykat6.png" />
+    <None Include="config\Intermission\kittykat7.png" />
+    <None Include="config\Intermission\kittykat8.png" />
+    <None Include="config\Intermission\kittykat9.png" />
+    <None Include="config\Intermission\lyka1.png" />
+    <None Include="config\Intermission\lyka2.png" />
+    <None Include="config\Intermission\lyka3.png" />
+    <None Include="config\Intermission\lyka4.png" />
+    <None Include="config\Intermission\lyka5.png" />
+    <None Include="config\Intermission\lyka6.png" />
+    <None Include="config\Intermission\lyka7.png" />
+    <None Include="config\Intermission\lyka8.png" />
+    <None Include="config\Intermission\mex1.png" />
+    <None Include="config\Intermission\mex2.png" />
+    <None Include="config\Intermission\mex3.png" />
+    <None Include="config\Intermission\mex4.png" />
+    <None Include="config\Intermission\tal.png" />
+    <None Include="config\Intermission\tal2.png" />
+    <None Include="config\Intermission\tal3.png" />
+    <None Include="config\Intermission\tal4.png" />
+    <None Include="config\Intermission\tal5.png" />
+    <None Include="config\Intermission\tal6.png" />
+    <None Include="config\Intermission\tips.txt" />
+    <None Include="config\Intermission\yingwurr1.png" />
+    <None Include="config\Intermission\yingwurr2.png" />
+    <None Include="config\Intermission\yingwurr3.png" />
+    <None Include="config\Intermission\yingwurr4.png" />
+    <None Include="config\Intermission\yingwurr5.png" />
+    <None Include="config\Intermission\yingwurr6.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="CopyAssembly" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />
-  </Target>
   <Target Name="GetAssemblyVersion" AfterTargets="Build">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="Targets" />
@@ -129,12 +162,15 @@
   <Target Name="MakeThunderstorePackage" AfterTargets="GetAssemblyVersion">
     <ItemGroup>
       <PackageFiles Include="README.md; manifest.json; icon.png" />
+      <PackageImageFiles Include="config\Intermission\*.png" />
+      <PackageTipFile Include="config\Intermission\tips.txt" />
     </ItemGroup>
     <MakeDir Directories="$(PackageDir)" />
-    <MakeDir Directories="$(PackageDir)/plugins" />
-    <MakeDir Directories="$(PackageDir)/plugins/$(AssemblyName)" />
+    <MakeDir Directories="$(PackageDir)/config" />
+    <MakeDir Directories="$(PackageDir)/config/Intermission" />
     <Copy SourceFiles="@(PackageFiles)" DestinationFolder="$(PackageDir)" />
-    <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PackageDir)/plugins" />
+    <Copy SourceFiles="@(PackageImageFiles)" DestinationFolder="$(PackageDir)/config/Intermission" />
+    <Copy SourceFiles="@(PackageTipFile)" DestinationFolder="$(PackageDir)/config/Intermission" />
     <ZipDirectory SourceDirectory="$(PackageDir)" DestinationFile="$(OutDir)$(PackageName).zip" Overwrite="true" />
     <RemoveDir Directories="$(PackageDir)" />
   </Target>
