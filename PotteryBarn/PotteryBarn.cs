@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -21,7 +20,7 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.4.1";
+    public const string PluginVersion = "1.5.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -91,8 +90,6 @@ namespace PotteryBarn {
 
       _cultivatorCreatorShopCategory =
           PieceManager.Instance.AddPieceCategory("_CultivatorPieceTable", "CreatorShop");
-
-      ZLog.Log($"_Cultivator.CreatorShop.Category id is: {_cultivatorCreatorShopCategory}");
 
       foreach (
           KeyValuePair<string, Dictionary<string, int>> entry in

@@ -85,7 +85,7 @@
   * Moved 'Vines' and 'GlowingMushroom' to Cultivator under custom 'CreatorShop' category.
   * Added support for showing categories to Cultivator.
   * Code-clean up and refactoring.
-  * Updated JVL dependency to `v2.10.3`.
+  * Updated JVL dependency to `v2.10.4`.
 
 ### 1.4.0
 
