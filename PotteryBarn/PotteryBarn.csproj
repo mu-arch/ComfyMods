@@ -116,7 +116,6 @@
   <ItemGroup>
     <Compile Include="Patches\ArmorStandPatch.cs" />
     <Compile Include="Patches\PiecePatch.cs" />
-    <Compile Include="Patches\PieceTablePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />

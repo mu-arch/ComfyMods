@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -37,6 +38,8 @@ namespace PotteryBarn {
       _logger = Logger;
 
       BindConfig(Config);
+
+      PieceManager.OnPiecesRegistered += () => ZLog.Log("RED I was called second.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -101,6 +104,16 @@ namespace PotteryBarn {
             .SetCanBeRemoved(true)
             .SetTargetNonPlayerBuilt(false);
       }
+
+      ResizePieceTableCategories(pieceTable, (int) _cultivatorCreatorShopCategory + 1);
+    }
+
+    static void ResizePieceTableCategories(PieceTable pieceTable, int pieceCategoryMax) {
+      while (pieceTable.m_availablePieces.Count < pieceCategoryMax) {
+        pieceTable.m_availablePieces.Add(new());
+      }
+
+      Array.Resize(ref pieceTable.m_selectedPiece, pieceCategoryMax);
     }
 
     static Piece.Requirement[] CreateRequirements(Dictionary<string, int> data) {
@@ -113,13 +126,6 @@ namespace PotteryBarn {
         requirements[index] = req;
       }
       return requirements;
-    }
-
-    static PieceTable GetPieceTable(string pieceTableName) {
-      return ObjectDB.m_instance.Ref()?.m_items
-          .Select(item => item.GetComponent<ItemDrop>().Ref()?.m_itemData?.m_shared?.m_buildPieces)
-          .Where(table => table.Ref()?.name == pieceTableName)
-          .FirstOrDefault();
     }
 
     static Piece GetExistingPiece(string prefabName) {
