@@ -52,5 +52,80 @@ namespace SearsCatalog {
     static int GetPieceGetYPostDelegate(int value) {
       return IsModEnabled.Value ? SearsCatalog.BuildHudColumns : value;
     }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(PieceTable.LeftPiece))]
+    static IEnumerable<CodeInstruction> LeftPieceTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(12)))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(LeftPieceDelegate))
+          .InstructionEnumeration();
+    }
+
+    static int LeftPieceDelegate(int value) {
+      return IsModEnabled.Value ? SearsCatalog.BuildHudColumns - 1 : value;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(PieceTable.RightPiece))]
+    static IEnumerable<CodeInstruction> RightPieceTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(13)))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(RightPieceDelegate))
+          .InstructionEnumeration();
+    }
+
+    static int RightPieceDelegate(int value) {
+      return IsModEnabled.Value ? SearsCatalog.BuildHudColumns : value;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(PieceTable.UpPiece))]
+    static IEnumerable<CodeInstruction> UpPieceTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldc_I4_6))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(UpPieceDelegate))
+          .InstructionEnumeration();
+    }
+
+    static int UpPieceDelegate(int value) {
+      return IsModEnabled.Value ? SearsCatalog.BuildHudRows - 1 : value;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(PieceTable.DownPiece))]
+    static IEnumerable<CodeInstruction> DownPieceTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldc_I4_7))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(DownPieceDelegate))
+          .InstructionEnumeration();
+    }
+
+    static int DownPieceDelegate(int value) {
+      return IsModEnabled.Value ? SearsCatalog.BuildHudRows : value;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(PieceTable.LeftPiece))]
+    [HarmonyPatch(nameof(PieceTable.RightPiece))]
+    [HarmonyPatch(nameof(PieceTable.UpPiece))]
+    [HarmonyPatch(nameof(PieceTable.DownPiece))]
+    static void ControllerPiecePostfix() {
+      if (IsModEnabled.Value) {
+        SearsCatalog.CenterOnSelectedIndex();
+      }
+    }
   }
 }

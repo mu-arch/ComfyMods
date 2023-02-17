@@ -35,7 +35,7 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `SearsCatalog_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `SearsCatalog_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -46,6 +46,10 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Added `PieceTable.Left/Right/Up/DownPiece()* patches for controller support.
 
 ### 1.0.0
 

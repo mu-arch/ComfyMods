@@ -16,7 +16,7 @@ namespace SearsCatalog {
   public class SearsCatalog : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.searscatalog";
     public const string PluginName = "SearsCatalog";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     public static Harmony HarmonyInstance { get; private set; }
 
