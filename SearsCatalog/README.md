@@ -6,7 +6,13 @@
 
 ## Features
 
-### Panel resize
+### Panel resize (mouse)
+
+  * Hover over the lower-right corner of the build panel to display the resize icon.
+  * Click and drag the resize icon to the desired size.
+  * Build panel will resize to the closest `Rows x Columns` size.
+
+### Panel resize (config)
 
   * Using ConfigurationManager, change `buildHudPanelRows` or `buildHudPanelColumns` to desired values.
   * Build panel will resize to the new `Rows x Columns` size immediately.
@@ -50,6 +56,7 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
 ### 1.1.0
 
   * Added `PieceTable.Left/Right/Up/DownPiece()* patches for controller support.
+  * Added `PanelResizer` and a resizer icon to the build panel.
 
 ### 1.0.0
 

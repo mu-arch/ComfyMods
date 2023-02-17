@@ -41,6 +41,8 @@ namespace SearsCatalog {
     public static Scrollbar BuildHudScrollbar { get; set; }
     public static ScrollRect BuildHudScrollRect { get; set; }
 
+    public static GameObject BuildHudPanelResizer { get; set; }
+
     public static void SetupBuildHudPanel() {
       if (Hud.m_instance && BuildHudPanelTransform) {
         BuildHudColumns = BuildHudPanelColumns.Value;
@@ -103,6 +105,13 @@ namespace SearsCatalog {
       }
 
       _inputHelpRightRectTransform.Ref()?.SetPosition(new(xOffset / 2f, yOffset));
+    }
+
+    public static void ResizeBuildHudPanel(Vector2 sizeDelta) {
+      float spacing = Hud.m_instance.m_pieceIconSpacing;
+
+      BuildHudPanelColumns.Value = Mathf.Max(Mathf.FloorToInt((sizeDelta.x - 35f) / spacing), 1);
+      BuildHudPanelRows.Value = Mathf.Max(Mathf.FloorToInt((sizeDelta.y - 70f) / spacing), 1);
     }
 
     public static void CenterOnSelectedIndex() {

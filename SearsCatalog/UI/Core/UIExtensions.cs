@@ -529,6 +529,11 @@ namespace ComfyLib {
       return text;
     }
 
+    public static Text SetHorizontalOverflow(this Text text, HorizontalWrapMode wrapMode) {
+      text.horizontalOverflow = wrapMode;
+      return text;
+    }
+
     public static Text SetResizeTextForBestFit(this Text text, bool resizeTextForBestFit) {
       text.resizeTextForBestFit = resizeTextForBestFit;
       return text;
@@ -541,6 +546,11 @@ namespace ComfyLib {
 
     public static Text SetText(this Text text, string value) {
       text.text = value;
+      return text;
+    }
+
+    public static Text SetVerticalOverflow(this Text text, VerticalWrapMode wrapMode) {
+      text.verticalOverflow = wrapMode;
       return text;
     }
   }

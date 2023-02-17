@@ -70,6 +70,10 @@ namespace SearsCatalog {
       panelDragger.TargetRectTransform = panelTransform;
       panelDragger.OnPanelEndDrag += (_, position) => BuildHudPanelPosition.Value = position;
 
+      PanelResizer panelResizer = UIBuilder.CreateResizer(panelTransform).AddComponent<PanelResizer>();
+      panelResizer.TargetRectTransform = panelTransform;
+      panelResizer.OnPanelEndResize += (_, sizeDelta) => SearsCatalog.ResizeBuildHudPanel(sizeDelta);
+
       SearsCatalog.BuildHudPanelTransform = panelTransform;
       SearsCatalog.BuildHudScrollbar = scrollbar;
       SearsCatalog.BuildHudScrollRect = scrollRect;
