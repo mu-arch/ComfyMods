@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\UnityExtensions.cs" />
     <Compile Include="Inventorious.cs" />
     <Compile Include="Patches\InventoryGuiPatch.cs" />
     <Compile Include="PluginConfig.cs" />

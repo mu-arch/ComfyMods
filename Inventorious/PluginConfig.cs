@@ -12,11 +12,13 @@ namespace Inventorious {
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      IsModEnabled.SettingChanged += (_, _) => Inventorious.SetupInventoryGui(InventoryGui.m_instance);
+
       ShowTransitionDuration =
           config.BindInOrder(
               "Show.Transition",
               "showTransitionDuration",
-              0.5f,
+              0.25f,
               "InventoryGui.Show transition duration.",
               new AcceptableValueRange<float>(0f, 2f));
 
@@ -24,7 +26,7 @@ namespace Inventorious {
           config.BindInOrder(
               "Hide.Transition",
               "hideTransitionDuration",
-              0.5f,
+              0.25f,
               "InventoryGui.Hide transition duration.",
               new AcceptableValueRange<float>(0f, 2f));
     }

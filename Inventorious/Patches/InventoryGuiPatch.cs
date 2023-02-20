@@ -10,43 +10,39 @@ using static Inventorious.PluginConfig;
 namespace Inventorious {
   [HarmonyPatch(typeof(InventoryGui))]
   static class InventoryGuiPatch {
-    static PanelFader _rootPanelFader;
-
     [HarmonyPostfix]
     [HarmonyPatch(nameof(InventoryGui.Awake))]
     static void AwakePostfix(ref InventoryGui __instance) {
-      __instance.m_animator.enabled = false;
+      Inventorious.SetupInventoryGui(__instance);
 
-      _rootPanelFader = __instance.m_inventoryRoot.gameObject.AddComponent<PanelFader>();
-      _rootPanelFader.Hide();
-
-      if (!__instance.m_crafting.TryGetComponent(out PanelDragger craftingPanelDragger)) {
-        craftingPanelDragger = __instance.m_crafting.gameObject.AddComponent<PanelDragger>();
-      }
-
+      PanelDragger craftingPanelDragger = __instance.m_crafting.GetOrAddComponent<PanelDragger>();
       craftingPanelDragger.TargetRectTransform = __instance.m_crafting;
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(InventoryGui.Show))]
     static void ShowPostfix(ref InventoryGui __instance) {
-      _rootPanelFader.Show(ShowTransitionDuration.Value);
+      if (IsModEnabled.Value) {
+        Inventorious.RootPanelFader.Ref()?.Show(ShowTransitionDuration.Value);
+      }
     }
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(InventoryGui.Hide))]
     static void HidePrefix(ref InventoryGui __instance, ref bool __state) {
-      __state = __instance.m_animator.GetBool("visible");
+      if (IsModEnabled.Value) {
+        __state = __instance.m_animator.GetBool("visible");
+      }
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(InventoryGui.Hide))]
     static void HidePostfix(ref InventoryGui __instance, ref bool __state) {
-      if (!__state || __instance.m_animator.GetBool("visible")) {
+      if (!IsModEnabled.Value || !__state || __instance.m_animator.GetBool("visible")) {
         return;
       }
 
-      _rootPanelFader.Hide(HideTransitionDuration.Value);
+      Inventorious.RootPanelFader.Ref()?.Hide(HideTransitionDuration.Value);
     }
 
     static InventoryGrid.Element _selectedGridElement;

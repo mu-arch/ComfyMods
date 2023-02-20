@@ -2,7 +2,11 @@
 
 using BepInEx;
 
+using ComfyLib;
+
 using HarmonyLib;
+
+using UnityEngine;
 
 using static Inventorious.PluginConfig;
 
@@ -25,6 +29,27 @@ namespace Inventorious {
 
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
+    }
+
+    public static PanelFader RootPanelFader { get; private set; }
+
+    public static void SetupInventoryGui(InventoryGui inventoryGui) {
+      if (!inventoryGui) {
+        return;
+      }
+
+      if (IsModEnabled.Value) {
+        inventoryGui.m_animator.enabled = false;
+        inventoryGui.m_animator.SetBool("visible", false);
+
+        RootPanelFader = inventoryGui.m_inventoryRoot.GetOrAddComponent<PanelFader>();
+        RootPanelFader.Hide();
+      } else {
+        RootPanelFader.Ref()?.Show();
+
+        inventoryGui.m_animator.enabled = true;
+        inventoryGui.m_inventoryRoot.gameObject.SetActive(true);
+      }
     }
   }
 }
