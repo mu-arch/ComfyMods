@@ -99,6 +99,7 @@
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Components\PanelDragger.cs" />
+    <Compile Include="UI\Components\PanelFader.cs" />
     <Compile Include="Utils\CorouTweens.cs" />
   </ItemGroup>
   <ItemGroup>

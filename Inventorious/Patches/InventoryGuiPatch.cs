@@ -10,39 +10,27 @@ using static Inventorious.PluginConfig;
 namespace Inventorious {
   [HarmonyPatch(typeof(InventoryGui))]
   static class InventoryGuiPatch {
-    static CanvasGroup _animatorCanvasGroup;
+    static PanelFader _rootPanelFader;
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(InventoryGui.Awake))]
     static void AwakePostfix(ref InventoryGui __instance) {
       __instance.m_animator.enabled = false;
-      
+
+      _rootPanelFader = __instance.m_inventoryRoot.gameObject.AddComponent<PanelFader>();
+      _rootPanelFader.Hide();
+
       if (!__instance.m_crafting.TryGetComponent(out PanelDragger craftingPanelDragger)) {
         craftingPanelDragger = __instance.m_crafting.gameObject.AddComponent<PanelDragger>();
       }
 
       craftingPanelDragger.TargetRectTransform = __instance.m_crafting;
-
-      if (!__instance.m_animator.TryGetComponent(out _animatorCanvasGroup)) {
-        _animatorCanvasGroup = __instance.m_animator.gameObject.AddComponent<CanvasGroup>();
-      }
-
-      _animatorCanvasGroup.alpha = 0f;
     }
-
-    static Coroutine _showOrHideCoroutine;
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(InventoryGui.Show))]
     static void ShowPostfix(ref InventoryGui __instance) {
-      if (_showOrHideCoroutine != null) {
-        __instance.StopCoroutine(_showOrHideCoroutine);
-      }
-
-      _showOrHideCoroutine =
-          __instance.StartCoroutine(
-              CorouTweens.Lerp(
-                  _animatorCanvasGroup.alpha, 1f, ShowTransitionDuration.Value, x => _animatorCanvasGroup.alpha = x));
+      _rootPanelFader.Show(ShowTransitionDuration.Value);
     }
 
     [HarmonyPrefix]
@@ -58,14 +46,7 @@ namespace Inventorious {
         return;
       }
 
-      if (_showOrHideCoroutine != null) {
-        __instance.StopCoroutine(_showOrHideCoroutine);
-      }
-
-      _showOrHideCoroutine =
-          __instance.StartCoroutine(
-              CorouTweens.Lerp(
-                  _animatorCanvasGroup.alpha, 0f, HideTransitionDuration.Value, x => _animatorCanvasGroup.alpha = x));
+      _rootPanelFader.Hide(HideTransitionDuration.Value);
     }
 
     static InventoryGrid.Element _selectedGridElement;
