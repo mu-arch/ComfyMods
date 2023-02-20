@@ -13,14 +13,14 @@ namespace ComfyLib {
 
     public void Show(float fadeDuration = 0f) {
       gameObject.SetActive(true);
-      ShowOrHidePanel(1f, fadeDuration);
+      FadePanel(1f, fadeDuration);
     }
 
     public void Hide(float fadeDuration = 0f) {
-      ShowOrHidePanel(0f, fadeDuration);
+      FadePanel(0f, fadeDuration);
     }
 
-    void ShowOrHidePanel(float targetAlpha, float fadeDuration) {
+    public void FadePanel(float targetAlpha, float fadeDuration = 0f) {
       if (_showOrHideCoroutine != null) {
         StopCoroutine(_showOrHideCoroutine);
       }
@@ -29,13 +29,9 @@ namespace ComfyLib {
         _showOrHideCoroutine = StartCoroutine(LerpCanvasGroupAlpha(targetAlpha, fadeDuration));
       } else {
         _showOrHideCoroutine = default;
-        SetAlpha(targetAlpha);
+        _canvasGroup.alpha = targetAlpha;
+        gameObject.SetActive(targetAlpha > 0f);
       }
-    }
-
-    void SetAlpha(float targetAlpha) {
-      _canvasGroup.alpha = targetAlpha;
-      gameObject.SetActive(targetAlpha > 0f);
     }
 
     IEnumerator LerpCanvasGroupAlpha(float targetAlpha, float lerpDuration) {
@@ -49,7 +45,8 @@ namespace ComfyLib {
         yield return null;
       }
 
-      SetAlpha(targetAlpha);
+      _canvasGroup.alpha = targetAlpha;
+      gameObject.SetActive(targetAlpha > 0f);
     }
   }
 }

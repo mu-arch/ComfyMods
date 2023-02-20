@@ -40,10 +40,9 @@ namespace Inventorious {
 
       if (IsModEnabled.Value) {
         inventoryGui.m_animator.enabled = false;
-        inventoryGui.m_animator.SetBool("visible", false);
 
         RootPanelFader = inventoryGui.m_inventoryRoot.GetOrAddComponent<PanelFader>();
-        RootPanelFader.Hide();
+        RootPanelFader.FadePanel(inventoryGui.m_animator.GetBool("visible") ? 1f : 0f, 0f);
       } else {
         RootPanelFader.Ref()?.Show();
 
