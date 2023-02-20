@@ -40,7 +40,8 @@
 
 ### Creator Shop Functionality
 
-  * Player may only break down creator shop places they have placed themselves. This is to ensure world generated items cannot be broken down for mats farming.
+  * Player may only break down creator shop places they have placed themselves.
+  * This is to ensure world generated items cannot be broken down for mats farming.
   * World generated pieces will drop the same vanilla material drop table when broken with attacks/damage.
 
 ### Hammer
@@ -69,16 +70,22 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.5.0.zip`.
+  * Go to Settings > Import local mod > Select `PotteryBarn_v1.5.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ### Notes
 
-  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn).
+  * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+  * PotteryBarn icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.5.1
+
+  * Added an `EffectList.Create()` prefix patch to disable any enabled 'null' effectData.m_prefabs.
+  * Updated mod icon to a new one created by [@jenniely](https://twitter.com/jenniely).
 
 ### 1.5.0
 
