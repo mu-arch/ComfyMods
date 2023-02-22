@@ -33,6 +33,8 @@ namespace Inventorious {
 
     public static PanelFader RootPanelFader { get; private set; }
 
+    public static ComfyPanel CraftingPanel { get; private set; }
+
     public static void SetupInventoryGui(InventoryGui inventoryGui) {
       if (!inventoryGui) {
         return;
@@ -48,6 +50,21 @@ namespace Inventorious {
 
         inventoryGui.m_animator.enabled = true;
         inventoryGui.m_inventoryRoot.gameObject.SetActive(true);
+      }
+
+      if (!CraftingPanel) {
+        GameObject panel = new("CraftingPanel", typeof(RectTransform));
+        panel.transform.SetParent(inventoryGui.m_inventoryRoot, worldPositionStays: false);
+
+        CraftingPanel = ComfyPanel.CreatePanel(panel);
+
+        CraftingPanel.RectTransform
+            .SetAnchorMin(new(0.5f, 0.5f))
+            .SetAnchorMax(new(0.5f, 0.5f))
+            .SetPivot(new(0.5f, 0.5f))
+            .SetSizeDelta(new(400f, 400f));
+
+        panel.SetActive(true);
       }
     }
   }

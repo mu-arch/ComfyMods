@@ -88,11 +88,11 @@ namespace Inventorious {
       RectTransform rectTransform = highlightBorder.AddComponent<RectTransform>();
       rectTransform.anchorMin = Vector2.zero;
       rectTransform.anchorMax = Vector2.one;
-      rectTransform.pivot = new(0.5f, 0f);
+      rectTransform.pivot = new(0.5f, 0.5f);
       rectTransform.sizeDelta = Vector2.zero;
 
       Image image = highlightBorder.AddComponent<Image>();
-      image.color = new(1f, 1f, 0f, 0.5f);
+      image.color = new(1f, 1f, 0f, 0.35f);
 
       return rectTransform;
     }
