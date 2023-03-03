@@ -141,6 +141,24 @@
     <None Include="config\Intermission\yingwurr4.png" />
     <None Include="config\Intermission\yingwurr5.png" />
     <None Include="config\Intermission\yingwurr6.png" />
+    <None Include="config\Intermission\Artis4-1.png" />
+    <None Include="config\Intermission\Artis4-2.png" />
+    <None Include="config\Intermission\Artis4-3.png" />
+    <None Include="config\Intermission\Artis4-4.png" />
+    <None Include="config\Intermission\Artis4-5.png" />
+    <None Include="config\Intermission\ione.png" />
+    <None Include="config\Intermission\Jord-3.png" />
+    <None Include="config\Intermission\Jord-4.png" />
+    <None Include="config\Intermission\seidhr-Jimbo-1.png" />
+    <None Include="config\Intermission\seidhr-Jimbo-2.png" />
+    <None Include="config\Intermission\seidhr-Jimbo-3.png" />
+    <None Include="config\Intermission\Tanagor.png" />
+    <None Include="config\Intermission\tonksy-1.png" />
+    <None Include="config\Intermission\tonksy-2.png" />
+    <None Include="config\Intermission\tonksy-3.png" />
+    <None Include="config\Intermission\tonksy-4.png" />
+    <None Include="config\Intermission\tonksy-5.png" />
+    <None Include="config\Intermission\tonksy-6.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GetAssemblyVersion" AfterTargets="Build">

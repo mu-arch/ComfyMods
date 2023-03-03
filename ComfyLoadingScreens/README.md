@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `ComfyLoadingScreens_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ComfyLoadingScreens_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Dependencies
@@ -24,6 +24,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * More images added!
+  * Lines added and modified in `tips.txt`.
 
 ### 1.0.0
 
