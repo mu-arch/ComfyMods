@@ -1,60 +1,33 @@
 Don’t use portals that aren’t yours without permission!
-
 Keep 2 zones between your build & someone else’s build. If you can see it, you’re too close!
-
 Mods come with a readme file which details how to use them - check it out! 
-
 ZoneScouter Mod has a neat feature to show you sector boundaries
- 
 Resources are respawned regularly by staff - keep looking!
-
 Sail away from spawn islands for less lag, more resources, & more space
- 
 If you don’t have permission, don’t go near it & don’t touch it!
-
 Do not touch other people’s graves!
-
 Do not ward resources!
-
 Creators design unique events you can run for resources & overleveled gear - Check the events on discord! 
-
 A number of guilds are available for bonus content & additional rewards
-
 Comfy Eras typically last a few months - keep an eye on the discord for up-to-date information
-
 Keep an eye on the list of allowed mods, as these may change throughout the era
-
 If you can’t find a bee - Ranger’s guild has 4 quests for you to get a bee!
-
 Check out Merchants Guild on Discord for people buying, selling, & trading!
-
 Looking for some PvP? The Slayer Guild has many PvP events!
-
 Died & need a body recovery? Hit up the Slayers! They’ll be happy to help - for free!
-
 Need some protection whilst you explore? Slayers will gladly come with you & protect you - for free!
-
 Love building? The Builders Guild loves you! Check them out on discord!
-
-Taking the hobbits to Isenguard? Check out the Hobbit Guild!
-
+Taking the hobbits to Isengard? Check out the Hobbit Guild!
 Looking for a great place to build? The Explorers Guild would love to help you! Ask on discord!
-
 Found a T1 Explorer stash? Check out the Explorer channel & pinned messages in discord to find out what to do!
 Many events are held in Comfy - check out the discord and see what’s happening!
-
 The Mod Get Off My Lawn (known as GOML) makes your builds & boats indestructible - Check it out!
-
 There are a lot of unique Creator events that are Hobbit themed - check them out in the Adventure Hub!
-
 There are a lot of unique rewards that can only be earned through guilds - check them out!
-
 If you have any issues, open a ticket under Get Support in discord! Our Moderation team love to help!
-
 Found a huge hole? Put a ticket in and our team can come close it up!
-
 Rank to the top in the Hobbits to receive your own furnished, high comfort level Hobbit Home.
-
 Need food for a Guild Event or Creator Event? Ask in the Hobbit channel for a Hobbit Chef.
-
 What do the Hobbits do? Adventurous roleplay with cooking, entertaining, exploring, fighting, and more.
+Don't eat blue mushrooms!
+Blue mushrooms are a currency on Comfy, you can get them from creator events.
