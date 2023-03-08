@@ -26,6 +26,10 @@ namespace ComfyLib {
   }
 
   public static class ComponentExtensions {
+    public static RectTransform RectTransform<T>(this T component) where T : Component {
+      return component ? component.GetComponent<RectTransform>() : default;
+    }
+
     public static T SetName<T>(this T component, string name) where T : Component {
       component.gameObject.name = name;
       return component;

@@ -59,7 +59,7 @@ namespace SearsCatalog {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(12)))
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(14)))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(LeftPieceDelegate))
           .InstructionEnumeration();
@@ -75,7 +75,7 @@ namespace SearsCatalog {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(13)))
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(15)))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(RightPieceDelegate))
           .InstructionEnumeration();
@@ -91,7 +91,7 @@ namespace SearsCatalog {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_6))
+              new CodeMatch(OpCodes.Ldc_I4_5))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(UpPieceDelegate))
           .InstructionEnumeration();
@@ -107,7 +107,7 @@ namespace SearsCatalog {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_7))
+              new CodeMatch(OpCodes.Ldc_I4_6))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(DownPieceDelegate))
           .InstructionEnumeration();

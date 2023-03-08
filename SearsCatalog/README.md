@@ -41,7 +41,7 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `SearsCatalog_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `SearsCatalog_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -49,9 +49,14 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
   * This is the *good enough* release with more features/options to be added later.
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/SearsCatalog).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
-  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+  * SearsCatalog icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.2.0
+
+  * Updated for `v0.214.2` PTB.
+  * Updated mod icon to a new one created by [@jenniely](https://twitter.com/jenniely).
 
 ### 1.1.0
 
