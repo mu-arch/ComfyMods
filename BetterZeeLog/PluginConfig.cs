@@ -6,19 +6,19 @@ namespace BetterZeeLog {
     public static ConfigEntry<bool> RemoveStackTraceForNonErrorLogType { get; private set; }
     public static ConfigEntry<bool> RemoveFailedToSendDataLogging { get; private set; }
 
-    public static void BindConfig(ConfigFile Config) {
+    public static void BindConfig(ConfigFile config) {
       IsModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+          config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
       RemoveStackTraceForNonErrorLogType =
-          Config.Bind(
+          config.Bind(
               "Logging",
               "removeStackTraceForNonErrorLogType",
               true,
               "Disables the stack track for 'Info' and 'Warning' log types (restart required).");
 
       RemoveFailedToSendDataLogging =
-          Config.Bind(
+          config.Bind(
               "Logging",
               "removeFailedToSendDataLogging",
               true,
