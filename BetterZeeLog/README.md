@@ -16,15 +16,20 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `BetterZeeLog_v1.4.1.zip`.
+  * Go to Settings > Import local mod > Select `BetterZeeLog_v1.4.2.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/BetterZeeLog).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
+  * BetterZeeLog icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.4.2
+
+  * Updated mod icon to a new one created by [@jenniely](https://twitter.com/jenniely).
 
 ### 1.4.1
 
