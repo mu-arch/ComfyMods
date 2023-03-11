@@ -77,7 +77,8 @@
 
 ### 1.4.0
 
-  * ???
+  * Updated for `v0.214.2` PTB.
+  * ChatPanel now hides when the Hud is hidden.
 
 ### 1.3.0
 

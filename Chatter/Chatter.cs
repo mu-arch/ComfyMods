@@ -96,6 +96,7 @@ namespace Chatter {
       }
 
       ChatPanel?.Panel.SetActive(toggle);
+      _isChatPanelVisible = toggle;
 
       if (toggle) {
         ChatPanel?.SetPanelPosition(ChatPanelPosition.Value);
@@ -164,15 +165,21 @@ namespace Chatter {
     }
 
     internal static void HideChatPanelDelegate(float hideTimer) {
-      if (IsModEnabled.Value) {
-        _isChatPanelVisible = hideTimer < HideChatPanelDelay.Value || Menu.IsVisible();
+      if (IsModEnabled.Value && _chatPanel?.Panel) {
+        bool isVisible = (hideTimer < HideChatPanelDelay.Value || Menu.IsVisible()) && !Hud.IsUserHidden();
 
-        if (_chatPanel?.CanvasGroup) {
-          _chatPanel.CanvasGroup.alpha = _isChatPanelVisible ? 1f : HideChatPanelAlpha.Value;
-          _chatPanel.CanvasGroup.blocksRaycasts = _isChatPanelVisible;
+        if (isVisible == _isChatPanelVisible && _chatPanel.CanvasGroup.isActiveAndEnabled) {
+          return;
         }
 
-        if (!_isChatPanelVisible) {
+        _isChatPanelVisible = isVisible;
+
+        if (_isChatPanelVisible) {
+          _chatPanel.CanvasGroup.alpha = 1f;
+          _chatPanel.CanvasGroup.blocksRaycasts = true;
+        } else {
+          _chatPanel.CanvasGroup.alpha = Hud.IsUserHidden() ? 0f : HideChatPanelAlpha.Value;
+          _chatPanel.CanvasGroup.blocksRaycasts = false;
           _chatPanel.SetVerticalScrollPosition(0f);
         }
       }

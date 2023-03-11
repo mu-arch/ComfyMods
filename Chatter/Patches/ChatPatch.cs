@@ -42,6 +42,14 @@ namespace Chatter {
       return value;
     }
 
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.IsTakingInput))]
+    static void IsTakingInput(Chat __instance, ref bool __result) {
+      if (__result && IsModEnabled.Value) {
+        __result = __instance.m_input.isFocused;
+      }
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
     static void OnNewChatMessagePrefix(

@@ -148,6 +148,10 @@ namespace Chatter {
       ScrollRect.verticalNormalizedPosition += percent;
     }
 
+    public void SetVisible(bool isVisible) {
+
+    }
+
     GameObject CreatePanel(Transform parentTransform) {
       GameObject panel = new("ChatPanel", typeof(RectTransform));
       panel.SetParent(parentTransform);
