@@ -15,8 +15,8 @@ namespace Chatter {
     public GameObject TextPrefab { get; init; }
     public InputField InputField { get; init; }
 
-    public ChatPanel(Transform parentTransform, Text parentText) {
-      TextPrefab = CreateTextPrefab(parentText);
+    public ChatPanel(Transform parentTransform) {
+      TextPrefab = CreateTextPrefab();
       _textPrefabText = TextPrefab.GetComponent<Text>();
 
       Panel = CreatePanel(parentTransform);
@@ -448,18 +448,15 @@ namespace Chatter {
       return panelScroll;
     }
 
-    static GameObject CreateTextPrefab(Text parentText) {
+    static GameObject CreateTextPrefab() {
       GameObject textPrefab = new("Text", typeof(RectTransform));
 
       textPrefab.AddComponent<Text>()
           .SetFont(PluginConfig.MessageFont)
           .SetFontSize(PluginConfig.ChatMessageFontSize.Value);
 
-      if (parentText.TryGetComponent(out Outline parentTextOutline)) {
-        textPrefab.AddComponent<Outline>()
-            .SetEffectColor(parentTextOutline.effectColor)
-            .SetEffectDistance(parentTextOutline.effectDistance);
-      }
+      textPrefab.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
 
       return textPrefab;
     }

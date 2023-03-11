@@ -45,7 +45,7 @@ namespace Chatter {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
     static void OnNewChatMessagePrefix(
-        ref long senderID, ref Vector3 pos, ref Talker.Type type, ref string user, ref string text) {
+        ref long senderID, ref Vector3 pos, ref Talker.Type type, ref UserInfo user, ref string text) {
       if (!IsModEnabled.Value) {
         return;
       }
@@ -58,7 +58,7 @@ namespace Chatter {
         SenderId = senderID,
         Position = pos,
         TalkerType = type,
-        Username = user,
+        Username = user.Name,
         Text = Regex.Replace(text, @"(<|>)", " "),
       };
 

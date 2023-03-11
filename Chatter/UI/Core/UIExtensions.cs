@@ -543,6 +543,15 @@ namespace Chatter {
     }
   }
 
+  public static class ToggleExtensions {
+    public static Toggle SetIsOn(this Toggle toggle, bool isOn) {
+      toggle.SetIsOnWithoutNotify(isOn);
+      toggle.onValueChanged?.Invoke(isOn);
+
+      return toggle;
+    }
+  }
+
   public static class VerticalLayoutGroupExtensions {
     public static VerticalLayoutGroup SetChildControl(
         this VerticalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {

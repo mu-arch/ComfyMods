@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using BepInEx.Configuration;
+
+using HarmonyLib;
 
 namespace ComfyLib {
   public static class ConfigFileExtensions {
@@ -68,6 +71,29 @@ namespace ComfyLib {
       public bool? Browsable;
       public bool? HideDefaultButton;
       public int? Order;
+    }
+
+    public static void LateBindInOrder(this ConfigFile config, Action<ConfigFile> bindFunc) {
+      _lateBindEntries.Enqueue(() => bindFunc.Invoke(config));
+    }
+
+    static readonly Queue<Action> _lateBindEntries = new();
+
+    [HarmonyPatch(typeof(FejdStartup))]
+    static class FejdStartupPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(FejdStartup.Awake))]
+      static void AwakePostfix() {
+        while (_lateBindEntries.Count > 0) {
+          _lateBindEntries.Dequeue()?.Invoke();
+        }
+      }
+
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(FejdStartup.OnDestroy))]
+      static void OnDestroyPostfix() {
+        _lateBindEntries.Clear();
+      }
     }
   }
 }

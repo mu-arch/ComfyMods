@@ -18,7 +18,7 @@ namespace Chatter {
   public class Chatter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.chatter";
     public const string PluginName = "Chatter";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     Harmony _harmony;
 
@@ -111,7 +111,7 @@ namespace Chatter {
         return null;
       }
 
-      ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent, chat.m_output);
+      ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent);
       RectTransform panelRectTransform = chatPanel.Panel.GetComponent<RectTransform>();
       Outline panelOutline = chatPanel.Panel.GetComponent<Outline>();
 
@@ -200,7 +200,6 @@ namespace Chatter {
 
       _isPluginConfigBound = true;
 
-      BindChatMessageFont(chat.Ref()?.m_output.font);
       BindChatPanelSize(chat.Ref()?.m_chatWindow);
 
       ChatMessageFont.OnSettingChanged(font => ChatPanel?.SetFont(MessageFont));

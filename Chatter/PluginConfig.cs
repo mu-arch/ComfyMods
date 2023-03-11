@@ -5,6 +5,8 @@ using BepInEx.Configuration;
 
 using ComfyLib;
 
+using HarmonyLib;
+
 using UnityEngine;
 
 namespace Chatter {
@@ -289,6 +291,8 @@ namespace Chatter {
                   "Color for any timestamp shown in the chat messages.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 0 }));
+
+      config.LateBindInOrder(config => BindChatMessageFont(config));
     }
 
     static void BindFilters(ConfigFile config) {
@@ -328,39 +332,31 @@ namespace Chatter {
       }
     }
 
-    static readonly Dictionary<string, Font> _fontCache = new();
-
     public static Font MessageFont {
-      get {
-        if (!_fontCache.TryGetValue(ChatMessageFont.Value, out Font font)) {
-          font = Font.CreateDynamicFontFromOSFont(ChatMessageFont.Value, ChatMessageFontSize.Value);
-          _fontCache[font.name] = font;
-        }
-
-        return font;
-      }
+      get => UIResources.GetFont(ChatMessageFont.Value);
     }
 
-    public static void BindChatMessageFont(Font defaultFont) {
-      foreach (Font font in Resources.FindObjectsOfTypeAll<Font>()) {
-        _fontCache[font.name] = font;
-      }
-
+    public static void BindChatMessageFont(ConfigFile config) {
       string[] fontNames =
-          _fontCache.Keys.OrderBy(f => f).Concat(Font.GetOSInstalledFontNames().OrderBy(f => f)).ToArray();
+          Resources.FindObjectsOfTypeAll<Font>()
+              .Select(f => f.name)
+              .OrderBy(f => f)
+              .Concat(Font.GetOSInstalledFontNames()
+              .OrderBy(f => f))
+              .ToArray();
 
       ChatMessageFont ??=
-          Config.Bind(
+          config.Bind(
               "Style",
               "chatMessageFont",
-              defaultFont.name,
+              UIResources.AveriaSerifLibre.name,
               new ConfigDescription("The font to use for chat messages.", new AcceptableValueList<string>(fontNames)));
 
       ChatMessageFontSize ??=
-          Config.Bind(
+          config.Bind(
               "Style",
               "chatMessageFontSize",
-              defaultFont.fontSize,
+              18,
               new ConfigDescription("The font size to use for chat messages.", new AcceptableValueRange<int>(8, 64)));
     }
 

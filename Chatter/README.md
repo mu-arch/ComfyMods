@@ -75,6 +75,10 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * ???
+
 ### 1.3.0
 
   * Modified `ShouldCreateDivider()` to also check if the username is different.
