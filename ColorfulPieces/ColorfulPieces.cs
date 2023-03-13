@@ -16,7 +16,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.9.2";
+    public const string PluginVersion = "1.10.0";
 
     public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
     public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();

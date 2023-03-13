@@ -53,6 +53,10 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ## Changelog
 
+### 1.10.0
+
+  * Updated for the `v0.214.2` patch.
+
 ### 1.9.2
 
   * Reverted the 'Copied piece color' message back to an upper-left MessageHud notification.
