@@ -4,17 +4,6 @@
   * Shows name and rotation of build piece currently being placed.
   * Show (or hide) the vanilla piece health bar (colorized to the current piece health).
 
-## Installation
-
-### Manual
-
-  * Un-zip `EulersRuler.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `EulersRuler_v1.3.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### User Interface
@@ -40,7 +29,22 @@ This fuctionality is available while the build hammer is active.
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
+## Installation
+
+### Manual
+
+  * Un-zip `EulersRuler.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `EulersRuler_v1.4.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ## Changelog
+
+### 1.4.0
+
+  * Updated for the `v0.214.2` patch.
 
 ### 1.3.0
 
