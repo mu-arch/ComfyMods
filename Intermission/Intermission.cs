@@ -18,7 +18,7 @@ namespace Intermission {
   public class Intermission : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.intermission";
     public const string PluginName = "Intermission";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.0.2";
 
     Harmony _harmony;
 
@@ -60,7 +60,7 @@ namespace Intermission {
 
       tipText
           .SetAlignment(TextAnchor.UpperCenter)
-          .SetHorizontalOverflow(HorizontalWrapMode.Overflow)
+          .SetHorizontalOverflow(HorizontalWrapMode.Wrap)
           .SetFontSize(LoadingTipTextFontSize.Value)
           .SetColor(LoadingTipTextColor.Value);
 
@@ -73,10 +73,10 @@ namespace Intermission {
           .SetEffectDistance(LoadingTipShadowEffectDistance.Value);
 
       tipText.GetComponent<RectTransform>()
-          .SetAnchorMin(new(0.5f, 0f))
-          .SetAnchorMax(new(0.5f, 0f))
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.right)
           .SetPosition(LoadingTipTextPosition.Value)
-          .SetSizeDelta(new(700f, 78f));
+          .SetSizeDelta(new(-50f, 78f));
     }
 
     static Image _cachedLoadingImage;

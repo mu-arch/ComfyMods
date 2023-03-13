@@ -56,7 +56,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Intermission_v1.0.1.zip`.
+  * Go to Settings > Import local mod > Select `Intermission_v1.0.2.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -66,6 +66,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.0.2
+
+  * Modified TipText to horizontally wrap with width set to entire screen.
+  * Updated BepInEx dependency to `denikson-BepInExPack_Valheim-5.4.2100`.
 
 ### 1.0.1
 
