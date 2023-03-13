@@ -176,7 +176,8 @@ namespace Pinnacle {
       }
 
       TargetPin.m_name = name;
-      TargetPin.m_nameElement.SetText(name);
+      TargetPin.m_NamePinData ??= new(TargetPin);
+      TargetPin.m_NamePinData?.PinNameText.Ref()?.SetText(name);
     }
 
     void OnPinTypeValueChange(Minimap.PinType pinType) {
@@ -253,7 +254,7 @@ namespace Pinnacle {
 
       panel.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(128, 128, 16))
+          .SetSprite(UIBuilder.CreateSuperellipse(200, 200, 10))
           .SetColor(new(0f, 0f, 0f, 0.9f));
 
       panel.AddComponent<CanvasGroup>()

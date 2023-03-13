@@ -179,7 +179,7 @@ namespace Pinnacle {
 
       panel.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateRoundedCornerSprite(400, 400, 15))
+          .SetSprite(UIBuilder.CreateSuperellipse(400, 400, 15))
           .SetColor(new(0f, 0f, 0f, 0.9f));
 
       return panel;
