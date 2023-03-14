@@ -157,7 +157,7 @@ namespace Pinnacle {
         return;
       }
 
-      PinName.Value.InputField.text = pin.m_name;
+      PinName.Value.InputField.SetTextWithoutNotify(pin.m_name);
 
       PinIconSelector.UpdateIcons(pin.m_type);
       PinType.Value.InputField.text = pin.m_type.ToString();
@@ -176,8 +176,13 @@ namespace Pinnacle {
       }
 
       TargetPin.m_name = name;
-      TargetPin.m_NamePinData ??= new(TargetPin);
-      TargetPin.m_NamePinData?.PinNameText.Ref()?.SetText(name);
+
+      if (TargetPin.m_NamePinData == null) {
+        TargetPin.m_NamePinData = new(TargetPin);
+        Minimap.m_instance.CreateMapNamePin(TargetPin, Minimap.m_instance.m_pinNameRootLarge);
+      }
+
+      TargetPin.m_NamePinData.PinNameText.SetText(name);
     }
 
     void OnPinTypeValueChange(Minimap.PinType pinType) {
@@ -228,7 +233,11 @@ namespace Pinnacle {
       }
 
       TargetPin.m_pos = new(x, y, z);
-      TargetPin.m_uiElement.SetPosition(GetMapImagePosition(TargetPin.m_pos));
+
+      Vector2 mapImagePosition = GetMapImagePosition(TargetPin.m_pos);
+
+      TargetPin.m_uiElement.SetPosition(mapImagePosition);
+      TargetPin.m_NamePinData?.PinNameRectTransform.SetPosition(mapImagePosition);
 
       CenterMapHelper.CenterMapOnPosition(TargetPin.m_pos);
     }

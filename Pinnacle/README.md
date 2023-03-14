@@ -84,7 +84,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.0.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -95,6 +95,12 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.2.1
+
+  * Fixed a bug where pin name text was not removed when pins were removed.
+  * Temporary hot-fix for player pin names not updating/moving until you zoomed all the way out.
+  * Updated BepInEx dependency to `denikson-BepInExPack_Valheim-5.4.2100`.
 
 ### 1.2.0
 

@@ -177,5 +177,24 @@ namespace Pinnacle {
         Pinnacle.PinFilterPanel?.UpdatePinIconFilters();
       }
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Minimap.UpdatePlayerPins))]
+    static void UpdatePlayerPinsPostfix(ref Minimap __instance) {
+      if (IsModEnabled.Value) {
+        foreach (Minimap.PinData pinData in __instance.m_playerPins) {
+          __instance.WorldToMapPoint(pinData.m_pos, out float mx, out float my);
+          Vector2 mapPosition = __instance.MapPointToLocalGuiPos(mx, my, __instance.m_mapImageLarge);
+
+          if (pinData.m_uiElement) {
+            pinData.m_uiElement.anchoredPosition = mapPosition;
+          }
+
+          if (pinData.m_NamePinData?.PinNameRectTransform) {
+            pinData.m_NamePinData.PinNameRectTransform.anchoredPosition = mapPosition;
+          }
+        }
+      }
+    }
   }
 }
