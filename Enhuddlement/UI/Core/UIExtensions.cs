@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using TMPro;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace ComfyLib {
@@ -18,6 +20,13 @@ namespace ComfyLib {
     public static T SetName<T>(this T component, string name) where T : Component {
       component.gameObject.name = name;
       return component;
+    }
+  }
+
+  public static class OutlineExtensions {
+    public static Outline SetEffectColor(this Outline outline, Color color) {
+      outline.effectColor = color;
+      return outline;
     }
   }
 
@@ -111,6 +120,23 @@ namespace ComfyLib {
 
     public static Text SetVerticalOverflow(this Text text, VerticalWrapMode wrapMode) {
       text.verticalOverflow = wrapMode;
+      return text;
+    }
+  }
+
+  public static class TextMeshProUGUIExtensions {
+    public static TextMeshProUGUI SetAlignment(this TextMeshProUGUI text, TextAlignmentOptions alignment) {
+      text.alignment = alignment;
+      return text;
+    }
+
+    public static TextMeshProUGUI SetColor(this TextMeshProUGUI text, Color color) {
+      text.color = color;
+      return text;
+    }
+
+    public static TextMeshProUGUI SetFontSize(this TextMeshProUGUI text, int fontSize) {
+      text.fontSize = fontSize;
       return text;
     }
   }

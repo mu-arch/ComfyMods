@@ -114,7 +114,6 @@ namespace Enhuddlement {
 
     public static ConfigEntry<int> BossHudNameTextFontSize { get; private set; }
     public static ConfigEntry<Color> BossHudNameTextColor { get; private set; }
-    public static ConfigEntry<bool> BossHudNameUseGradientEffect { get; private set; }
 
     public static ConfigEntry<int> BossHudHealthTextFontSize { get; private set; }
     public static ConfigEntry<Color> BossHudHealthTextFontColor { get; private set; }
@@ -149,13 +148,6 @@ namespace Enhuddlement {
               "nameTextColor",
               Color.white,
               "BossHud.Name text color.");
-
-      BossHudNameUseGradientEffect =
-          config.BindInOrder(
-              "BossHud.Name",
-              "useGradientEffect",
-              true,
-              "If true, adds a vertical Gradient effect to the BossHud.Name text.");
 
       BossHudHealthTextFontSize =
           config.BindInOrder(

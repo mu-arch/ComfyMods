@@ -68,6 +68,12 @@ modify settings in-game.
 
 ## Changelog
 
+### 1.1.0
+
+  * Updated for the `v0.214.2` patch.
+  * Updated BepInEx dependency to `denikson-BepInExPack_Valheim-5.4.2100`.
+  * Removed `BossHud.Name.useGradientEffect` config option for now as it is not compatible with TextMeshPro.
+
 ### 1.0.0
 
   * Initial release.
