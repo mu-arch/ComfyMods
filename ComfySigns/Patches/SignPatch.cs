@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
+﻿using ComfyLib;
 
-using UnityEngine;
+using HarmonyLib;
 
 using static ComfySigns.PluginConfig;
 
@@ -11,7 +11,8 @@ namespace ComfySigns {
     [HarmonyPatch(nameof(Sign.Awake))]
     static void AwakePostfix(ref Sign __instance) {
       if (IsModEnabled.Value) {
-        __instance.m_textWidget.color = Color.white;
+        __instance.m_textWidget.font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
+        __instance.m_textWidget.color = SignDefaultTextColor.Value;
       }
     }
   }
