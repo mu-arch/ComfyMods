@@ -24,5 +24,9 @@ namespace ComfySigns {
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
+
+    public static void OnSignConfigChanged() {
+
+    }
   }
 }

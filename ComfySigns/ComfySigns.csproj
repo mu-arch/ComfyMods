@@ -107,6 +107,7 @@
     <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="Extensions\UnityExtensions.cs" />
     <Compile Include="Patches\SignPatch.cs" />
+    <Compile Include="Patches\TextInputPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Core\UIFonts.cs" />
