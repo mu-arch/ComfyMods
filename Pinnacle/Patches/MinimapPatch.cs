@@ -201,7 +201,7 @@ namespace Pinnacle {
     static void RemovePlayerPins(Minimap minimap) {
       foreach (Minimap.PinData pin in minimap.m_playerPins) {
         if (pin.m_uiElement) {
-          UnityEngine.Object.Destroy(pin.m_uiElement);
+          UnityEngine.Object.Destroy(pin.m_uiElement.gameObject);
           pin.m_uiElement = null;
         }
 

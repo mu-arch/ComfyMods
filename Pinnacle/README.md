@@ -84,7 +84,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.1.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.3.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -95,6 +95,10 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.2.3
+
+  * Hot-fix for the hot-fix because I forgot to specify gameObject for destroy.
 
 ### 1.2.2
 
