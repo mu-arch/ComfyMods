@@ -13,6 +13,7 @@ namespace ComfySigns {
       if (IsModEnabled.Value) {
         __instance.m_textWidget.font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
         __instance.m_textWidget.color = SignDefaultTextColor.Value;
+        __instance.m_characterLimit = 999;
       }
     }
   }

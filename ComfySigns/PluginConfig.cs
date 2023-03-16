@@ -16,31 +16,31 @@ namespace ComfySigns {
   public static class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
-    public static ConfigEntry<string> SignDefaultTextFont { get; private set; }
-    public static ExtendedColorConfigEntry SignDefaultTextColor { get; private set; }
-
     public static void BindConfig(ConfigFile config) {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
+      _fejdStartupBindConfigQueue.Enqueue(() => BindLoggingConfig(config));
       _fejdStartupBindConfigQueue.Enqueue(() => BindSignConfig(config));
     }
 
-    static readonly EventHandler _onSignConfigChanged = (_, _) => {
-      List<Sign> signs =
-          Resources.FindObjectsOfTypeAll<Sign>().Where(sign => sign && sign.m_nview && sign.m_nview.IsValid()).ToList();
+    public static ConfigEntry<bool> SuppressUnicodeNotFoundWarning { get; private set; }
 
-      ZLog.Log($"Updating {signs.Count} active signs.");
+    public static void BindLoggingConfig(ConfigFile config) {
+      SuppressUnicodeNotFoundWarning =
+          config.BindInOrder(
+              "Logging",
+              "suppressUnicodeNotFoundWarning",
+              true,
+              "Hide 'The character with Unicode value ... was not found...' log warnings.");
 
-      TMP_FontAsset font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
-      Color color = SignDefaultTextColor.Value;
+      SuppressUnicodeNotFoundWarning.SettingChanged +=
+          (_, _) => TMP_Settings.instance.m_warningsDisabled = SuppressUnicodeNotFoundWarning.Value;
 
-      foreach (Sign sign in signs) {
-        if (sign && sign.m_textWidget) {
-          sign.m_textWidget.font = font;
-          sign.m_textWidget.color = color;
-        }
-      }
-    };
+      TMP_Settings.instance.m_warningsDisabled = SuppressUnicodeNotFoundWarning.Value;
+    }
+
+    public static ConfigEntry<string> SignDefaultTextFont { get; private set; }
+    public static ExtendedColorConfigEntry SignDefaultTextColor { get; private set; }
 
     public static void BindSignConfig(ConfigFile config) {
       string[] fontNames =
@@ -58,7 +58,7 @@ namespace ComfySigns {
               "Sign.m_textWidget.font default value.",
               new AcceptableValueList<string>(fontNames));
 
-      SignDefaultTextFont.SettingChanged += _onSignConfigChanged;
+      SignDefaultTextFont.SettingChanged += ComfySigns.OnSignConfigChanged;
 
       SignDefaultTextColor =
           new(config,
@@ -67,7 +67,7 @@ namespace ComfySigns {
               Color.white,
               "Sign.m_textWidget.color default value.");
 
-      SignDefaultTextColor.ConfigEntry.SettingChanged += _onSignConfigChanged;
+      SignDefaultTextColor.ConfigEntry.SettingChanged += ComfySigns.OnSignConfigChanged;
     }
 
     static readonly Queue<Action> _fejdStartupBindConfigQueue = new();

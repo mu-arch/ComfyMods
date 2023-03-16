@@ -9,6 +9,7 @@ namespace ComfySigns {
     [HarmonyPatch(nameof(TextInput.Awake))]
     static void AwakePostfix(ref TextInput __instance) {
       if (IsModEnabled.Value && __instance.m_textFieldTMP) {
+        __instance.gameObject.AddComponent<TextInputPanelDragger>();
         __instance.m_textFieldTMP.richText = false;
       }
     }

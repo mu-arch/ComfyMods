@@ -1,8 +1,15 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 using BepInEx;
 
+using ComfyLib;
+
 using HarmonyLib;
+
+using TMPro;
+
+using UnityEngine;
 
 using static ComfySigns.PluginConfig;
 
@@ -25,8 +32,17 @@ namespace ComfySigns {
       _harmony?.UnpatchSelf();
     }
 
-    public static void OnSignConfigChanged() {
+    public static readonly EventHandler OnSignConfigChanged = (_, _) => {
+      TMP_FontAsset font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
+      Color color = SignDefaultTextColor.Value;
 
-    }
+      foreach (Sign sign in Resources.FindObjectsOfTypeAll<Sign>()) {
+        if (sign && sign.m_nview && sign.m_nview.IsValid() && sign.m_textWidget) {
+          sign.m_textWidget
+              .SetFont(font)
+              .SetColor(color);
+        }
+      }
+    };
   }
 }
