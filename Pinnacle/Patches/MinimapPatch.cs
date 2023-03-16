@@ -178,21 +178,71 @@ namespace Pinnacle {
       }
     }
 
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch(nameof(Minimap.UpdatePlayerPins))]
-    static void UpdatePlayerPinsPostfix(ref Minimap __instance) {
-      if (IsModEnabled.Value) {
-        foreach (Minimap.PinData pinData in __instance.m_playerPins) {
-          __instance.WorldToMapPoint(pinData.m_pos, out float mx, out float my);
-          Vector2 mapPosition = __instance.MapPointToLocalGuiPos(mx, my, __instance.m_mapImageLarge);
+    static bool UpdatePlayerPinsPrefix(ref Minimap __instance) {
+      if (!IsModEnabled.Value) {
+        return true;
+      }
 
-          if (pinData.m_uiElement) {
-            pinData.m_uiElement.anchoredPosition = mapPosition;
-          }
+      __instance.m_tempPlayerInfo.Clear();
+      ZNet.m_instance.GetOtherPublicPlayers(__instance.m_tempPlayerInfo);
 
-          if (pinData.m_NamePinData?.PinNameRectTransform) {
-            pinData.m_NamePinData.PinNameRectTransform.anchoredPosition = mapPosition;
-          }
+      if (__instance.m_playerPins.Count != __instance.m_tempPlayerInfo.Count) {
+        RemovePlayerPins(__instance);
+        AddPlayerPins(__instance, __instance.m_tempPlayerInfo);
+      } else {
+        UpdatePlayerPins(__instance, __instance.m_tempPlayerInfo);
+      }
+
+      return false;
+    }
+
+    static void RemovePlayerPins(Minimap minimap) {
+      foreach (Minimap.PinData pin in minimap.m_playerPins) {
+        if (pin.m_uiElement) {
+          UnityEngine.Object.Destroy(pin.m_uiElement);
+          pin.m_uiElement = null;
+        }
+
+        if (pin.m_NamePinData?.PinNameGameObject) {
+          UnityEngine.Object.Destroy(pin.m_NamePinData.PinNameGameObject);
+          pin.m_NamePinData.PinNameGameObject = null;
+          pin.m_NamePinData = null;
+        }
+
+        minimap.m_pins.Remove(pin);
+      }
+
+      minimap.m_playerPins.Clear();
+    }
+
+    static void AddPlayerPins(Minimap minimap, List<ZNet.PlayerInfo> playerInfos) {
+      foreach (ZNet.PlayerInfo playerInfo in playerInfos) {
+        Minimap.PinData pin =
+            minimap.AddPin(
+                playerInfo.m_position, Minimap.PinType.Player, playerInfo.m_name, save: false, isChecked: false, 0L);
+
+        minimap.CreateMapNamePin(pin, minimap.m_pinNameRootLarge);
+        pin.m_NamePinData.PinNameGameObject.SetActive(false);
+
+        minimap.m_playerPins.Add(pin);
+      }
+    }
+
+    static void UpdatePlayerPins(Minimap minimap, List<ZNet.PlayerInfo> playerInfos) {
+      float dt = Time.deltaTime;
+
+      for (int i = 0; i < playerInfos.Count; i++) {
+        ZNet.PlayerInfo playerInfo = playerInfos[i];
+        Minimap.PinData pin = minimap.m_playerPins[i];
+
+        if (pin.m_name == playerInfo.m_name) {
+          pin.m_pos = Vector3.MoveTowards(pin.m_pos, playerInfo.m_position, 200f * dt);
+        } else {
+          pin.m_name = playerInfo.m_name;
+          pin.m_pos = playerInfo.m_position;
+          pin.m_NamePinData.PinNameText.text = Localization.m_instance.Localize(pin.m_name);
         }
       }
     }

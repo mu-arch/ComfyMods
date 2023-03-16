@@ -96,6 +96,10 @@
 
 ## Changelog
 
+### 1.2.2
+
+  * Hot-fix for orphaned player pin names: rewrote entire `Minimap.UpdatePlayerPins()` with prefix patch.
+
 ### 1.2.1
 
   * Fixed a bug where pin name text was not removed when pins were removed.
