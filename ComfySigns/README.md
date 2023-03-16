@@ -2,6 +2,23 @@
 
 *Colorful and comfy signs.*
 
+## Features
+
+### Sign text changes
+
+  * Change default Sign text color to configured value (default: white).
+  * Change default Sign text font to configured value (default: Norse SDF).
+  * Change Sign text character limit from 50 to 999.
+
+### Sign TextInput panel changes
+
+  * InputField set to plain formatted text to show rich text tag editing.
+  * Panel can be moved around with mouse-click and drag action.
+
+### Logging changes
+
+  * Suppress "Unicode value not found" log warnings.
+
 ## Installation
 
 ### Manual
