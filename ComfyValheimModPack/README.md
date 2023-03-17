@@ -16,6 +16,11 @@
 
 ## Changelog
 
+### 2.8.0
+
+  * Removed `Tekla-ColorfulSigns-5.4.1604` and replaced with `ComfyMods-ComfySigns-1.0.0`.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.7.0
 
   * Added `ComfyMods-Intermission-1.0.1` to the dependencies list.
