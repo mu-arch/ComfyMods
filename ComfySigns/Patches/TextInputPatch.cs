@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using ComfyLib;
+
+using HarmonyLib;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,14 +14,15 @@ namespace ComfySigns {
     [HarmonyPatch(nameof(TextInput.Awake))]
     static void AwakePostfix(ref TextInput __instance) {
       if (IsModEnabled.Value && __instance.m_textFieldTMP) {
-        __instance.gameObject.AddComponent<TextInputPanelDragger>();
+        __instance.m_panel.GetOrAddComponent<TextInputPanelDragger>();
 
-        __instance.m_textFieldTMP.richText = false;
-        __instance.m_textFieldTMP.textViewport = __instance.m_textFieldTMP.textComponent.GetComponent<RectTransform>();
+        __instance.m_textFieldTMP
+            .SetRichText(false)
+            .SetTextViewport(__instance.m_textFieldTMP.textComponent.GetComponent<RectTransform>());
 
-        RectMask2D rectMask = __instance.m_textFieldTMP.gameObject.AddComponent<RectMask2D>();
-        rectMask.padding = new(2f, 0f, 2f, 0f);
-        rectMask.softness = new(2, 2);
+        __instance.m_textFieldTMP.gameObject.GetOrAddComponent<RectMask2D>()
+            .SetPadding(left: 2f, top: 0f, right: 2f, bottom: 2f)
+            .SetSoftness(horizontal: 2, vertical: 0);
       }
     }
   }

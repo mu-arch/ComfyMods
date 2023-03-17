@@ -11,8 +11,10 @@ namespace ComfySigns {
     [HarmonyPatch(nameof(Sign.Awake))]
     static void AwakePostfix(ref Sign __instance) {
       if (IsModEnabled.Value) {
-        __instance.m_textWidget.font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
-        __instance.m_textWidget.color = SignDefaultTextColor.Value;
+        __instance.m_textWidget
+            .SetFont(UIFonts.GetFontAsset(SignDefaultTextFont.Value))
+            .SetColor(SignDefaultTextColor.Value);
+
         __instance.m_characterLimit = 999;
       }
     }
