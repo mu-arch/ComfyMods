@@ -1,9 +1,9 @@
 ﻿using System;
 
-using UnityEngine.UI;
+using TMPro;
 
 namespace Insightful {
-  static class PluginExtensions {
+  public static class PluginExtensions {
     public static bool TryGetString(this ZDO zdo, int keyHashCode, out string result) {
       if (zdo.m_strings == null) {
         result = default;
@@ -23,7 +23,7 @@ namespace Insightful {
       return false;
     }
 
-    public static Text Append(this Text unityText, string value) {
+    public static TextMeshProUGUI Append(this TextMeshProUGUI unityText, string value) {
       unityText.text = unityText.text.Length == 0 ? value : $"{unityText.text}\n{value}";
       return unityText;
     }

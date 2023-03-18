@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Insightful_v1.2.0.zip`.
+  * Go to Settings > Import local mod > Select `Insightful_v1.3.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -25,6 +25,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.3.0
+
+  * Fixed for the `v0.214.2` patch.
+  * Changed the `Player.TakeInput()` delegate to a `Player.UpdateHover()` delegate with better key-down handling.
 
 ### 1.2.0
 

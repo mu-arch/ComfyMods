@@ -1,10 +1,10 @@
-﻿using BepInEx;
+﻿using System.Collections;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System.Collections;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -15,7 +15,7 @@ namespace Insightful {
   public class Insightful : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.insightful";
     public const string PluginName = "Insightful";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
