@@ -73,11 +73,17 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GamePath)\valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
@@ -88,16 +94,19 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\ShipName.cs" />
     <Compile Include="Components\VagonName.cs" />
-    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="LicensePlate.cs" />
     <Compile Include="Patches\ShipControllsPatch.cs" />
     <Compile Include="Patches\VagonPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

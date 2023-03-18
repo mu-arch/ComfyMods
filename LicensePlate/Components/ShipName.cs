@@ -97,16 +97,11 @@ namespace LicensePlate {
     }
 
     private void CustomizeNpcText() {
-      _npcText.m_textField.resizeTextForBestFit = false;
-      _npcText.m_textField.horizontalOverflow = HorizontalWrapMode.Overflow;
-      _npcText.m_textField.verticalOverflow = VerticalWrapMode.Overflow;
+      _npcText.m_textField.enableAutoSizing = false;
+      _npcText.m_textField.enableWordWrapping = false;
+      _npcText.m_textField.overflowMode = TMPro.TextOverflowModes.Overflow;
       _npcText.m_textField.fontSize = ShipNameFontSize.Value;
-
-      Destroy(_npcText.m_textField.GetComponent<Outline>());
-
-      Shadow textShadow = _npcText.m_textField.gameObject.AddComponent<Shadow>();
-      textShadow.effectDistance = new(2f, -2f);
-      textShadow.effectColor = Color.black;
+      _npcText.m_textField.fontSizeMax = 64f;
 
       CustomizeNpcTextBackground(_npcText.m_gui.transform.Find("Image").gameObject);
     }

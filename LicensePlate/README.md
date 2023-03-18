@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `LicensePlate_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `LicensePlate_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -55,6 +55,11 @@ Some configuration options are available (default values shown)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed for the `v0.214.2` patch.
+  * Removed 'Shadow' effect since this is more difficult to do with TMP for now.
 
 ### 1.0.0
 

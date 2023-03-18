@@ -12,7 +12,7 @@ namespace LicensePlate {
   public class LicensePlate : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.licenseplate";
     public const string PluginName = "LicensePlate";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     public static readonly int ShipLicensePlateHashCode = "ShipLicensePlate".GetStableHashCode();
     public static readonly int VagonLicensePlateHashCode = "VagonLicensePlate".GetStableHashCode();
