@@ -1,4 +1,4 @@
-﻿# Insightful
+# Insightful
 
 *For those that seek words inscribed upon the world.*
 
