@@ -64,7 +64,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Chatter_v1.4.0.zip`.
+  * Go to Settings > Import local mod > Select `Chatter_v1.4.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ### Notes
@@ -75,6 +75,11 @@
   * Chatter icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.4.1
+
+  * Applied the 'Outline' font material to in-world texts.
+  * Set a plain sprite for all Image components in the ChatPanel.
 
 ### 1.4.0
 

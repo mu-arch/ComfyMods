@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 
+using ComfyLib;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -148,10 +150,6 @@ namespace Chatter {
       ScrollRect.verticalNormalizedPosition += percent;
     }
 
-    public void SetVisible(bool isVisible) {
-
-    }
-
     GameObject CreatePanel(Transform parentTransform) {
       GameObject panel = new("ChatPanel", typeof(RectTransform));
       panel.SetParent(parentTransform);
@@ -169,10 +167,12 @@ namespace Chatter {
       panel.AddComponent<CanvasGroup>();
 
       panel.AddComponent<Image>()
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
           .SetColor(Color.clear);
 
       panel.AddComponent<Outline>()
-          .SetEffectColor(new Color32(255, 255, 255, 32))
+          .SetEffectColor(new(1f, 1f, 1f, 0.125f))
           .SetEffectDistance(Vector2.zero)
           .SetUseGraphicAlpha(false)
           .SetEnabled(false);
@@ -195,7 +195,9 @@ namespace Chatter {
           .SetChildForceExpand(width: false, height: false);
 
       grabber.AddComponent<Image>()
-          .SetColor(new Color32(255, 255, 255, 32));
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
+          .SetColor(new(1f, 1f, 1f, 0.125f));
 
       grabber.AddComponent<CanvasGroup>();
 
@@ -237,7 +239,9 @@ namespace Chatter {
           .SetPreferred(height: 25f);
 
       dragger.AddComponent<Image>()
-          .SetColor(new Color32(192, 192, 192, 48))
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
+          .SetColor(new(0.75f, 0.75f, 0.75f, 0.1875f))
           .SetRaycastTarget(true);
 
       dragger.AddComponent<PanelDragger>();
@@ -260,7 +264,9 @@ namespace Chatter {
           .SetVerticalFit(ContentSizeFitter.FitMode.PreferredSize);
 
       row.AddComponent<Image>()
-          .SetColor(new Color32(192, 192, 192, 32));
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
+          .SetColor(new(0.75f, 0.75f, 0.75f, 0.125f));
 
       SayToggle = CreateMessageTypeToggle(row.transform, "Say".ToUpperInvariant());
       ShoutToggle = CreateMessageTypeToggle(row.transform, "Shout".ToUpperInvariant());
@@ -309,8 +315,9 @@ namespace Chatter {
           .SetPosition(Vector2.zero);
 
       viewport.AddComponent<Image>()
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
           .SetColor(PluginConfig.ChatPanelBackgroundColor.Value)
-          .SetSprite(CreateGradientSprite())
           .SetRaycastTarget(false);
 
       RectMask2D viewportRectMask = viewport.AddComponent<RectMask2D>();
@@ -338,7 +345,11 @@ namespace Chatter {
           .SetChildAlignment(TextAnchor.MiddleLeft)
           .SetPadding(left: 20, right: 20, top: 8, bottom: 8);
 
-      Image rowImage = row.AddComponent<Image>().SetColor(PluginConfig.ChatPanelBackgroundColor.Value);
+      Image rowImage =
+          row.AddComponent<Image>()
+              .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+              .SetType(Image.Type.Filled)
+              .SetColor(PluginConfig.ChatPanelBackgroundColor.Value);
 
       InputField inputField = CreateInputField(row.transform);
       inputField.targetGraphic = rowImage;
@@ -415,6 +426,8 @@ namespace Chatter {
           .SetPosition(Vector2.zero);
 
       content.AddComponent<Image>()
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
           .SetColor(Color.clear)
           .SetRaycastTarget(true);
 
@@ -470,7 +483,9 @@ namespace Chatter {
       divider.SetParent(parentTransform, worldPositionStays: false);
 
       divider.AddComponent<Image>()
-          .SetColor(new Color32(255, 255, 255, 16))
+          .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
+          .SetType(Image.Type.Filled)
+          .SetColor(new(1f, 1f, 1f, 0.0625f))
           .SetRaycastTarget(true)
           .SetMaskable(true);
 

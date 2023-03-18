@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -165,6 +167,14 @@ namespace Chatter {
 
     static string ToUpperDelegate(string text) {
       return IsModEnabled.Value ? text : text.ToUpper();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.UpdateWorldTextField))]
+    static void UpdateWorldTextFieldPostfix(ref Chat __instance, ref Chat.WorldTextInstance wt) {
+      if (IsModEnabled.Value) {
+        wt.m_textMeshField.fontMaterial = __instance.m_output.fontMaterial;
+      }
     }
   }
 }
