@@ -68,6 +68,8 @@ namespace Keysential {
       "My wares are in-eggs-pensive!",
       "I'm egg-static!",
       "Egg-cuse me?",
+      "I have egg-axctly the thing you're after.",
+      "Buy my eggs-clusive wares!",
     };
 
     void SendChatMessage(ZNetPeer netPeer, Vector3 position, string name, string message) {
@@ -76,7 +78,11 @@ namespace Keysential {
           "ChatMessage",
           position,
           (int) Talker.Type.Normal,
-          name,
+          new UserInfo() {
+            Name = name,
+            Gamertag = name,
+            NetworkUserId = PrivilegeManager.GetNetworkUserId(),
+          },
           message,
           PrivilegeManager.GetNetworkUserId());
     }
