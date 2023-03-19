@@ -7,24 +7,25 @@ using static LicensePlate.PluginConfig;
 namespace LicensePlate {
   public class ShipName : MonoBehaviour, TextReceiver {
     private ZNetView _netView;
-    private Ship _ship;
     private Chat.NpcText _npcText;
+
+    private ShipControlls _shipControlls;
+    private Ship _ship;
 
     private string _shipName = string.Empty;
     private string _shipNameCache = string.Empty;
 
     public void Awake() {
-      ShipControlls shipControls = GetComponent<ShipControlls>();
+      _shipControlls = GetComponent<ShipControlls>();
+      _ship = _shipControlls.Ref()?.m_ship;
+      _netView = _shipControlls.Ref()?.m_nview;
 
-      _netView = shipControls.Ref()?.m_nview;
-      _ship = shipControls.Ref()?.m_ship;
-
-      if (!_netView || !_netView.IsValid() || !_ship) {
+      if (!_shipControlls || !_ship || !_netView || !_netView.IsValid()) {
         return;
       }
 
       ZLog.Log($"ShipName awake for: {_netView.m_zdo.m_uid}");
-      InvokeRepeating(nameof(UpdateShipName), 0f, 2f);
+      InvokeRepeating(nameof(UpdateShipName), 0f, 1f);
     }
 
     private void UpdateShipName() {
@@ -34,17 +35,23 @@ namespace LicensePlate {
         return;
       }
 
-      _shipName = _netView.m_zdo.GetString(ShipLicensePlateHashCode, string.Empty);
+      if (!Player.m_localPlayer) {
+        ClearNpcText();
+        return;
+      }
 
-      if (_npcText?.m_gui && _shipName.Length > 0) {
+      _shipName = _netView.m_zdo.GetString(ShipLicensePlateHashCode, string.Empty);
+      float distance = Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position);
+
+      if (_npcText?.m_gui && _shipName.Length > 0 && distance > ShipNameMinimumDistance.Value) {
         UpdateNpcTextValue(_shipName);
       } else {
         ClearNpcText();
 
         if (_shipName.Length > 0
             && Player.m_localPlayer
-            && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position)
-                < ShipNameCutoffDistance.Value) {
+            && distance > ShipNameMinimumDistance.Value
+            && distance < ShipNameCutoffDistance.Value) {
           SetNpcText(_shipName);
         }
       }
@@ -62,7 +69,7 @@ namespace LicensePlate {
           _ship.gameObject,
           ShipNameDisplayOffset.Value,
           ShipNameCutoffDistance.Value,
-          600f,
+          ShipNameTimeToLive.Value,
           string.Empty,
           GetSanitizedShipName(shipName),
           false); ;

@@ -12,7 +12,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `LicensePlate_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `LicensePlate_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Features
@@ -55,6 +55,13 @@ Some configuration options are available (default values shown)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.2.0
+
+  * Add configurable time-to-live for custom names (default: `60s`).
+  * Add configurable minimum distance for custom names to appear/disappear (default: `0m`).
+  * Reworked distance calculation to use Cart-handles attach point.
+  * Decreased time between custom name updates from `2s -> 1s`.
 
 ### 1.1.0
 
