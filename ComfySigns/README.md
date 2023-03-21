@@ -19,6 +19,13 @@
 
   * Suppress "Unicode value not found" log warnings.
 
+## Sign Effects
+
+### Party Mode
+
+  * Wrap your sign text with this tag: `<link=party>Sign Text Goes Here</link>`
+  * Party sign effect can be turned off in config options.
+
 ## Installation
 
 ### Manual
@@ -27,10 +34,14 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `ComfySigns_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ComfySigns_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
+
+### 1.1.0
+
+  * Added new Sign effect 'Party' feature.
 
 ### 1.0.0
 

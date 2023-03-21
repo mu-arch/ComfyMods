@@ -21,6 +21,7 @@ namespace ComfySigns {
 
       _fejdStartupBindConfigQueue.Enqueue(() => BindLoggingConfig(config));
       _fejdStartupBindConfigQueue.Enqueue(() => BindSignConfig(config));
+      _fejdStartupBindConfigQueue.Enqueue(() => BindSignEffectConfig(config));
     }
 
     public static ConfigEntry<bool> SuppressUnicodeNotFoundWarning { get; private set; }
@@ -68,6 +69,34 @@ namespace ComfySigns {
               "Sign.m_textWidget.color default value.");
 
       SignDefaultTextColor.ConfigEntry.SettingChanged += ComfySigns.OnSignConfigChanged;
+    }
+
+    public static ConfigEntry<bool> SignEffectEnablePartyEffect{ get; private set; }
+
+    public static void BindSignEffectConfig(ConfigFile config) {
+      SignEffectEnablePartyEffect =
+          config.BindInOrder(
+              "SignEffect",
+              "enablePartyEffect",
+              true,
+              "Enables the 'Party' Sign effect for signs using the party tag.");
+
+      // Removing any existing Party effect components when this setting is toggled off.
+      SignEffectEnablePartyEffect.SettingChanged += (_, _) => {
+        if (SignEffectEnablePartyEffect.Value) {
+          return;
+        }
+
+        foreach (
+            Sign sign in
+                UnityEngine.Object.FindObjectsOfType<Sign>()
+                    .Where(sign => sign && sign.m_nview && sign.m_nview.IsValid())) {
+          if (sign.m_textWidget && sign.m_textWidget.TryGetComponent(out VertexColorCycler colorCycler)) {
+            UnityEngine.Object.Destroy(colorCycler);
+            sign.m_textWidget.ForceMeshUpdate(ignoreActiveState: true);
+          }
+        }
+      };
     }
 
     static readonly Queue<Action> _fejdStartupBindConfigQueue = new();
