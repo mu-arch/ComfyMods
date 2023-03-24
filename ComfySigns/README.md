@@ -48,6 +48,7 @@
   * Added SignEffectMaximumRenderDistance config option (default: 64m).
   * Added SignTextIgnoreSizeTags config option (default: false);
   * SignEffectEnablePartyEffect config option now defaults to false.
+  * Added a one-second wait after a full party effect loop.
 
 ### 1.1.0
 

@@ -7,8 +7,8 @@ using UnityEngine;
 namespace ComfyLib {
   // Modified from: https://gist.github.com/baba-s/e13eb2e813061e05a0535067c58d6126
   public class VertexColorCycler : MonoBehaviour {
-    static readonly WaitForSeconds _idleWait = new(seconds: 1f);
-    static readonly WaitForSeconds _animateWait = new(seconds: 0.05f);
+    static readonly WaitForSeconds _longWait = new(seconds: 1f);
+    static readonly WaitForSeconds _shortWait = new(seconds: 0.05f);
 
     TMP_Text _textComponent;
 
@@ -31,7 +31,7 @@ namespace ComfyLib {
         int characterCount = textInfo.characterCount;
 
         if (characterCount == 0) {
-          yield return _idleWait;
+          yield return _longWait;
           continue;
         }
 
@@ -51,9 +51,10 @@ namespace ComfyLib {
           _textComponent.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
         }
 
+        int lastCharacter = currentCharacter;
         currentCharacter = (currentCharacter + 1) % characterCount;
 
-        yield return _animateWait;
+        yield return lastCharacter < currentCharacter ? _shortWait : _longWait;
       }
     }
   }
