@@ -43,6 +43,8 @@ namespace ComfySigns {
     public static ConfigEntry<string> SignDefaultTextFont { get; private set; }
     public static ExtendedColorConfigEntry SignDefaultTextColor { get; private set; }
 
+    public static ConfigEntry<bool> SignTextIgnoreSizeTags { get; private set; }
+
     public static void BindSignConfig(ConfigFile config) {
       string[] fontNames =
           Resources.FindObjectsOfTypeAll<Font>()
@@ -69,34 +71,39 @@ namespace ComfySigns {
               "Sign.m_textWidget.color default value.");
 
       SignDefaultTextColor.ConfigEntry.SettingChanged += ComfySigns.OnSignConfigChanged;
+
+      SignTextIgnoreSizeTags =
+          config.Bind(
+              "Sign.Text.Tags",
+              "ignoreSizeTags",
+              false,
+              "if set, ignore any and all <size> tags in sign text when rendered locally.");
+
+      SignTextIgnoreSizeTags.SettingChanged += ComfySigns.OnSignTextTagsConfigChanged;
     }
 
+    public static ConfigEntry<float> SignEffectMaximumRenderDistance { get; private set; }
     public static ConfigEntry<bool> SignEffectEnablePartyEffect{ get; private set; }
 
     public static void BindSignEffectConfig(ConfigFile config) {
-      SignEffectEnablePartyEffect =
+      SignEffectMaximumRenderDistance =
           config.BindInOrder(
               "SignEffect",
+              "maximumRenderDistance",
+              64f,
+              "Maximum distance that signs can be from player to render sign effects.",
+              new AcceptableValueRange<float>(0f, 128f));
+
+      SignEffectMaximumRenderDistance.SettingChanged += ComfySigns.OnSignEffectConfigChanged;
+
+      SignEffectEnablePartyEffect =
+          config.BindInOrder(
+              "SignEffect.Party",
               "enablePartyEffect",
-              true,
+              false,
               "Enables the 'Party' Sign effect for signs using the party tag.");
 
-      // Removing any existing Party effect components when this setting is toggled off.
-      SignEffectEnablePartyEffect.SettingChanged += (_, _) => {
-        if (SignEffectEnablePartyEffect.Value) {
-          return;
-        }
-
-        foreach (
-            Sign sign in
-                UnityEngine.Object.FindObjectsOfType<Sign>()
-                    .Where(sign => sign && sign.m_nview && sign.m_nview.IsValid())) {
-          if (sign.m_textWidget && sign.m_textWidget.TryGetComponent(out VertexColorCycler colorCycler)) {
-            UnityEngine.Object.Destroy(colorCycler);
-            sign.m_textWidget.ForceMeshUpdate(ignoreActiveState: true);
-          }
-        }
-      };
+      SignEffectEnablePartyEffect.SettingChanged += ComfySigns.OnSignEffectConfigChanged;
     }
 
     static readonly Queue<Action> _fejdStartupBindConfigQueue = new();

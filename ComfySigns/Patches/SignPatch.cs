@@ -1,8 +1,14 @@
-﻿using ComfyLib;
+﻿using System;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+using ComfyLib;
 
 using HarmonyLib;
 
 using TMPro;
+
+using UnityEngine;
 
 using static ComfySigns.PluginConfig;
 
@@ -24,46 +30,39 @@ namespace ComfySigns {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Sign.SetText))]
     static void SetTextPostfix(ref Sign __instance) {
-      if (IsModEnabled.Value && SignEffectEnablePartyEffect.Value) {
-        ProcessSignEffect(__instance);
+      if (IsModEnabled.Value) {
+        ComfySigns.ProcessSignText(__instance);
+        ComfySigns.ProcessSignEffect(__instance);
       }
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Sign.UpdateText))]
     static void UpdateTextPostfix(ref Sign __instance) {
-      if (IsModEnabled.Value && SignEffectEnablePartyEffect.Value) {
-        ProcessSignEffect(__instance);
+      if (IsModEnabled.Value) {
+        ComfySigns.ProcessSignEffect(__instance);
       }
     }
 
-    static void ProcessSignEffect(Sign sign) {
-      if (HasSignEffect(sign.m_textWidget, "party")) {
-        if (!sign.m_textWidget.gameObject.TryGetComponent(out VertexColorCycler _)) {
-          sign.m_textWidget.gameObject.AddComponent<VertexColorCycler>();
-        }
-      } else {
-        if (sign.m_textWidget.gameObject.TryGetComponent(out VertexColorCycler colorCycler)) {
-          UnityEngine.Object.Destroy(colorCycler);
-          sign.m_textWidget.ForceMeshUpdate(ignoreActiveState: true);
-        }
-      }
-    }
+    [HarmonyPatch]
+    static class SignUpdateTextPatch {
+      static FieldInfo _sign;
 
-    static bool HasSignEffect(TMP_Text textComponent, string effectId) {
-      if (textComponent.text.Length <= 0 || !textComponent.text.StartsWith("<link")) {
-        return false;
+      [HarmonyTargetMethod]
+      static MethodBase FindUpdateTextMethod() {
+        Type type = AccessTools.Inner(typeof(Sign), "<>c__DisplayClass4_0");
+        _sign = AccessTools.Field(type, "<>4__this");
+
+        return AccessTools.Method(type, "<UpdateText>b__0");
       }
 
-      foreach (TMP_LinkInfo linkInfo in textComponent.textInfo.linkInfo) {
-        if (linkInfo.linkTextfirstCharacterIndex == 0
-            && linkInfo.linkTextLength == textComponent.textInfo.characterCount
-            && linkInfo.GetLinkID() == effectId) {
-          return true;
+      [HarmonyPostfix]
+      static void UpdateTextPostfix(object __instance) {
+        if (IsModEnabled.Value) {
+          Sign sign = (Sign) _sign.GetValue(__instance);
+          ComfySigns.ProcessSignText(sign);
         }
       }
-
-      return false;
     }
   }
 }
