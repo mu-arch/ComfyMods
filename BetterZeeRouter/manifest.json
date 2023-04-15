@@ -1,0 +1,8 @@
+{
+  "name": "BetterZeeRouter",
+  "version_number": "1.4.0",
+  "website_url": "https://github.com/redseiko/ComfyMods/tree/main/BetterZeeRouter",
+  "author": "ComfyMods",
+  "description": "Framework for custom ZRoutedRpc handling.",
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.2105" ]
+}

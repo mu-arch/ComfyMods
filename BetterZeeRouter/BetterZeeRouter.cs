@@ -1,25 +1,24 @@
 ﻿using System.Reflection;
 
 using BepInEx;
-using BepInEx.Configuration;
 
 using HarmonyLib;
+
+using static BetterZeeRouter.PluginConfig;
+using static BetterZeeRouter.RpcHashCodes;
 
 namespace BetterZeeRouter {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class BetterZeeRouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeerouter";
     public const string PluginName = "BetterZeeRouter";
-    public const string PluginVersion = "1.3.0";
-
-    public static ConfigEntry<bool> IsModEnabled { get; private set; }
+    public const string PluginVersion = "1.4.0";
 
     Harmony _harmony;
     TeleportToHandler _teleportToHandler;
 
     public void Awake() {
-      IsModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+      BindConfig(Config);
 
       if (IsModEnabled.Value) {
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
@@ -38,13 +37,6 @@ namespace BetterZeeRouter {
       _harmony?.UnpatchSelf();
     }
 
-    public static readonly int RpcWntHealthChangedHashCode = "WNTHealthChanged".GetStableHashCode();
-    public static readonly int RpcDamageTextHashCode = "DamageText".GetStableHashCode();
-
-    // Yes, these ones are actually prefixed `RPC_` in vanilla code.
-    public static readonly int RpcTeleportToHashCode = "RPC_TeleportTo".GetStableHashCode();
-    public static readonly int RpcSetTargetHashCode = "RPC_SetTarget".GetStableHashCode();
-
     static readonly RoutedRpcManager _routedRpcManager = RoutedRpcManager.Instance;
     static readonly WntHealthChangedHandler _wntHealthChangedHandler = new();
     static readonly DamageTextHandler _damageTextHandler = new();
@@ -53,20 +45,6 @@ namespace BetterZeeRouter {
     [HarmonyPatch(typeof(ZRoutedRpc))]
     static class ZRoutedRpcPatch {
       static readonly ZRoutedRpc.RoutedRPCData _routedRpcData = new();
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZRoutedRpc.AddPeer))]
-      static void AddPeerPostfix() {
-        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedHandler.WntHealthChangedCount}");
-        ZLog.Log($"DamageText count: {_damageTextHandler.DamageTextCount}");
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZRoutedRpc.RemovePeer))]
-      static void RemovePeerPostfix() {
-        ZLog.Log($"WNTHealthChanged count: {_wntHealthChangedHandler.WntHealthChangedCount}");
-        ZLog.Log($"DamageText count: {_damageTextHandler.DamageTextCount}");
-      }
 
       [HarmonyPrefix]
       [HarmonyPatch(nameof(ZRoutedRpc.RPC_RoutedRPC))]
