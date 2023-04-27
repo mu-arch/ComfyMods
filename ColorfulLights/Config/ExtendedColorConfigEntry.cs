@@ -53,6 +53,7 @@ namespace ComfyLib {
     }
 
     public void SetValue(Color value) {
+      ConfigEntry.Value = value;
       Value = value;
 
       RedInput.SetValue(value.r);

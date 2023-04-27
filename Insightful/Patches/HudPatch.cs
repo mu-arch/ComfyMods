@@ -3,7 +3,7 @@
 using static Insightful.Insightful;
 using static Insightful.PluginConfig;
 
-namespace Insightful.Patches {
+namespace Insightful {
   [HarmonyPatch(typeof(Hud))]
   static class HudPatch {
     [HarmonyPostfix]

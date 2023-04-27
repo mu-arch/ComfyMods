@@ -110,8 +110,8 @@
   <ItemGroup>
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Config\FloatConfigEntry.cs" />
-    <Compile Include="Config\GUIFocus.cs" />
-    <Compile Include="Config\GUIHelper.cs" />
+    <Compile Include="Config\GUI\GUIFocus.cs" />
+    <Compile Include="Config\GUI\GUIHelper.cs" />
     <Compile Include="Config\VectorConfigEntry.cs" />
     <Compile Include="Patches\FejdStartupPatch.cs" />
     <Compile Include="Patches\HudPatch.cs" />
@@ -123,6 +123,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Components\DisableHighlightOnSelect.cs" />
     <Compile Include="UI\Components\PanelDragger.cs" />
+    <Compile Include="UI\Components\PanelResizer.cs" />
     <Compile Include="UI\Components\ParentSizeFitter.cs" />
     <Compile Include="UI\Controls\ValueCell.cs" />
     <Compile Include="UI\Core\UIBuilder.cs" />

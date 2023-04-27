@@ -170,7 +170,7 @@ namespace PartyRock {
           .SetAnchorMin(new(0f, 1f))
           .SetAnchorMax(new(0f, 1f))
           .SetPivot(new(0f, 1f))
-          .SetPosition(new(-20f, 15f))
+          .SetPosition(new(-5f, 5f))
           .SetSizeDelta(new(41f, 41f));
 
       cardCostBorder.AddComponent<Image>()
@@ -230,7 +230,7 @@ namespace PartyRock {
           .SetAnchorMin(new(0.5f, 0f))
           .SetAnchorMax(new(0.5f, 0f))
           .SetPivot(new(0.5f, 0f))
-          .SetPosition(new(0f, -15f))
+          .SetPosition(new(0f, -5f))
           .SetSizeDelta(new(86f, 36f));
 
       cardTypeBorder.AddComponent<Image>()

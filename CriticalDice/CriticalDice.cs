@@ -19,7 +19,7 @@ namespace CriticalDice {
   public class CriticalDice : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.criticaldice";
     public const string PluginName = "CriticalDice";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static readonly int _rpcRoutedRpcHashCode = "RoutedRPC".GetStableHashCode();
     static readonly int _rpcSayHashCode = "Say".GetStableHashCode();
@@ -45,9 +45,16 @@ namespace CriticalDice {
       public override bool Process(ZRoutedRpc.RoutedRPCData routedRpcData) {
         routedRpcData.m_parameters.SetPos(0);
 
+        // Talker.Type
         routedRpcData.m_parameters.ReadInt();
+
         string playerName = routedRpcData.m_parameters.ReadString();
+
+        routedRpcData.m_parameters.ReadString(); // UserInfo.Gamertag
+        routedRpcData.m_parameters.ReadString(); // UserInfo.NetworkUserId
+
         string messageText = routedRpcData.m_parameters.ReadString();
+
         routedRpcData.m_parameters.SetPos(0);
 
         if (messageText.StartsWith(_rollPrefix, StringComparison.Ordinal)) {
@@ -94,6 +101,8 @@ namespace CriticalDice {
       _routedRpcData.m_parameters.Clear();
       _routedRpcData.m_parameters.Write((int) Talker.Type.Normal);
       _routedRpcData.m_parameters.Write("<color=#AEC6D3><b>Server</b></color>");
+      _routedRpcData.m_parameters.Write(string.Empty);
+      _routedRpcData.m_parameters.Write(PrivilegeManager.GetNetworkUserId());
       _routedRpcData.m_parameters.Write($"{playerName} rolled... {result}");
       _routedRpcData.m_parameters.Write(PrivilegeManager.GetNetworkUserId());
 

@@ -2,8 +2,6 @@
 
 using BepInEx.Configuration;
 
-using UnityEngine;
-
 namespace ComfyLib {
   public static class ConfigFileExtensions {
     static readonly Dictionary<string, int> _sectionToSettingOrder = new();

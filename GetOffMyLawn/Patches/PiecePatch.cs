@@ -5,7 +5,7 @@ using static GetOffMyLawn.PluginConfig;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(Piece))]
-  public class PiecePatch {
+  static class PiecePatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Piece.SetCreator))]
     static void SetCreatorPostfix(ref Piece __instance) {
@@ -14,9 +14,9 @@ namespace GetOffMyLawn {
       }
 
       PluginLogger.LogInfo(
-          $"Creating piece '{Localization.instance.Localize(__instance.m_name)}' with health: {PieceHealth.Value}");
+          $"Creating piece: {Localization.instance.Localize(__instance.m_name)} (health: {TargetPieceHealth.Value})");
 
-      __instance.m_nview.GetZDO().Set(HealthHashCode, PieceHealth.Value);
+      __instance.m_nview.GetZDO().Set(HealthHashCode, TargetPieceHealth.Value);
     }
   }
 }

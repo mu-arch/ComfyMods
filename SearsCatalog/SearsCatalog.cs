@@ -16,7 +16,7 @@ namespace SearsCatalog {
   public class SearsCatalog : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.searscatalog";
     public const string PluginName = "SearsCatalog";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.2.0";
 
     public static Harmony HarmonyInstance { get; private set; }
 
@@ -30,7 +30,7 @@ namespace SearsCatalog {
       HarmonyInstance?.UnpatchSelf();
     }
 
-    public static int BuildHudColumns { get; set; } = 13;
+    public static int BuildHudColumns { get; set; } = 15;
     public static int BuildHudRows { get; set; } = 0;
 
     public static bool BuildHudNeedRefresh { get; set; } = false;
@@ -40,6 +40,8 @@ namespace SearsCatalog {
     public static RectTransform BuildHudPanelTransform { get; set; }
     public static Scrollbar BuildHudScrollbar { get; set; }
     public static ScrollRect BuildHudScrollRect { get; set; }
+
+    public static GameObject BuildHudPanelResizer { get; set; }
 
     public static void SetupBuildHudPanel() {
       if (Hud.m_instance && BuildHudPanelTransform) {
@@ -69,19 +71,11 @@ namespace SearsCatalog {
       float width = BuildHudPanelTransform.sizeDelta.x;
       float height = BuildHudPanelTransform.sizeDelta.y;
 
-      Hud.m_instance.m_pieceCategoryRoot.Ref()?
-          .GetComponent<RectTransform>()
+      Hud.m_instance.m_pieceCategoryRoot
+          .RectTransform()
           .SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width + CategoryRootSizeWidthOffset.Value);
 
-      if (!_tabBorderRectTransform) {
-        _tabBorderRectTransform =
-            Hud.m_instance.m_pieceSelectionWindow.transform
-                .Find("TabBorder").Ref()?
-                .GetComponent<RectTransform>();
-      }
-
-      _tabBorderRectTransform.Ref()?
-          .SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width + TabBorderSizeWidthOffset.Value);
+      SetupTabBorder(Hud.m_instance, width);
 
       float xOffset = width + InputHelpSizeDeltaOffset.Value.x;
       float yOffset = (height / 2f) + InputHelpSizeDeltaOffset.Value.y;
@@ -103,6 +97,26 @@ namespace SearsCatalog {
       }
 
       _inputHelpRightRectTransform.Ref()?.SetPosition(new(xOffset / 2f, yOffset));
+    }
+
+    static void SetupTabBorder(Hud hud, float width) {
+      if (!_tabBorderRectTransform) {
+        _tabBorderRectTransform = hud.m_pieceSelectionWindow.transform.Find("TabBorder").RectTransform();
+      }
+
+      if (!_tabBorderRectTransform) {
+        _tabBorderRectTransform = hud.m_pieceCategoryRoot.transform.Find("TabBorder").RectTransform();
+      }
+
+      _tabBorderRectTransform.Ref()?
+          .SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width + TabBorderSizeWidthOffset.Value);
+    }
+
+    public static void ResizeBuildHudPanel(Vector2 sizeDelta) {
+      float spacing = Hud.m_instance.m_pieceIconSpacing;
+
+      BuildHudPanelColumns.Value = Mathf.Max(Mathf.FloorToInt((sizeDelta.x - 35f) / spacing), 1);
+      BuildHudPanelRows.Value = Mathf.Max(Mathf.FloorToInt((sizeDelta.y - 70f) / spacing), 1);
     }
 
     public static void CenterOnSelectedIndex() {

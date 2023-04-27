@@ -26,6 +26,10 @@ namespace ComfyLib {
   }
 
   public static class ComponentExtensions {
+    public static RectTransform RectTransform<T>(this T component) where T : Component {
+      return component ? component.GetComponent<RectTransform>() : default;
+    }
+
     public static T SetName<T>(this T component, string name) where T : Component {
       component.gameObject.name = name;
       return component;
@@ -529,6 +533,11 @@ namespace ComfyLib {
       return text;
     }
 
+    public static Text SetHorizontalOverflow(this Text text, HorizontalWrapMode wrapMode) {
+      text.horizontalOverflow = wrapMode;
+      return text;
+    }
+
     public static Text SetResizeTextForBestFit(this Text text, bool resizeTextForBestFit) {
       text.resizeTextForBestFit = resizeTextForBestFit;
       return text;
@@ -541,6 +550,11 @@ namespace ComfyLib {
 
     public static Text SetText(this Text text, string value) {
       text.text = value;
+      return text;
+    }
+
+    public static Text SetVerticalOverflow(this Text text, VerticalWrapMode wrapMode) {
+      text.verticalOverflow = wrapMode;
       return text;
     }
   }

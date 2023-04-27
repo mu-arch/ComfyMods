@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Updated for `v0.214.2` patch.
+
 ### 1.3.0
 
   * Create this `README.md` and backfill it with commit messages.

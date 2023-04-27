@@ -19,13 +19,26 @@ namespace LicensePlate {
     }
 
     public static ConfigEntry<bool> ShowShipNames { get; private set; }
+    public static ConfigEntry<float> ShipNameMinimumDistance { get; private set; }
     public static ConfigEntry<float> ShipNameCutoffDistance { get; private set; }
     public static ConfigEntry<Vector3> ShipNameDisplayOffset { get; private set; }
+    public static ConfigEntry<float> ShipNameTimeToLive { get; private set; }
     public static ConfigEntry<int> ShipNameFontSize { get; private set; }
     public static ConfigEntry<bool> ShipNameStripHtmlTags { get; private set; }
 
     private static void BindShipNameConfig(ConfigFile config) {
       ShowShipNames = config.BindInOrder("ShipName", "showShipNames", true, "Show custom names over ships.");
+
+      ShipNameMinimumDistance =
+          config.BindInOrder(
+              "ShipName",
+              "shipNameMinimumDistance",
+              0f,
+              "Minimum distance for custom ship names to appear/disappear. Must be less than cutoff distance.",
+              new AcceptableValueRange<float>(0f, 20f));
+
+      ShipNameMinimumDistance.SettingChanged += (_, _) =>
+          ShipNameMinimumDistance.Value = Mathf.Min(ShipNameMinimumDistance.Value, ShipNameCutoffDistance.Value);
 
       ShipNameCutoffDistance =
           config.BindInOrder(
@@ -35,8 +48,19 @@ namespace LicensePlate {
               "Cutoff distance for custom ship names to appear/disappear.",
               new AcceptableValueRange<float>(1f, 40f));
 
+      ShipNameCutoffDistance.SettingChanged += (_, _) =>
+          ShipNameMinimumDistance.Value = Mathf.Min(ShipNameMinimumDistance.Value, ShipNameCutoffDistance.Value);
+
       ShipNameDisplayOffset =
           config.BindInOrder("ShipName", "shipNameDisplayOffset", Vector3.up, "Display offset for custom ship names.");
+
+      ShipNameTimeToLive =
+          config.BindInOrder(
+              "ShipName",
+              "shipNameTimeToLive",
+              60f,
+              "Time (in seconds) for a custom ship name to be displayed.",
+              new AcceptableValueRange<float>(0f, 300f));
 
       ShipNameFontSize =
           config.BindInOrder(
@@ -55,13 +79,26 @@ namespace LicensePlate {
     }
 
     public static ConfigEntry<bool> ShowCartNames { get; private set; }
+    public static ConfigEntry<float> CartNameMinimumDistance { get; private set; }
     public static ConfigEntry<float> CartNameCutoffDistance { get; private set; }
     public static ConfigEntry<Vector3> CartNameDisplayOffset { get; private set; }
+    public static ConfigEntry<float> CartNameTimeToLive { get; private set; }
     public static ConfigEntry<int> CartNameFontSize { get; private set; }
     public static ConfigEntry<bool> CartNameStripHtmlTags { get; private set; }
 
     private static void BindCartNameConfig(ConfigFile config) {
       ShowCartNames = config.BindInOrder("CartName", "showCartNames", true, "Show custom names over carts.");
+
+      CartNameMinimumDistance =
+          config.BindInOrder(
+              "CartName",
+              "cartNameMinimumDistance",
+              0f,
+              "Minimum distance for custom cart names to appear/disappear. Must be less than cutoff distance.",
+              new AcceptableValueRange<float>(0f, 10f));
+
+      CartNameMinimumDistance.SettingChanged += (_, _) =>
+          CartNameMinimumDistance.Value = Mathf.Min(CartNameMinimumDistance.Value, CartNameCutoffDistance.Value);
 
       CartNameCutoffDistance =
           config.BindInOrder(
@@ -71,8 +108,19 @@ namespace LicensePlate {
               "Cutoff distance for custom cart names to appear/disappear.",
               new AcceptableValueRange<float>(1f, 25f));
 
+      CartNameCutoffDistance.SettingChanged += (_, _) =>
+          CartNameMinimumDistance.Value = Mathf.Min(CartNameMinimumDistance.Value, CartNameCutoffDistance.Value);
+
       CartNameDisplayOffset =
           config.BindInOrder("CartName", "cartNameDisplayOffset", Vector3.up, "Display offset for custom cart names.");
+
+      CartNameTimeToLive =
+          config.BindInOrder(
+              "CartName",
+              "cartNameTimeToLive",
+              60f,
+              "Time (in seconds) for a custom cart name to be displayed.",
+              new AcceptableValueRange<float>(0f, 300f));
 
       CartNameFontSize =
           config.BindInOrder(

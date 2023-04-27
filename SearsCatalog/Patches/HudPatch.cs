@@ -20,12 +20,14 @@ namespace SearsCatalog {
     static void AwakePostfix(ref Hud __instance) {
       if (IsModEnabled.Value) {
         SetupPieceSelectionWindow(__instance);
-        __instance.StartCoroutine(SetupBuildHudPanelDelayed(1f));
+        __instance.StartCoroutine(SetupBuildHudPanelDelayed());
       }
     }
 
-    static IEnumerator SetupBuildHudPanelDelayed(float delay) {
-      yield return new WaitForSeconds(seconds: delay);
+    static readonly WaitForSeconds _waitOneSecond = new(seconds: 1f);
+
+    static IEnumerator SetupBuildHudPanelDelayed() {
+      yield return _waitOneSecond;
       SearsCatalog.SetupBuildHudPanel();
     }
 
@@ -69,6 +71,10 @@ namespace SearsCatalog {
       PanelDragger panelDragger = panel.AddComponent<PanelDragger>();
       panelDragger.TargetRectTransform = panelTransform;
       panelDragger.OnPanelEndDrag += (_, position) => BuildHudPanelPosition.Value = position;
+
+      PanelResizer panelResizer = UIBuilder.CreateResizer(panelTransform).AddComponent<PanelResizer>();
+      panelResizer.TargetRectTransform = panelTransform;
+      panelResizer.OnPanelEndResize += (_, sizeDelta) => SearsCatalog.ResizeBuildHudPanel(sizeDelta);
 
       SearsCatalog.BuildHudPanelTransform = panelTransform;
       SearsCatalog.BuildHudScrollbar = scrollbar;
@@ -120,7 +126,7 @@ namespace SearsCatalog {
               useEnd: false,
               new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Player), nameof(Player.GetBuildPieces))),
               new CodeMatch(OpCodes.Stloc_0),
-              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(13)),
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(15)),
               new CodeMatch(OpCodes.Stloc_1))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<List<Piece>, List<Piece>>>(GetBuildPiecesDelegate))
@@ -128,7 +134,7 @@ namespace SearsCatalog {
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(GridColumnsDelegate))
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_7),
+              new CodeMatch(OpCodes.Ldc_I4_6),
               new CodeMatch(OpCodes.Stloc_2))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(GridRowsDelegate))
@@ -189,13 +195,13 @@ namespace SearsCatalog {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(13)),
+              new CodeMatch(OpCodes.Ldc_I4_S, Convert.ToSByte(15)),
               new CodeMatch(OpCodes.Stloc_0))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(GridColumnsDelegate))
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldc_I4_7),
+              new CodeMatch(OpCodes.Ldc_I4_6),
               new CodeMatch(OpCodes.Stloc_1))
           .Advance(offset: 1)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(GridRowsDelegate))

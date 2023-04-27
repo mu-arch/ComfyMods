@@ -90,7 +90,6 @@
     <Compile Include="LetMePlay.cs" />
     <Compile Include="Patches\EnvManPatch.cs" />
     <Compile Include="Patches\GameCameraPatch.cs" />
-    <Compile Include="Patches\GamePatch.cs" />
     <Compile Include="Patches\ItemDataPatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\PrivateAreaPatch.cs" />

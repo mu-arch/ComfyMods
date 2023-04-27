@@ -4,7 +4,7 @@ using static GetOffMyLawn.PluginConfig;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(MonsterAI))]
-  public class MonsterAIPatch {
+  static class MonsterAIPatch {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(MonsterAI.UpdateTarget))]
     static void UpdateTargetPrefix(ref MonsterAI __instance) {

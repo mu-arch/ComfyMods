@@ -104,5 +104,52 @@ namespace ComfyLib {
 
       return label;
     }
+
+    public static GameObject CreateResizer(Transform parentTransform) {
+      GameObject resizer = new("Resizer", typeof(RectTransform));
+      resizer.SetParent(parentTransform);
+
+      resizer.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      resizer.RectTransform()
+          .SetAnchorMin(Vector2.right)
+          .SetAnchorMax(Vector2.right)
+          .SetPivot(Vector2.right)
+          .SetSizeDelta(new(40f, 40f))
+          .SetPosition(new(10f, -10f));
+
+      resizer.AddComponent<Image>()
+          .SetType(Image.Type.Sliced)
+          .SetSprite(CreateRoundedCornerSprite(128, 128, 12))
+          .SetColor(new(0.565f, 0.792f, 0.976f, 0.849f));
+
+      resizer.AddComponent<Shadow>()
+          .SetEffectDistance(new(2f, -2f));
+
+      resizer.AddComponent<CanvasGroup>()
+          .SetAlpha(0f);
+
+      GameObject icon = CreateLabel(resizer.transform);
+      icon.SetName("Resizer.Icon");
+
+      icon.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      icon.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetPivot(new(0.5f, 0.5f))
+          .SetSizeDelta(Vector2.zero);
+
+      icon.Text()
+          .SetAlignment(TextAnchor.MiddleCenter)
+          .SetFontSize(28)
+          .SetHorizontalOverflow(HorizontalWrapMode.Overflow)
+          .SetVerticalOverflow(VerticalWrapMode.Overflow)
+          .SetText("\u21D6\u21D8");
+
+      return resizer;
+    }
   }
 }

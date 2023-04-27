@@ -1,11 +1,11 @@
-﻿using BepInEx;
-
-using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
+using BepInEx;
+
+using HarmonyLib;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +18,7 @@ namespace Chatter {
   public class Chatter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.chatter";
     public const string PluginName = "Chatter";
-    public const string PluginVersion = "1.2.1";
+    public const string PluginVersion = "1.4.1";
 
     Harmony _harmony;
 
@@ -39,18 +39,6 @@ namespace Chatter {
       SingleRow
     }
 
-    public class ContentRow {
-      public GameObject Row { get; init; }
-      public ChatMessage ChatMessage { get; init; }
-      public GameObject Divider { get; init; }
-
-      public ContentRow(GameObject row, ChatMessage message, GameObject divider) {
-        Row = row;
-        ChatMessage = message;
-        Divider = divider;
-      }
-    }
-
     internal static readonly CircularQueue<ChatMessage> MessageHistory = new(50, _ => { });
     internal static readonly CircularQueue<ContentRow> MessageRows = new(50, DestroyMessageRow);
 
@@ -62,9 +50,40 @@ namespace Chatter {
     internal static bool _isCreatingChatMessage = false;
     static bool _isChatPanelVisible = false;
 
+    public static string ChatInputTextDefaultPrefix { get; private set; } = "say ";
+
+    public static void SetChatInputTextDefaultPrefix(Talker.Type talkerType) {
+      ChatInputTextDefaultPrefix =
+          talkerType switch {
+            Talker.Type.Shout => "s ",
+            Talker.Type.Whisper => "w ",
+            _ => "say ",
+          };
+
+      string text =
+          talkerType switch {
+            Talker.Type.Shout => "/shout",
+            Talker.Type.Whisper => "/whisper",
+            _ => "/say ",
+          };
+
+      Color color =
+          talkerType switch {
+            Talker.Type.Shout => ChatMessageTextShoutColor.Value,
+            Talker.Type.Whisper => ChatMessageTextWhisperColor.Value,
+            _ => ChatMessageTextSayColor.Value
+          };
+
+      ChatPanel?.InputField.textComponent.SetColor(color);
+      ChatPanel?.InputField.placeholder.GetComponent<Text>()
+          .SetText(text)
+          .SetColor(color.SetAlpha(0.3f));
+    }
+
     public static void ToggleChatter(bool toggle) {
       ToggleVanillaChat(Chat.m_instance, !toggle);
       ToggleChatPanel(Chat.m_instance, toggle);
+      TerminalCommands.ToggleCommands(toggle);
 
       if (Chat.m_instance) {
         Chat.m_instance.m_input = toggle && ChatPanel?.Panel ? ChatPanel.InputField : _chatInputField;
@@ -77,11 +96,14 @@ namespace Chatter {
       }
 
       ChatPanel?.Panel.SetActive(toggle);
+      _isChatPanelVisible = toggle;
 
       if (toggle) {
         ChatPanel?.SetPanelPosition(ChatPanelPosition.Value);
         ChatPanel?.SetPanelSize(ChatPanelSize.Value);
         ChatPanel?.SetContentWidthOffset(ChatContentWidthOffset.Value);
+
+        SetChatInputTextDefaultPrefix(ChatPanelDefaultMessageTypeToUse.Value);
       }
     }
 
@@ -90,7 +112,7 @@ namespace Chatter {
         return null;
       }
 
-      ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent, chat.m_output);
+      ChatPanel chatPanel = new(chat.m_chatWindow.transform.parent);
       RectTransform panelRectTransform = chatPanel.Panel.GetComponent<RectTransform>();
       Outline panelOutline = chatPanel.Panel.GetComponent<Outline>();
 
@@ -108,26 +130,26 @@ namespace Chatter {
             ChatPanelPosition.Value = panelRectTransform.anchoredPosition;
           };
 
-      chatPanel.SayToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Say));
-      chatPanel.SayToggle.isOn = true;
-
-      chatPanel.ShoutToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Shout));
-      chatPanel.ShoutToggle.isOn = true;
-
-      chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Ping));
-      chatPanel.PingToggle.onValueChanged.Invoke(false);
-
-      chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Whisper));
-      chatPanel.WhisperToggle.isOn = true;
-
-      chatPanel.MessageHudToggle.onValueChanged.AddListener(
-          isOn => ToggleContentRows(isOn, ChatMessageType.HudCenter));
-      chatPanel.MessageHudToggle.isOn = true;
-
-      chatPanel.TextToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Text));
-      chatPanel.TextToggle.isOn = true;
+      SetupChatPanelContentRowToggles(chatPanel, ChatPanelContentRowTogglesToEnable.Value);
 
       return chatPanel;
+    }
+
+    static void SetupChatPanelContentRowToggles(ChatPanel chatPanel, ChatMessageType togglesToEnable) {
+      chatPanel.SayToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Say));
+      chatPanel.ShoutToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Shout));
+      chatPanel.PingToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Ping));
+      chatPanel.WhisperToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Whisper));
+      chatPanel.MessageHudToggle.onValueChanged.AddListener(
+          isOn => ToggleContentRows(isOn, ChatMessageType.HudCenter));
+      chatPanel.TextToggle.onValueChanged.AddListener(isOn => ToggleContentRows(isOn, ChatMessageType.Text));
+
+      chatPanel.SayToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.Say));
+      chatPanel.ShoutToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.Shout));
+      chatPanel.PingToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.Ping));
+      chatPanel.WhisperToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.Whisper));
+      chatPanel.MessageHudToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.HudCenter));
+      chatPanel.TextToggle.SetIsOn(togglesToEnable.HasFlag(ChatMessageType.Text));
     }
 
     static void ToggleVanillaChat(Chat chat, bool toggle) {
@@ -143,15 +165,21 @@ namespace Chatter {
     }
 
     internal static void HideChatPanelDelegate(float hideTimer) {
-      if (IsModEnabled.Value) {
-        _isChatPanelVisible = hideTimer < HideChatPanelDelay.Value || Menu.IsVisible();
+      if (IsModEnabled.Value && _chatPanel?.Panel) {
+        bool isVisible = (hideTimer < HideChatPanelDelay.Value || Menu.IsVisible()) && !Hud.IsUserHidden();
 
-        if (_chatPanel?.CanvasGroup) {
-          _chatPanel.CanvasGroup.alpha = _isChatPanelVisible ? 1f : HideChatPanelAlpha.Value;
-          _chatPanel.CanvasGroup.blocksRaycasts = _isChatPanelVisible;
+        if (isVisible == _isChatPanelVisible && _chatPanel.CanvasGroup.isActiveAndEnabled) {
+          return;
         }
 
-        if (!_isChatPanelVisible) {
+        _isChatPanelVisible = isVisible;
+
+        if (_isChatPanelVisible) {
+          _chatPanel.CanvasGroup.alpha = 1f;
+          _chatPanel.CanvasGroup.blocksRaycasts = true;
+        } else {
+          _chatPanel.CanvasGroup.alpha = Hud.IsUserHidden() ? 0f : HideChatPanelAlpha.Value;
+          _chatPanel.CanvasGroup.blocksRaycasts = false;
           _chatPanel.SetVerticalScrollPosition(0f);
         }
       }
@@ -179,7 +207,6 @@ namespace Chatter {
 
       _isPluginConfigBound = true;
 
-      BindChatMessageFont(chat.Ref()?.m_output.font);
       BindChatPanelSize(chat.Ref()?.m_chatWindow);
 
       ChatMessageFont.OnSettingChanged(font => ChatPanel?.SetFont(MessageFont));
@@ -353,14 +380,13 @@ namespace Chatter {
       }
     }
 
-    // TODO: need to cache the FilterList values and hook into the OnValuesChanged event to update the cache.
     public static bool ShouldShowMessage(ChatMessage message) {
       return message.MessageType switch {
-        ChatMessageType.Say => ShouldShowText(message.Text, SayTextFilterList.Values),
-        ChatMessageType.Shout => ShouldShowText(message.Text, ShoutTextFilterList.Values),
-        ChatMessageType.Whisper => ShouldShowText(message.Text, WhisperTextFilterList.Values),
-        ChatMessageType.HudCenter => ShouldShowText(message.Text, HudCenterTextFilterList.Values),
-        ChatMessageType.Text => ShouldShowText(message.Text, OtherTextFilterList.Values),
+        ChatMessageType.Say => ShouldShowText(message.Text, SayTextFilterList.CachedValues),
+        ChatMessageType.Shout => ShouldShowText(message.Text, ShoutTextFilterList.CachedValues),
+        ChatMessageType.Whisper => ShouldShowText(message.Text, WhisperTextFilterList.CachedValues),
+        ChatMessageType.HudCenter => ShouldShowText(message.Text, HudCenterTextFilterList.CachedValues),
+        ChatMessageType.Text => ShouldShowText(message.Text, OtherTextFilterList.CachedValues),
         _ => true
       };
     }
@@ -403,7 +429,8 @@ namespace Chatter {
     static bool ShouldCreateDivider(ChatMessage message) {
       return MessageRows.IsEmpty
           || MessageRows.LastItem?.ChatMessage?.MessageType != message.MessageType
-          || MessageRows.LastItem?.ChatMessage?.SenderId != message.SenderId;
+          || MessageRows.LastItem?.ChatMessage?.SenderId != message.SenderId
+          || MessageRows.LastItem?.ChatMessage?.Username != message.Username;
     }
 
     static bool ShouldCreateRowHeader() {

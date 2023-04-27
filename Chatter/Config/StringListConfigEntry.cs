@@ -16,6 +16,8 @@ namespace ComfyLib {
       get => ConfigEntry.Value.Split(ValuesSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
     }
 
+    public List<string> CachedValues { get; }
+
     public event EventHandler<List<string>> ValuesChangedEvent;
 
     public StringListConfigEntry(
@@ -27,6 +29,7 @@ namespace ComfyLib {
         int? order = null) {
       ConfigEntry = configFile.Bind(section, key, string.Empty, CreateConfigDescription(description, order));
       ValuesSeparator = new string[] { valuesSeparator };
+      CachedValues = new(Values);
     }
 
     ConfigDescription CreateConfigDescription(string description, int? order) {
@@ -108,6 +111,10 @@ namespace ComfyLib {
 
       if (valuesChanged) {
         entry.BoxedValue = string.Join(ValuesSeparator[0], _valuesCache);
+
+        CachedValues.Clear();
+        CachedValues.AddRange(Values);
+
         ValuesChangedEvent?.Invoke(this, Values);
       }
     }

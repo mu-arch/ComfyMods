@@ -16,7 +16,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.9.0";
+    public const string PluginVersion = "1.10.0";
 
     public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
     public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
@@ -118,7 +118,7 @@ namespace ColorfulPieces {
         }
       }
 
-      _logger.LogInfo($"Changed color of {changeColorCount} pieces.");
+      LogMessage($"Changed color of {changeColorCount} pieces.");
       _piecesCache.Clear();
     }
 
@@ -165,32 +165,31 @@ namespace ColorfulPieces {
         }
       }
 
-      _logger.LogInfo($"Cleared colors from {clearColorCount} pieces.");
+      LogMessage($"Cleared colors from {clearColorCount} pieces.");
     }
 
-    public static IEnumerator CopyPieceColorCoroutine(WearNTear target) {
-      yield return null;
-      CopyPieceColorAction(target);
-    }
-
-    static void CopyPieceColorAction(WearNTear wearNTear) {
-      if (!wearNTear
-          || !wearNTear.m_nview
-          || !wearNTear.m_nview.IsValid()
-          || !wearNTear.m_nview.m_zdo.TryGetVec3(PieceColorHashCode, out Vector3 colorAsVector)) {
-        return;
+    public static bool CopyPieceColorAction(ZNetView netView) {
+      if (!netView || !netView.IsValid() || !netView.m_zdo.TryGetVec3(PieceColorHashCode, out Vector3 colorAsVector)) {
+        return false;
       }
 
       Color color = Utils.Vec3ToColor(colorAsVector);
       TargetPieceColor.SetValue(color);
 
-      if (wearNTear.m_nview.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)) {
+      if (netView.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)) {
         TargetPieceEmissionColorFactor.Value = factor;
       }
 
-      MessageHud.m_instance.ShowMessage(
+      MessageHud.m_instance.Ref()?.ShowMessage(
           MessageHud.MessageType.TopLeft,
           $"Copied piece color: #{ColorUtility.ToHtmlStringRGB(color)} (f: {TargetPieceEmissionColorFactor.Value})");
+
+      return true;
+    }
+
+    public static void LogMessage(string message) {
+      _logger.LogInfo(message);
+      Chat.m_instance.Ref()?.AddString(message);
     }
   }
 }

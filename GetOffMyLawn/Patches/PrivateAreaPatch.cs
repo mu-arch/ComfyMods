@@ -7,7 +7,7 @@ using static GetOffMyLawn.PluginConfig;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(PrivateArea))]
-  public class PrivateAreaPatch {
+  static class PrivateAreaPatch {
     static readonly List<Piece> PieceCache = new();
     static int PieceCount = 0;
 
@@ -26,7 +26,7 @@ namespace GetOffMyLawn {
       foreach (Piece piece in PieceCache) {
         if (!piece || !piece.m_nview || !piece.m_nview.IsValid()) {
           PluginLogger.LogWarning(
-              $"Skipping piece with invalid ZNetView: {Localization.instance.Localize(piece?.m_name ?? "null")}.");
+              $"Skipping piece with invalid ZNetView: {Localization.m_instance.Localize(piece.Ref()?.m_name)}.");
 
           continue;
         }
@@ -35,7 +35,7 @@ namespace GetOffMyLawn {
           continue;
         }
 
-        piece.m_nview.GetZDO().Set(HealthHashCode, PieceHealth.Value);
+        piece.m_nview.GetZDO().Set(HealthHashCode, TargetPieceHealth.Value);
 
         if (ShowRepairEffectOnWardActivation.Value) {
           piece.m_placeEffect?.Create(piece.transform.position, piece.transform.rotation);
@@ -44,11 +44,11 @@ namespace GetOffMyLawn {
         PieceCount++;
       }
 
-      PluginLogger.LogInfo($"Repaired {PieceCount} pieces to health: {PieceHealth.Value}");
+      PluginLogger.LogInfo($"Repaired {PieceCount} pieces to health: {TargetPieceHealth.Value}");
 
       if (ShowTopLeftMessageOnPieceRepair.Value) {
         Player.m_localPlayer.Message(
-            MessageHud.MessageType.TopLeft, $"Repaired {PieceCount} pieces to health: {PieceHealth.Value}");
+            MessageHud.MessageType.TopLeft, $"Repaired {PieceCount} pieces to health: {TargetPieceHealth.Value}");
       }
 
       PieceCache.Clear();

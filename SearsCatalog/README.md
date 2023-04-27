@@ -6,7 +6,13 @@
 
 ## Features
 
-### Panel resize
+### Panel resize (mouse)
+
+  * Hover over the lower-right corner of the build panel to display the resize icon.
+  * Click and drag the resize icon to the desired size.
+  * Build panel will resize to the closest `Rows x Columns` size.
+
+### Panel resize (config)
 
   * Using ConfigurationManager, change `buildHudPanelRows` or `buildHudPanelColumns` to desired values.
   * Build panel will resize to the new `Rows x Columns` size immediately.
@@ -35,7 +41,7 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `SearsCatalog_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `SearsCatalog_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -43,9 +49,19 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
   * This is the *good enough* release with more features/options to be added later.
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/SearsCatalog).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
-  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+  * SearsCatalog icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.2.0
+
+  * Updated for `v0.214.2` PTB.
+  * Updated mod icon to a new one created by [@jenniely](https://twitter.com/jenniely).
+
+### 1.1.0
+
+  * Added `PieceTable.Left/Right/Up/DownPiece()* patches for controller support.
+  * Added `PanelResizer` and a resizer icon to the build panel.
 
 ### 1.0.0
 

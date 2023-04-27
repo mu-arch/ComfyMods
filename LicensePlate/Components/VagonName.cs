@@ -8,19 +8,21 @@ namespace LicensePlate {
   public class VagonName : MonoBehaviour, TextReceiver {
     private ZNetView _netView;
     private Chat.NpcText _npcText;
+    private Vagon _vagon;
 
     private string _vagonName = string.Empty;
     private string _vagonNameCache = string.Empty;
 
     public void Awake() {
+      _vagon = GetComponent<Vagon>();
       _netView = GetComponent<ZNetView>();
 
-      if (!_netView || !_netView.IsValid()) {
+      if (!_vagon || !_netView || !_netView.IsValid()) {
         return;
       }
 
       ZLog.Log($"VagonName awake for: {_netView.m_zdo.m_uid}");
-      InvokeRepeating(nameof(UpdateVagonName), 0f, 2f);
+      InvokeRepeating(nameof(UpdateVagonName), 0f, 1f);
     }
 
     private void UpdateVagonName() {
@@ -30,17 +32,26 @@ namespace LicensePlate {
         return;
       }
 
+      if (!Player.m_localPlayer) {
+        ClearNpcText();
+        return;
+      }
+
       _vagonName = _netView.m_zdo.GetString(VagonLicensePlateHashCode, string.Empty);
 
-      if (_npcText?.m_gui && _vagonName.Length > 0) {
+      float distance =
+          Vector3.Distance(
+              Player.m_localPlayer.transform.position + _vagon.m_attachOffset, _vagon.m_attachPoint.position);
+
+      if (_npcText?.m_gui && _vagonName.Length > 0 && distance > CartNameMinimumDistance.Value) {
         UpdateNpcTextValue(_vagonName);
       } else {
         ClearNpcText();
 
         if (_vagonName.Length > 0
             && Player.m_localPlayer
-            && Vector3.Distance(Player.m_localPlayer.transform.position, gameObject.transform.position)
-                < CartNameCutoffDistance.Value) {
+            && distance > CartNameMinimumDistance.Value
+            && distance < CartNameCutoffDistance.Value) {
           SetNpcText(_vagonName);
         }
       }
@@ -60,7 +71,7 @@ namespace LicensePlate {
           gameObject,
           CartNameDisplayOffset.Value,
           CartNameCutoffDistance.Value,
-          600f,
+          CartNameTimeToLive.Value,
           string.Empty,
           GetSanitizedVagonName(vagonName),
           false);
@@ -95,16 +106,11 @@ namespace LicensePlate {
     }
 
     private void CustomizeNpcText() {
-      _npcText.m_textField.resizeTextForBestFit = false;
-      _npcText.m_textField.horizontalOverflow = HorizontalWrapMode.Overflow;
-      _npcText.m_textField.verticalOverflow = VerticalWrapMode.Overflow;
+      _npcText.m_textField.enableAutoSizing = false;
+      _npcText.m_textField.enableWordWrapping = false;
+      _npcText.m_textField.overflowMode = TMPro.TextOverflowModes.Overflow;
       _npcText.m_textField.fontSize = CartNameFontSize.Value;
-
-      Destroy(_npcText.m_textField.GetComponent<Outline>());
-
-      Shadow textShadow = _npcText.m_textField.gameObject.AddComponent<Shadow>();
-      textShadow.effectDistance = new(2f, -2f);
-      textShadow.effectColor = Color.black;
+      _npcText.m_textField.fontSizeMax = 64f;
 
       CustomizeNpcTextBackground(_npcText.m_gui.transform.Find("Image").gameObject);
     }

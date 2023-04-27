@@ -521,6 +521,13 @@ namespace Pinnacle {
     }
   }
 
+  public static class TMPTextExtensions {
+    public static TMPro.TMP_Text SetText(this TMPro.TMP_Text text, string value) {
+      text.text = value;
+      return text;
+    }
+  }
+
   public static class Texture2DExtensions {
     public static Texture2D SetName(this Texture2D texture, string name) {
       texture.name = name;

@@ -66,11 +66,6 @@ namespace Enhuddlement {
           BossHudHealthBarHeight.Value);
 
       hudData.m_healthFast.SetColor(BossHudHealthBarColor.Value);
-
-      if (BossHudNameUseGradientEffect.Value) {
-        hudData.m_name.gameObject.AddComponent<VerticalGradient>()
-            .SetEffectGradient(Color.gray, BossHudNameTextColor.Value);
-      }
     }
 
     static void SetupEnemyHud(EnemyHud.HudData hudData) {
@@ -94,7 +89,7 @@ namespace Enhuddlement {
       hudData.m_name
           .SetColor(nameTextColor)
           .SetFontSize(nameTextFontSize)
-          .SetAlignment(TextAnchor.LowerCenter);
+          .SetAlignment(TMPro.TextAlignmentOptions.Bottom);
 
       hudData.m_name.GetComponent<RectTransform>()
           .SetAnchorMin(new(0.5f, 0.5f))
@@ -207,32 +202,41 @@ namespace Enhuddlement {
 
     static Text CreateHealthText(
         EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize, Color healthTextFontColor) {
-      Text healthText = UnityEngine.Object.Instantiate(hudData.m_name, parentTransform);
-      healthText.GetComponent<RectTransform>()
+      GameObject label = new("Label", typeof(RectTransform));
+      label.transform.SetParent(parentTransform);
+
+      label.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.one)
           .SetPivot(new(0.5f, 0.5f))
           .SetPosition(Vector2.zero);
 
-      healthText
-          .SetName("HealthText")
-          .SetText(string.Empty)
-          .SetFontSize(healthTextFontSize)
-          .SetColor(healthTextFontColor)
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetResizeTextForBestFit(false);
+      Text healthText =
+          label.AddComponent<Text>()
+              .SetName("HealthText")
+              .SetText(string.Empty)
+              .SetFont(hudData.m_character.IsBoss() ? UIResources.Norsebold : UIResources.AveriaSerifLibre)
+              .SetFontSize(healthTextFontSize)
+              .SetColor(healthTextFontColor)
+              .SetAlignment(TextAnchor.MiddleCenter)
+              .SetResizeTextForBestFit(false);
+
+      label.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
 
       return healthText;
     }
 
     static Text CreateEnemyLevelText(EnemyHud.HudData hudData, Transform healthTransform) {
-      Text levelText = UnityEngine.Object.Instantiate(hudData.m_name);
+      GameObject label = new("Label", typeof(RectTransform));
 
-      levelText
-          .SetName("LevelText")
-          .SetFontSize(Mathf.Clamp(levelText.fontSize, EnemyLevelTextMinFontSize.Value, 64))
-          .SetColor(new(1f, 0.85882f, 0.23137f, 1f))
-          .SetResizeTextForBestFit(false);
+      Text levelText =
+          label.AddComponent<Text>()
+              .SetName("LevelText")
+              .SetFont(hudData.m_character.IsBoss() ? UIResources.Norsebold : UIResources.AveriaSerifLibre)
+              .SetFontSize(Mathf.Clamp((int) hudData.m_name.fontSize, EnemyLevelTextMinFontSize.Value, 64))
+              .SetColor(new(1f, 0.85882f, 0.23137f, 1f))
+              .SetResizeTextForBestFit(false);
 
       if (EnemyLevelShowByName.Value) {
         levelText.transform.SetParent(hudData.m_name.transform, worldPositionStays: false);
@@ -266,6 +270,9 @@ namespace Enhuddlement {
             .SetHorizontalOverflow(HorizontalWrapMode.Wrap)
             .SetVerticalOverflow(VerticalWrapMode.Overflow);
       }
+
+      label.AddComponent<Outline>()
+          .SetEffectColor(Color.black);
 
       int stars = hudData.m_character.m_level - 1;
 

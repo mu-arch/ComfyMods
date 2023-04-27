@@ -24,7 +24,7 @@ namespace ColorfulPieces {
     }
 
     static bool TakeInputDelegate(bool takeInputResult) {
-      if (IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
+      if (takeInputResult && IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
         if (ChangePieceColorShortcut.Value.IsDown()) {
           if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
             Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
@@ -39,8 +39,9 @@ namespace ColorfulPieces {
         }
 
         if (CopyPieceColorShortcut.Value.IsDown()
-            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear copyTarget)) {
-          Player.m_localPlayer.StartCoroutine(CopyPieceColorCoroutine(copyTarget));
+            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear copyTarget)
+            && copyTarget) {
+          CopyPieceColorAction(copyTarget.m_nview);
           return false;
         }
       }

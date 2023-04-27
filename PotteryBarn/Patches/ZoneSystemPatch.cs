@@ -2,14 +2,14 @@
 
 using static PotteryBarn.PluginConfig;
 
-namespace PotteryBarn.Patches {
+namespace PotteryBarn {
   [HarmonyPatch(typeof(ZoneSystem))]
-  public class ZoneSystemPatch {
+  static class ZoneSystemPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZoneSystem.Start))]
     static void StartPostfix(ref ZoneSystem __instance) {
       if (IsModEnabled.Value) {
-        __instance.StartCoroutine(PotteryBarn.AddPieces());
+        PotteryBarn.AddPieces();
       }
     }
   }

@@ -16,6 +16,21 @@
 
 ## Changelog
 
+### 2.8.0
+
+  * Removed `Tekla-ColorfulSigns-5.4.1604` and replaced with `ComfyMods-ComfySigns-1.0.0`.
+  * Updated dependencies list to latest versions where applicable.
+
+### 2.7.0
+
+  * Added `ComfyMods-Intermission-1.0.1` to the dependencies list.
+  * Updated dependencies list to latest versions where applicable.
+
+### 2.6.0
+
+  * Added `ComfyMods-LicensePlate-1.0.0` to the dependencies list.
+  * Updated several ComfyMod versions to the latest that were missed.
+
 ### 2.5.0
 
   * Removed `ComfyMods-ComfyBuildExpansion-1.1.0` and replaced with `ComfyMods-SearsCatalog-1.0.0` (better).

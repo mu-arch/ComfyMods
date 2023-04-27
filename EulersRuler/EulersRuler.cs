@@ -1,9 +1,12 @@
-﻿using BepInEx;
+﻿using System.Collections;
+using System.Reflection;
+
+using BepInEx;
+
+using ComfyLib;
 
 using HarmonyLib;
 
-using System.Collections;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +17,7 @@ namespace EulersRuler {
   public class EulersRuler : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.eulersruler";
     public const string PluginName = "EulersRuler";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static readonly Gradient _healthPercentGradient = CreateHealthPercentGradient();
     static readonly Gradient _stabilityPercentGradient = CreateStabilityPercentGradient();
@@ -102,7 +105,7 @@ namespace EulersRuler {
 
     static void CreatePanels(Hud hud) {
       _hoverPiecePanel =
-          new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
+          new TwoColumnPanel(hud.m_crosshair.transform, UIResources.AveriaSerifLibre)
               .SetPosition(_hoverPiecePanelPosition.Value)
               .SetAnchors(new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1))
               .SetFontSize(_hoverPiecePanelFontSize.Value)
@@ -119,7 +122,7 @@ namespace EulersRuler {
       _pieceQuaternionTextLabel.text = "Quaternion \u2318";
 
       _placementGhostPanel =
-          new TwoColumnPanel(hud.m_crosshair.transform, hud.m_hoverName.font)
+          new TwoColumnPanel(hud.m_crosshair.transform, UIResources.AveriaSerifLibre)
               .SetPosition(_placementGhostPanelPosition.Value)
               .SetAnchors(new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f))
               .SetFontSize(_placementGhostPanelFontSize.Value)
@@ -224,7 +227,7 @@ namespace EulersRuler {
       _pieceQuaternionTextValue.gameObject.SetActive(isRowEnabled);
 
       if (isRowEnabled) {
-        _pieceQuaternionTextValue.text = $"<color=#D7CCC8>{wearNTear.transform.rotation.ToString("N2")}</color>";
+        _pieceQuaternionTextValue.text = $"<color=#D7CCC8>{wearNTear.transform.rotation:N2}</color>";
       }
     }
 
@@ -288,7 +291,7 @@ namespace EulersRuler {
 
       if (isRowEnabled) {
         _placementGhostQuaternionTextValue.text =
-            $"<color=#D7CCC8>{placementGhost.transform.rotation.ToString("N2")}</color>";
+            $"<color=#D7CCC8>{placementGhost.transform.rotation:N2}</color>";
       }
     }
 

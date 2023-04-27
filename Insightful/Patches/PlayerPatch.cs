@@ -1,13 +1,15 @@
-﻿using HarmonyLib;
-
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using System;
+
+using ComfyLib;
+
+using HarmonyLib;
 
 using static Insightful.Insightful;
 using static Insightful.PluginConfig;
 
-namespace Insightful.Patches {
+namespace Insightful {
   [HarmonyPatch(typeof(Player))]
   static class PlayerPatch {
     [HarmonyTranspiler]
@@ -16,23 +18,19 @@ namespace Insightful.Patches {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
-          .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Action>(UpdateHoverPostDelegate))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
-      if (!IsModEnabled.Value
-          || !ReadHiddenTextShortcut.Value.IsDown()
-          || !Player.m_localPlayer
-          || !Player.m_localPlayer.m_hovering) {
-        return takeInputResult;
+    static void UpdateHoverPostDelegate() {
+      if (IsModEnabled.Value
+          && ReadHiddenTextShortcut.Value.IsKeyDown()
+          && Player.m_localPlayer
+          && Player.m_localPlayer.m_hovering) {
+        Player.m_localPlayer.StartCoroutine(ReadHiddenTextCoroutine(Player.m_localPlayer.m_hovering));
       }
-
-      Player.m_localPlayer.StartCoroutine(ReadHiddenTextCoroutine(Player.m_localPlayer.m_hovering));
-      return false;
     }
   }
 }

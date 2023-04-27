@@ -27,6 +27,11 @@ namespace Pinnacle {
           "pinnacle-removeallpins",
           "Pinnacle: removes ALL pins.",
           args => RemoveAllPins(args));
+
+      new Terminal.ConsoleCommand(
+          "pinnacle-namepindata-clearall",
+          "PInnacle: clears all name pin data from the Minimap.",
+          args => ClearAllNamePinData());
     }
 
     static void RemoveAllPins(Terminal.ConsoleEventArgs args) {
@@ -36,6 +41,21 @@ namespace Pinnacle {
 
       int count = Minimap.m_instance.m_pins.RemoveAll(pin => pin.m_save);
       args.Context.AddString($"Removed {count} pins.");
+    }
+
+    static void ClearAllNamePinData() {
+      Minimap minimap = Minimap.m_instance;
+
+      if (!minimap) {
+        return;
+      }
+
+      int count = minimap.m_pinNameRootLarge.childCount;
+      ZLog.Log($"Pinnacle: destroying {count} NamePinData GameObjects...");
+
+      for (int i = count - 1; i >= 0; i--) {
+        UnityEngine.Object.Destroy(minimap.m_pinNameRootLarge.GetChild(i).gameObject);
+      }
     }
   }
 }

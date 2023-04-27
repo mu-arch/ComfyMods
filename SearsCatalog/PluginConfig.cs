@@ -24,8 +24,8 @@ namespace SearsCatalog {
           config.BindInOrder(
               "BuildHud.Panel",
               "buildHudPanelRows",
-              defaultValue: 7,
-              "BuildHud.Panel visible rows (vanilla: 7).",
+              defaultValue: 6,
+              "BuildHud.Panel visible rows (vanilla: 6).",
               new AcceptableValueRange<int>(1, 14));
 
       BuildHudPanelRows.SettingChanged += (_, _) => SearsCatalog.SetupBuildHudPanel();
@@ -34,8 +34,8 @@ namespace SearsCatalog {
           config.BindInOrder(
               "BuildHud.Panel",
               "buildHudPanelColumns",
-              defaultValue: 13,
-              "BuildHud.Panel visible columns (vanilla: 13).",
+              defaultValue: 15,
+              "BuildHud.Panel visible columns (vanilla: 15).",
               new AcceptableValueRange<int>(1, 26));
 
       BuildHudPanelColumns.SettingChanged += (_, _) => SearsCatalog.SetupBuildHudPanel();
@@ -68,8 +68,8 @@ namespace SearsCatalog {
       InputHelpSizeDeltaOffset =
           config.BindVector2InOrder(
               "BuildHud.Panel.PieceSelection",
-              "inputHelpSizeWidthOffset",
-              defaultValue: new Vector2(-85f, -40f),
+              "inputHelpSizeDeltaOffset",
+              defaultValue: new Vector2(-85f, 0f),
               "BuildHud.Panel.PieceSelection.InputHelp.sizeDelta offset relative to panel size.");
 
       InputHelpSizeDeltaOffset.SettingChanged += (_, _) => SearsCatalog.SetupPieceSelectionWindow();

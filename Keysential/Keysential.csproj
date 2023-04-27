@@ -88,11 +88,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\VendorKeyManager.cs" />
-    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="Keysential.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

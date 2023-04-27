@@ -10,10 +10,15 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Keysential_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `Keysential_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed for the `v0.214.2` patch.
+  * Added more egg puns for Haldor to say.
 
 ### 1.0.0
 

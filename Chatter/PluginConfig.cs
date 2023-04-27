@@ -5,6 +5,8 @@ using BepInEx.Configuration;
 
 using ComfyLib;
 
+using HarmonyLib;
+
 using UnityEngine;
 
 namespace Chatter {
@@ -20,6 +22,10 @@ namespace Chatter {
     // Content
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
+
+    // Defaults
+    public static ConfigEntry<Talker.Type> ChatPanelDefaultMessageTypeToUse { get; private set; }
+    public static ConfigEntry<ChatMessageType> ChatPanelContentRowTogglesToEnable { get; private set; }
 
     // Filters
     public static StringListConfigEntry SayTextFilterList { get; private set; }
@@ -73,7 +79,7 @@ namespace Chatter {
       IsModEnabled ??= config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       // Behaviour
-      HideChatPanelDelay =
+      HideChatPanelDelay ??=
           config.Bind(
               "Behaviour",
               "hideChatPanelDelay",
@@ -92,19 +98,39 @@ namespace Chatter {
       BindFilters(config);
 
       // Content
-      ShowMessageHudCenterMessages =
-          config.Bind(
+      ShowMessageHudCenterMessages ??=
+          config.BindInOrder(
               "Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      ShowChatPanelMessageDividers =
-          config.Bind(
+      ShowChatPanelMessageDividers ??=
+          config.BindInOrder(
               "Content",
               "showChatPanelMessageDividers",
               defaultValue: true,
               "Show the horizontal dividers between groups of messages.");
+
+      // Defaults
+      ChatPanelDefaultMessageTypeToUse ??=
+          config.BindInOrder(
+              "Defaults",
+              "chatPanelDefaultMessageTypeToUse",
+              defaultValue: Talker.Type.Normal,
+              "ChatPanel input default message type to use on game start. Ping value is ignored.");
+
+      ChatPanelContentRowTogglesToEnable ??=
+          config.BindInOrder(
+              "Defaults",
+              "chatPanelContentRowTogglesToEnable",
+              defaultValue:
+                  ChatMessageType.Say
+                  | ChatMessageType.Shout
+                  | ChatMessageType.Whisper
+                  | ChatMessageType.HudCenter
+                  | ChatMessageType.Text,
+              "ChatPanel content row toggles to enable on game start.");
 
       // Layout
       ChatMessageLayout ??=
@@ -265,6 +291,8 @@ namespace Chatter {
                   "Color for any timestamp shown in the chat messages.",
                   acceptableValues: null,
                   new ConfigurationManagerAttributes { Order = 0 }));
+
+      config.LateBindInOrder(config => BindChatMessageFont(config));
     }
 
     static void BindFilters(ConfigFile config) {
@@ -304,39 +332,31 @@ namespace Chatter {
       }
     }
 
-    static readonly Dictionary<string, Font> _fontCache = new();
-
     public static Font MessageFont {
-      get {
-        if (!_fontCache.TryGetValue(ChatMessageFont.Value, out Font font)) {
-          font = Font.CreateDynamicFontFromOSFont(ChatMessageFont.Value, ChatMessageFontSize.Value);
-          _fontCache[font.name] = font;
-        }
-
-        return font;
-      }
+      get => UIResources.GetFont(ChatMessageFont.Value);
     }
 
-    public static void BindChatMessageFont(Font defaultFont) {
-      foreach (Font font in Resources.FindObjectsOfTypeAll<Font>()) {
-        _fontCache[font.name] = font;
-      }
-
+    public static void BindChatMessageFont(ConfigFile config) {
       string[] fontNames =
-          _fontCache.Keys.OrderBy(f => f).Concat(Font.GetOSInstalledFontNames().OrderBy(f => f)).ToArray();
+          Resources.FindObjectsOfTypeAll<Font>()
+              .Select(f => f.name)
+              .OrderBy(f => f)
+              .Concat(Font.GetOSInstalledFontNames()
+              .OrderBy(f => f))
+              .ToArray();
 
       ChatMessageFont ??=
-          Config.Bind(
+          config.Bind(
               "Style",
               "chatMessageFont",
-              defaultFont.name,
+              UIResources.AveriaSerifLibre.name,
               new ConfigDescription("The font to use for chat messages.", new AcceptableValueList<string>(fontNames)));
 
       ChatMessageFontSize ??=
-          Config.Bind(
+          config.Bind(
               "Style",
               "chatMessageFontSize",
-              defaultFont.fontSize,
+              18,
               new ConfigDescription("The font size to use for chat messages.", new AcceptableValueRange<int>(8, 64)));
     }
 

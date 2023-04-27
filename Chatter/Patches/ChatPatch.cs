@@ -5,15 +5,17 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 using static Chatter.Chatter;
 using static Chatter.PluginConfig;
 
-namespace Chatter.Patches {
+namespace Chatter {
   [HarmonyPatch(typeof(Chat))]
-  class ChatPatch {
+  static class ChatPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.Awake))]
     static void AwakePostfix(ref Chat __instance) {
@@ -24,10 +26,36 @@ namespace Chatter.Patches {
       ToggleChatter(IsModEnabled.Value);
     }
 
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(Chat.InputText))]
+    static IEnumerable<CodeInstruction> InputTextTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(useEnd: true, new CodeMatch(OpCodes.Ldstr, "say "))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(PrefixSayDelegate))
+          .InstructionEnumeration();
+    }
+
+    static string PrefixSayDelegate(string value) {
+      if (IsModEnabled.Value) {
+        return ChatInputTextDefaultPrefix;
+      }
+
+      return value;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.IsTakingInput))]
+    static void IsTakingInput(Chat __instance, ref bool __result) {
+      if (__result && IsModEnabled.Value) {
+        __result = __instance.m_input.isFocused;
+      }
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
     static void OnNewChatMessagePrefix(
-        ref long senderID, ref Vector3 pos, ref Talker.Type type, ref string user, ref string text) {
+        ref long senderID, ref Vector3 pos, ref Talker.Type type, ref UserInfo user, ref string text) {
       if (!IsModEnabled.Value) {
         return;
       }
@@ -40,7 +68,7 @@ namespace Chatter.Patches {
         SenderId = senderID,
         Position = pos,
         TalkerType = type,
-        Username = user,
+        Username = user.Name,
         Text = Regex.Replace(text, @"(<|>)", " "),
       };
 
@@ -139,6 +167,14 @@ namespace Chatter.Patches {
 
     static string ToUpperDelegate(string text) {
       return IsModEnabled.Value ? text : text.ToUpper();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.UpdateWorldTextField))]
+    static void UpdateWorldTextFieldPostfix(ref Chat __instance, ref Chat.WorldTextInstance wt) {
+      if (IsModEnabled.Value) {
+        wt.m_textMeshField.fontMaterial = __instance.m_output.fontMaterial;
+      }
     }
   }
 }

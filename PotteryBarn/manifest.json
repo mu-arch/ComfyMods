@@ -1,11 +1,11 @@
 {
   "name": "PotteryBarn",
-  "version_number": "1.4.0",
+  "version_number": "1.5.1",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn",
   "author": "ComfyMods",
   "description": "Public build extension that adds existing game prefabs to the Hammer.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.1901",
-    "ValheimModding-Jotunn-2.8.1"
+    "ValheimModding-Jotunn-2.10.4"
   ]
 }

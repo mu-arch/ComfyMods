@@ -62,7 +62,7 @@ namespace PartyRock {
           Card card = new(_playerCardHand.transform);
           card.Panel.RectTransform()
               .SetPosition(new(i * CardHandCardSpacing.Value, 0f))
-              .SetSizeDelta(new(225f, 360f))
+              .SetSizeDelta(CardPanelSizeDelta.Value)
               .SetAnchorMin(new(0.5f, 0.5f))
               .SetAnchorMax(new(0.5f, 0.5f))
               .SetPivot(new(0.5f, 0.5f));

@@ -42,16 +42,30 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.8.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.9.2.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
 
-  * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces).
+  * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.10.0
+
+  * Updated for the `v0.214.2` patch.
+
+### 1.9.2
+
+  * Reverted the 'Copied piece color' message back to an upper-left MessageHud notification.
+
+### 1.9.1
+
+  * Fixed a bug with the CopyPieceColorAction not working correctly and converted it to a regular method.
+  * Organized some of the config files and other small clean-up.
+  * Modified the `Player.TakeInput()` patch to also check that taking input is allowed.
 
 ### 1.9.0
 

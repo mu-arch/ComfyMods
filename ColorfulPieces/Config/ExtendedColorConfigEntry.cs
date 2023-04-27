@@ -28,25 +28,32 @@ namespace ComfyLib {
         string section,
         string key,
         Color defaultValue,
-        string description,
-        bool useColorPalette = false) {
+        string description) {
       ConfigEntry = config.BindInOrder(section, key, defaultValue, description, Drawer);
       SetValue(ConfigEntry.Value);
+    }
 
-      if (useColorPalette) {
-        ConfigEntry<string> paletteConfigEntry =
-            config.BindInOrder(
-                section,
-                $"{key}.Palette",
-                $"{ColorUtility.ToHtmlStringRGBA(defaultValue)},FF0000FF,00FF00FF,0000FFFF",
-                $"Color palette for ConfigEntry: {section} - {key}",
-                browsable: false);
+    public ExtendedColorConfigEntry(
+        ConfigFile config,
+        string section,
+        string key,
+        Color defaultValue,
+        string description,
+        string colorPaletteKey) :
+            this(config, section, key, defaultValue, description) {
+      ConfigEntry<string> paletteConfigEntry =
+          config.BindInOrder(
+              section,
+              colorPaletteKey,
+              $"{ColorUtility.ToHtmlStringRGBA(defaultValue)},FF0000FF,00FF00FF,0000FFFF",
+              $"Color palette for: [{section}] {key}",
+              browsable: false);
 
-        _colorPalette = new(this, paletteConfigEntry);
-      }
+      _colorPalette = new(this, paletteConfigEntry);
     }
 
     public void SetValue(Color value) {
+      ConfigEntry.Value = value;
       Value = value;
 
       RedInput.SetValue(value.r);
