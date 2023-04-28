@@ -16,6 +16,12 @@
 
 ## Changelog
 
+### 2.9.0
+
+  * Added `ValheimModding-Jotunn-2.11.5`.
+  * Removed `virtuaCode-TrashItems-1.2.5` and replaced with `ComfyMods-DumpsterFire-1.1.0`.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.8.0
 
   * Removed `Tekla-ColorfulSigns-5.4.1604` and replaced with `ComfyMods-ComfySigns-1.0.0`.
