@@ -80,10 +80,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Atlas.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Patches\ZDOManPatch.cs" />
     <Compile Include="Patches\ZNetPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="PluginConfig.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

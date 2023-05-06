@@ -13,5 +13,11 @@ namespace Atlas {
       __instance.StartCoroutine(Atlas.SaveWorldCoroutine(__instance));
       return false;
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZNet.LoadWorld))]
+    static void LoadWorldPostfix(ref ZNet __instance) {
+      ZLog.Log($"Finished loading world file. m_netTime is: {__instance.m_netTime}");
+    }
   }
 }

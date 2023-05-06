@@ -4,6 +4,12 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Created `PluginConfig` and added several ZoneSystem-related config options.
+  * Added a new Terminal.ConsoleCommand `setworldtime <time>`.
+  * Added a `ZNet.LoadWorld` postfix-patch to log the m_netTime read from the world file.
+
 ### 1.3.0
 
   * Extract various patch code into separate classes.
