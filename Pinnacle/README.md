@@ -84,7 +84,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.3.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.4.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -95,6 +95,10 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.2.4
+
+  * Re-wrote the entire `Minimap.UpdatePlayerPins()` prefix patch again to better update player pins.
 
 ### 1.2.3
 
