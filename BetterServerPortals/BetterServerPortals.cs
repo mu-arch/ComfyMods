@@ -1,19 +1,19 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-
-using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+
+using BepInEx;
+using BepInEx.Logging;
+
+using HarmonyLib;
 
 using UnityEngine;
+
+using static BetterServerPortals.PluginConfig;
 
 namespace BetterServerPortals {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
@@ -22,9 +22,6 @@ namespace BetterServerPortals {
     public const string PluginName = "BetterServerPortals";
     public const string PluginVersion = "1.2.0";
 
-    static ConfigEntry<float> _connectPortalCoroutineWait;
-    static ConfigEntry<string> _portalPrefabNames;
-
     static readonly KeyValuePair<int, int> _targetZdoidHashPair = ZDO.GetHashZDOID("target");
     static readonly int _targetUHashCode = "target_u".GetStableHashCode();
     static readonly int _targetIHashCode = "target_i".GetStableHashCode();
@@ -32,10 +29,9 @@ namespace BetterServerPortals {
 
     static ManualLogSource _logger;
 
-    static HashSet<int> _portalPrefabHashCodes;
-    static WaitForSeconds _connectPortalWaitInterval;
+    public static HashSet<int> PortalPrefabHashCodes { get; private set; } = new();
+    public static HashSet<ZDO> CachedPortalZdos { get; private set; } = new();
 
-    static readonly HashSet<ZDO> _cachedPortalZdos = new(capacity: 5000);
     static readonly Dictionary<string, ZDO> _zdoByTagCache = new();
     static readonly List<ZDO> _zdosToForceSend = new();
     static ZDOID _targetZdoid = ZDOID.None;
@@ -43,22 +39,12 @@ namespace BetterServerPortals {
     Harmony _harmony;
 
     public void Awake() {
+      BindConfig(Config);
+
+      PortalPrefabHashCodes.Clear();
+      PortalPrefabHashCodes.UnionWith(CreatePrefabHashCodes(PortalPrefabNames.Value));
+
       _logger = Logger;
-
-      _connectPortalCoroutineWait =
-          Config.Bind(
-              "Portals", "connectPortalCoroutineWait", 5f, "Wait time (seconds) when ConnectPortal coroutine yields.");
-
-      _connectPortalWaitInterval = new(seconds: _connectPortalCoroutineWait.Value);
-
-      _portalPrefabNames =
-          Config.Bind(
-              "Portals",
-              "portalPrefabNames",
-              "portal_wood,portal",
-              "Comma-separated list of portal prefab names to search for.");
-
-      _portalPrefabHashCodes = CreateHashCodesSet(_portalPrefabNames.Value);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -67,7 +53,7 @@ namespace BetterServerPortals {
       _harmony?.UnpatchSelf();
     }
 
-    static HashSet<int> CreateHashCodesSet(string prefabsText) {
+    static HashSet<int> CreatePrefabHashCodes(string prefabsText) {
       return prefabsText
           .Split(',')
           .Select(p => p.Trim())
@@ -76,52 +62,10 @@ namespace BetterServerPortals {
           .ToHashSet();
     }
 
-    [HarmonyPatch(typeof(Game))]
-    class GamePatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Game.Start))]
-      static void StartPostfix(ref Game __instance) {
-        if (ZNet.m_isServer) {
-          __instance.StopCoroutine(nameof(Game.ConnectPortals));
-          __instance.StartCoroutine(ConnectPortalsCoroutine(__instance));
-        }
-      }
-    }
+    public static IEnumerator ConnectPortalsCoroutine(Game game) {
+      LogInfo("Starting ConnectPortals coroutine with cache...");
 
-    [HarmonyPatch(typeof(ZDOMan))]
-    class ZDOManPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.AddToSector))]
-      static void AddToSectorPostfix(ref ZDO zdo) {
-        if (zdo != null && _portalPrefabHashCodes.Contains(zdo.m_prefab)) {
-          _cachedPortalZdos.Add(zdo);
-        }
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
-      static void RemoveFromSectorPostfix(ref ZDO zdo) {
-        _cachedPortalZdos.Remove(zdo);
-      }
-
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(ZDOMan.RPC_ZDOData))]
-      static IEnumerable<CodeInstruction> RPC_ZDODataTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-          .MatchForward(useEnd: true, new CodeMatch(OpCodes.Callvirt, typeof(ZDO).GetMethod(nameof(ZDO.Deserialize))))
-          .InsertAndAdvance(
-              new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(13)),
-              Transpilers.EmitDelegate<Action<ZDO>>(
-                  zdo => {
-                    if (_portalPrefabHashCodes.Contains(zdo.m_prefab)) {
-                      _cachedPortalZdos.Add(zdo);
-                    }
-                  }))
-          .InstructionEnumeration();
-      }
-    }
-
-    static IEnumerator ConnectPortalsCoroutine(Game game) {
+      WaitForSeconds waitInterval = new(ConnectPortalCoroutineWait.Value);
       ZDOMan zdoMan = ZDOMan.instance;
       Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -130,7 +74,7 @@ namespace BetterServerPortals {
         _zdoByTagCache.Clear();
 
         game.m_tempPortalList.Clear();
-        game.m_tempPortalList.AddRange(_cachedPortalZdos);
+        game.m_tempPortalList.AddRange(CachedPortalZdos);
 
         foreach (ZDO zdo in game.m_tempPortalList) {
           string portalTag = zdo.GetString(_tagHashCode, string.Empty);
@@ -195,11 +139,11 @@ namespace BetterServerPortals {
         }
 
         if (stopwatch.ElapsedMilliseconds > 60000L) {
-          LogInfo($"Processed {_cachedPortalZdos.Count} portals.");
+          LogInfo($"Processed {CachedPortalZdos.Count} portals.");
           stopwatch.Restart();
         }
 
-        yield return _connectPortalWaitInterval;
+        yield return waitInterval;
       }
     }
 

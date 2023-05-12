@@ -80,6 +80,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\GamePatch.cs" />
+    <Compile Include="Patches\ZDOManPatch.cs" />
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="BetterServerPortals.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -89,6 +92,7 @@
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GetAssemblyVersion" AfterTargets="Build">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
