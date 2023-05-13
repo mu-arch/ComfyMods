@@ -5,20 +5,27 @@ using System.Reflection.Emit;
 using HarmonyLib;
 
 using static BetterServerPortals.BetterServerPortals;
+using static BetterServerPortals.PluginConfig;
 
 namespace BetterServerPortals {
   [HarmonyPatch(typeof(ZDOMan))]
   static class ZDOManPatch {
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(ZDOMan.ResetSectorArray))]
-    static void ResetSectorArrayPostfix() {
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(ZDOMan.Load))]
+    static void LoadPrefix() {
+      CachedPortalZdos.Clear();
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(ZDOMan.ShutDown))]
+    static void ShutDownPrefix() {
       CachedPortalZdos.Clear();
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZDOMan.AddToSector))]
     static void AddToSectorPostfix(ZDO zdo) {
-      if (ZNet.m_isServer && zdo != null && PortalPrefabHashCodes.Contains(zdo.m_prefab)) {
+      if (zdo != null && PortalPrefabHashCodes.Contains(zdo.m_prefab)) {
         CachedPortalZdos.Add(zdo);
       }
     }
@@ -26,7 +33,7 @@ namespace BetterServerPortals {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZDOMan.RemoveFromSector))]
     static void RemoveFromSectorPostfix(ZDO zdo) {
-      if (ZNet.m_isServer && zdo != null) {
+      if (zdo != null) {
         CachedPortalZdos.Remove(zdo);
       }
     }
@@ -45,7 +52,7 @@ namespace BetterServerPortals {
     }
 
     static void DeserializePostDelegate(ZDO zdo) {
-      if (ZNet.m_isServer && PortalPrefabHashCodes.Contains(zdo.m_prefab)) {
+      if (PortalPrefabHashCodes.Contains(zdo.m_prefab)) {
         CachedPortalZdos.Add(zdo);
       }
     }
