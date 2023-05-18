@@ -24,7 +24,6 @@ namespace Intermission {
       __instance.m_loadingProgress.transform.Find("text_darken").Ref()?.gameObject.SetActive(false);
 
       __instance.m_teleportingProgress = __instance.m_loadingProgress;
-      __instance.m_useRandomImages = CustomAssets.LoadingImageFiles.Count <= 0;
 
       Transform _loadingBlack = __instance.transform.Find("LoadingBlack");
       __instance.m_loadingImage.transform.SetParent(_loadingBlack, false);
