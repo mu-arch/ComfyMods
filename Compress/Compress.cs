@@ -4,8 +4,6 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
-using Steamworks;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,15 +13,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Compress {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Compress : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.compress";
     public const string PluginName = "Compress";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     static ConfigEntry<bool> _isModEnabled;
@@ -151,70 +147,6 @@ namespace Compress {
         rpc.m_pkg.m_writer.Write(package.m_stream.GetBuffer(), 0, packageLength);
 
         rpc.SendPackage(rpc.m_pkg);
-      }
-    }
-
-    [HarmonyPatch(typeof(ZSteamSocket))]
-    class ZSteamSocketPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.UpdateAllSockets))]
-      static bool UpdateAllSocketsPrefix(float dt) {
-        if (ZSteamSocket.m_sockets.Count <= 1) {
-          return true;
-        }
-
-        Parallel.ForEach(ZSteamSocket.m_sockets, socket => socket.Update(dt));
-        return false;
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.Send))]
-      static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
-        if (pkg.Size() <= 0 || !__instance.IsConnected()) {
-          return false;
-        }
-
-        lock (__instance.m_sendQueue) {
-          __instance.m_sendQueue.Enqueue(pkg.GetArray());
-        }
-
-        return false;
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
-      static bool SendQueuedPackages(ref ZSteamSocket __instance) {
-        if (!__instance.IsConnected()) {
-          return false;
-        }
-
-        lock (__instance.m_sendQueue) {
-          while (__instance.m_sendQueue.Count > 0) {
-            byte[] data = __instance.m_sendQueue.Peek();
-            int dataLength = data.Length;
-
-            IntPtr intPtr = Marshal.AllocHGlobal(dataLength);
-            Marshal.Copy(data, 0, intPtr, dataLength);
-
-            EResult result =
-                ZNet.m_isServer
-                    ? SteamGameServerNetworkingSockets.SendMessageToConnection(
-                          __instance.m_con, intPtr, (uint) dataLength, 8, out _)
-                    : SteamNetworkingSockets.SendMessageToConnection(
-                          __instance.m_con, intPtr, (uint) dataLength, 8, out _);
-
-            Marshal.FreeHGlobal(intPtr);
-
-            if (result != EResult.k_EResultOK) {
-              return false;
-            }
-
-            __instance.m_totalSent += dataLength;
-            __instance.m_sendQueue.Dequeue();
-          }
-        }
-
-        return false;
       }
     }
 
