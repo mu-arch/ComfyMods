@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using UnityEngine;
+
 namespace DyeHard {
   public static class PluginExtensions {
     public static T Ref<T>(this T gameObject) where T : UnityEngine.Object {
@@ -12,6 +14,16 @@ namespace DyeHard {
 
     public static IEnumerable<string> AlphanumericSort(this IEnumerable<string> text) {
       return text.OrderBy(x => Regex.Replace(x, @"\d+", m => m.Value.PadLeft(50, '0')));
+    }
+
+    public static bool TryGetVector3(this ZDO zdo, int hash, out Vector3 value) {
+      if (ZDOExtraData.s_vec3.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, Vector3> values)
+          && values.TryGetValue(hash, out value)) {
+        return true;
+      }
+
+      value = default;
+      return false;
     }
   }
 

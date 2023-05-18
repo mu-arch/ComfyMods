@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `DyeHard_v1.4.0.zip`.
+  * Go to Settings > Import local mod > Select `DyeHard_v1.4.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -41,6 +41,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.1
+
+  * Updated for Valheim `v0.216.5` PTB patch.
 
 ### 1.4.0
 
