@@ -35,7 +35,7 @@ namespace Keysential {
               // Do nothing.
             } else {
               ZLog.Log($"Sending nearby global keys to peer: {netPeer.m_uid}");
-              ZRoutedRpc.m_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", nearbyKeys);
+              ZRoutedRpc.s_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", nearbyKeys);
               nearbyPeers.Add(netPeer.m_uid);
 
               SendChatMessage(
@@ -47,7 +47,7 @@ namespace Keysential {
           } else {
             if (nearbyPeers.Contains(netPeer.m_uid)) {
               ZLog.Log($"Sending original global keys to peer: {netPeer.m_uid}");
-              ZRoutedRpc.m_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", originalKeys);
+              ZRoutedRpc.s_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", originalKeys);
               nearbyPeers.Remove(netPeer.m_uid);
             } else {
               // Do nothing.
@@ -73,7 +73,7 @@ namespace Keysential {
     };
 
     void SendChatMessage(ZNetPeer netPeer, Vector3 position, string name, string message) {
-      ZRoutedRpc.m_instance.InvokeRoutedRPC(
+      ZRoutedRpc.s_instance.InvokeRoutedRPC(
           netPeer.m_uid,
           "ChatMessage",
           position,

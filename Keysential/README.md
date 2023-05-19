@@ -10,10 +10,14 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Keysential_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `Keysential_v1.1.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
+
+### 1.1.1
+
+  * Updated for `v0.216.5` PTB patch.
 
 ### 1.1.0
 
