@@ -2,14 +2,27 @@
 
 using System.Collections.Generic;
 
+using UnityEngine;
+
 using static GetOffMyLawn.GetOffMyLawn;
 using static GetOffMyLawn.PluginConfig;
 
 namespace GetOffMyLawn {
   [HarmonyPatch(typeof(PrivateArea))]
   static class PrivateAreaPatch {
-    static readonly List<Piece> PieceCache = new();
-    static int PieceCount = 0;
+    static readonly List<Piece> _pieceCache = new();
+    static int _pieceCount = 0;
+
+    static void GetAllPiecesInRadius(Vector3 origin, float radius, List<Piece> pieces) {
+      foreach (Piece piece in Piece.s_allPieces) {
+        if (piece.gameObject.layer == Piece.s_ghostLayer
+            || Vector3.Distance(origin, piece.transform.position) >= radius) {
+          continue;
+        }
+
+        pieces.Add(piece);
+      }
+    }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(PrivateArea.Interact))]
@@ -18,12 +31,12 @@ namespace GetOffMyLawn {
         return;
       }
 
-      PieceCache.Clear();
-      PieceCount = 0;
+      _pieceCache.Clear();
+      _pieceCount = 0;
 
-      Piece.GetAllPiecesInRadius(__instance.transform.position, __instance.m_radius, PieceCache);
+      GetAllPiecesInRadius(__instance.transform.position, __instance.m_radius, _pieceCache);
 
-      foreach (Piece piece in PieceCache) {
+      foreach (Piece piece in _pieceCache) {
         if (!piece || !piece.m_nview || !piece.m_nview.IsValid()) {
           PluginLogger.LogWarning(
               $"Skipping piece with invalid ZNetView: {Localization.m_instance.Localize(piece.Ref()?.m_name)}.");
@@ -41,17 +54,17 @@ namespace GetOffMyLawn {
           piece.m_placeEffect?.Create(piece.transform.position, piece.transform.rotation);
         }
 
-        PieceCount++;
+        _pieceCount++;
       }
 
-      PluginLogger.LogInfo($"Repaired {PieceCount} pieces to health: {TargetPieceHealth.Value}");
+      PluginLogger.LogInfo($"Repaired {_pieceCount} pieces to health: {TargetPieceHealth.Value}");
 
       if (ShowTopLeftMessageOnPieceRepair.Value) {
         Player.m_localPlayer.Message(
-            MessageHud.MessageType.TopLeft, $"Repaired {PieceCount} pieces to health: {TargetPieceHealth.Value}");
+            MessageHud.MessageType.TopLeft, $"Repaired {_pieceCount} pieces to health: {TargetPieceHealth.Value}");
       }
 
-      PieceCache.Clear();
+      _pieceCache.Clear();
     }
   }
 }

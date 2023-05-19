@@ -61,7 +61,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.5.0.zip`.
+  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.5.1.zip`.
   * Click "Import local mod" on the pop-up for information.
 
 ### Notes
@@ -71,6 +71,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.1
+
+  * Updated for `v0.216.5` PTB patch.
 
 ### 1.5.0
 
