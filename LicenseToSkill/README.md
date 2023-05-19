@@ -10,7 +10,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.1.zip`.
+  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.2.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Instructions
@@ -28,6 +28,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.2
+
+  * Updated for `v0.216.5` PTB patch.
+  * Converted `Skills.OnDeath()` prefix-patch to `Skills.LowerAllSkills()` prefix-patch.
+  * Fixed `SEMan.AddStatusEffect()` prefix-patch to use `int nameHash` instead of `string name`.
 
 ### 1.1.1
 

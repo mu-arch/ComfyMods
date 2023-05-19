@@ -4,17 +4,15 @@ using static LicenseToSkill.PluginConfig;
 
 namespace LicenseToSkill {
   [HarmonyPatch(typeof(SEMan))]
-  public class SEManPatch {
-    static readonly string StatusEffectSoftDeath = "SoftDeath";
-
+  static class SEManPatch {
     [HarmonyPostfix]
-    [HarmonyPatch(nameof(SEMan.AddStatusEffect), typeof(string), typeof(bool), typeof(int), typeof(float))]
+    [HarmonyPatch(nameof(SEMan.AddStatusEffect), typeof(int), typeof(bool), typeof(int), typeof(float))]
     static void AddStatusEffectPostfix(
-        ref SEMan __instance, ref StatusEffect __result, string name, bool resetTime) {
+        ref SEMan __instance, ref StatusEffect __result, int nameHash, bool resetTime) {
       if (!IsModEnabled.Value
           || !__result
           || __instance.m_character != Player.m_localPlayer
-          || name != StatusEffectSoftDeath) {
+          || nameHash != Player.s_statusEffectSoftDeath) {
         return;
       }
 
