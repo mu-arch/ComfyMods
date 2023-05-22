@@ -159,15 +159,19 @@ namespace Pinnacle {
       }
     }
 
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch(nameof(Minimap.ShowPinNameInput))]
-    static void ShowPinNameInputPostfix(ref Minimap __instance, ref Minimap.PinData pin) {
+    static bool ShowPinNameInputPrefix(ref Minimap __instance, Vector3 pos) {
       if (IsModEnabled.Value) {
         __instance.m_namePin = null;
 
-        Pinnacle.TogglePinEditPanel(pin);
+        Pinnacle.TogglePinEditPanel(__instance.AddPin(pos, __instance.m_selectedType, string.Empty, true, false, 0L));
         Pinnacle.PinEditPanel?.PinName?.Value?.InputField.Ref()?.ActivateInputField();
+
+        return false;
       }
+
+      return true;
     }
 
     [HarmonyPostfix]
