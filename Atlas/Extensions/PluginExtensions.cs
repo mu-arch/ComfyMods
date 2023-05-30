@@ -9,7 +9,7 @@ namespace Atlas {
       }
 
       if (task.IsFaulted) {
-        ZLog.Log($"Task failed: {task.Exception}");
+        ZLog.LogError($"Task failed: {task.Exception}");
       }
     }
   }

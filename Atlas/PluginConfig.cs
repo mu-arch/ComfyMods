@@ -3,7 +3,6 @@
 namespace Atlas {
   public static class PluginConfig {
     public static ConfigEntry<bool> IgnoreGenerateLocationsIfNeeded { get; private set; }
-    public static ConfigEntry<bool> IgnorePgwVersion { get; private set; }
     public static ConfigEntry<bool> IgnoreLocationVersion { get; private set; }
 
     public static ConfigFile BindConfig(ConfigFile config) {
@@ -13,13 +12,6 @@ namespace Atlas {
               "ignoreGenerateLocationsIfNeeded",
               true,
               "If set, ignores any calls to ZoneSystem.GenerateLocationsIfNeeded().");
-
-      IgnorePgwVersion =
-          config.Bind(
-              "ZoneSystem",
-              "ignorePgwVersion",
-              true,
-              "If set, ignores the ZoneSystem.m_pgwVersion check in ZoneSystem.Load().");
 
       IgnoreLocationVersion =
           config.Bind(

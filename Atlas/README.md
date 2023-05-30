@@ -4,6 +4,14 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Fixed for `v0.216.7` PTB patch.
+  * Removed `ZDOMan.SaveAsync()` patch as the ZPackage-BinaryWriter optimization is now in vanilla code.
+  * Removed `setworldtime` console command as `ZDO.m_timeCreated` is removed and no longer set by clients.
+  * Removed `ZoneSystem.ignorePgwVersion` config and related code as field no longer exists.
+  * Re-implemented `ZDO.m_timeCreated` in a not-so-efficient manner.
+
 ### 1.4.0
 
   * Created `PluginConfig` and added several ZoneSystem-related config options.

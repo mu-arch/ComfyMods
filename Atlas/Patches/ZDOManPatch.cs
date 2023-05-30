@@ -1,87 +1,90 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Reflection.Emit;
 
 using HarmonyLib;
 
 namespace Atlas {
   [HarmonyPatch(typeof(ZDOMan))]
   static class ZDOManPatch {
-    [HarmonyPrefix]
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZDOMan.Load))]
-    static bool LoadPrefix(ref ZDOMan __instance, ref BinaryReader reader, ref int version) {
-      reader.ReadInt64();
-      uint nextUid = reader.ReadUInt32();
-
-      Atlas.LoadZdos(ref __instance, ref reader, ref version, ref nextUid);
-      Atlas.LoadDeadZdos(ref __instance, ref reader, ref nextUid);
-
-      __instance.RemoveOldGeneratedZDOS();
-      __instance.m_nextUid = nextUid;
-
-      return false;
+    static IEnumerable<CodeInstruction> LoadTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldarg_0),
+              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(ZDOMan), nameof(ZDOMan.m_objectsByID))),
+              new CodeMatch(OpCodes.Ldloc_S),
+              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(ZDO), nameof(ZDO.m_uid))),
+              new CodeMatch(OpCodes.Ldloc_S),
+              new CodeMatch(
+                  OpCodes.Callvirt,
+                  AccessTools.Method(typeof(Dictionary<ZDOID, ZDO>), nameof(Dictionary<ZDOID, ZDO>.Add))))
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldarg_0),
+              new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ZDOMan), nameof(ZDOMan.m_objectsByID))),
+              new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(10)),
+              Transpilers.EmitDelegate<Action<Dictionary<ZDOID, ZDO>, ZDO>>(AddObjectsByIdPreDelegate))
+          .InstructionEnumeration();
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(ZDOMan.SaveAsync))]
-    static bool SaveAsync(ref ZDOMan __instance, ref BinaryWriter writer) {
-      writer.Write(__instance.m_saveData.m_myid);
-      writer.Write(__instance.m_saveData.m_nextUid);
-
-      SaveZdos(ref writer, __instance.m_saveData.m_zdos);
-      SaveDeadZdos(ref writer, __instance.m_saveData.m_deadZDOs);
-
-      __instance.m_saveData.m_zdos.Clear();
-      __instance.m_saveData.m_deadZDOs.Clear();
-      __instance.m_saveData = null;
-
-      return false;
+    static void AddObjectsByIdPreDelegate(Dictionary<ZDOID, ZDO> objectsById, ZDO zdo) {
+      if (objectsById.Remove(zdo.m_uid)) {
+        ZLog.LogWarning($"Duplicate ZDO {zdo.m_uid} detected, overwriting.");
+      }
     }
 
-    static void SaveZdos(ref BinaryWriter writer, List<ZDO> zdos) {
-      ZLog.Log($"Saving {zdos.Count} ZDOs ...");
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZDOMan.Load))]
+    static void LoadPostfix(ref ZDOMan __instance) {
+      ZLog.Log($"Loading ZDO.timeCreated for {__instance.m_objectsByID.Count} ZDOs.");
       Stopwatch stopwatch = Stopwatch.StartNew();
 
-      ZPackage package = new();
-      int count = zdos.Count;
-
-      writer.Write(count);
-
-      for (int i = 0; i < count; i++) {
-        ZDO zdo = zdos[i];
-
-        writer.Write(zdo.m_uid.userID);
-        writer.Write(zdo.m_uid.id);
-
-        package.Clear();
-        zdo.Save(package);
-
-        int size = package.Size();
-
-        writer.Write(size);
-        writer.Write(package.m_stream.GetBuffer(), 0, size);
+      foreach (ZDO zdo in __instance.m_objectsByID.Values) {
+        if (ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, long> values)
+            && values.TryGetValue(Atlas.TimeCreatedHashCode, out long timeCreated)) {
+          ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = timeCreated;
+        } else if (ZDOExtraData.s_tempTimeCreated.TryGetValue(zdo.m_uid, out timeCreated)) {
+          zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
+        } else {
+          ZLog.LogWarning($"No ZDO.timeCreated found for ZDO {zdo.m_uid}, setting to 0.");
+          ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = 0L;
+          zdo.Set(Atlas.TimeCreatedHashCode, 0L);
+        }
       }
 
       stopwatch.Stop();
-      ZLog.Log($"Saved {count} ZDOs, time: {stopwatch.Elapsed}");
-
-      package.Clear();
+      ZLog.Log($"Finished loading ZDO.timeCreated, duration: {stopwatch.Elapsed}");
     }
 
-    static void SaveDeadZdos(ref BinaryWriter writer, Dictionary<ZDOID, long> deadZdos) {
-      ZLog.Log($"Saving {deadZdos.Count} dead ZDOs...");
-      Stopwatch stopwatch = Stopwatch.StartNew();
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(ZDOMan.RPC_ZDOData))]
+    static IEnumerable<CodeInstruction> RpcZdoDataTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), nameof(ZDO.Deserialize))),
+              new CodeMatch(OpCodes.Pop))
+        .InsertAndAdvance(
+            new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(12)),
+            Transpilers.EmitDelegate<Action<ZDO>>(DeserializePostDelegate))
+        .InstructionEnumeration();
+    }
 
-      writer.Write(deadZdos.Count);
+    static void DeserializePostDelegate(ZDO zdo) {
+      if (ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, long> values)
+          && values.TryGetValue(Atlas.TimeCreatedHashCode, out long timeCreated)) {
+        ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = timeCreated;
+      } else if (ZDOExtraData.s_tempTimeCreated.TryGetValue(zdo.m_uid, out timeCreated)) {
+        zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
+      } else {
+        timeCreated = (long) (ZNet.m_instance.m_netTime * TimeSpan.TicksPerSecond);
 
-      foreach (KeyValuePair<ZDOID, long> pair in deadZdos) {
-        writer.Write(pair.Key.m_userID);
-        writer.Write(pair.Key.m_id);
-        writer.Write(pair.Value);
+        ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = timeCreated;
+        zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
       }
-
-      stopwatch.Stop();
-      ZLog.Log($"Saved {deadZdos.Count} dead ZDOs, time: {stopwatch.Elapsed}");
     }
   }
 }
