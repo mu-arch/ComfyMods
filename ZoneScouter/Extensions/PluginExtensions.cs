@@ -1,7 +1,5 @@
 ﻿using System;
 
-using UnityEngine;
-
 namespace ZoneScouter {
   public static class ConfigEntryExtensions {
     public static void OnSettingChanged<T>(
