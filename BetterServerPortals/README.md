@@ -8,6 +8,13 @@
 
 ## Changelog
 
+### 1.3.0
+
+  * Fixed for `v0.216.7` PTB patch.
+  * Removed all `ZDOMan` patches as portal prefab caching logic is now in vanilla.
+  * Extracted the portal connection logic out of `ConnectPortalsCoroutine()` and into new method `ConnectPortals()`.
+  * Added a `Game.ConnectPortals()` prefix-patch to ignore the vanilla call and direct into the new method above.
+
 ### 1.2.0
 
   * Changed PluginGuid to `redseiko.valheim.betterserverportals`.
