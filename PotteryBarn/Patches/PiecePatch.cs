@@ -26,7 +26,12 @@ namespace PotteryBarn {
 
       if (DvergrPrefabs.Keys.Contains(__instance.m_description) && !__instance.IsPlacedByPlayer()) {
         DropDefaultResources(__instance);
+
         return false;
+      }
+
+      if (__instance.m_description == "dvergrprops_lantern_standing" && __instance.IsPlacedByPlayer()) {
+        IsDropTableDisabled = true;
       }
 
       return true;
