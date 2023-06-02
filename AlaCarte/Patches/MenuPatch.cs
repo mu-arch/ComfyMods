@@ -56,5 +56,15 @@ namespace AlaCarte {
 
       menuDialogByType.SetPosition(MenuDialogPosition.Value);
     }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Menu.UpdateNavigation))]
+    static bool UpdateNavigationPrefix(ref Menu __instance) {
+      if (__instance.m_menuDialog == _menuDialogOld) {
+        return false;
+      }
+
+      return true;
+    }
   }
 }
