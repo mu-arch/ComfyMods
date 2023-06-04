@@ -99,7 +99,6 @@
     <Compile Include="Patches\ZNetPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

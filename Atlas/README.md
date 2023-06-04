@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.3
+
+  * Removed the entire `ZDOMan.Save()` async-related code (and problems) as vanilla cloning is fast enough.
+
 ### 1.5.2
 
   * Modified the `ZDOMan.Load()` transpiler-patch to fix an edge-case when loading a world prior to PTB.
