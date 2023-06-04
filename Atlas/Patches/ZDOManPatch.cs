@@ -89,16 +89,17 @@ namespace Atlas {
     static IEnumerable<CodeInstruction> RpcZdoDataTranspiler(IEnumerable<CodeInstruction> instructions) {
       return new CodeMatcher(instructions)
           .MatchForward(
-              useEnd: true,
+              useEnd: false,
               new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZDO), nameof(ZDO.Deserialize))),
               new CodeMatch(OpCodes.Pop))
-        .InsertAndAdvance(
-            new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(12)),
-            Transpilers.EmitDelegate<Action<ZDO>>(DeserializePostDelegate))
-        .InstructionEnumeration();
+          .Advance(offset: 2)
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(12)),
+              Transpilers.EmitDelegate<Action<ZDO>>(SetTimeCreatedDelegate))
+          .InstructionEnumeration();
     }
 
-    static void DeserializePostDelegate(ZDO zdo) {
+    static void SetTimeCreatedDelegate(ZDO zdo) {
       if (ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, long> values)
           && values.TryGetValue(Atlas.TimeCreatedHashCode, out long timeCreated)) {
         ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = timeCreated;
