@@ -86,5 +86,52 @@ namespace Atlas {
         zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
       }
     }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(ZDOMan.ConnectSpawners))]
+    static bool ConnectSpawnersPrefix(ref ZDOMan __instance) {
+      ZLog.Log($"Starting ConnectSpawners with caching.");
+      Stopwatch stopwatch = Stopwatch.StartNew();
+
+      Dictionary<ZDOID, ZDOConnectionHashData> spawned = new();
+      Dictionary<int, ZDOID> targetsByHash = new();
+
+      foreach (KeyValuePair<ZDOID, ZDOConnectionHashData> pair in ZDOExtraData.s_connectionsHashData) {
+        if (pair.Value.m_type == ZDOExtraData.ConnectionType.Spawned) {
+          spawned.Add(pair.Key, pair.Value);
+        } else if (pair.Value.m_type ==
+            (ZDOExtraData.ConnectionType.Portal
+                | ZDOExtraData.ConnectionType.SyncTransform
+                | ZDOExtraData.ConnectionType.Target)) {
+          targetsByHash[pair.Value.m_hash] = pair.Key;
+        }
+      }
+
+      ZLog.Log($"Connecting {spawned.Count} spawners against {targetsByHash.Count} targets.");
+
+      int connectedCount = 0;
+      int doneCount = 0;
+
+      foreach (KeyValuePair<ZDOID, ZDOConnectionHashData> pair in spawned) {
+        if (pair.Key.IsNone() || !__instance.m_objectsByID.TryGetValue(pair.Key, out ZDO zdo)) {
+          continue;
+        }
+
+        zdo.SetOwner(__instance.m_sessionID);
+
+        if (targetsByHash.TryGetValue(pair.Value.m_hash, out ZDOID targetZdoId) && pair.Key != targetZdoId) {
+          connectedCount++;
+          zdo.SetConnection(ZDOExtraData.ConnectionType.Spawned, targetZdoId);
+        } else {
+          doneCount++;
+          zdo.SetConnection(ZDOExtraData.ConnectionType.Spawned, ZDOID.None);
+        }
+      }
+
+      stopwatch.Stop();
+      ZLog.Log($"Connected {connectedCount} spawners, {doneCount} 'done' spawners, time: {stopwatch.Elapsed}");
+
+      return false;
+    }
   }
 }

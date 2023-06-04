@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.1
+
+  * Added a `ZDOMan.ConnectSpawners()` prefix-patch that rewrites the method to run in `O(n)` time.
+
 ### 1.5.0
 
   * Fixed for `v0.216.7` PTB patch.
