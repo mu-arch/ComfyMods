@@ -10,8 +10,28 @@ namespace Atlas {
   static class ZDOManPatch {
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZDOMan.Load))]
-    static IEnumerable<CodeInstruction> LoadTranspiler(IEnumerable<CodeInstruction> instructions) {
-      return new CodeMatcher(instructions)
+    static IEnumerable<CodeInstruction> LoadTranspiler(
+        IEnumerable<CodeInstruction> instructions, ILGenerator generator) {
+      return new CodeMatcher(instructions, generator)
+          // Save the position after ZDO loading.
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldstr, "Adding to Dictionary"))
+          .SavePosition(out int destination)
+          // Find the start position for loading ZDOs when version >= 31.
+          .Start()
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldloc_3),
+              new CodeMatch(OpCodes.Ldarg_1),
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ZPackage), nameof(ZPackage.SetReader))))
+          // Insert a branch to the position after ZDO loading when version < 31.
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldarg_2),
+              new CodeInstruction(OpCodes.Ldc_I4, 31))
+          .InsertBranchAndAdvance(OpCodes.Blt, destination)
+          .Start()
+          // Add exception handling for duplicate ZDOs saved.
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldarg_0),
@@ -28,6 +48,11 @@ namespace Atlas {
               new CodeInstruction(OpCodes.Ldloc_S, Convert.ToByte(10)),
               Transpilers.EmitDelegate<Action<Dictionary<ZDOID, ZDO>, ZDO>>(AddObjectsByIdPreDelegate))
           .InstructionEnumeration();
+    }
+
+    static CodeMatcher SavePosition(this CodeMatcher matcher, out int position) {
+      position = matcher.Pos;
+      return matcher;
     }
 
     static void AddObjectsByIdPreDelegate(Dictionary<ZDOID, ZDO> objectsById, ZDO zdo) {

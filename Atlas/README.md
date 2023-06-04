@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.2
+
+  * Modified the `ZDOMan.Load()` transpiler-patch to fix an edge-case when loading a world prior to PTB.
+
 ### 1.5.1
 
   * Added a `ZDOMan.ConnectSpawners()` prefix-patch that rewrites the method to run in `O(n)` time.
