@@ -19,7 +19,7 @@ namespace BetterServerPortals {
   public class BetterServerPortals : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterserverportals";
     public const string PluginName = "BetterServerPortals";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.3.1";
 
     static ManualLogSource _logger;
 
@@ -36,11 +36,11 @@ namespace BetterServerPortals {
       _harmony?.UnpatchSelf();
     }
 
-    static readonly HashSet<ZDOID> zdosToForceSend = new();
-    static readonly Dictionary<string, ZDO> zdoByTagCache = new();
+    static readonly HashSet<ZDOID> _zdosToForceSend = new();
+    static readonly Dictionary<string, ZDO> _zdoByTagCache = new();
 
     public static IEnumerator ConnectPortalsCoroutine(ZDOMan zdoMan) {
-      LogInfo("Starting ConnectPortals coroutine with cache...");
+      LogInfo($"Starting ConnectPortals coroutine with cache...");
 
       WaitForSeconds waitInterval = new(ConnectPortalCoroutineWait.Value);
       Stopwatch stopwatch = Stopwatch.StartNew();
@@ -60,8 +60,8 @@ namespace BetterServerPortals {
     public static void ConnectPortals(ZDOMan zdoMan) {
       long sessionId = ZDOMan.GetSessionID();
 
-      zdosToForceSend.Clear();
-      zdoByTagCache.Clear();
+      _zdosToForceSend.Clear();
+      _zdoByTagCache.Clear();
 
       foreach (ZDO zdo in zdoMan.m_portalObjects) {
         string portalTag = zdo.GetString(ZDOVars.s_tag, string.Empty);
@@ -69,7 +69,7 @@ namespace BetterServerPortals {
 
         if (targetZdoid.IsNone()) {
           if (portalTag != string.Empty) {
-            zdoByTagCache[portalTag] = zdo;
+            _zdoByTagCache[portalTag] = zdo;
           }
 
           continue;
@@ -81,10 +81,10 @@ namespace BetterServerPortals {
           zdo.SetOwner(sessionId);
           zdo.UpdateConnection(ZDOExtraData.ConnectionType.Portal, ZDOID.None);
 
-          zdosToForceSend.Add(zdo.m_uid);
+          _zdosToForceSend.Add(zdo.m_uid);
 
           if (portalTag != string.Empty) {
-            zdoByTagCache[portalTag] = zdo;
+            _zdoByTagCache[portalTag] = zdo;
           }
         }
       }
@@ -97,7 +97,7 @@ namespace BetterServerPortals {
           continue;
         }
 
-        if (!zdoByTagCache.TryGetValue(portalTag, out ZDO matchingZdo) || matchingZdo == zdo) {
+        if (!_zdoByTagCache.TryGetValue(portalTag, out ZDO matchingZdo) || matchingZdo == zdo) {
           continue;
         }
 
@@ -110,16 +110,16 @@ namespace BetterServerPortals {
           matchingZdo.SetOwner(sessionId);
           matchingZdo.SetConnection(ZDOExtraData.ConnectionType.Portal, zdo.m_uid);
 
-          zdosToForceSend.Add(zdo.m_uid);
-          zdosToForceSend.Add(matchingZdo.m_uid);
+          _zdosToForceSend.Add(zdo.m_uid);
+          _zdosToForceSend.Add(matchingZdo.m_uid);
 
           LogInfo($"Connected portals: {zdo.m_uid} <-> {matchingZdo.m_uid}");
         }
       }
 
-      if (zdosToForceSend.Count > 0) {
+      if (_zdosToForceSend.Count > 0) {
         foreach (ZDOMan.ZDOPeer zdoPeer in zdoMan.m_peers) {
-          zdoPeer.m_forceSend.UnionWith(zdosToForceSend);
+          zdoPeer.m_forceSend.UnionWith(_zdosToForceSend);
         }
       }
     }

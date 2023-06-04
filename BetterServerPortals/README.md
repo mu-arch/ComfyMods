@@ -8,6 +8,11 @@
 
 ## Changelog
 
+### 1.3.1
+
+  * Re-add several patches for portal prefab caching logic as vanilla only checks for vanilla 'portal_wood' prefab.
+  * Removed the `portalPrefabNames` config option to reduce complexity and support only 'stone' portals for now.
+
 ### 1.3.0
 
   * Fixed for `v0.216.7` PTB patch.
