@@ -1,6 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Globalization;
+using System.Reflection;
 
 using BepInEx;
+using BepInEx.Logging;
 
 using HarmonyLib;
 
@@ -12,59 +15,37 @@ namespace BetterZeeRouter {
   public class BetterZeeRouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterzeerouter";
     public const string PluginName = "BetterZeeRouter";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
+    static ManualLogSource _logger;
     Harmony _harmony;
-    TeleportToHandler _teleportToHandler;
+
+    RoutedRpcManager _routedRpcManager;
+    TeleportPlayerHandler _teleportPlayerHandler;
 
     public void Awake() {
+      _logger = Logger;
       BindConfig(Config);
 
-      if (IsModEnabled.Value) {
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
 
-        _routedRpcManager.AddHandler(RpcWntHealthChangedHashCode, _wntHealthChangedHandler);
-        _routedRpcManager.AddHandler(RpcDamageTextHashCode, _damageTextHandler);
-        _routedRpcManager.AddHandler(RpcSetTargetHashCode, _setTargetHandler);
+      _routedRpcManager = RoutedRpcManager.Instance;
+      _routedRpcManager.AddHandler(WntHealthChangedHashCode, new WntHealthChangedHandler());
+      _routedRpcManager.AddHandler(DamageTextHashCode, new DamageTextHandler());
+      _routedRpcManager.AddHandler(RpcSetTargetHashCode, new SetTargetHandler());
 
-        _teleportToHandler = new("TeleportToLog.txt");
-        _routedRpcManager.AddHandler(RpcTeleportToHashCode, _teleportToHandler);
-      }
+      _teleportPlayerHandler = new();
+      _routedRpcManager.AddHandler(RpcTeleportPlayerHashCode, _teleportPlayerHandler);
+      _routedRpcManager.AddHandler(RpcTeleportToHashCode, _teleportPlayerHandler);
     }
 
     public void OnDestroy() {
-      _teleportToHandler?.Dispose();
+      _teleportPlayerHandler?.Dispose();
       _harmony?.UnpatchSelf();
     }
 
-    static readonly RoutedRpcManager _routedRpcManager = RoutedRpcManager.Instance;
-    static readonly WntHealthChangedHandler _wntHealthChangedHandler = new();
-    static readonly DamageTextHandler _damageTextHandler = new();
-    static readonly SetTargetHandler _setTargetHandler = new();
-
-    [HarmonyPatch(typeof(ZRoutedRpc))]
-    static class ZRoutedRpcPatch {
-      static readonly ZRoutedRpc.RoutedRPCData _routedRpcData = new();
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZRoutedRpc.RPC_RoutedRPC))]
-      static bool RPC_RoutedRPCPrefix(ref ZRoutedRpc __instance, ref ZRpc rpc, ref ZPackage pkg) {
-        _routedRpcData.DeserializeFrom(ref pkg);
-
-        if (_routedRpcData.m_targetPeerID == __instance.m_id || _routedRpcData.m_targetPeerID == 0L) {
-          __instance.HandleRoutedRPC(_routedRpcData);
-        }
-
-        if (!__instance.m_server || _routedRpcData.m_targetPeerID == __instance.m_id) {
-          return false;
-        }
-
-        if (_routedRpcManager.Process(_routedRpcData)) {
-          __instance.RouteRPC(_routedRpcData);
-        }
-
-        return false;
-      }
+    public static void LogInfo(string message) {
+      _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
     }
   }
 }
