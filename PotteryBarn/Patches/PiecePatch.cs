@@ -30,10 +30,6 @@ namespace PotteryBarn {
         return false;
       }
 
-      if (__instance.m_description == "dvergrprops_lantern_standing" && __instance.IsPlacedByPlayer()) {
-        IsDropTableDisabled = true;
-      }
-
       return true;
     }
 
@@ -71,6 +67,10 @@ namespace PotteryBarn {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(DropOnDestroyed.OnDestroyed))]
     public static bool OnDestroyedPrefix(DropOnDestroyed __instance) {
+      if (__instance.TryGetComponent(out Piece piece) && DvergrPrefabs.Keys.Contains(piece.m_description) && piece.IsPlacedByPlayer()) {
+        return false;
+      }
+
       if (IsDropTableDisabled) {
         IsDropTableDisabled = false;
         return false;

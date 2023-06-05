@@ -116,6 +116,10 @@
 
 ## Changelog
 
+### 1.6.2
+
+  * Fixed additional bug in drop behavior.
+
 ### 1.6.1
 
   * Fixed small bug in drop behavior.
