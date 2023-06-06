@@ -10,10 +10,15 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Keysential_v1.1.1.zip`.
+  * Go to Settings > Import local mod > Select `Keysential_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
+
+### 1.2.0
+
+  * Updated for `v0.216.8` PTB patch.
+  * Modified `.csproj` to reference Valheim dedicated server DLLs.
 
 ### 1.1.1
 
