@@ -10,10 +10,15 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `ReturnToSender_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ReturnToSender_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed for `v0.216.8` PTB patch.
+  * Re-implemented `SendZDOToPeers()` method since it was removed in vanilla (RIP).
 
 ### 1.0.0
 
