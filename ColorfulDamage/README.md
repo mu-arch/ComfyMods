@@ -27,7 +27,7 @@ All options can be configured in-game via ConfigurationManager.
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `ColorfulDamage_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulDamage_v1.0.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -38,6 +38,10 @@ All options can be configured in-game via ConfigurationManager.
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.0.1
+
+  * Minor code-fix to match vanilla behaviour.
 
 ### 1.0.0
 

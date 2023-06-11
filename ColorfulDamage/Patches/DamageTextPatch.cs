@@ -26,8 +26,7 @@ namespace ColorfulDamage {
       DamageText.WorldTextInstance worldText = new();
       __instance.m_worldTexts.Add(worldText);
 
-      worldText.m_worldPos = pos;
-      worldText.m_timer = 0f;
+      worldText.m_worldPos = pos + (UnityEngine.Random.insideUnitSphere * 0.5f);
       worldText.m_gui = UnityEngine.Object.Instantiate(__instance.m_worldTextBase, __instance.transform);
 
       if (DamageTextUseShadowEffect.Value) {
@@ -49,6 +48,8 @@ namespace ColorfulDamage {
           distance > DamageTextSmallPopupDistance.Value
               ? DamageTextSmallFontSize.Value
               : DamageTextLargeFontSize.Value;
+
+      worldText.m_timer = 0f;
 
       return false;
     }
