@@ -8,6 +8,7 @@ namespace ColorfulLights {
   public class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
     public static ConfigEntry<KeyboardShortcut> ChangeColorActionShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> ClearColorActionShortcut { get; private set; }
 
     public static ExtendedColorConfigEntry TargetFireplaceColor { get; private set; }
 
@@ -15,13 +16,20 @@ namespace ColorfulLights {
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
-      IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       ChangeColorActionShortcut =
-          config.Bind(
+          config.BindInOrder(
               "Hotkeys",
               "changeColorActionShortcut",
               new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift),
+              "Keyboard shortcut to change (or clear) the color of the hovered torch/fire.");
+
+      ClearColorActionShortcut =
+          config.BindInOrder(
+              "Hotkeys",
+              "clearColorActionShortcut",
+              new KeyboardShortcut(KeyCode.T, KeyCode.RightShift),
               "Keyboard shortcut to change (or clear) the color of the hovered torch/fire.");
 
       TargetFireplaceColor =
@@ -34,16 +42,14 @@ namespace ColorfulLights {
               colorPaletteKey: "targetFireplaceColoPalette");
 
       ShowChangeColorHoverText =
-          config.Bind(
+          config.BindInOrder(
               "Hud",
               "showChangeColorHoverText",
-              true,
+              false,
               "Show the 'change color' text when hovering over a lightsoure.");
 
       ColorPromptFontSize =
-          config.Bind("Hud", "colorPrompFontSize", 15, "Font size for the 'change color' text prompt.");
-
-      config.SaveOnConfigSet = true;
+          config.BindInOrder("Hud", "colorPrompFontSize", 15, "Font size for the 'change color' text prompt.");
     }
   }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
+using ComfyLib;
+
 using HarmonyLib;
 
 using static ColorfulLights.ColorfulLights;
@@ -17,27 +19,23 @@ namespace ColorfulLights {
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
           .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Action<bool>>(UpdateHoverPostDelegate))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
-      if (takeInputResult
+    static void UpdateHoverPostDelegate(bool takeInput) {
+      if (takeInput
           && IsModEnabled.Value
           && ChangeColorActionShortcut.Value.IsDown()
           && Player.m_localPlayer
-          && Player.m_localPlayer.m_hovering) {
-        Fireplace targetFireplace = Player.m_localPlayer.m_hovering.GetComponentInParent<Fireplace>();
-
-        if (targetFireplace) {
-          Player.m_localPlayer.StartCoroutine(ChangeFireplaceColorCoroutine(targetFireplace));
-          return false;
-        }
+          && Player.m_localPlayer.m_hovering
+          && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out Fireplace fireplace)) {
+        ChangeFireplaceColor(fireplace);
       }
-
-      return takeInputResult;
     }
   }
 }

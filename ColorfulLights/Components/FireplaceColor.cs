@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using ComfyLib;
+
 using UnityEngine;
 
 using static ColorfulLights.ColorfulLights;
@@ -68,8 +70,7 @@ namespace ColorfulLights {
         return;
       }
 
-      if (_netView.m_zdo.m_vec3 == null
-          || !_netView.m_zdo.m_vec3.TryGetValue(FirePlaceColorHashCode, out Vector3 colorVec3)) {
+      if (!_netView.m_zdo.TryGetVector3(FirePlaceColorHashCode, out Vector3 colorVec3)) {
         return;
       }
 

@@ -79,12 +79,15 @@
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColorExtensions.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="ColorfulLights.cs" />
     <Compile Include="Components\FireplaceColor.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
@@ -92,6 +95,8 @@
     <Compile Include="Config\GUI\GUIBuilder.cs" />
     <Compile Include="Config\GUI\GUIFocus.cs" />
     <Compile Include="Config\GUI\GUIHelper.cs" />
+    <Compile Include="Extensions\UnityExtensions.cs" />
+    <Compile Include="Extensions\ZDOExtensions.cs" />
     <Compile Include="Patches\FireplacePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\ZNetScenePatch.cs" />
