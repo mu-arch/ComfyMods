@@ -10,14 +10,14 @@ namespace Atlas {
           config.Bind(
               "ZoneSystem",
               "ignoreGenerateLocationsIfNeeded",
-              true,
+              false,
               "If set, ignores any calls to ZoneSystem.GenerateLocationsIfNeeded().");
 
       IgnoreLocationVersion =
           config.Bind(
               "ZoneSystem",
               "ignoreLocationVersion",
-              true,
+              false,
               "If set, ignores the ZoneSystem.m_locationVersion check in ZoneSystem.Load().");
 
       return config;

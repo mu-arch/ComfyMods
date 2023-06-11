@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.5
+
+  * Added `ZDO.Deserialize` prefix-patch that rewrites entire method to enable removing ZDOExtraData key/values.
+
 ### 1.5.4
 
   * Added logic to stamp ZDOs with `epochTimeCreated` in addition to `timeCreated`.
