@@ -4,6 +4,12 @@
 
 ## Changelog
 
+### 1.5.4
+
+  * Added logic to stamp ZDOs with `epochTimeCreated` in addition to `timeCreated`.
+  * Added `PluginLogger` and changed all logging references to use it.
+  * Added `manifest.json` and `icon.png`, modified `.csproj` to generate a versioned Thunderstore package.
+
 ### 1.5.3
 
   * Removed the entire `ZDOMan.Save()` async-related code (and problems) as vanilla cloning is fast enough.

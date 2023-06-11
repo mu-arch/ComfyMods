@@ -57,14 +57,14 @@ namespace Atlas {
 
     static void AddObjectsByIdPreDelegate(Dictionary<ZDOID, ZDO> objectsById, ZDO zdo) {
       if (objectsById.Remove(zdo.m_uid)) {
-        ZLog.LogWarning($"Duplicate ZDO {zdo.m_uid} detected, overwriting.");
+        PluginLogger.LogWarning($"Duplicate ZDO {zdo.m_uid} detected, overwriting.");
       }
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZDOMan.Load))]
     static void LoadPostfix(ref ZDOMan __instance) {
-      ZLog.Log($"Loading ZDO.timeCreated for {__instance.m_objectsByID.Count} ZDOs.");
+      PluginLogger.LogInfo($"Loading ZDO.timeCreated for {__instance.m_objectsByID.Count} ZDOs.");
       Stopwatch stopwatch = Stopwatch.StartNew();
 
       foreach (ZDO zdo in __instance.m_objectsByID.Values) {
@@ -74,14 +74,13 @@ namespace Atlas {
         } else if (ZDOExtraData.s_tempTimeCreated.TryGetValue(zdo.m_uid, out timeCreated)) {
           zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
         } else {
-          ZLog.LogWarning($"No ZDO.timeCreated found for ZDO {zdo.m_uid}, setting to 0.");
           ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = 0L;
           zdo.Set(Atlas.TimeCreatedHashCode, 0L);
         }
       }
 
       stopwatch.Stop();
-      ZLog.Log($"Finished loading ZDO.timeCreated, duration: {stopwatch.Elapsed}");
+      PluginLogger.LogInfo($"Finished loading ZDO.timeCreated, time: {stopwatch.Elapsed}");
     }
 
     [HarmonyTranspiler]
@@ -107,16 +106,17 @@ namespace Atlas {
         zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
       } else {
         timeCreated = (long) (ZNet.m_instance.m_netTime * TimeSpan.TicksPerSecond);
-
         ZDOExtraData.s_tempTimeCreated[zdo.m_uid] = timeCreated;
+
         zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
+        zdo.Set(Atlas.EpochTimeCreatedHashCode, DateTimeOffset.Now.ToUnixTimeSeconds());
       }
     }
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(ZDOMan.ConnectSpawners))]
     static bool ConnectSpawnersPrefix(ref ZDOMan __instance) {
-      ZLog.Log($"Starting ConnectSpawners with caching.");
+      PluginLogger.LogInfo($"Starting ConnectSpawners with caching.");
       Stopwatch stopwatch = Stopwatch.StartNew();
 
       Dictionary<ZDOID, ZDOConnectionHashData> spawned = new();
@@ -133,7 +133,7 @@ namespace Atlas {
         }
       }
 
-      ZLog.Log($"Connecting {spawned.Count} spawners against {targetsByHash.Count} targets.");
+      PluginLogger.LogInfo($"Connecting {spawned.Count} spawners against {targetsByHash.Count} targets.");
 
       int connectedCount = 0;
       int doneCount = 0;
@@ -155,7 +155,7 @@ namespace Atlas {
       }
 
       stopwatch.Stop();
-      ZLog.Log($"Connected {connectedCount} spawners, {doneCount} 'done' spawners, time: {stopwatch.Elapsed}");
+      PluginLogger.LogInfo($"Connected {connectedCount} spawners ({doneCount} 'done'), time: {stopwatch.Elapsed}");
 
       return false;
     }

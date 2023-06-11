@@ -1,0 +1,8 @@
+{
+  "name": "Atlas",
+  "version_number": "1.5.4",
+  "author": "ComfyMods",
+  "description": "Now you're thinking with portals.",
+  "website_url": "https://github.com/redseiko/ComfyMods/tree/master/Atlas",
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.2105" ]
+}

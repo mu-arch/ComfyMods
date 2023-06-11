@@ -16,7 +16,8 @@ namespace Atlas {
         }
       }
 
-      ZLog.Log($"Saving new/modified ZDO.timeCreated for {count}/{ZDOExtraData.s_tempTimeCreated.Count} ZDOs.");
+      PluginLogger.LogInfo(
+          $"Saving new/modified ZDO.timeCreated for {count}/{ZDOExtraData.s_tempTimeCreated.Count} ZDOs.");
     }
   }
 }

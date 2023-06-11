@@ -13,7 +13,7 @@ namespace Atlas {
     [HarmonyPatch(nameof(ZoneSystem.GenerateLocationsIfNeeded))]
     static bool GenerateLocationsIfNeededPrefix() {
       if (IgnoreGenerateLocationsIfNeeded.Value) {
-        ZLog.Log($"Skipping method call to GenerateLocationsIfNeeded.");
+        PluginLogger.LogInfo($"Skipping method call to GenerateLocationsIfNeeded.");
         return false;
       }
 
@@ -39,7 +39,9 @@ namespace Atlas {
 
     static int CheckLocationVersionDelegate(int locationVersion, ZoneSystem zoneSystem) {
       if (IgnoreLocationVersion.Value) {
-        ZLog.Log($"File locationVersion is: {locationVersion}, overriding to: {zoneSystem.m_locationVersion}");
+        PluginLogger.LogInfo(
+            $"File locationVersion is: {locationVersion}, overriding to: {zoneSystem.m_locationVersion}");
+
         return zoneSystem.m_locationVersion;
       }
 
