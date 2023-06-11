@@ -113,9 +113,9 @@
     <Compile Include="Patches\WearNTearPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="PluginConstants.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ZdoExtensions.cs" />
+    <Compile Include="Extensions\ZDOExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />

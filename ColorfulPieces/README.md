@@ -42,7 +42,7 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.9.2.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.11.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -52,6 +52,13 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.11.0
+
+  * Updated for `v0.216.8` PTB patch.
+  * Modified `Player.TakeInput()` transpiler to happen after `Player.UpdateHover()` and no longer block other inputs.
+  * Modified all single-Piece color actions to no longer be coroutines.
+  * Added work-around for new ZDO behaviour that does not support removal of existing ZDO key-value pairs.
 
 ### 1.10.0
 

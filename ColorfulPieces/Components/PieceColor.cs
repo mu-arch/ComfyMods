@@ -3,6 +3,7 @@
 using UnityEngine;
 
 using static ColorfulPieces.ColorfulPieces;
+using static ColorfulPieces.PluginConstants;
 
 namespace ColorfulPieces {
   public class PieceColor : MonoBehaviour {
@@ -27,8 +28,8 @@ namespace ColorfulPieces {
       _renderers.Clear();
 
       _lastDataRevision = -1L;
-      _lastColorVec3 = -Vector3.one;
-      _lastEmissionColorFactor = -1f;
+      _lastColorVec3 = NoColorVector3;
+      _lastEmissionColorFactor = NoEmissionColorFactor;
       _cacheIndex = -1;
 
       _netView = GetComponent<ZNetView>();
@@ -81,22 +82,22 @@ namespace ColorfulPieces {
         return;
       }
 
-      if (!forceUpdate && _lastDataRevision >= _netView.m_zdo.m_dataRevision) {
+      if (!forceUpdate && _lastDataRevision >= _netView.m_zdo.DataRevision) {
         return;
       }
 
       bool isColored = true;
-      _lastDataRevision = _netView.m_zdo.m_dataRevision;
+      _lastDataRevision = _netView.m_zdo.DataRevision;
 
-      if (_netView.m_zdo.m_vec3 == null
-          || !_netView.m_zdo.m_vec3.TryGetValue(PieceColorHashCode, out Vector3 colorVec3)) {
-        colorVec3 = -Vector3.one;
+      if (!_netView.m_zdo.TryGetVector3(PieceColorHashCode, out Vector3 colorVec3)
+          || colorVec3 == NoColorVector3) {
+        colorVec3 = NoColorVector3;
         isColored = false;
       }
 
-      if (_netView.m_zdo.m_floats == null
-          || !_netView.m_zdo.m_floats.TryGetValue(PieceEmissionColorFactorHashCode, out float factor)) {
-        factor = -1f;
+      if (!_netView.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)
+          || factor == NoEmissionColorFactor) {
+        factor = NoEmissionColorFactor;
         isColored = false;
       }
 
