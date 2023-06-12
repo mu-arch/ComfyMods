@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.6
+
+  * Fixed some edge-cases for handling duplicate ZDOs.
+
 ### 1.5.5
 
   * Added `ZDO.Deserialize` prefix-patch that rewrites entire method to enable removing ZDOExtraData key/values.
