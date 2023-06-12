@@ -1,12 +1,12 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-
-using HarmonyLib;
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
+using BepInEx;
+using BepInEx.Logging;
+
+using HarmonyLib;
 
 using UnityEngine;
 
@@ -17,7 +17,7 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.6.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -33,6 +33,11 @@ namespace ColorfulPortals {
     public void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
+
+    public static readonly Color NoColor = new(-1f, -1f, -1f);
+    public static readonly Vector3 NoColorVector3 = new(-1f, -1f, -1f);
+
+    public static readonly int ColorShaderId = Shader.PropertyToID("_Color");
 
     public static readonly int TeleportWorldColorHashCode = "TeleportWorldColor".GetStableHashCode();
     public static readonly int TeleportWorldColorAlphaHashCode = "TeleportWorldColorAlpha".GetStableHashCode();
@@ -83,21 +88,19 @@ namespace ColorfulPortals {
       return false;
     }
 
-    public static IEnumerator ChangePortalColorCoroutine(TeleportWorld targetPortal) {
-      yield return null;
-
+    public static void ChangePortalColor(TeleportWorld targetPortal) {
       if (!targetPortal) {
-        yield break;
+        return;
       }
 
       if (!targetPortal.m_nview || !targetPortal.m_nview.IsValid()) {
         _logger.LogWarning("TeleportWorld does not have a valid ZNetView.");
-        yield break;
+        return;
       }
 
       if (!PrivateArea.CheckAccess(targetPortal.transform.position, flash: true)) {
         _logger.LogWarning("TeleportWorld is within a PrivateArea.");
-        yield break;
+        return;
       }
 
       targetPortal.m_nview.ClaimOwnership();
@@ -109,6 +112,8 @@ namespace ColorfulPortals {
       if (TeleportWorldDataCache.TryGetValue(targetPortal, out TeleportWorldData teleportWorldData)) {
         teleportWorldData.TargetColor = TargetPortalColor.Value;
         SetTeleportWorldColors(teleportWorldData);
+      } else if (targetPortal.TryGetComponent(out TeleportWorldColor teleportWorldColor)) {
+        teleportWorldColor.UpdatePortalColors(true);
       }
     }
 
@@ -118,6 +123,11 @@ namespace ColorfulPortals {
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
       static void TeleportWorldAwakePostfix(ref TeleportWorld __instance) {
         if (!IsModEnabled.Value || !__instance) {
+          return;
+        }
+
+        if (__instance.m_proximityRoot) {
+          __instance.gameObject.AddComponent<TeleportWorldColor>();
           return;
         }
 
@@ -159,18 +169,23 @@ namespace ColorfulPortals {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.UpdatePortal))]
       static void TeleportWorldUpdatePortalPostfix(ref TeleportWorld __instance) {
+        if (IsModEnabled.Value && __instance.TryGetComponent(out TeleportWorldColor teleportWorldColor)) {
+          teleportWorldColor.UpdatePortalColors();
+          return;
+        }
+
         if (!IsModEnabled.Value
             || !__instance
             || !__instance.m_nview
             || __instance.m_nview.m_zdo == null
-            || __instance.m_nview.m_zdo.m_zdoMan == null
-            || __instance.m_nview.m_zdo.m_vec3 == null
-            || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(TeleportWorldColorHashCode)
+            || __instance.m_nview.m_zdo.IsValid()
+            || __instance.m_nview.m_zdo.GetVec3(TeleportWorldColorHashCode, Vector3.zero) == Vector3.zero
             || !TeleportWorldDataCache.TryGetValue(__instance, out TeleportWorldData teleportWorldData)) {
           return;
         }
 
-        Color portalColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[TeleportWorldColorHashCode]);
+        Color portalColor =
+            Utils.Vec3ToColor(__instance.m_nview.m_zdo.GetVec3(TeleportWorldColorHashCode, Vector3.zero));
         portalColor.a = __instance.m_nview.m_zdo.GetFloat(TeleportWorldColorAlphaHashCode, defaultValue: 1f);
 
         teleportWorldData.TargetColor = portalColor;

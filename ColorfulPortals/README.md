@@ -3,18 +3,6 @@
   * You can color the activation glow effect of any portal using RGB and HTML color codes!
   * Those without the mod will still see the vanilla yellow/red glow effect.
 
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulPortals.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * **Uninstall** any older versions of `ColorfulPortals`.
-  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.5.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### Changing portal glow effect color
@@ -32,6 +20,18 @@
   * ***Stone portal*** prefabs fixed to activate when connected.
   * Restrictions: they cannot be built and require a server-side mod to connect.
 
+## Installation
+
+### Manual
+
+  * Un-zip `ColorfulPortals.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * **Uninstall** any older versions of `ColorfulPortals`.
+  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.6.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ## Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPortals).
@@ -39,6 +39,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.6.0
+
+  * Fixed for `v0.216.8` PTB patch.
+  * Modified `Player.TakeInput()` transpiler patch to happen after `Player.UpdateHover()`.
+  * Modified `ChangePortalColor` to no longer be a coroutine.
 
 ### 1.5.0
 
