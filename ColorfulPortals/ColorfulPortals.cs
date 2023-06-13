@@ -61,7 +61,6 @@ namespace ColorfulPortals {
         existingCache.AddRange(TeleportWorldDataCache.Where(entry => entry.Key));
 
         if (count == existingCache.Count) {
-          _logger.LogInfo($"TeleportWorldData cache size: {count}");
           existingCache.Clear();
           continue;
         }
@@ -74,18 +73,8 @@ namespace ColorfulPortals {
           }
         }
 
-        _logger.LogInfo($"Removed {count - existingCache.Count}/{count} TeleportWorldData cache references.");
         existingCache.Clear();
       }
-    }
-
-    static bool TryGetTeleportWorld(TeleportWorld key, out TeleportWorldData value) {
-      if (key) {
-        return TeleportWorldDataCache.TryGetValue(key, out value);
-      }
-
-      value = default;
-      return false;
     }
 
     public static void ChangePortalColor(TeleportWorld targetPortal) {
@@ -118,7 +107,7 @@ namespace ColorfulPortals {
     }
 
     [HarmonyPatch(typeof(TeleportWorld))]
-    class TeleportWorldPatch {
+    static class TeleportWorldPatch {
       [HarmonyPostfix]
       [HarmonyPatch(nameof(TeleportWorld.Awake))]
       static void TeleportWorldAwakePostfix(ref TeleportWorld __instance) {
@@ -129,10 +118,8 @@ namespace ColorfulPortals {
         if (__instance.m_proximityRoot) {
           __instance.gameObject.AddComponent<TeleportWorldColor>();
           return;
-        }
-
-        // Stone 'portal' prefab does not set this property.
-        if (!__instance.m_proximityRoot) {
+        } else {
+          // Stone 'portal' prefab does not set this property.
           __instance.m_proximityRoot = __instance.transform;
         }
 

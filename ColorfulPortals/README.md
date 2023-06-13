@@ -42,9 +42,10 @@
 
 ### 1.6.0
 
-  * Fixed for `v0.216.8` PTB patch.
+  * Fixed for `v0.216.9` patch.
   * Modified `Player.TakeInput()` transpiler patch to happen after `Player.UpdateHover()`.
   * Modified `ChangePortalColor` to no longer be a coroutine.
+  * Created WIP `TeleportWorldColor` component to use for regular portals, stone portal to be updated later.
 
 ### 1.5.0
 
