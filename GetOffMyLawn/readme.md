@@ -61,7 +61,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.5.1.zip`.
+  * Go to Settings > Import local mod > Select `GetOffMyLawn_v1.6.0.zip`.
   * Click "Import local mod" on the pop-up for information.
 
 ### Notes
@@ -72,7 +72,7 @@
 
 ## Changelog
 
-### 1.5.1
+### 1.6.0
 
   * Updated for `v0.216.5` PTB patch.
 
