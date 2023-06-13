@@ -25,7 +25,7 @@
 
 ## Create a content mod for Thunderstore
 
-  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.0.3`.
+  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.1.0`.
   * Structure your content mod zip file to resemble the following example:
 
   ```
@@ -56,7 +56,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Intermission_v1.0.3.zip`.
+  * Go to Settings > Import local mod > Select `Intermission_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -67,9 +67,9 @@
 
 ## Changelog
 
-### 1.0.3
+### 1.1.0
 
-  * Updated for Valheim `v0.216.5` PTB patch.
+  * Updated for Valheim `v0.216.9` patch.
 
 ### 1.0.2
 

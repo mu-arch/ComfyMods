@@ -18,7 +18,7 @@ namespace Intermission {
   public class Intermission : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.intermission";
     public const string PluginName = "Intermission";
-    public const string PluginVersion = "1.0.3";
+    public const string PluginVersion = "1.1.0";
 
     Harmony _harmony;
 
