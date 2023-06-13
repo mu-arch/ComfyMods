@@ -45,7 +45,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ZoneScouter_v1.1.0.zip`.
+  * Go to Settings > Import local mod > Select `ZoneScouter_v1.2.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -56,6 +56,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.2.0
+
+  * Fixed for `v0.216.9` patch.
 
 ### 1.1.0
 

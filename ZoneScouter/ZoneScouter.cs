@@ -15,7 +15,7 @@ namespace ZoneScouter {
   public class ZoneScouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.zonescouter";
     public const string PluginName = "ZoneScouter";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.2.0";
 
     Harmony _harmony;
 
@@ -60,12 +60,12 @@ namespace ZoneScouter {
 
     static long GetSectorZdoCount(Vector2i sector) {
       if (!SectorToIndexCache.TryGetValue(sector, out int index)) {
-        index = ZDOMan.m_instance.SectorToIndex(sector);
+        index = ZDOMan.s_instance.SectorToIndex(sector);
         SectorToIndexCache[sector] = index;
       }
 
       return index >= 0
-          ? ZDOMan.m_instance.m_objectsBySector[index]?.Count ?? 0L
+          ? ZDOMan.s_instance.m_objectsBySector[index]?.Count ?? 0L
           : 0L;
     }
 
@@ -117,7 +117,7 @@ namespace ZoneScouter {
           continue;
         }
 
-        uint nextUid = ZDOMan.m_instance.m_nextUid;
+        uint nextUid = ZDOMan.s_instance.m_nextUid;
 
         if (nextUid != lastNextUid) {
           _sectorInfoPanel.ZdoManagerNextId.Value.SetText($"{nextUid:D}");
