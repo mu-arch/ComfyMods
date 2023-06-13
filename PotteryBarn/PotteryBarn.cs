@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 
 using BepInEx;
-using BepInEx.Logging;
 
 using HarmonyLib;
 
@@ -21,9 +20,8 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.6.2";
+    public const string PluginVersion = "1.7.0";
 
-    static ManualLogSource _logger;
     Harmony _harmony;
 
     static Piece.PieceCategory _hammerCreatorShopCategory;
@@ -36,11 +34,7 @@ namespace PotteryBarn {
     public static bool IsDropTableDisabled { get; set; } = false;
 
     public void Awake() {
-      _logger = Logger;
-
       BindConfig(Config);
-
-      PieceManager.OnPiecesRegistered += () => ZLog.Log("RED I was called second.");
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
@@ -88,9 +82,8 @@ namespace PotteryBarn {
       }
 
       foreach (
-    KeyValuePair<string, Dictionary<string, int>> entry in
-        DvergrPieces.DvergrPrefabs.OrderBy(o => o.Key).ToList()) {
-        ZLog.Log(entry.Key);
+          KeyValuePair<string, Dictionary<string, int>> entry in
+              DvergrPieces.DvergrPrefabs.OrderBy(o => o.Key).ToList()) {
         GetOrAddPieceComponent(entry.Key, pieceTable)
             .SetResources(CreateRequirements(entry.Value))
             .SetCategory(_hammerBuildingCategory)
@@ -143,7 +136,7 @@ namespace PotteryBarn {
     }
 
     static Piece GetExistingPiece(string prefabName) {
-      return ZNetScene.m_instance.Ref()?.GetPrefab(prefabName).Ref()?.GetComponent<Piece>();
+      return ZNetScene.s_instance.Ref()?.GetPrefab(prefabName).Ref()?.GetComponent<Piece>();
     }
 
     static Piece GetOrAddPieceComponent(string prefabName, PieceTable pieceTable) {
@@ -156,11 +149,12 @@ namespace PotteryBarn {
         SetPlacementRestrictions(piece);
       }
 
-      piece.m_icon ??= LoadOrRenderIcon(prefab, _prefabIconRenderRotation, _standardPrefabIconSprite);
+      if (!piece.m_icon) {
+        piece.m_icon = LoadOrRenderIcon(prefab, _prefabIconRenderRotation, _standardPrefabIconSprite);
+      }
 
       if (!pieceTable.m_pieces.Contains(prefab)) {
         pieceTable.m_pieces.Add(prefab);
-        ZLog.Log($"Added Piece {piece.m_name} to PieceTable {pieceTable.name}");
       }
 
       piece.m_description = prefab.name;
@@ -210,12 +204,6 @@ namespace PotteryBarn {
       texture.Apply();
 
       return Sprite.Create(texture, new(0, 0, 1, 1), Vector2.zero);
-    }
-
-    public static void LogMessage(string message) {
-      if (_debug) {
-        _logger.LogMessage(message);
-      }
     }
 
     public static bool IsNewDvergrPiece(Piece piece) {

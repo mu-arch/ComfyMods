@@ -104,7 +104,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.5.1.zip`.
+  * Go to Settings > Import local mod > Select `PotteryBarn_v1.7.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ### Notes
@@ -115,6 +115,12 @@
   * PotteryBarn icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.7.0
+
+  * Updated for `v0.216.9` patch.
+  * Removed left-over logging statements (oops).
+  * Code clean-up.
 
 ### 1.6.2
 
