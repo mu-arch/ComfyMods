@@ -13,7 +13,7 @@ namespace DyeHard {
   public class DyeHard : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.dyehard";
     public const string PluginName = "DyeHard";
-    public const string PluginVersion = "1.4.1";
+    public const string PluginVersion = "1.5.0";
 
     public static readonly int HairColorHashCode = "HairColor".GetStableHashCode();
     public static Player LocalPlayerCache { get; set; }

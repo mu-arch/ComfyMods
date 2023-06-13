@@ -86,7 +86,7 @@
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\VisEquipmentPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
