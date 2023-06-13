@@ -2,17 +2,6 @@
 
 *Lose less skill on death and increase skill loss prevention timer.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `LicenseToSkill.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.1.2.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### Features
@@ -20,6 +9,17 @@
   * Increases 'no skill loss' status effect from 10 minutes to 20 minutes.
     * Now shows the current time remaining!
   * Reduces skill loss on death from 5% across all skills to 1%.
+
+ ## Installation
+
+### Manual
+
+  * Un-zip `LicenseToSkill.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `LicenseToSkill_v1.2.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
 
 ### Notes
 
@@ -29,7 +29,7 @@
 
 ## Changelog
 
-### 1.1.2
+### 1.2.0
 
   * Updated for `v0.216.5` PTB patch.
   * Converted `Skills.OnDeath()` prefix-patch to `Skills.LowerAllSkills()` prefix-patch.

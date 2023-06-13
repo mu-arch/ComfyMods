@@ -11,7 +11,7 @@ namespace LicenseToSkill {
   public class LicenseToSkill : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.comfytools.licensetoskill";
     public const string PluginName = "LicenseToSkill";
-    public const string PluginVersion = "1.1.2";
+    public const string PluginVersion = "1.2.0";
 
     Harmony _harmony;
 
