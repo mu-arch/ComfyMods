@@ -84,7 +84,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.5.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.3.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -96,9 +96,9 @@
 
 ## Changelog
 
-### 1.2.5
+### 1.3.0
 
-  * Fixed build errors for `v0.216.5` PTB update.
+  * Fixed build errors for `v0.216.9` PTB update.
   * Added new project reference to `ui_lib_publicized.dll`.
   * Converted `Minimap.ShowPinNameInput()` from postfix-patch to prefix-patch due to signature/behaviour change.
 

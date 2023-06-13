@@ -1,10 +1,10 @@
-﻿using BepInEx;
+﻿using System.Linq;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System.Linq;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -15,7 +15,7 @@ namespace Pinnacle {
   public class Pinnacle : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.pinnacle";
     public const string PluginName = "Pinnacle";
-    public const string PluginVersion = "1.2.5";
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
