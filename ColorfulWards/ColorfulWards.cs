@@ -5,6 +5,8 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 
+using ComfyLib;
+
 using HarmonyLib;
 
 using UnityEngine;
@@ -16,7 +18,7 @@ namespace ColorfulWards {
   public class ColorfulWards : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulwards";
     public const string PluginName = "ColorfulWards";
-    public const string PluginVersion = "1.4.1";
+    public const string PluginVersion = "1.5.0";
 
     static readonly Dictionary<PrivateArea, PrivateAreaData> PrivateAreaDataCache = new();
 
@@ -27,7 +29,7 @@ namespace ColorfulWards {
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       _logger = Logger;
 
       BindConfig(Config);
@@ -35,25 +37,23 @@ namespace ColorfulWards {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    public static IEnumerator ChangeWardColorCoroutine(PrivateArea targetWard) {
-      yield return null;
-
+    public static void ChangeWardColor(PrivateArea targetWard) {
       if (!targetWard) {
-        yield break;
+        return;
       }
 
       if (!targetWard.m_nview || !targetWard.m_nview.IsValid()) {
         _logger.LogWarning("PrivateArea does not have a valid ZNetView.");
-        yield break;
+        return;
       }
 
       if (!targetWard.m_piece.IsCreator()) {
         _logger.LogWarning("You are not the owner of this Ward.");
-        yield break;
+        return;
       }
 
       targetWard.m_nview.ClaimOwnership();
@@ -119,15 +119,17 @@ namespace ColorfulWards {
             || !__instance
             || !__instance.m_nview
             || __instance.m_nview.m_zdo == null
-            || __instance.m_nview.m_zdo.m_zdoMan == null
-            || __instance.m_nview.m_zdo.m_vec3 == null
-            || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(PrivateAreaColorHashCode)
+            || !__instance.m_nview.m_zdo.TryGetVector3(PrivateAreaColorHashCode, out Vector3 colorVector3)
             || !PrivateAreaDataCache.TryGetValue(__instance, out PrivateAreaData privateAreaData)) {
           return;
         }
 
-        Color wardColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[PrivateAreaColorHashCode]);
+        Color wardColor = Utils.Vec3ToColor(colorVector3);
         wardColor.a = __instance.m_nview.m_zdo.GetFloat(PrivateAreaColorAlphaHashCode, defaultValue: 1f);
+
+        if (privateAreaData.TargetColor == wardColor) {
+          return;
+        }
 
         privateAreaData.TargetColor = wardColor;
         SetPrivateAreaColors(__instance, privateAreaData);

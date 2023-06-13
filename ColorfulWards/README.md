@@ -3,18 +3,6 @@
   * You can color the glow effect of any ward using RGB and HTML color codes!
   * Those without the mod installed will still see the default yellow glow.
 
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulWards.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * **Uninstall** any older versions of `ColorfulWards`.
-  * Go to Settings > Import local mod > Select `ColorfulWards_v1.4.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### Changing ward glow effect color
@@ -33,6 +21,18 @@
     * Can be toggled on/off in configuration options.
   * In the vanilla game, the range is infinite on the Y axis and the default radius on the XZ axis.
 
+## Installation
+
+### Manual
+
+  * Un-zip `ColorfulWards.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * **Uninstall** any older versions of `ColorfulWards`.
+  * Go to Settings > Import local mod > Select `ColorfulWards_v1.5.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ## Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulLights).
@@ -40,6 +40,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Updated for the `v0.216.9` patch.
+  * Modified `Player.TakeInput()` transpiler to happen after `Player.UpdateHover()` and no longer block other inputs.
+  * Modified `ChangeWardColor` to no longer be a coroutine.
 
 ### 1.4.1
 

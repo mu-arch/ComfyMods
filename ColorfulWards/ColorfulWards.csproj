@@ -103,9 +103,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorfulWards.cs" />
+    <Compile Include="Extensions\ZDOExtensions.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PrivateAreaData.cs" />
+    <Compile Include="Core\PrivateAreaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

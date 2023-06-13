@@ -16,26 +16,21 @@ namespace ColorfulWards.Patches {
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
           .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Action<bool>>(UpdateHoverPostDelegate))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
+    static void UpdateHoverPostDelegate(bool takeInput) {
       if (IsModEnabled.Value
           && ChangeWardColorShortcut.Value.IsDown()
           && Player.m_localPlayer
           && Player.m_localPlayer.m_hovering) {
-        PrivateArea privateArea = Player.m_localPlayer.m_hovering.GetComponentInParent<PrivateArea>();
-
-        if (privateArea) {
-          Player.m_localPlayer.StartCoroutine(ColorfulWards.ChangeWardColorCoroutine(privateArea));
-          return false;
-        }
+        ColorfulWards.ChangeWardColor(Player.m_localPlayer.m_hovering.GetComponentInParent<PrivateArea>());
       }
-
-      return takeInputResult;
     }
   }
 }
