@@ -2,17 +2,6 @@
 
 *Makes the tree in the sky (Yggdrasil / World Tree) solid and a foundation to build on.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `SkyTree.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `SkyTree_v1.3.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
   * SkyTree activates on server login or local world load (so enabling/disabling requires a restart) and...
@@ -24,6 +13,17 @@
     - These `RayCasts` go from top-down and the collider on the SkyTree will block placement anywhere below.
     - Mod should be re-enabled once zone/sector generation has occurred.
 
+## Installation
+
+### Manual
+
+  * Un-zip `SkyTree.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `SkyTree_v1.4.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ### Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/SkyTree).
@@ -31,6 +31,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Updated for `v0.216.9` patch.
+  * Properly uses the PluginGuid for the HarmonyInstanceId instead of the PluginVersion.
 
 ### 1.3.0
 

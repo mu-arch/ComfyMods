@@ -1,12 +1,11 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using System;
+using System.Collections;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System;
-using System.Collections;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -17,19 +16,19 @@ namespace SkyTree {
   public class SkyTree : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.skytree";
     public const string PluginName = "SkyTree";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
 
       _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginVersion);
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
@@ -40,7 +39,7 @@ namespace SkyTree {
       while (true) {
         yield return waitInterval;
 
-        if (!ZNetScene.m_instance) {
+        if (!ZNetScene.instance) {
           continue;
         }
 
