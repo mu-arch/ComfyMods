@@ -96,7 +96,6 @@
     <Compile Include="Atlas.cs" />
     <Compile Include="Patches\ZDOExtraDataPatch.cs" />
     <Compile Include="Patches\ZDOManPatch.cs" />
-    <Compile Include="Patches\ZDOPatch.cs" />
     <Compile Include="Patches\ZNetPatch.cs" />
     <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />

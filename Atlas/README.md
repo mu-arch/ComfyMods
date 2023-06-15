@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.5.7
+
+  * Remove `ZDO.Deserialize` prefix-patch temporarily to help debug prefab duplication issues.
+
 ### 1.5.6
 
   * Fixed some edge-cases for handling duplicate ZDOs.
