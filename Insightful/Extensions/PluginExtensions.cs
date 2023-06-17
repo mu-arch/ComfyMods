@@ -5,16 +5,18 @@ using TMPro;
 namespace Insightful {
   public static class PluginExtensions {
     public static bool TryGetString(this ZDO zdo, int keyHashCode, out string result) {
-      if (zdo.m_strings == null) {
-        result = default;
-        return false;
+      if (ZDOExtraData.s_strings.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, string> values)
+          && values.TryGetValue(keyHashCode, out result)) {
+        return true;
       }
 
-      return zdo.m_strings.TryGetValue(keyHashCode, out result);
+      result = default;
+      return false;
     }
 
     public static bool TryGetEnum<T>(this ZDO zdo, int keyHashCode, out T result) {
-      if (zdo.m_ints != null && zdo.m_ints.TryGetValue(keyHashCode, out int value)) {
+      if (ZDOExtraData.s_ints.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, int> values)
+          && values.TryGetValue(keyHashCode, out int value)) {
         result = (T) Enum.ToObject(typeof(T), value);
         return true;
       }

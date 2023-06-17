@@ -18,18 +18,22 @@ namespace Insightful {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
+              new CodeMatch(OpCodes.Ldarg_0),
               new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
-          .Advance(offset: 1)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Action>(UpdateHoverPostDelegate))
+          .Advance(offset: 2)
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Action<bool>>(UpdateHoverPostDelegate))
           .InstructionEnumeration();
     }
 
-    static void UpdateHoverPostDelegate() {
-      if (IsModEnabled.Value
+    static void UpdateHoverPostDelegate(bool takeInput) {
+      if (takeInput
+          && IsModEnabled.Value
           && ReadHiddenTextShortcut.Value.IsKeyDown()
           && Player.m_localPlayer
           && Player.m_localPlayer.m_hovering) {
-        Player.m_localPlayer.StartCoroutine(ReadHiddenTextCoroutine(Player.m_localPlayer.m_hovering));
+        ReadHiddenText(Player.m_localPlayer.m_hovering);
       }
     }
   }

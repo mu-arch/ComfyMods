@@ -8,16 +8,16 @@ namespace Insightful {
   static class HudPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Hud.UpdateCrosshair))]
-    static void UpdateCrosshairPostfix(ref Hud __instance, ref Player player) {
-      if (!IsModEnabled.Value || !Player.m_localPlayer.m_hovering) {
+    static void UpdateCrosshairPostfix(ref Hud __instance) {
+      if (!IsModEnabled.Value || !Player.m_localPlayer || !Player.m_localPlayer.m_hovering) {
         return;
       }
 
-      ZDO zdo = player.m_hovering.GetComponentInParent<ZNetView>().Ref()?.m_zdo;
+      ZDO zdo = Player.m_localPlayer.m_hovering.GetComponentInParent<ZNetView>().Ref()?.m_zdo;
 
-      if (zdo?.m_strings != null
-          && zdo.m_strings.ContainsKey(InscriptionTopicHashCode)
-          && zdo.m_strings.ContainsKey(InscriptionTextHashCode)) {
+      if (zdo != null
+          && zdo.TryGetString(InscriptionTopicHashCode, out _)
+          && zdo.TryGetString(InscriptionTextHashCode, out _)) {
         __instance.m_hoverName.Append(
             $"[<color=yellow><b>{ReadHiddenTextShortcut.Value}</b></color>] Read Inscription");
       }
