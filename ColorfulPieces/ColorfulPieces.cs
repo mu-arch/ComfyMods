@@ -10,18 +10,14 @@ using HarmonyLib;
 using UnityEngine;
 
 using static ColorfulPieces.PluginConfig;
+using static ColorfulPieces.PluginConstants;
 
 namespace ColorfulPieces {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.11.0";
-
-    public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
-    public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
-    public static readonly int PieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
-    public static readonly int PieceLastColoredByHostHashCode = "PieceLastColoredByHost".GetStableHashCode();
+    public const string PluginVersion = "1.11.1";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -42,7 +38,6 @@ namespace ColorfulPieces {
           || !wearNTear.m_nview
           || !wearNTear.m_nview.IsValid()
           || !PrivateArea.CheckAccess(wearNTear.transform.position, flash: true)) {
-        _logger.LogWarning("Piece does not have a valid ZNetView or is in a PrivateArea.");
         return false;
       }
 
@@ -87,7 +82,7 @@ namespace ColorfulPieces {
 
     static void ChangePieceColorZdo(ZNetView netView) {
       SetPieceColorZdoValues(
-          netView.m_zdo, Utils.ColorToVec3(TargetPieceColor.Value), TargetPieceEmissionColorFactor.Value);
+          netView.m_zdo, ColorToVector3(TargetPieceColor.Value), TargetPieceEmissionColorFactor.Value);
     }
 
     static readonly List<Piece> _piecesCache = new();
@@ -120,8 +115,7 @@ namespace ColorfulPieces {
         return;
       }
 
-      SetPieceColorZdoValues(
-          wearNTear.m_nview.m_zdo, PluginConstants.NoColorVector3, PluginConstants.NoEmissionColorFactor);
+      SetPieceColorZdoValues(wearNTear.m_nview.m_zdo, NoColorVector3, NoEmissionColorFactor);
 
       if (wearNTear.TryGetComponent(out PieceColor pieceColor)) {
         pieceColor.UpdateColors();
@@ -153,11 +147,13 @@ namespace ColorfulPieces {
     }
 
     public static bool CopyPieceColorAction(ZNetView netView) {
-      if (!netView || !netView.IsValid() || !netView.m_zdo.TryGetVector3(PieceColorHashCode, out Vector3 colorAsVector)) {
+      if (!netView
+          || !netView.IsValid()
+          || !netView.m_zdo.TryGetVector3(PieceColorHashCode, out Vector3 colorAsVector)) {
         return false;
       }
 
-      Color color = Utils.Vec3ToColor(colorAsVector);
+      Color color = Vector3ToColor(colorAsVector);
       TargetPieceColor.SetValue(color);
 
       if (netView.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)) {

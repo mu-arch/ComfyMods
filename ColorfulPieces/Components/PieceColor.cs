@@ -109,7 +109,7 @@ namespace ColorfulPieces {
       _lastEmissionColorFactor = factor;
 
       if (isColored) {
-        TargetColor = Utils.Vec3ToColor(colorVec3);
+        TargetColor = Vector3ToColor(colorVec3);
         TargetEmissionColorFactor = factor;
 
         _pieceColorRenderer.SetColors(_renderers, TargetColor, TargetColor * TargetEmissionColorFactor);

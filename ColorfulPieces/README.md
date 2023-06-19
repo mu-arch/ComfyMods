@@ -42,7 +42,7 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.11.0.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.11.1.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -52,6 +52,10 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.11.1
+
+  * Work-around for bug introduced in `v0.216.9` where Color.black (Vector3.zero) was stripped out during world load.
 
 ### 1.11.0
 
@@ -105,7 +109,7 @@ These two commands still call the same action as the hotkey and so will obey all
   * Fixed crashes related to the VPO-compatibiity introduced in v1.4.0.
     * Reverted to original-caching behaviour that uses `WearNTear` instance itself as the key tied to Awake/Destroy.
     * Moved the SaveMaterialColor/ClearMaterialColor logic to WearNTearData.
-    * Added a cache for Utils.Vector3ToColor() method calls.
+    * Added a cache for Vector3ToColor() method calls.
     * Added a cache variable for Utils.ColorToVector3() method calls.
 
 ### 1.5.2
