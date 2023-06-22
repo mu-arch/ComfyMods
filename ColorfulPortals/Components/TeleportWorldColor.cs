@@ -53,7 +53,7 @@ namespace ColorfulPortals {
         return;
       }
 
-      Color portalColor = new(colorVector3.x, colorVector3.y, colorVector3.z);
+      Color portalColor = Vector3ToColor(colorVector3);
 
       if (_netView.m_zdo.TryGetFloat(TeleportWorldColorAlphaHashCode, out float colorAlpha)) {
         portalColor.a = colorAlpha;

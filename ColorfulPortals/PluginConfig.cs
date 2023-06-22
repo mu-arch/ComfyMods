@@ -40,7 +40,7 @@ namespace ColorfulPortals {
 
       ShowChangeColorHoverText =
           config.Bind(
-              "Hud", "showChangeColorHoverText", true, "Show the 'change color' text when hovering over a portal.");
+              "Hud", "showChangeColorHoverText", false, "Show the 'change color' text when hovering over a portal.");
     }
 
     static void UpdateColorHexValue(object sender, EventArgs eventArgs) {

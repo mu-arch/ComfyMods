@@ -110,16 +110,18 @@
     <Compile Include="Extensions\UnityExtensions.cs" />
     <Compile Include="Extensions\ZDOExtensions.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
+    <Compile Include="Patches\TeleportWorldPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TeleportWorldData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Core\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />
