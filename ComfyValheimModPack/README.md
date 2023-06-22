@@ -16,6 +16,12 @@
 
 ## Changelog
 
+### 2.10.0
+
+  * Updated for `v0.216.9` patch.
+  * Removed `Nexus-FarmGrid-0.2.0` and replaced with `SarcenNexusMods-FarmGrid-0.5.0`.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.9.0
 
   * Added `ValheimModding-Jotunn-2.11.5`.
