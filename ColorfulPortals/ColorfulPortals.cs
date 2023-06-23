@@ -16,7 +16,7 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.6.1";
+    public const string PluginVersion = "1.6.2";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -64,7 +64,7 @@ namespace ColorfulPortals {
           targetPortal.m_nview.m_zdo, ColorToVector3(TargetPortalColor.Value), TargetPortalColor.Value.a);
 
       if (targetPortal.TryGetComponent(out TeleportWorldColor teleportWorldColor)) {
-        teleportWorldColor.UpdatePortalColors(true);
+        teleportWorldColor.UpdateColors(true);
       }
     }
 

@@ -1,4 +1,6 @@
-﻿using ComfyLib;
+﻿using System.Collections.Generic;
+
+using ComfyLib;
 
 using UnityEngine;
 
@@ -6,6 +8,8 @@ using static ColorfulPortals.ColorfulPortals;
 
 namespace ColorfulPortals {
   public class TeleportWorldColor : MonoBehaviour {
+    public static readonly List<TeleportWorldColor> TeleportWorldColorCache = new();
+
     TeleportWorld _teleportWorld;
     ZNetView _netView;
     Color _currentColor;
@@ -34,9 +38,15 @@ namespace ColorfulPortals {
       _particleSystem = transform.Find("_target_found_red/Particle System").GetComponent<ParticleSystem>();
       _blueFlames = transform.Find("_target_found_red/blue flames").GetComponent<ParticleSystemRenderer>();
       _propertyBlock = new();
+
+      TeleportWorldColorCache.Add(this);
     }
 
-    public void UpdatePortalColors(bool forceUpdate = false) {
+    void OnDestroy() {
+      TeleportWorldColorCache.Remove(this);
+    }
+
+    public void UpdateColors(bool forceUpdate = false) {
       if (!_netView || !_netView.IsValid()) {
         return;
       }

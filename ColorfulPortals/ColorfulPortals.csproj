@@ -107,8 +107,11 @@
   <ItemGroup>
     <Compile Include="ColorfulPortals.cs" />
     <Compile Include="Components\TeleportWorldColor.cs" />
+    <Compile Include="Components\TeleportWorldColorUpdater.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="Extensions\UnityExtensions.cs" />
     <Compile Include="Extensions\ZDOExtensions.cs" />
+    <Compile Include="Patches\GamePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\TeleportWorldPatch.cs" />
     <Compile Include="PluginConfig.cs" />

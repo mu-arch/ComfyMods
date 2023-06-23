@@ -29,7 +29,7 @@
 ### Thunderstore (manual install)
 
   * **Uninstall** any older versions of `ColorfulPortals`.
-  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.6.1.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.6.2.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -39,6 +39,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.6.2
+
+  * Actually create `TeleportWorldColorUpdater` to update portal colors on a loop.
+  * Added `updateColorsFrameLimit` and `updateColorsWaitInterval` to control this behaviour.
 
 ### 1.6.1
 
