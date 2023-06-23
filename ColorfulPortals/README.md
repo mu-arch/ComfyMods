@@ -37,6 +37,7 @@
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPortals).
   * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
+  * ColorfulPortals icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
 
@@ -44,6 +45,7 @@
 
   * Actually create `TeleportWorldColorUpdater` to update portal colors on a loop.
   * Added `updateColorsFrameLimit` and `updateColorsWaitInterval` to control this behaviour.
+  * Updated mod icon to a new one created by [@jenniely](https://twitter.com/jenniely).
 
 ### 1.6.1
 
