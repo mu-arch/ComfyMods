@@ -13,7 +13,7 @@ namespace HeyListen {
   public class HeyListen : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.heylisten";
     public const string PluginName = "HeyListen";
-    public const string PluginVersion = "1.0.0";
+    public const string PluginVersion = "1.1.0";
 
     Harmony _harmony;
 

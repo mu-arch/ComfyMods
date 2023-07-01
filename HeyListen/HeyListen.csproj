@@ -106,7 +106,7 @@
     <Compile Include="Patches\DemisterPatch.cs" />
     <Compile Include="Patches\SEDemisterPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
