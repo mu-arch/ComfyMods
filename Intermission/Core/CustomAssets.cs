@@ -18,7 +18,8 @@ namespace Intermission {
       LoadingTips.AddRange(ReadLoadingTips(Path.Combine(pluginDir, "tips.txt")));
 
       LoadingImageFiles.Clear();
-      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir));
+      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir, ".png"));
+      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir, ".jpg"));
     }
 
     public static IEnumerable<string> ReadLoadingTips(string path) {
@@ -36,11 +37,11 @@ namespace Intermission {
       }
     }
 
-    public static IEnumerable<string> ReadLoadingImageFiles(string path) {
+    public static IEnumerable<string> ReadLoadingImageFiles(string path, string extension) {
       Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-      string[] loadingImageFiles = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
-      ZLog.Log($"Found {loadingImageFiles.Length} custom loading images in directory: {path}");
+      string[] loadingImageFiles = Directory.GetFiles(path, $"*{extension}", SearchOption.TopDirectoryOnly);
+      ZLog.Log($"Found {loadingImageFiles.Length} custom loading images ({extension}) in directory: {path}");
 
       return loadingImageFiles;
     }
