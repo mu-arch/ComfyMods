@@ -1,11 +1,11 @@
 {
   "name": "ComfyLoadingScreens",
-  "version_number": "1.1.1",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/ComfyLoadingScreens",
   "author": "ComfyMods",
   "description": "Intermission content mod for the Comfy Valheim server.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.1901",
-    "ComfyMods-Intermission-1.0.1"
+    "denikson-BepInExPack_Valheim-5.4.2105",
+    "ComfyMods-Intermission-1.2.0"
   ]
 }

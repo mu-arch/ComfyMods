@@ -1,5 +1,5 @@
 Don’t use portals that aren’t yours without permission!
-Keep 2 zones between your build & someone else’s build. If you can see it, you’re too close!
+Keep 2 ward radii between your build & someone else’s build. If you can see it, you’re too close!
 Mods come with a readme file which details how to use them - check it out! 
 ZoneScouter Mod has a neat feature to show you sector boundaries
 Resources are respawned regularly by staff - keep looking!
