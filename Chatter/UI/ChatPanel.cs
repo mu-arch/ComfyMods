@@ -1,6 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 using ComfyLib;
+
+using Fishlabs;
+
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -76,7 +81,17 @@ namespace Chatter {
       _textPrefabText.font = font;
 
       foreach (Text text in Panel.GetComponentsInChildren<Text>(includeInactive: true)) {
-        text.font = font;
+        if (text.font != font) {
+          text.font = font;
+        }
+      }
+
+      TMP_FontAsset fontAsset = UIResources.GetFontAssetByFont(font);
+
+      foreach (TMP_Text tmpText in Content.GetComponentsInChildren<TMP_Text>(includeInactive: true)) {
+        if (tmpText.font != fontAsset) {
+          tmpText.font = fontAsset;
+        }
       }
     }
 
@@ -84,6 +99,10 @@ namespace Chatter {
       _textPrefabText.fontSize = fontSize;
 
       foreach (Text text in Panel.GetComponentsInChildren<Text>(includeInactive: true)) {
+        text.fontSize = text.name == ContentRowBodyName ? fontSize : fontSize - 2;
+      }
+
+      foreach (TMP_Text text in Panel.GetComponentsInChildren<TMP_Text>(includeInactive: true)) {
         text.fontSize = text.name == ContentRowBodyName ? fontSize : fontSize - 2;
       }
     }
@@ -209,23 +228,20 @@ namespace Chatter {
     }
 
     GameObject CreateGrabberResizer(Transform parentTransform) {
-      GameObject resizer = new("Grabber.Resizer", typeof(RectTransform));
-      resizer.SetParent(parentTransform.transform);
+      TMP_Text resizerLabel = UIBuilder.CreateLabel(parentTransform);
+
+      GameObject resizer = resizerLabel.gameObject;
+      resizer.name = "Grabber.Resizer";
 
       resizer.AddComponent<LayoutElement>()
-          .SetPreferred(width: 25f, height: 25f);
+          .SetPreferred(width: 30f, height: 30f);
 
       resizer.AddComponent<PanelResizer>();
 
-      resizer.AddComponent<Text>()
-          .SetFont(_textPrefabText.font)
-          .SetFontSize(10)
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetText("\u2199\u2197")
-          .SetColor(Color.white);
-
-      resizer.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
+      resizerLabel.fontSize = 18f;
+      resizerLabel.alignment = TextAlignmentOptions.Center;
+      resizerLabel.color = Color.white;
+      resizerLabel.text = "\u2922";
 
       return resizer;
     }
@@ -236,7 +252,7 @@ namespace Chatter {
 
       dragger.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f)
-          .SetPreferred(height: 25f);
+          .SetPreferred(height: 30f);
 
       dragger.AddComponent<Image>()
           .SetSprite(UIBuilder.CreateRect(10, 10, Color.white))
@@ -256,7 +272,7 @@ namespace Chatter {
       row.AddComponent<HorizontalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 10, right: 10)
+          .SetPadding(left: 10, right: 10, top: 2, bottom: 2)
           .SetSpacing(10f);
 
       row.AddComponent<ContentSizeFitter>()
@@ -268,37 +284,50 @@ namespace Chatter {
           .SetType(Image.Type.Filled)
           .SetColor(new(0.75f, 0.75f, 0.75f, 0.125f));
 
-      SayToggle = CreateMessageTypeToggle(row.transform, "Say".ToUpperInvariant());
-      ShoutToggle = CreateMessageTypeToggle(row.transform, "Shout".ToUpperInvariant());
-      WhisperToggle = CreateMessageTypeToggle(row.transform, "Whisper".ToUpperInvariant());
-      PingToggle = CreateMessageTypeToggle(row.transform, "Ping".ToUpperInvariant());
-      MessageHudToggle = CreateMessageTypeToggle(row.transform, "Hud".ToUpperInvariant());
-      TextToggle = CreateMessageTypeToggle(row.transform, "Text".ToUpperInvariant());
+      SayToggle = CreateMessageTypeToggle(row.transform, "Say");
+      ShoutToggle = CreateMessageTypeToggle(row.transform, "Shout");
+      WhisperToggle = CreateMessageTypeToggle(row.transform, "Whisper");
+      PingToggle = CreateMessageTypeToggle(row.transform, "Ping");
+      MessageHudToggle = CreateMessageTypeToggle(row.transform, "Hud");
+      TextToggle = CreateMessageTypeToggle(row.transform, "Text");
 
       return row;
     }
 
+    readonly List<TMP_Text> _toggleTextLabels = new();
+
+    public void SetupMessageTypeToggles() {
+      foreach (TMP_Text label in _toggleTextLabels) {
+        label.fontSize = PluginConfig.MessageToggleTextFontSize.Value;
+      }
+    }
+
     Toggle CreateMessageTypeToggle(Transform parentTransform, string label) {
-      GameObject togglePrefab = new($"Toggle.{label}", typeof(RectTransform));
-      togglePrefab.SetParent(parentTransform);
+      TMP_Text toggleText = UIBuilder.CreateLabel(parentTransform);
+      _toggleTextLabels.Add(toggleText);
+
+      GameObject togglePrefab = toggleText.gameObject;
+      togglePrefab.name = $"Toggle.{label}";
 
       togglePrefab.AddComponent<LayoutElement>()
-          .SetPreferred(height: 25f);
+          .SetPreferred(height: 30f);
 
-      Text toggleText =
-          togglePrefab.AddComponent<Text>()
-              .SetFont(_textPrefabText.font)
-              .SetFontSize(10)
-              .SetColor(Color.white)
-              .SetAlignment(TextAnchor.MiddleCenter)
-              .SetText(label);
-
-      togglePrefab.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
+      toggleText.fontSize = PluginConfig.MessageToggleTextFontSize.Value;
+      toggleText.color = PluginConfig.MessageToggleTextColorEnabled.Value;
+      toggleText.alignment = TextAlignmentOptions.Center;
+      toggleText.text = label;
 
       Toggle toggle = togglePrefab.AddComponent<Toggle>();
-      toggle.targetGraphic = togglePrefab.GetComponent<Text>();
-      toggle.onValueChanged.AddListener(isOn => toggleText.color = isOn ? Color.white : Color.gray);
+      toggle.targetGraphic = toggleText;
+
+      toggle.onValueChanged.AddListener(
+          isOn => {
+            toggleText.color =
+                isOn
+                    ? PluginConfig.MessageToggleTextColorEnabled.Value
+                    : PluginConfig.MessageToggleTextColorDisabled.Value;
+          });
+
       toggle.isOn = false;
 
       return toggle;
@@ -383,7 +412,8 @@ namespace Chatter {
           .SetPosition(Vector2.zero);
 
       inputFieldText.GetComponent<Text>()
-          .SetSupportRichText(false);
+          .SetSupportRichText(false)
+          .SetFont(UIResources.AveriaSerifLibreFont);
 
       inputFieldText.AddComponent<LayoutElement>()
           .SetFlexible(width: 1f);
@@ -400,6 +430,7 @@ namespace Chatter {
       inputFieldPlaceholder.GetComponent<Text>()
           .SetAlignment(TextAnchor.MiddleLeft)
           .SetColor(new(1f, 1f, 1f, 0.3f))
+          .SetFont(UIResources.AveriaSerifLibreFont)
           .SetText("...");
 
       inputFieldPlaceholder.AddComponent<LayoutElement>()
@@ -445,8 +476,10 @@ namespace Chatter {
     }
 
     static Sprite CreateGradientSprite() {
-      Texture2D texture = new(width: 1, height: 2);
-      texture.wrapMode = TextureWrapMode.Clamp;
+      Texture2D texture = new(width: 1, height: 2) {
+        wrapMode = TextureWrapMode.Clamp
+      };
+
       texture.SetPixel(0, 0, Color.white);
       texture.SetPixel(0, 1, Color.clear);
       texture.Apply();
@@ -513,7 +546,7 @@ namespace Chatter {
       return row;
     }
 
-    public (GameObject header, GameObject leftCell, GameObject rightCell) CreateChatMessageRowHeader(
+    public (GameObject header, TMP_Text leftCell, TMP_Text rightCell) CreateChatMessageRowHeader(
         Transform parentTransform, string leftText, string rightText) {
       GameObject header = new(RowHeaderName, typeof(RectTransform));
       header.SetParent(parentTransform, worldPositionStays: false);
@@ -523,42 +556,39 @@ namespace Chatter {
           .SetChildForceExpand(width: false, height: false)
           .SetPadding(left: 0, right: 0, top: 0, bottom: 0);
 
-      GameObject leftCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      leftCell.SetName(HeaderLeftCellName);
+      TMP_Text leftCell = UIBuilder.CreateLabel(header.transform);
+      leftCell.name = HeaderLeftCellName;
 
-      leftCell.GetComponent<Text>()
-          .SetText(leftText)
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetFontSize(_textPrefabText.fontSize - 2);
+      leftCell.text = leftText;
+      leftCell.alignment = TextAlignmentOptions.Left;
+      leftCell.fontSize -= 2f;
 
-      leftCell.AddComponent<LayoutElement>();
+      leftCell.gameObject.AddComponent<LayoutElement>();
 
       GameObject spacer = new("Header.Spacer", typeof(RectTransform));
       spacer.SetParent(header.transform);
       spacer.AddComponent<LayoutElement>().SetFlexible(width: 1f);
 
-      GameObject rightCell = Object.Instantiate(TextPrefab, header.transform, worldPositionStays: false);
-      rightCell.SetName(HeaderRightCellName);
+      TMP_Text rightCell = UIBuilder.CreateLabel(header.transform);
+      rightCell.name = HeaderRightCellName;
 
-      rightCell.GetComponent<Text>()
-          .SetText(rightText)
-          .SetAlignment(TextAnchor.MiddleRight)
-          .SetFontSize(_textPrefabText.fontSize - 2);
+      rightCell.text = rightText;
+      rightCell.alignment = TextAlignmentOptions.Right;
+      rightCell.fontSize -= 2f;
 
-      rightCell.AddComponent<LayoutElement>();
+      rightCell.gameObject.AddComponent<LayoutElement>();
 
       return (header, leftCell, rightCell);
     }
 
-    public GameObject CreateChatMessageRowBody(Transform parentTransform, string text) {
-      GameObject body = Object.Instantiate(TextPrefab, parentTransform, worldPositionStays: false);
+    public TMP_Text CreateChatMessageRowBody(Transform parentTransform, string text) {
+      TMP_Text body = UIBuilder.CreateLabel(parentTransform);
       body.name = ContentRowBodyName;
 
-      body.GetComponent<Text>()
-          .SetText(text)
-          .SetAlignment(TextAnchor.MiddleLeft);
+      body.text = text;
+      body.alignment = TextAlignmentOptions.Left;
 
-      body.AddComponent<LayoutElement>()
+      body.gameObject.AddComponent<LayoutElement>()
           .SetPreferred(width: _panelRectTransform.sizeDelta.x + _contentWidthOffset);
 
       return body;

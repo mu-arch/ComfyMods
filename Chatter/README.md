@@ -76,6 +76,13 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Updated almost all `Text` components to `TMP_Text` equivalents.
+  * Added a work-around for OS-installed fonts as TMP requires the original font file (and can't use a dynamic font).
+  * Modified resizer icon and message toggle styles.
+  * Added config options for message toggles `Style.MessageToggle.Text`.
+
 ### 1.4.1
 
   * Applied the 'Outline' font material to in-world texts.

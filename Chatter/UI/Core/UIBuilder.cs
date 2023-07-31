@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using TMPro;
+
 using UnityEngine;
 
 namespace ComfyLib {
@@ -16,10 +18,11 @@ namespace ComfyLib {
         return sprite;
       }
 
-      Texture2D texture = new(width, height);
-      texture.name = name;
-      texture.wrapMode = TextureWrapMode.Repeat;
-      texture.filterMode = FilterMode.Point;
+      Texture2D texture = new(width, height) {
+        name = name,
+        wrapMode = TextureWrapMode.Repeat,
+        filterMode = FilterMode.Point
+      };
 
       Color32[] pixels = new Color32[width * height];
 
@@ -52,10 +55,11 @@ namespace ComfyLib {
         return sprite;
       }
 
-      Texture2D texture = new(width, height);
-      texture.name = name;
-      texture.wrapMode = TextureWrapMode.Clamp;
-      texture.filterMode = FilterMode.Point;
+      Texture2D texture = new(width, height) {
+        name = name,
+        wrapMode = TextureWrapMode.Clamp,
+        filterMode = FilterMode.Point
+      };
 
       Color32[] pixels = new Color32[width * height];
 
@@ -118,6 +122,18 @@ namespace ComfyLib {
       _spriteCache[name] = sprite;
 
       return sprite;
+    }
+
+    public static TextMeshProUGUI CreateLabel(Transform parentTransform) {
+      TextMeshProUGUI label =
+          UnityEngine.Object.Instantiate(UnifiedPopup.instance.bodyText, parentTransform, worldPositionStays: false);
+
+      label.name = "Label";
+      label.text = string.Empty;
+      label.fontSize = 18f;
+      label.enableAutoSizing = false;
+
+      return label;
     }
   }
 }

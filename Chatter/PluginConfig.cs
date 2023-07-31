@@ -8,6 +8,7 @@ using ComfyLib;
 using HarmonyLib;
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Chatter {
   public class PluginConfig {
@@ -293,6 +294,8 @@ namespace Chatter {
                   new ConfigurationManagerAttributes { Order = 0 }));
 
       config.LateBindInOrder(config => BindChatMessageFont(config));
+
+      BindMessageToggleConfig(config);
     }
 
     static void BindFilters(ConfigFile config) {
@@ -341,23 +344,52 @@ namespace Chatter {
           Resources.FindObjectsOfTypeAll<Font>()
               .Select(f => f.name)
               .OrderBy(f => f)
-              .Concat(Font.GetOSInstalledFontNames()
-              .OrderBy(f => f))
+              .Concat(UIResources.OsFontMap.Value.Keys.OrderBy(f => f))
               .ToArray();
 
       ChatMessageFont ??=
-          config.Bind(
+          config.BindInOrder(
               "Style",
               "chatMessageFont",
-              UIResources.AveriaSerifLibre.name,
-              new ConfigDescription("The font to use for chat messages.", new AcceptableValueList<string>(fontNames)));
+              UIResources.AveriaSerifLibre,
+              "The font to use for chat messages.",
+              new AcceptableValueList<string>(fontNames));
 
       ChatMessageFontSize ??=
-          config.Bind(
+          config.BindInOrder(
               "Style",
               "chatMessageFontSize",
               18,
-              new ConfigDescription("The font size to use for chat messages.", new AcceptableValueRange<int>(8, 64)));
+              "The font size to use for chat messages.",
+              new AcceptableValueRange<int>(8, 64));
+    }
+
+    public static ConfigEntry<float> MessageToggleTextFontSize { get; private set; }
+    public static ConfigEntry<Color> MessageToggleTextColorEnabled { get; private set; }
+    public static ConfigEntry<Color> MessageToggleTextColorDisabled { get; private set; }
+
+    public static void BindMessageToggleConfig(ConfigFile config) {
+      MessageToggleTextFontSize =
+          config.BindInOrder(
+              "Style.MessageToggle.Text",
+              "textFontSize",
+              14f,
+              "Style - MessageToggle.Text - text font size.",
+              new AcceptableValueRange<float>(2f, 25f));
+
+      MessageToggleTextColorEnabled =
+          config.BindInOrder(
+              "Style.MessageToggle.Text",
+              "textColorEnabled",
+              Color.white,
+              "Style - MessageToggle.Text - text color when toggle is enabled.");
+
+      MessageToggleTextColorDisabled =
+          config.BindInOrder(
+              "Style.MessageToggle.Text",
+              "textColorDisabled",
+              new Color(0.75f, 0.75f, 0.75f, 1f),
+              "Style - MessageToggle.Text - text color when toggle is disabled.");
     }
 
     public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {

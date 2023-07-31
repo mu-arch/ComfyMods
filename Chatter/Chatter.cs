@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +7,8 @@ using System.Reflection;
 using BepInEx;
 
 using HarmonyLib;
+
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +21,7 @@ namespace Chatter {
   public class Chatter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.chatter";
     public const string PluginName = "Chatter";
-    public const string PluginVersion = "1.4.1";
+    public const string PluginVersion = "1.5.0";
 
     Harmony _harmony;
 
@@ -185,13 +188,13 @@ namespace Chatter {
       }
     }
 
-    internal static void EnableChatPanelDelegate() {
+    public static void EnableChatPanelDelegate() {
       if (IsModEnabled.Value && _chatPanel?.InputField) {
         _chatPanel.InputField.enabled = true;
       }
     }
 
-    internal static bool DisableChatPanelDelegate(bool active) {
+    public static bool DisableChatPanelDelegate(bool active) {
       if (IsModEnabled.Value && _chatPanel?.InputField) {
         _chatPanel.InputField.enabled = false;
         return true;
@@ -200,7 +203,7 @@ namespace Chatter {
       return active;
     }
 
-    internal static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
+    public static void BindChatConfig(Chat chat, ChatPanel chatPanel) {
       if (_isPluginConfigBound) {
         return;
       }
@@ -240,6 +243,8 @@ namespace Chatter {
           color => SetContentRowBodyTextColor(color, ChatMessageType.Whisper));
       ChatMessageTextPingColor.OnSettingChanged(color => SetContentRowBodyTextColor(color, ChatMessageType.Ping));
       ChatMessageTimestampColor.OnSettingChanged(SetTimestampTextColor);
+
+      MessageToggleTextFontSize.SettingChanged += (_, _) => ChatPanel?.SetupMessageTypeToggles();
     }
 
     public static ChatPanel ChatPanel {
@@ -291,9 +296,9 @@ namespace Chatter {
       }
 
       foreach (
-          Text text in MessageRows
+          TMP_Text text in MessageRows
               .Where(row => row.ChatMessage?.MessageType == messageType && row.Row)
-              .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
+              .SelectMany(row => row.Row.GetComponentsInChildren<TMP_Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.ContentRowBodyName)) {
         text.color = color;
       }
@@ -308,7 +313,7 @@ namespace Chatter {
       foreach (
           GameObject cell in MessageRows
               .Where(row => row.Row)
-              .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
+              .SelectMany(row => row.Row.GetComponentsInChildren<TMP_Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.HeaderRightCellName)
               .Select(text => text.gameObject)) {
         cell.SetActive(toggle);
@@ -322,9 +327,9 @@ namespace Chatter {
       }
 
       foreach (
-          Text text in MessageRows
+          TMP_Text text in MessageRows
               .Where(row => row.Row)
-              .SelectMany(row => row.Row.GetComponentsInChildren<Text>(includeInactive: true))
+              .SelectMany(row => row.Row.GetComponentsInChildren<TMP_Text>(includeInactive: true))
               .Where(text => text.name == ChatPanel.HeaderRightCellName)) {
         text.color = color;
       }
@@ -410,20 +415,19 @@ namespace Chatter {
         row.SetActive(active);
 
         if (ShouldCreateRowHeader()) {
-          (_, GameObject leftCell, GameObject rightCell) = 
+          (_, TMP_Text leftCell, TMP_Text rightCell) = 
               _chatPanel.CreateChatMessageRowHeader(
                   row.transform, GetUsernameText(message.Username), GetTimestampText(message.Timestamp));
 
-          leftCell.GetComponent<Text>().SetColor(ChatMessageTextDefaultColor.Value);
+          leftCell.color = ChatMessageTextDefaultColor.Value;
 
-          rightCell.GetComponent<Text>().SetColor(ChatMessageTimestampColor.Value);
-          rightCell.SetActive(ChatMessageShowTimestamp.Value);
+          rightCell.color = ChatMessageTimestampColor.Value;
+          rightCell.gameObject.SetActive(ChatMessageShowTimestamp.Value);
         }
       }
 
-      _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, GetBodyText(message))
-          .GetComponent<Text>()
-          .SetColor(GetMessageTextColor(message.MessageType));
+      TMP_Text text = _chatPanel.CreateChatMessageRowBody(MessageRows.LastItem.Row.transform, GetBodyText(message));
+      text.color = GetMessageTextColor(message.MessageType);
     }
 
     static bool ShouldCreateDivider(ChatMessage message) {
