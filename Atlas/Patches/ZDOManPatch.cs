@@ -5,6 +5,8 @@ using System.Reflection.Emit;
 
 using HarmonyLib;
 
+using UnityEngine;
+
 namespace Atlas {
   [HarmonyPatch(typeof(ZDOMan))]
   static class ZDOManPatch {
@@ -111,6 +113,36 @@ namespace Atlas {
         zdo.Set(Atlas.TimeCreatedHashCode, timeCreated);
         zdo.Set(Atlas.EpochTimeCreatedHashCode, DateTimeOffset.Now.ToUnixTimeSeconds());
       }
+
+      if (!zdo.TryGetZDOID(Atlas.OriginalUidHashPair, out _)) {
+        zdo.Set(Atlas.OriginalUidHashPair, zdo.m_uid);
+      }
+    }
+
+    static bool TryGetZDOID(this ZDO zdo, KeyValuePair<int, int> hashPair, out ZDOID value) {
+      if (ZDOExtraData.s_longs.TryGetValue(zdo.m_uid, out BinarySearchDictionary<int, long> values)
+          && values.TryGetValue(hashPair.Key, out long userIdPart)
+          && values.TryGetValue(hashPair.Value, out long idPart)) {
+        value = new(userIdPart, (uint) idPart);
+        return true;
+      }
+
+      value = ZDOID.None;
+      return false;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZDOMan.CreateNewZDO), typeof(Vector3), typeof(int))]
+    static void CreateNewZDOPostfix(ref ZDO __result) {
+      ZDOID zdoid = __result.m_uid;
+      long timeCreated = (long) (ZNet.m_instance.m_netTime * TimeSpan.TicksPerSecond);
+
+      ZDOExtraData.s_tempTimeCreated[zdoid] = timeCreated;
+      ZDOExtraData.Set(zdoid, Atlas.TimeCreatedHashCode, timeCreated);
+      ZDOExtraData.Set(zdoid, Atlas.EpochTimeCreatedHashCode, DateTimeOffset.Now.ToUnixTimeSeconds());
+
+      ZDOExtraData.Set(zdoid, Atlas.OriginalUidHashPair.Key, zdoid.UserID);
+      ZDOExtraData.Set(zdoid, Atlas.OriginalUidHashPair.Value, zdoid.ID);
     }
 
     [HarmonyPrefix]

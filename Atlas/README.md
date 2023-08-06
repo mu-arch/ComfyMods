@@ -4,6 +4,11 @@
 
 ## Changelog
 
+### 1.6.0
+
+  * Added feature where server will cache/embed a ZDO's UID into its data for reference after a server restart.
+  * Added a hacky feature for maintaining/appending server SessionIds in a world file using custom metadata ZDOs.
+
 ### 1.5.7
 
   * Remove `ZDO.Deserialize` prefix-patch temporarily to help debug prefab duplication issues.

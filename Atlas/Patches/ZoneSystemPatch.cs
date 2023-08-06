@@ -13,7 +13,6 @@ namespace Atlas {
     [HarmonyPatch(nameof(ZoneSystem.GenerateLocationsIfNeeded))]
     static bool GenerateLocationsIfNeededPrefix() {
       if (IgnoreGenerateLocationsIfNeeded.Value) {
-        PluginLogger.LogInfo($"Skipping method call to GenerateLocationsIfNeeded.");
         return false;
       }
 

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 
 using BepInEx;
 
@@ -9,10 +10,11 @@ namespace Atlas {
   public class Atlas : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.atlas";
     public const string PluginName = "Atlas";
-    public const string PluginVersion = "1.5.7";
+    public const string PluginVersion = "1.6.0";
 
     public static readonly int TimeCreatedHashCode = "timeCreated".GetStableHashCode();
     public static readonly int EpochTimeCreatedHashCode = "epochTimeCreated".GetStableHashCode();
+    public static readonly KeyValuePair<int, int> OriginalUidHashPair = ZDO.GetHashZDOID("originalUid");
 
     Harmony _harmony;
 
