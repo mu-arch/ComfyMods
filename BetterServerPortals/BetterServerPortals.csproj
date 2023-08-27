@@ -90,7 +90,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\GamePatch.cs" />
-    <Compile Include="Patches\ZDOManPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\IgnoreAccessModifiers.cs" />
     <Compile Include="BetterServerPortals.cs" />

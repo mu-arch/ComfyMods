@@ -19,7 +19,7 @@ namespace BetterServerPortals {
   public class BetterServerPortals : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.betterserverportals";
     public const string PluginName = "BetterServerPortals";
-    public const string PluginVersion = "1.3.1";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
 

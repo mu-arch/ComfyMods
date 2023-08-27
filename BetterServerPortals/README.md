@@ -8,6 +8,11 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Updated for `v0.217.14` patch.
+  * Removed `ZDOMan` patch that manually added in stone `portal` prefab for connection, as logic is now in vanilla.
+
 ### 1.3.1
 
   * Re-add several patches for portal prefab caching logic as vanilla only checks for vanilla 'portal_wood' prefab.
