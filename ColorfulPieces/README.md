@@ -42,7 +42,7 @@ These two commands still call the same action as the hotkey and so will obey all
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.11.1.zip`.
+  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.12.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -52,6 +52,10 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.12.0
+
+  * Fixed for `v0.217.14` patch.
 
 ### 1.11.1
 

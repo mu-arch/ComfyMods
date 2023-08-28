@@ -17,7 +17,7 @@ namespace ColorfulPieces {
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.11.1";
+    public const string PluginVersion = "1.12.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
