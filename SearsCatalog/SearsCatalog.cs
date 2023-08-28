@@ -16,17 +16,17 @@ namespace SearsCatalog {
   public class SearsCatalog : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.searscatalog";
     public const string PluginName = "SearsCatalog";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
     public static Harmony HarmonyInstance { get; private set; }
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
 
       HarmonyInstance = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       HarmonyInstance?.UnpatchSelf();
     }
 
