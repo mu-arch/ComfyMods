@@ -1,19 +1,21 @@
 ﻿using System;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Pinnacle {
   public class ToggleCell {
     public GameObject Cell { get; private set; }
-    public Text Label { get; private set; }
+    public TMP_Text Label { get; private set; }
     public Image Checkbox { get; private set; }
     public Image Checkmark { get; private set; }
     public Toggle Toggle { get; private set; }
 
     public ToggleCell(Transform parentTransform) {
       Cell = CreateChildCell(parentTransform);
-      Label = CreateChildLabel(Cell.transform).Text();
+      Label = CreateChildLabel(Cell.transform);
       Checkbox = CreateChildCheckbox(Cell.transform).Image();
       Checkmark = CreateChildCheckmark(Checkbox.transform).Image();
 
@@ -98,13 +100,12 @@ namespace Pinnacle {
       return checkmark;
     }
 
-    GameObject CreateChildLabel(Transform parentTransform) {
-      GameObject label = UIBuilder.CreateLabel(parentTransform);
+    TMP_Text CreateChildLabel(Transform parentTransform) {
+      TMP_Text label = UIBuilder.CreateTMPLabel(parentTransform);
       label.SetName("Toggle.Label");
 
-      label.Text()
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetText("Toggle");
+      label.alignment = TextAlignmentOptions.Center;
+      label.text = "Toggle";
 
       return label;
     }

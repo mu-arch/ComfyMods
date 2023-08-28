@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,8 +34,8 @@ namespace Pinnacle {
       PanelResizer.TargetRectTransform = Panel.RectTransform();
 
       PinNameFilter = new(Panel.transform);
-      PinNameFilter.Cell.LayoutElement().SetFlexible(width: 1f);
-      PinNameFilter.Cell.GetComponent<HorizontalLayoutGroup>().SetPadding(left: 8, right: 8, top: 5, bottom: 5);
+      PinNameFilter.Cell.LayoutElement().SetFlexible(width: 1f).SetPreferred(height: 30f);
+      // PinNameFilter.Cell.GetComponent<HorizontalLayoutGroup>().SetPadding(left: 8, right: 8, top: 5, bottom: 5);
       PinNameFilter.InputField.onValueChanged.AddListener(SetTargetPins);
 
       Viewport = CreateChildViewport(Panel.transform);
@@ -279,22 +281,21 @@ namespace Pinnacle {
       resizer.AddComponent<CanvasGroup>()
           .SetAlpha(0f);
 
-      GameObject icon = UIBuilder.CreateLabel(resizer.transform);
+      TMP_Text icon = UIBuilder.CreateTMPLabel(resizer.transform);
       icon.SetName("Resizer.Icon");
 
-      icon.AddComponent<LayoutElement>()
+      icon.gameObject.AddComponent<LayoutElement>()
           .SetIgnoreLayout(true);
 
-      icon.RectTransform()
+      icon.gameObject.RectTransform()
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.one)
           .SetPivot(new(0.5f, 0.5f))
           .SetSizeDelta(Vector2.zero);
 
-      icon.Text()
-          .SetAlignment(TextAnchor.MiddleCenter)
-          .SetFontSize(24)
-          .SetText("\u21C6\u21C5");
+      icon.alignment = TextAlignmentOptions.Center;
+      icon.fontSize = 24f;
+      icon.text = "\u21C6\u21C5";
 
       return resizer;
     }

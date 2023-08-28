@@ -1,5 +1,7 @@
 ﻿using System;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,13 +9,13 @@ namespace Pinnacle {
   public class ValueCell {
     public GameObject Cell { get; private set; }
     public Image Background { get; private set; }
-    public InputField InputField { get; private set; }
+    public TMP_InputField InputField { get; private set; }
 
     public ValueCell(Transform parentTransform) {
       Cell = CreateChildCell(parentTransform);
       Background = Cell.Image();
 
-      InputField = CreateChildInputField(Cell.transform).GetComponent<InputField>();
+      InputField = CreateChildInputField(Cell.transform);
       InputField.SetTargetGraphic(Background);
     }
 
@@ -21,59 +23,45 @@ namespace Pinnacle {
       GameObject cell = new("Cell", typeof(RectTransform));
       cell.SetParent(parentTransform);
 
-      cell.AddComponent<HorizontalLayoutGroup>()
-          .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 8, right: 8, top: 4, bottom: 4)
-          .SetSpacing(8f)
-          .SetChildAlignment(TextAnchor.MiddleCenter);
-
       cell.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
           .SetSprite(UIBuilder.CreateRoundedCornerSprite(64, 64, 8))
           .SetColor(new(0.5f, 0.5f, 0.5f, 0.5f));
 
-      cell.AddComponent<Shadow>()
-          .SetEffectDistance(new(2, -2));
-
+      cell.AddComponent<RectMask2D>();
       cell.AddComponent<LayoutElement>();
 
       return cell;
     }
 
-    GameObject CreateChildInputField(Transform parentTransform) {
+    TMP_InputField CreateChildInputField(Transform parentTransform) {
       GameObject row = new("InputField", typeof(RectTransform));
       row.SetParent(parentTransform);
 
-      row.AddComponent<HorizontalLayoutGroup>()
-          .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: false, height: false)
-          .SetChildAlignment(TextAnchor.MiddleLeft)
-          .SetSpacing(8f);
+      row.RectTransform()
+          .SetAnchorMin(Vector2.zero)
+          .SetAnchorMax(Vector2.one)
+          .SetSizeDelta(Vector2.zero)
+          .SetPosition(Vector2.zero);
 
-      row.AddComponent<LayoutElement>();
-
-      GameObject label = UIBuilder.CreateLabel(row.transform);
+      TMP_Text label = UIBuilder.CreateTMPLabel(row.transform);
       label.SetName("InputField.Text");
 
-      label.Text()
-          .SetSupportRichText(false)
-          .SetText("InputField.Text");
+      label.richText = false;
+      label.alignment = TextAlignmentOptions.Left;
+      label.text = "InputField.Text";
 
-      label.AddComponent<LayoutElement>()
-          .SetFlexible(width: 1f);
+      TMP_InputField inputField = parentTransform.gameObject.AddComponent<TMP_InputField>();
+      inputField.textComponent = label;
+      inputField.textViewport = row.GetComponent<RectTransform>();
+      inputField.transition = Selectable.Transition.ColorTint;
+      inputField.colors = InputFieldColorBlock.Value;
+      inputField.onFocusSelectAll = false;
+      inputField.SetNavigationMode(Navigation.Mode.None);
 
-      InputField inputField = row.AddComponent<InputField>();
+      // row.AddComponent<DisableHighlightOnSelect>();
 
-      inputField
-          .SetTextComponent(label.Text())
-          .SetTransition(Selectable.Transition.ColorTint)
-          .SetNavigationMode(Navigation.Mode.None)
-          .SetColors(InputFieldColorBlock.Value);
-
-      row.AddComponent<DisableHighlightOnSelect>();
-
-      return row;
+      return inputField;
     }
 
     static readonly Lazy<ColorBlock> InputFieldColorBlock =

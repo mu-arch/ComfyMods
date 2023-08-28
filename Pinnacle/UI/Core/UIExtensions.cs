@@ -303,6 +303,13 @@ namespace Pinnacle {
       return layoutElement;
     }
 
+    public static LayoutElement SetPreferred(this LayoutElement layoutElement, Vector2 sizeDelta) {
+      layoutElement.preferredWidth = sizeDelta.x;
+      layoutElement.preferredHeight = sizeDelta.y;
+
+      return layoutElement;
+    }
+
     public static LayoutElement SetFlexible(
         this LayoutElement layoutElement, float? width = null, float? height = null) {
       if (!width.HasValue && !height.HasValue) {

@@ -1,16 +1,18 @@
-﻿using UnityEngine;
+﻿using TMPro;
+
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Pinnacle {
   public class LabelValueRow {
     public GameObject Row { get; private set; }
-    public Text Label { get; private set; }
+    public TMP_Text Label { get; private set; }
 
     public ValueCell Value { get; private set; }
 
     public LabelValueRow(Transform parentTransform) {
       Row = CreateChildRow(parentTransform);
-      Label = CreateChildLabel(Row.transform).Text();
+      Label = CreateChildLabel(Row.transform);
 
       Value = new(Row.transform);
     }
@@ -29,15 +31,14 @@ namespace Pinnacle {
       return row;
     }
 
-    GameObject CreateChildLabel(Transform parentTransform) {
-      GameObject label = UIBuilder.CreateLabel(parentTransform);
+    TMP_Text CreateChildLabel(Transform parentTransform) {
+      TMP_Text label = UIBuilder.CreateTMPLabel(parentTransform);
       label.SetName("Label");
 
-      label.Text()
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetText("Name");
+      label.alignment = TextAlignmentOptions.Left;
+      label.text = "Name";
 
-      label.AddComponent<LayoutElement>()
+      label.gameObject.AddComponent<LayoutElement>()
           .SetPreferred(width: 75f);
 
       return label;

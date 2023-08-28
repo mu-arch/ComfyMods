@@ -15,12 +15,12 @@ namespace Pinnacle {
   public class Pinnacle : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.pinnacle";
     public const string PluginName = "Pinnacle";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
 
       IsModEnabled.OnSettingChanged(OnIsModEnabledChanged);
@@ -29,7 +29,7 @@ namespace Pinnacle {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 

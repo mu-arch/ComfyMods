@@ -11,9 +11,10 @@ using static Pinnacle.PluginConfig;
 namespace Pinnacle {
   [HarmonyPatch(typeof(Minimap))]
   public class MinimapPatch {
+    [HarmonyWrapSafe]
     [HarmonyPostfix]
-    [HarmonyPatch(nameof(Minimap.Awake))]
-    static void AwakePostfix(ref Minimap __instance) {
+    [HarmonyPatch(nameof(Minimap.Start))]
+    static void StartPostfix() {
       if (IsModEnabled.Value) {
         MinimapConfig.SetMinimapPinFont();
 
@@ -22,13 +23,7 @@ namespace Pinnacle {
         Pinnacle.TogglePinFilterPanel(toggleOn: true);
 
         Pinnacle.ToggleVanillaIconPanels(toggleOn: false);
-      }
-    }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(Minimap.Start))]
-    static void StartPostfix() {
-      if (IsModEnabled.Value) {
         Pinnacle.PinFilterPanel?.UpdatePinIconFilters();
       }
 

@@ -84,7 +84,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.3.0.zip`.
+  * Go to Settings > Import local mod > Select `Pinnacle_v1.4.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -95,6 +95,14 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.4.0
+
+  * Fixed for `v0.217.14` patch.
+  * Migrated all `UI.Text` usage to new `TMP_Text`.
+  * PinListPanel: pin names for pins with no name will be italicized.
+  * PinListPanel: pin names starting with '$' will be localized for display.
+  * Fixed Pin name font and font-size wiring for TMP_Text, limited to built-in TMP_FontAssets only (for now).
 
 ### 1.3.0
 

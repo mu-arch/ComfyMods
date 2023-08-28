@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -28,7 +30,7 @@ namespace Pinnacle {
     public VectorCell PinPosition { get; private set; }
 
     // Styling.
-    readonly List<Text> Labels = new();
+    readonly List<TMP_Text> Labels = new();
     readonly List<GameObject> ValueCells = new();
 
     // HasFocus.
@@ -41,12 +43,16 @@ namespace Pinnacle {
 
       PinName = new(Panel.transform);
       PinName.Label.SetText("Name");
+
+      PinName.Value.Cell.LayoutElement()
+          .SetFlexible(width: 1f)
+          .SetPreferred(height: PinName.Value.InputField.preferredHeight + 8f);
+
       PinName.Value.InputField.onEndEdit.AddListener(OnPinNameValueChange);
 
       PinIconSelectorLabelRow = new(Panel.transform);
-      PinIconSelectorLabelRow.Label
-          .SetAlignment(TextAnchor.UpperLeft)
-          .SetText("Icon");
+      PinIconSelectorLabelRow.Label.alignment = TMPro.TextAlignmentOptions.TopLeft;
+      PinIconSelectorLabelRow.Label.text = "Icon";
 
       PinIconSelector = new(PinIconSelectorLabelRow.Row.transform);
       PinIconSelector.OnPinIconClicked += (_, pinType) => OnPinTypeValueChange(pinType);
@@ -71,19 +77,19 @@ namespace Pinnacle {
 
       PinPosition = new(PinPositionLabelRow.Row.transform);
 
-      PinPosition.XValue.InputField.textComponent.SetColor(new(1f, 0.878f, 0.51f));
-      PinPosition.XValue.InputField.contentType = InputField.ContentType.DecimalNumber;
-      PinPosition.XValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
+      PinPosition.XValue.InputField.textComponent.color = new(1f, 0.878f, 0.51f);
+      PinPosition.XValue.InputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+      PinPosition.XValue.InputField.characterValidation = TMP_InputField.CharacterValidation.Decimal;
       PinPosition.XValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
-      PinPosition.YValue.InputField.textComponent.SetColor(new(0.565f, 0.792f, 0.976f));
-      PinPosition.YValue.InputField.contentType = InputField.ContentType.DecimalNumber;
-      PinPosition.YValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
+      PinPosition.YValue.InputField.textComponent.color = new(0.565f, 0.792f, 0.976f);
+      PinPosition.YValue.InputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+      PinPosition.YValue.InputField.characterValidation = TMP_InputField.CharacterValidation.Decimal;
       PinPosition.YValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
-      PinPosition.ZValue.InputField.textComponent.SetColor(new(0.647f, 0.839f, 0.655f));
-      PinPosition.ZValue.InputField.contentType = InputField.ContentType.DecimalNumber;
-      PinPosition.ZValue.InputField.characterValidation = InputField.CharacterValidation.Decimal;
+      PinPosition.ZValue.InputField.textComponent.color = new(0.647f, 0.839f, 0.655f);
+      PinPosition.ZValue.InputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+      PinPosition.ZValue.InputField.characterValidation = TMP_InputField.CharacterValidation.Decimal;
       PinPosition.ZValue.InputField.onEndEdit.AddListener(_ => OnPinPositionValueChange());
 
       Selectables.AddRange(Panel.GetComponentsInChildren<Selectable>().Select(s => s.gameObject));
@@ -133,7 +139,7 @@ namespace Pinnacle {
     }
 
     public void SetPanelStyle() {
-      float labelWidth = Labels.Select(label => label.GetPreferredWidth()).Max();
+      float labelWidth = Labels.Select(label => label.preferredWidth).Max();
       Labels.ForEach(l => l.GetComponent<LayoutElement>().SetPreferred(width: labelWidth));
       ValueCells.ForEach(cell => cell.GetComponent<LayoutElement>().SetPreferred(width: 200f));
     }
@@ -270,31 +276,6 @@ namespace Pinnacle {
           .SetBlocksRaycasts(true);
 
       return panel;
-    }
-
-    GameObject CreateChildRow(Transform parentTransform) {
-      GameObject row = new("Row", typeof(RectTransform));
-      row.SetParent(parentTransform);
-
-      row.AddComponent<HorizontalLayoutGroup>()
-          .SetChildControl(width: true, height: true)
-          .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left: 8, right: 8, top: 2, bottom: 2)
-          .SetSpacing(12f)
-          .SetChildAlignment(TextAnchor.MiddleCenter);
-
-      return row;
-    }
-
-    GameObject CreateChildLabel(Transform parentTransform) {
-      GameObject label = UIBuilder.CreateLabel(parentTransform);
-      label.SetName("Label");
-
-      label.Text()
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetText("Label");
-
-      return label;
     }
   }
 }

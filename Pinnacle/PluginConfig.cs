@@ -8,6 +8,8 @@ using ComfyLib;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -129,10 +131,10 @@ namespace Pinnacle {
           config.BindInOrder(
               "Minimap",
               "Pin.Font",
-              defaultValue: "Norsebold",
+              defaultValue: UIResources.ValheimNorseFont,
               "The font for the Pin text on the Minimap.",
               new AcceptableValueList<string>(
-              Resources.FindObjectsOfTypeAll<Font>().Select(f => f.name).OrderBy(f => f).ToArray()));
+              Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Select(f => f.name).OrderBy(f => f).ToArray()));
 
       PinFontSize =
           config.BindInOrder(
@@ -147,30 +149,30 @@ namespace Pinnacle {
     }
 
     public static void SetMinimapPinFont() {
-      SetMinimapPinFont(Minimap.m_instance, UIResources.FindFont(PinFont.Value), PinFontSize.Value);
+      SetMinimapPinFont(Minimap.m_instance, UIResources.GetFontAssetByName(PinFont.Value), PinFontSize.Value);
     }
 
-    static void SetMinimapPinFont(Minimap minimap, Font font, int fontSize) {
-      if (!minimap || !font) {
+    static void SetMinimapPinFont(Minimap minimap, TMP_FontAsset fontAsset, int fontSize) {
+      if (!minimap || !fontAsset) {
         return;
       }
 
-      foreach (Text text in minimap.m_nameInput.GetComponentsInChildren<Text>(includeInactive: true)) {
-        text.SetFont(font);
+      foreach (TMP_Text text in minimap.m_nameInput.GetComponentsInChildren<TMP_Text>(includeInactive: true)) {
+        text.font = fontAsset;
       }
 
-      foreach (Text text in minimap.m_pinPrefab.GetComponentsInChildren<Text>(includeInactive: true)) {
-        text.SetFont(font)
-            .SetFontSize(fontSize)
-            .SetResizeTextForBestFit(false)
-            .SetSupportRichText(true);
+      foreach (TMP_Text text in minimap.m_pinPrefab.GetComponentsInChildren<TMP_Text>(includeInactive: true)) {
+        text.font = fontAsset;
+        text.fontSize = fontSize;
+        text.enableAutoSizing = false;
+        text.richText = true;
       }
 
-      foreach (Text text in minimap.m_pinRootLarge.GetComponentsInChildren<Text>(includeInactive: true)) {
-        text.SetFont(font)
-            .SetFontSize(fontSize)
-            .SetResizeTextForBestFit(false)
-            .SetSupportRichText(true);
+      foreach (TMP_Text text in minimap.m_pinNameRootLarge.GetComponentsInChildren<TMP_Text>(includeInactive: true)) {
+        text.font = fontAsset;
+        text.fontSize = fontSize;
+        text.enableAutoSizing = false;
+        text.richText = true;
       }
     }
   }
