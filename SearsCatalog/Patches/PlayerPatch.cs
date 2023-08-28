@@ -11,7 +11,6 @@ using static SearsCatalog.PluginConfig;
 namespace SearsCatalog {
   [HarmonyPatch(typeof(Player))]
   static class PlayerPatch {
-    [HarmonyEmitIL]
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Player.UpdateBuildGuiInput))]
     static IEnumerable<CodeInstruction> UpdateBuildGuiInputTranspiler(IEnumerable<CodeInstruction> instructions) {
