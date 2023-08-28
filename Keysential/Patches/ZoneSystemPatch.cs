@@ -9,8 +9,6 @@ using static Keysential.PluginConfig;
 namespace Keysential {
   [HarmonyPatch(typeof(ZoneSystem))]
   static class ZoneSystemPatch {
-    static readonly char[] _commaSeparator = new char[] { ',' };
-
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZoneSystem.Load))]
     static void LoadPostfix(ZoneSystem __instance) {
@@ -18,7 +16,7 @@ namespace Keysential {
         return;
       }
 
-      ZLog.Log($"Saved ZoneSystem.m_globalKeys are:\n{string.Join(",", __instance.m_globalKeys)}");
+      Keysential.LogInfo($"Saved ZoneSystem.m_globalKeys are:\n{LogGlobalKeys(__instance)}");
 
       List<string> globalKeysOverrideList = GlobalKeysOverrideList.GetCachedStringList();
 
@@ -26,13 +24,24 @@ namespace Keysential {
         __instance.m_globalKeys.Clear();
         __instance.m_globalKeys.UnionWith(globalKeysOverrideList);
 
-        ZLog.Log($"Overriding ZoneSystem.m_globalKeys to:\n{string.Join(",", __instance.m_globalKeys)}");
+        Keysential.LogInfo($"Overriding ZoneSystem.m_globalKeys to:\n{LogGlobalKeys(__instance)}");
+      }
+
+      List<string> globalKeysAllowedList = GlobalKeysAllowedList.GetCachedStringList();
+
+      if (globalKeysAllowedList.Count > 0) {
+        __instance.m_globalKeys.IntersectWith(globalKeysAllowedList);
+        Keysential.LogInfo($"Limiting ZoneSystem.globalKeys for allowed list to:\n{LogGlobalKeys(__instance)}");
       }
 
       if (VendorKeyManagerEnabled.Value) {
-        ZLog.Log($"Adding VendorKeyManager component to ZoneSystem...");
+        Keysential.LogInfo($"Adding VendorKeyManager component to ZoneSystem...");
         __instance.gameObject.AddComponent<VendorKeyManager>();
       }
+    }
+
+    static string LogGlobalKeys(ZoneSystem zoneSystem) {
+      return string.Join(",", zoneSystem.m_globalKeys);
     }
 
     [HarmonyPrefix]
@@ -42,7 +51,7 @@ namespace Keysential {
         return true;
       }
 
-      ZLog.Log($"Ignoring GlobalKey '{name}' from sender: {sender}");
+      Keysential.LogInfo($"Ignoring GlobalKey '{name}' from sender: {sender}");
       return false;
     }
 

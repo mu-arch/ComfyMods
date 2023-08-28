@@ -2,18 +2,12 @@
 
 *Server-side global key manager.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `Keysential.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Keysential_v1.2.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Changelog
+
+### 1.3.0
+
+  * Updated for `v0.217.14` patch.
+  * Modified `ZoneSystem.Load()` patch to modify the globalkeys list with `globalKeysAllowedList` if specified.
 
 ### 1.2.0
 
