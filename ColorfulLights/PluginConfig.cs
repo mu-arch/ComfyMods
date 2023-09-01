@@ -8,7 +8,6 @@ namespace ColorfulLights {
   public class PluginConfig {
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
     public static ConfigEntry<KeyboardShortcut> ChangeColorActionShortcut { get; private set; }
-    public static ConfigEntry<KeyboardShortcut> ClearColorActionShortcut { get; private set; }
 
     public static ExtendedColorConfigEntry TargetFireplaceColor { get; private set; }
 
@@ -23,13 +22,6 @@ namespace ColorfulLights {
               "Hotkeys",
               "changeColorActionShortcut",
               new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift),
-              "Keyboard shortcut to change (or clear) the color of the hovered torch/fire.");
-
-      ClearColorActionShortcut =
-          config.BindInOrder(
-              "Hotkeys",
-              "clearColorActionShortcut",
-              new KeyboardShortcut(KeyCode.T, KeyCode.RightShift),
               "Keyboard shortcut to change (or clear) the color of the hovered torch/fire.");
 
       TargetFireplaceColor =
@@ -49,7 +41,12 @@ namespace ColorfulLights {
               "Show the 'change color' text when hovering over a lightsoure.");
 
       ColorPromptFontSize =
-          config.BindInOrder("Hud", "colorPrompFontSize", 15, "Font size for the 'change color' text prompt.");
+          config.BindInOrder(
+              "Hud",
+              "colorPromptFontSize",
+              16,
+              "Font size for the 'change color' text prompt.",
+              new AcceptableValueRange<int>(4, 24));
     }
   }
 }

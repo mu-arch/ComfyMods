@@ -1,7 +1,6 @@
 # ColorfulLights
 
   * You can color any torch, firepit, stone hearth and bonfire using RGB and HTML color codes!
-  * Fireworks launched from bonfires will also be colored **AND** visible to others with the mod.
   * Those without the mod will still see yellow torches, green guck torches and standard yellow fireworks.
 
 ## Features
@@ -20,18 +19,6 @@
   * Colors applied to any campfire, hearth or bonfire will also color any fireworks launched from that fireplace!
   * Players without the mod will see the standard firework color.
 
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulLights.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * **Uninstall** any older versions of `ColorfulLights`.
-  * Go to Settings > Import local mod > Select `ColorfulLights_v1.9.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * This is the *good enough* release with more features/options to be added later.
@@ -40,6 +27,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.10.0
+
+  * Fixed for `v0.217.14` patch.
+  * Removed colored fireworks feature as it broke with new vanilla fireworks items.
+  * Modified the keyboard shortcut logic to prevent further keypress if a the action was performed.
 
 ### 1.9.0
 
