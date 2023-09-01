@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
+using ComfyLib;
+
 using HarmonyLib;
 
 using UnityEngine;
@@ -9,7 +11,7 @@ using UnityEngine;
 using static PotteryBarn.PluginConfig;
 using static PotteryBarn.PotteryBarn;
 
-namespace PotteryBarn.Patches {
+namespace PotteryBarn {
   [HarmonyPatch(typeof(Player))]
   static class PlayerPatch {
     [HarmonyTranspiler]
@@ -18,11 +20,15 @@ namespace PotteryBarn.Patches {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Stsfld, AccessTools.Field(typeof(ZNetView), nameof(ZNetView.m_forceDisableInit))),
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Ldloc_0),
-              new CodeMatch(OpCodes.Call))
-          .Advance(offset: 3)
+              new CodeMatch(
+                  OpCodes.Call,
+                  ReflectionUtils.GetGenericMethod(
+                          typeof(UnityEngine.Object),
+                          nameof(UnityEngine.Object.Instantiate),
+                          genericParameterCount: 1,
+                          new Type[] { typeof(Type) })
+                      .MakeGenericMethod(typeof(GameObject))),
+              new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(Player), nameof(Player.m_placementGhost))))
           .SetInstructionAndAdvance(
               Transpilers.EmitDelegate<Func<GameObject, GameObject>>(SetupPlacementGhostInstantiateDelegate))
           .InstructionEnumeration();

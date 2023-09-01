@@ -96,17 +96,6 @@
   * There is a `Change Pose` switch at the base of the stand.
   * PotteryBarn fixes the error that prevents changing poses in vanilla.
 
-## Installation
-
-### Manual
-
-  * Un-zip `PotteryBarn.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.7.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ### Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn).
@@ -114,7 +103,19 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
   * PotteryBarn icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
+### Dependencies
+
+  * [Jotunn-v2.12.7](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/)
+
 ## Changelog
+
+### 1.8.0
+
+  * Updated for `v0.217.14` patch.
+  * Fixed the `Player.SetupPlacementGhost` transpiler patch and made it more robust for future patches.
+  * Removed the `ArmorStand` patch as it's no longer needed.
+  * Code clean-up and refactoring.
+  * Created helper class `ReflectionUtils` and method `GetGenericMethod`.
 
 ### 1.7.0
 
@@ -134,7 +135,8 @@
 
   * Added dvergr pieces.
   * World generated pieces will have the same drop rate as vanilla if destroyed with damage or the build hammer.
-  * Player constructed pieces will return recipe costs and may be broken by other players (not just the creator) for any items not on the CreatorShop tab.
+  * Player constructed pieces will return recipe costs and may be broken by other players (not just the creator) for any
+    items not on the CreatorShop tab.
 
 ### 1.5.1
 
