@@ -1,6 +1,4 @@
-﻿using System;
-
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 
 using ComfyLib;
 
@@ -12,8 +10,7 @@ namespace ColorfulPortals {
 
     public static ConfigEntry<KeyboardShortcut> ChangePortalColorShortcut { get; private set; }
 
-    public static ConfigEntry<Color> TargetPortalColor { get; private set; }
-    public static ConfigEntry<string> TargetPortalColorHex { get; private set; }
+    public static ExtendedColorConfigEntry TargetPortalColor { get; private set; }
 
     public static ConfigEntry<bool> ShowChangeColorHoverText { get; private set; }
 
@@ -28,17 +25,13 @@ namespace ColorfulPortals {
               "Keyboard shortcut to change (or clear) the color of the hovered/targeted portal.");
 
       TargetPortalColor =
-          config.BindInOrder("Color", "targetPortalColor", Color.cyan, "Target color to set the portal glow effect to.");
-
-      TargetPortalColorHex =
-          config.BindInOrder(
+          new(
+              config,
               "Color",
-              "targetPortalColorHex",
-              $"#{ColorUtility.ToHtmlStringRGB(Color.cyan)}",
-              "Target color to set the portal glow effect to, in HTML hex form.");
-
-      TargetPortalColor.SettingChanged += UpdateColorHexValue;
-      TargetPortalColorHex.SettingChanged += UpdateColorValue;
+              "targetPortalColor",
+              Color.cyan,
+              "Target color to set any torch/fire to.",
+              colorPaletteKey: "targetPortalColorPalette");
 
       ShowChangeColorHoverText =
           config.BindInOrder(
@@ -66,22 +59,6 @@ namespace ColorfulPortals {
               5f,
               "Interval to wait after each TelepwortWorldColor.UpdateColors loop. *Restart required!*",
               new AcceptableValueRange<float>(0.5f, 10f));
-    }
-
-    static void UpdateColorHexValue(object sender, EventArgs eventArgs) {
-      TargetPortalColorHex.Value = $"#{GetColorHtmlString(TargetPortalColor.Value)}";
-    }
-
-    static void UpdateColorValue(object sender, EventArgs eventArgs) {
-      if (ColorUtility.TryParseHtmlString(TargetPortalColorHex.Value, out Color color)) {
-        TargetPortalColor.Value = color;
-      }
-    }
-
-    static string GetColorHtmlString(Color color) {
-      return color.a == 1.0f
-          ? ColorUtility.ToHtmlStringRGB(color)
-          : ColorUtility.ToHtmlStringRGBA(color);
     }
   }
 }

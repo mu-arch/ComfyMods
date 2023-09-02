@@ -85,6 +85,9 @@
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
@@ -108,7 +111,11 @@
     <Compile Include="ColorfulPortals.cs" />
     <Compile Include="Components\TeleportWorldColor.cs" />
     <Compile Include="Components\TeleportWorldColorUpdater.cs" />
-    <Compile Include="Extensions\ConfigFileExtensions.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Config\ExtendedColorConfigEntry.cs" />
+    <Compile Include="Config\GUI\GUIBuilder.cs" />
+    <Compile Include="Config\GUI\GUIFocus.cs" />
+    <Compile Include="Config\GUI\GUIHelper.cs" />
     <Compile Include="Extensions\UnityExtensions.cs" />
     <Compile Include="Extensions\ZDOExtensions.cs" />
     <Compile Include="Patches\GamePatch.cs" />

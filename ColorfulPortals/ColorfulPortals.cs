@@ -16,7 +16,7 @@ namespace ColorfulPortals {
   public class ColorfulPortals : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulportals";
     public const string PluginName = "ColorfulPortals";
-    public const string PluginVersion = "1.6.2";
+    public const string PluginVersion = "1.7.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;

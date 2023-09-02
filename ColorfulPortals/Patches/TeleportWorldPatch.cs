@@ -1,35 +1,23 @@
-﻿using HarmonyLib;
+﻿using ComfyLib;
 
-using UnityEngine;
+using HarmonyLib;
 
 using static ColorfulPortals.PluginConfig;
 
 namespace ColorfulPortals {
   [HarmonyPatch(typeof(TeleportWorld))]
   static class TeleportWorldPatch {
+    static readonly int _portalWoodHashCode = "portal_wood".GetStableHashCode();
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(TeleportWorld.Awake))]
     static void AwakePostfix(ref TeleportWorld __instance) {
-      if (!IsModEnabled.Value || !__instance) {
-        return;
-      }
-
-      if (__instance.m_proximityRoot) {
+      if (IsModEnabled.Value
+          && __instance
+          && __instance.m_nview
+          && __instance.m_nview.IsValid()
+          && __instance.m_nview.m_zdo.m_prefab == _portalWoodHashCode) {
         __instance.gameObject.AddComponent<TeleportWorldColor>();
-      } else {
-        // Stone 'portal' prefab does not set this property.
-        __instance.m_proximityRoot = __instance.transform;
-      }
-
-      // Stone 'portal' prefab does not set this property.
-      if (!__instance.m_target_found) {
-        // The prefab does not have '_target_found_red' but instead '_target_found'.
-        GameObject targetFoundObject = __instance.transform.Find("_target_found").gameObject;
-
-        // Disable the GameObject first, as adding component EffectFade calls its Awake() before being attached.
-        targetFoundObject.SetActive(false);
-        __instance.m_target_found = targetFoundObject.AddComponent<EffectFade>();
-        targetFoundObject.SetActive(true);
       }
     }
 
@@ -42,11 +30,11 @@ namespace ColorfulPortals {
 
       __result =
           string.Format(
-              "{0}\n[<color={1}>{2}</color>] Change color to: <color={3}>{3}</color>",
+              "{0}\n[<color={1}>{2}</color>] Change color to: <color=#{3}>#{3}</color>",
               __result,
               "#FFA726",
               ChangePortalColorShortcut.Value,
-              TargetPortalColorHex.Value);
+              TargetPortalColor.Value.GetColorHtmlString());
     }
   }
 }

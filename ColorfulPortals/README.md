@@ -17,20 +17,7 @@
 
 ### Stone portals
 
-  * ***Stone portal*** prefabs fixed to activate when connected.
-  * Restrictions: they cannot be built and require a server-side mod to connect.
-
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulPortals.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * **Uninstall** any older versions of `ColorfulPortals`.
-  * Go to Settings > Import local mod > Select `ColorfulPortals_v1.6.2.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
+  * ***Stone portal*** prefabs activate and connect properly in vanilla.
 
 ## Notes
 
@@ -40,6 +27,14 @@
   * ColorfulPortals icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.7.0
+
+  * Fixed for `v0.217.14` patch.
+  * Removed patch logic for wiring stone portals as they now work correctly in vanilla.
+  * Reworkd portal coloring logic for new `ParticleSystem.CustomData` module.
+  * `TargetPortalColor` now uses new `ExtendedColorConfigEntry` used in other colorful mods.
+  * Modified the keyboard shortcut logic to prevent further keypress if a the action was performed.
 
 ### 1.6.2
 

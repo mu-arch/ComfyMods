@@ -18,8 +18,7 @@ namespace ColorfulPortals {
     Light _pointLight;
     ParticleSystem _suckParticles;
     ParticleSystem _particleSystem;
-    Renderer _blueFlames;
-    MaterialPropertyBlock _propertyBlock;
+    ParticleSystem _blueFlames;
 
     void Awake() {
       _teleportWorld = GetComponent<TeleportWorld>();
@@ -34,10 +33,10 @@ namespace ColorfulPortals {
       _lastDataRevision = -1L;
 
       _pointLight = transform.Find("_target_found_red/Point light").GetComponent<Light>();
-      _suckParticles = transform.Find("_target_found_red/suck particles").GetComponent<ParticleSystem>();
+      _suckParticles =
+          transform.Find("_target_found_red/Particle System/suck particles").GetComponent<ParticleSystem>();
       _particleSystem = transform.Find("_target_found_red/Particle System").GetComponent<ParticleSystem>();
-      _blueFlames = transform.Find("_target_found_red/blue flames").GetComponent<ParticleSystemRenderer>();
-      _propertyBlock = new();
+      _blueFlames = transform.Find("_target_found_red/Particle System/blue flames").GetComponent<ParticleSystem>();
 
       TeleportWorldColorCache.Add(this);
     }
@@ -80,21 +79,30 @@ namespace ColorfulPortals {
       _currentColor = portalColor;
       _pointLight.color = portalColor;
 
-      ParticleSystem.ColorOverLifetimeModule colorOverLifetime = _suckParticles.colorOverLifetime;
-      colorOverLifetime.color = new ParticleSystem.MinMaxGradient(portalColor);
+      SetParticleSystemColor(_suckParticles, portalColor);
+      SetParticleSystemColor(_particleSystem, portalColor);
+      SetParticleSystemColor(_blueFlames, portalColor);
+    }
 
-      ParticleSystem.MainModule main = _suckParticles.main;
-      main.startColor = portalColor;
+    void SetParticleSystemColor(ParticleSystem ps, Color portalColor) {
+      ParticleSystem.ColorOverLifetimeModule colorOverLifetime = ps.colorOverLifetime;
 
-      colorOverLifetime = _particleSystem.colorOverLifetime;
-      colorOverLifetime.color = new ParticleSystem.MinMaxGradient(portalColor);
+      if (colorOverLifetime.enabled) {
+        colorOverLifetime.color = new(portalColor);
+      }
 
-      main = _particleSystem.main;
-      main.startColor = portalColor;
+      ParticleSystem.MainModule main = ps.main;
+      main.startColor = new(portalColor);
 
-      _blueFlames.GetPropertyBlock(_propertyBlock);
-      _propertyBlock.SetColor(ColorShaderId, portalColor);
-      _blueFlames.SetPropertyBlock(_propertyBlock);
+      ParticleSystem.CustomDataModule customData = ps.customData;
+
+      if (customData.enabled) {
+        customData.SetColor(ParticleSystemCustomData.Custom1, new(portalColor));
+      }
+
+      ps.Clear();
+      ps.Simulate(0f);
+      ps.Play();
     }
   }
 }
