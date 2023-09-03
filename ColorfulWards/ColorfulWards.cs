@@ -5,8 +5,6 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 
-using ComfyLib;
-
 using HarmonyLib;
 
 using UnityEngine;
@@ -18,13 +16,13 @@ namespace ColorfulWards {
   public class ColorfulWards : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulwards";
     public const string PluginName = "ColorfulWards";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.6.0";
 
-    static readonly Dictionary<PrivateArea, PrivateAreaData> PrivateAreaDataCache = new();
+    public static readonly Dictionary<PrivateArea, PrivateAreaData> PrivateAreaDataCache = new();
 
-    static readonly int PrivateAreaColorHashCode = "PrivateAreaColor".GetStableHashCode();
-    static readonly int PrivateAreaColorAlphaHashCode = "PrivateAreaColorAlpha".GetStableHashCode();
-    static readonly int WardLastColoredByHashCode = "WardLastColoredBy".GetStableHashCode();
+    public static readonly int PrivateAreaColorHashCode = "PrivateAreaColor".GetStableHashCode();
+    public static readonly int PrivateAreaColorAlphaHashCode = "PrivateAreaColorAlpha".GetStableHashCode();
+    public static readonly int WardLastColoredByHashCode = "WardLastColoredBy".GetStableHashCode();
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -51,10 +49,10 @@ namespace ColorfulWards {
         return;
       }
 
-      if (!targetWard.m_piece.IsCreator()) {
-        _logger.LogWarning("You are not the owner of this Ward.");
-        return;
-      }
+      //if (!targetWard.m_piece.IsCreator()) {
+      //  _logger.LogWarning("You are not the owner of this Ward.");
+      //  return;
+      //}
 
       targetWard.m_nview.ClaimOwnership();
 
@@ -69,100 +67,32 @@ namespace ColorfulWards {
         SetPrivateAreaColors(targetWard, privateAreaData);
       }
 
-      targetWard.StartCoroutine(UpdateEnabledEffect(targetWard));
+      //targetWard.StartCoroutine(UpdateEnabledEffect(targetWard));
     }
 
-    static readonly WaitForEndOfFrame WaitForEndOfFrame = new();
+    //static readonly WaitForEndOfFrame WaitForEndOfFrame = new();
 
-    static IEnumerator UpdateEnabledEffect(PrivateArea privateArea) {
-      if (privateArea.IsEnabled()) {
-        privateArea.m_enabledEffect.SetActive(false);
-        yield return WaitForEndOfFrame;
-        privateArea.m_enabledEffect.SetActive(true);
-      }
-    }
+    //static IEnumerator UpdateEnabledEffect(PrivateArea privateArea) {
+    //  if (privateArea.IsEnabled()) {
+    //    privateArea.m_enabledEffect.SetActive(false);
+    //    yield return WaitForEndOfFrame;
+    //    privateArea.m_enabledEffect.SetActive(true);
+    //  }
+    //}
 
-    [HarmonyPatch(typeof(PrivateArea))]
-    class PrivateAreaPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(PrivateArea.IsInside))]
-      static bool PrivateAreaIsInside(
-          ref PrivateArea __instance, ref bool __result, Vector3 point, float radius) {
-        if (!IsModEnabled.Value || !UseRadiusForVerticalCheck.Value) {
-          return true;
-        }
+    public static readonly int ColorShaderId = Shader.PropertyToID("_Color");
+    public static readonly int EmissionColorShaderId = Shader.PropertyToID("_EmissionColor");
+    static readonly MaterialPropertyBlock _propertyBlock = new();
 
-        __result = Vector3.Distance(__instance.transform.position, point) < __instance.m_radius + radius;
-        return false;
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.Awake))]
-      static void PrivateAreaAwakePostfix(ref PrivateArea __instance) {
-        if (!IsModEnabled.Value || !__instance) {
-          return;
-        }
-
-        PrivateAreaDataCache.Add(__instance, new PrivateAreaData(__instance));
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(PrivateArea.OnDestroy))]
-      static void PrivateAreaOnDestroyPrefix(ref PrivateArea __instance) {
-        PrivateAreaDataCache.Remove(__instance);
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.UpdateStatus))]
-      static void PrivateAreaUpdateStatusPostfix(ref PrivateArea __instance) {
-        if (!IsModEnabled.Value
-            || !__instance
-            || !__instance.m_nview
-            || __instance.m_nview.m_zdo == null
-            || !__instance.m_nview.m_zdo.TryGetVector3(PrivateAreaColorHashCode, out Vector3 colorVector3)
-            || !PrivateAreaDataCache.TryGetValue(__instance, out PrivateAreaData privateAreaData)) {
-          return;
-        }
-
-        Color wardColor = Utils.Vec3ToColor(colorVector3);
-        wardColor.a = __instance.m_nview.m_zdo.GetFloat(PrivateAreaColorAlphaHashCode, defaultValue: 1f);
-
-        if (privateAreaData.TargetColor == wardColor) {
-          return;
-        }
-
-        privateAreaData.TargetColor = wardColor;
-        SetPrivateAreaColors(__instance, privateAreaData);
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.GetHoverText))]
-      static void PrivateAreaGetHoverText(ref PrivateArea __instance, ref string __result) {
-        if (!IsModEnabled.Value
-            || !ShowChangeColorHoverText.Value
-            || !__instance
-            || !__instance.m_piece
-            || !__instance.m_piece.IsCreator()) {
-          return;
-        }
-
-        __result =
-            string.Format(
-                "{0}\n[<color={1}>{2}</color>] Change ward color to: <color=#{3}>#{3}</color>",
-                __result,
-                "#FFA726",
-                ChangeWardColorShortcut.Value,
-                GetColorHtmlString(TargetWardColor.Value));
-      }
-    }
-
-    static void SetPrivateAreaColors(PrivateArea privateArea, PrivateAreaData privateAreaData) {
+    public static void SetPrivateAreaColors(PrivateArea privateArea, PrivateAreaData privateAreaData) {
       foreach (Light light in privateAreaData.PointLight) {
         light.color = privateAreaData.TargetColor;
       }
 
-      foreach (Material material in privateAreaData.GlowMaterial) {
-        material.SetColor("_EmissionColor", privateAreaData.TargetColor);
+      foreach (Renderer renderer in privateAreaData.GlowMaterial) {
+        renderer.GetPropertyBlock(_propertyBlock, 0);
+        _propertyBlock.SetColor(EmissionColorShaderId, privateAreaData.TargetColor);
+        renderer.SetPropertyBlock(_propertyBlock, 0);
       }
 
       foreach (ParticleSystem system in privateAreaData.SparcsSystem) {
@@ -171,11 +101,17 @@ namespace ColorfulWards {
 
         ParticleSystem.MainModule main = system.main;
         main.startColor = privateAreaData.TargetColor;
+
+        system.Clear();
+        system.Simulate(0f);
+        system.Play();
       }
 
-      foreach (ParticleSystemRenderer renderer in privateAreaData.SparcsRenderer) {
-        renderer.material.color = privateAreaData.TargetColor;
-      }
+      //foreach (ParticleSystemRenderer renderer in privateAreaData.SparcsRenderer) {
+      //  renderer.GetPropertyBlock(_propertyBlock);
+      //  _propertyBlock.SetColor(ColorShaderId, privateAreaData.TargetColor);
+      //  renderer.SetPropertyBlock(_propertyBlock);
+      //}
 
       foreach (ParticleSystem system in privateAreaData.FlareSystem) {
         Color flareColor = privateAreaData.TargetColor;
@@ -183,6 +119,10 @@ namespace ColorfulWards {
 
         ParticleSystem.MainModule main = system.main;
         main.startColor = flareColor;
+
+        system.Clear();
+        system.Simulate(0f);
+        system.Play();
       }
     }
   }
