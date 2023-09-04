@@ -16,6 +16,17 @@
 
 ## Changelog
 
+### 2.11.0
+
+  * Updated for `v0.217.14` patch.
+  * Removed `RagnarokHCRP-Clock-1.5.0`.
+  * Temporarily removed broken Comfy-specific mods until they are fixed.
+    * `ComfyMods-Chatter-1.4.1`
+    * `ComfyMods-ComfyLoadingScreens-1.2.0`
+    * `ComfyMods-Intermission-1.2.0`
+  * Updated dependencies list to latest versions.
+
+
 ### 2.10.0
 
   * Updated for `v0.216.9` patch.
