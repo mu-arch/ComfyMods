@@ -22,6 +22,8 @@ namespace ComfyLib {
     }
 
     public static readonly string ValheimNorse = "Valheim-Norse";
+    public static readonly string ValheimNorsebold = "Valheim-Norsebold";
+    public static readonly string FallbackNotoSansNormal = "Fallback-NotoSansNormal";
 
     static readonly Dictionary<string, TMP_FontAsset> _fontAssetCache = new();
 
@@ -37,6 +39,7 @@ namespace ComfyLib {
           }
 
           fontAsset = TMP_FontAsset.CreateFontAsset(font);
+          fontAsset.name = fontName;
         }
 
         _fontAssetCache[fontName] = fontAsset;

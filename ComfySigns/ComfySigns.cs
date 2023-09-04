@@ -111,7 +111,7 @@ namespace ComfySigns {
       Color fontColor = SignDefaultTextFontColor.Value;
 
       if (UseFallbackFonts.Value) {
-        AddFallbackFont(fontAsset);
+        AddFallbackFonts(fontAsset);
       }
 
       foreach (GameObject prefab in netScene.m_namedPrefabs.Values) {
@@ -133,9 +133,13 @@ namespace ComfySigns {
       sign.m_textWidget.color = color;
     }
 
-    public static void AddFallbackFont(TMP_FontAsset font) {
-      TMP_FontAsset fallbackFont = UIFonts.GetFontAsset(UIFonts.ValheimNorse);
-      
+    public static void AddFallbackFonts(TMP_FontAsset font) {
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.ValheimNorse));
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.ValheimNorsebold));
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.FallbackNotoSansNormal));
+    }
+
+    public static void AddFallbackFont(TMP_FontAsset font, TMP_FontAsset fallbackFont) {     
       if (!font || !fallbackFont || fallbackFont == font) {
         return;
       }
