@@ -14,6 +14,14 @@ namespace ComfyLib {
     }
   }
 
+  public static class ParticleSystemExtensions {
+    public static void Restart(this ParticleSystem particleSystem) {
+      particleSystem.Clear();
+      particleSystem.Simulate(0f);
+      particleSystem.Play();
+    }
+  }
+
   public static class UnityExtensions {
     public static T Ref<T>(this T gameObject) where T : Object {
       return gameObject ? gameObject : default;

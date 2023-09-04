@@ -33,6 +33,8 @@
 
   * Fixed for the `v0.217.14` patch.
   * Extracted all patch logic into separate classes.
+  * Created new `PrivateAreaColor` component to encapsulate and simplify ward coloring logic.
+  * Rewrote the `PrivateArea.IsInside()` from a prefix-patch to transpiler.
   * `TargetWardColor` now uses new `ExtendedColorConfigEntry` used in other colorful mods.
   * Modified the keyboard shortcut logic to prevent further keypress if a the action was performed.
 

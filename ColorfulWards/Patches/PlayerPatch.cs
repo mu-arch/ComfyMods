@@ -11,7 +11,6 @@ using static ColorfulWards.PluginConfig;
 namespace ColorfulWards.Patches {
   [HarmonyPatch(typeof(Player))]
   static class PlayerPatch {
-    [HarmonyEmitIL] // TODO REMOVE ME
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Player.Update))]
     static IEnumerable<CodeInstruction> UpdateTranspiler(IEnumerable<CodeInstruction> instructions) {

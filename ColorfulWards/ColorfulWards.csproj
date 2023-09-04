@@ -106,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorfulWards.cs" />
+    <Compile Include="Components\PrivateAreaColor.cs" />
     <Compile Include="Config\ConfigFileExtensions.cs" />
     <Compile Include="Config\ExtendedColorConfigEntry.cs" />
     <Compile Include="Config\GUI\GUIBuilder.cs" />
@@ -116,7 +117,6 @@
     <Compile Include="Patches\PlayerPatch.cs" />
     <Compile Include="Patches\PrivateAreaPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="Core\PrivateAreaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

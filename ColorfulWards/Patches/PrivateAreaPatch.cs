@@ -7,13 +7,11 @@ using HarmonyLib;
 
 using UnityEngine;
 
-using static ColorfulWards.ColorfulWards;
 using static ColorfulWards.PluginConfig;
 
 namespace ColorfulWards {
   [HarmonyPatch(typeof(PrivateArea))]
   static class PrivateAreaPatch {
-    [HarmonyEmitIL] // TODO REMOVE ME
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(PrivateArea.IsInside))]
     static IEnumerable<CodeInstruction> IsInsideTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -35,46 +33,23 @@ namespace ColorfulWards {
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(PrivateArea.Awake))]
-    static void AwakePostfix(ref PrivateArea __instance) {
-      if (!IsModEnabled.Value || !__instance) {
-        return;
+    static void AwakePostfix(PrivateArea __instance) {
+      if (IsModEnabled.Value && __instance && __instance.m_nview && __instance.m_nview.IsValid()) {
+        __instance.gameObject.AddComponent<PrivateAreaColor>();
       }
-
-      PrivateAreaDataCache.Add(__instance, new PrivateAreaData(__instance));
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(PrivateArea.OnDestroy))]
-    static void OnDestroyPrefix(ref PrivateArea __instance) {
-      PrivateAreaDataCache.Remove(__instance);
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(PrivateArea.UpdateStatus))]
-    static void UpdateStatusPostfix(ref PrivateArea __instance) {
-      if (!IsModEnabled.Value
-          || !__instance
-          || !__instance.m_nview
-          || __instance.m_nview.m_zdo == null
-          || !__instance.m_nview.m_zdo.TryGetVector3(PrivateAreaColorHashCode, out Vector3 colorVector3)
-          || !PrivateAreaDataCache.TryGetValue(__instance, out PrivateAreaData privateAreaData)) {
-        return;
+    static void UpdateStatusPostfix(PrivateArea __instance) {
+      if (IsModEnabled.Value && __instance && __instance.TryGetComponent(out PrivateAreaColor privateAreaColor)) {
+        privateAreaColor.UpdateColors();
       }
-
-      Color wardColor = Utils.Vec3ToColor(colorVector3);
-      wardColor.a = __instance.m_nview.m_zdo.GetFloat(PrivateAreaColorAlphaHashCode, defaultValue: 1f);
-
-      if (privateAreaData.TargetColor == wardColor) {
-        return;
-      }
-
-      privateAreaData.TargetColor = wardColor;
-      SetPrivateAreaColors(__instance, privateAreaData);
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(PrivateArea.GetHoverText))]
-    static void GetHoverTextPostfix(ref PrivateArea __instance, ref string __result) {
+    static void GetHoverTextPostfix(PrivateArea __instance, ref string __result) {
       if (!IsModEnabled.Value
           || !ShowChangeColorHoverText.Value
           || !__instance
