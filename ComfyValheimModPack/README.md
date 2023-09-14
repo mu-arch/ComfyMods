@@ -16,6 +16,10 @@
 
 ## Changelog
 
+### 2.12.0
+
+  * Re-added `ComfyMods-Chatter-2.0.0`.
+
 ### 2.11.0
 
   * Updated for `v0.217.14` patch.
