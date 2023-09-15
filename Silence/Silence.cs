@@ -1,10 +1,10 @@
-﻿using BepInEx;
+﻿using System.Collections;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System.Collections;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -15,12 +15,12 @@ namespace Silence {
   public class Silence : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.silence";
     public const string PluginName = "Silence";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     public static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       _logger = Logger;
 
       BindConfig(Config);
@@ -30,7 +30,7 @@ namespace Silence {
       }
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
@@ -39,27 +39,33 @@ namespace Silence {
     public static bool EnableChatWindow { get; set; } = true;
     public static bool EnableInWorldTexts { get; set; } = true;
 
-    static readonly WaitForEndOfFrame WaitForEndOfFrame = new();
+    static readonly WaitForEndOfFrame _endOfFrame = new();
 
     public static IEnumerator ToggleSilenceCoroutine() {
-      yield return WaitForEndOfFrame;
+      yield return _endOfFrame;
 
       EnableChatWindow = !HideChatWindow.Value || !EnableChatWindow;
       EnableInWorldTexts = !HideInWorldTexts.Value || !EnableInWorldTexts;
 
       _logger.LogInfo($"ChatWindow: {EnableChatWindow}\nInWorldTexts: {EnableInWorldTexts}");
 
-      MessageHud.instance?.ShowMessage(
+      MessageHud.instance.ShowMessage(
           MessageHud.MessageType.Center, $"ChatWindow: {EnableChatWindow}\nInWorldTexts: {EnableInWorldTexts}");
 
-      if (ChatInstance && !EnableChatWindow) {
+      if (!ChatInstance) {
+        yield break;
+      }
+
+      if (!EnableChatWindow) {
         ChatInstance.m_hideTimer = ChatInstance.m_hideDelay;
         ChatInstance.m_focused = false;
         ChatInstance.m_wasFocused = false;
         ChatInstance.m_input.DeactivateInputField();
       }
 
-      if (ChatInstance && !EnableInWorldTexts) {
+      ChatInstance.m_output.gameObject.SetActive(EnableChatWindow);
+
+      if (!EnableInWorldTexts) {
         foreach (Chat.WorldTextInstance worldText in ChatInstance.m_worldTexts) {
           Destroy(worldText.m_gui);
         }

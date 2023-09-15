@@ -2,17 +2,6 @@
 
 *Completely hide the chat windows and in-game say/shout with a shortcut.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `Silence.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `Silence_v1.3.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### User Interface
@@ -29,6 +18,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Fixed for the `v0.217.14` patch.
 
 ### 1.3.0
 

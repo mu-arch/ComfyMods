@@ -67,10 +67,16 @@
     <Reference Include="BepInEx">
       <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="ui_lib_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\ui_lib_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.TextMeshPro_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\Unity.TextMeshPro_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
     </Reference>
@@ -112,7 +118,7 @@
       <Major>$(AssemblyVersion.Split('.')[0])</Major>
       <Minor>$(AssemblyVersion.Split('.')[1])</Minor>
       <Patch>$(AssemblyVersion.Split('.')[2])</Patch>
-      <PackageName>$(AssemblyName)_v$(Major).$(Minor).$(Patch)</PackageName>
+      <PackageName>ComfyMods-$(AssemblyName)-$(Major).$(Minor).$(Patch)</PackageName>
       <PackageDir>$(OutDir)$(PackageName)</PackageDir>
     </PropertyGroup>
   </Target>
