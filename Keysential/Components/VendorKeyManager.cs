@@ -12,33 +12,45 @@ namespace Keysential {
 
     void Awake() {
       if (ZNet.m_isServer && VendorKeyManagerPosition.Value != Vector3.zero) {
-        StartCoroutine(VendorPlayerProximityCoroutine(VendorKeyManagerPosition.Value));
+        GlobalKeysManager.StartKeyManager(
+            "haldor0",
+            VendorPlayerProximityCoroutine(
+                VendorKeyManagerPosition.Value, _vendorNearbyDistance, _vendorNearbyGlobalKey));
       }
     }
 
-    IEnumerator VendorPlayerProximityCoroutine(Vector3 vendorPosition) {
-      ZLog.Log($"Starting VendorPlayProximity coroutine at position: {vendorPosition}");
+    public static IEnumerator VendorPlayerProximityCoroutine(
+        Vector3 vendorPosition, float vendorDistance, params string[] vendorKeys) {
+      Keysential.LogInfo(
+          $"Starting VendorPlayerProximityCoroutine coroutine... "
+              + $"position: {vendorPosition}, distance: {vendorDistance}, keys: {vendorKeys}");
 
-      List<string> originalKeys = new(ZoneSystem.m_instance.m_globalKeys);
-      List<string> nearbyKeys = new(originalKeys);
-      nearbyKeys.Add(_vendorNearbyGlobalKey);
+      List<string> originalKeys = new();
+      List<string> nearbyKeys = new();
 
       HashSet<long> nearbyPeers = new(capacity: 256);
       WaitForSeconds waitInterval = new(seconds: 3f);
 
       while (ZNet.m_instance) {
+        originalKeys.Clear();
+        originalKeys.AddRange(ZoneSystem.m_instance.m_globalKeys);
+
+        nearbyKeys.Clear();
+        nearbyKeys.AddRange(originalKeys);
+        nearbyKeys.AddRange(vendorKeys);
+
         foreach (ZNetPeer netPeer in ZNet.m_instance.m_peers) {
-          bool isNearby = Vector3.Distance(netPeer.m_refPos, vendorPosition) <= _vendorNearbyDistance;
+          bool isNearby = Vector3.Distance(netPeer.m_refPos, vendorPosition) <= vendorDistance;
 
           if (isNearby) {
             if (nearbyPeers.Contains(netPeer.m_uid)) {
               // Do nothing.
             } else {
-              ZLog.Log($"Sending nearby global keys to peer: {netPeer.m_uid}");
+              Keysential.LogInfo($"Sending nearby global keys to peer: {netPeer.m_uid}");
               ZRoutedRpc.s_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", nearbyKeys);
               nearbyPeers.Add(netPeer.m_uid);
 
-              SendChatMessage(
+              GlobalKeysManager.SendChatMessage(
                   netPeer,
                   vendorPosition,
                   "<color=green>Haldor</color>",
@@ -46,7 +58,7 @@ namespace Keysential {
             }
           } else {
             if (nearbyPeers.Contains(netPeer.m_uid)) {
-              ZLog.Log($"Sending original global keys to peer: {netPeer.m_uid}");
+              Keysential.LogInfo($"Sending original global keys to peer: {netPeer.m_uid}");
               ZRoutedRpc.s_instance.InvokeRoutedRPC(netPeer.m_uid, "GlobalKeys", originalKeys);
               nearbyPeers.Remove(netPeer.m_uid);
             } else {
@@ -71,20 +83,5 @@ namespace Keysential {
       "I have egg-axctly the thing you're after.",
       "Buy my eggs-clusive wares!",
     };
-
-    void SendChatMessage(ZNetPeer netPeer, Vector3 position, string name, string message) {
-      ZRoutedRpc.s_instance.InvokeRoutedRPC(
-          netPeer.m_uid,
-          "ChatMessage",
-          position,
-          (int) Talker.Type.Normal,
-          new UserInfo() {
-            Name = name,
-            Gamertag = name,
-            NetworkUserId = PrivilegeManager.GetNetworkUserId(),
-          },
-          message,
-          PrivilegeManager.GetNetworkUserId());
-    }
   }
 }

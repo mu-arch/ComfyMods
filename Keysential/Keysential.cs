@@ -14,7 +14,7 @@ namespace Keysential {
   public class Keysential : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.keysential";
     public const string PluginName = "Keysential";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -32,6 +32,14 @@ namespace Keysential {
 
     public static void LogInfo(object o) {
       _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+    }
+
+    public static void LogWarning(object o) {
+      _logger.LogWarning($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+    }
+
+    public static void LogError(object o) {
+      _logger.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
     }
   }
 }

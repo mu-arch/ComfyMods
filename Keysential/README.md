@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Add new `GlobalKeysManager` and several new commands related to KeyManager starting and stopping.
+
 ### 1.3.0
 
   * Updated for `v0.217.14` patch.

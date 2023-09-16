@@ -25,10 +25,24 @@ namespace ComfyLib {
         stringList = configEntry.GetStringList();
         _cachedStringLists[configEntry] = stringList;
 
-        configEntry.SettingChanged += (_, _) => _cachedStringLists.Remove(configEntry);
+        configEntry.ConfigFile.ConfigReloaded += (_, _) => RefreshCachedStringList(configEntry);
+        configEntry.SettingChanged += (_, _) => RefreshCachedStringList(configEntry);
       }
 
       return stringList;
+    }
+
+    static void RefreshCachedStringList(ConfigEntry<string> configEntry) {
+      if (_cachedStringLists.TryGetValue(configEntry, out List<string> stringList)) {
+        stringList.Clear();
+
+        string[] entries = configEntry.Value.Split(_commaSeparator, StringSplitOptions.RemoveEmptyEntries);
+        stringList.Capacity = entries.Length;
+
+        foreach (string entry in entries) {
+          stringList.Add(entry.Trim());
+        }
+      }
     }
 
     public static bool IsEmptyOrContains(this List<string> stringList, string entry) {
