@@ -16,6 +16,10 @@
 
 ## Changelog
 
+### 2.14.0
+
+  * Replaced `OdinPlus-PlantIt-0.1.5` with `ComfyMods-PlantThings-1.0.0`.
+
 ### 2.13.0
 
   * Re-added `ComfyMods-Intermission-1.2.0` and `ComfyMods-ComfyLoadingScreens-1.2.0` as they were never broken RIP.
