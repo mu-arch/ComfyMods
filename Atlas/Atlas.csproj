@@ -94,6 +94,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Atlas.cs" />
+    <Compile Include="Core\Commands\SetWorldTimeCommand.cs" />
+    <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Patches\ZDOExtraDataPatch.cs" />
     <Compile Include="Patches\ZDOManPatch.cs" />
     <Compile Include="Patches\ZNetPatch.cs" />

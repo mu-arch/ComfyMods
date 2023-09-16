@@ -20,5 +20,10 @@ namespace Atlas {
       Logger.LogWarning($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
       return Logger;
     }
+
+    public static ManualLogSource LogError(string message) {
+      Logger.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
+      return Logger;
+    }
   }
 }

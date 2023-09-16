@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.7.0
+
+  * Re-added console command `setworldtime` with adjustment for custom `timeCreated` ZDO long property.
+
 ### 1.6.0
 
   * Added feature where server will cache/embed a ZDO's UID into its data for reference after a server restart.
