@@ -76,17 +76,6 @@
   - Changing the Minimap.Pin font/font-size
     - These two options are available once you are logged into any world.
 
-## Installation
-
-### Manual
-
-  * Un-zip `Pinnacle.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.4.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Pinnacle).
@@ -95,6 +84,12 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.4.1
+
+  * Added `Game.UpdateNoMap()` transpiler patch to fix for a vanilla bug where the minimap will close whenever global
+    keys are received.
+  * Refactored logging methods to also log to chat.
 
 ### 1.4.0
 

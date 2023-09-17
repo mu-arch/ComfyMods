@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 using BepInEx;
@@ -15,7 +17,7 @@ namespace Pinnacle {
   public class Pinnacle : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.pinnacle";
     public const string PluginName = "Pinnacle";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.4.1";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -150,13 +152,13 @@ namespace Pinnacle {
       Player player = Player.m_localPlayer;
 
       if (!player) {
-        _logger.LogWarning($"No local Player found.");
+        LogWarning($"No local Player found.");
         return;
       }
 
       targetPosition.y = GetHeight(targetPosition);
 
-      _logger.LogInfo($"Teleporting player from {player.transform.position} to {targetPosition}.");
+      LogInfo($"Teleporting player from {player.transform.position} to {targetPosition}.");
       player.TeleportTo(targetPosition, player.transform.rotation, distantTeleport: true);
 
       Minimap.m_instance.SetMapMode(Minimap.MapMode.Small);
@@ -179,6 +181,20 @@ namespace Pinnacle {
       HeightmapBuilder.m_instance.Build(heightmapData);
 
       return heightmapData;
+    }
+
+    public static void Log(LogLevel logLevel, object o) {
+      _logger.Log(logLevel, $"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+    }
+
+    public static void LogInfo(object o) {
+      _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+      Chat.m_instance.Ref()?.AddString($"<color=white>{o}</color>");
+    }
+
+    public static void LogWarning(object o) {
+      _logger.LogWarning($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+      Chat.m_instance.Ref()?.AddString($"<color=yellow>{o}</color>");
     }
   }
 }

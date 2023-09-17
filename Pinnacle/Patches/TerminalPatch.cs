@@ -51,7 +51,7 @@ namespace Pinnacle {
       }
 
       int count = minimap.m_pinNameRootLarge.childCount;
-      ZLog.Log($"Pinnacle: destroying {count} NamePinData GameObjects...");
+      Pinnacle.LogInfo($"Pinnacle: destroying {count} NamePinData GameObjects...");
 
       for (int i = count - 1; i >= 0; i--) {
         UnityEngine.Object.Destroy(minimap.m_pinNameRootLarge.GetChild(i).gameObject);

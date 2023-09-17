@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using BepInEx.Logging;
+
+using HarmonyLib;
 
 using System;
 using System.Collections.Generic;
@@ -217,7 +219,7 @@ namespace Pinnacle {
         return false;
       }
 
-      ZLog.Log($"Removing {_characterIds.Count} stale player pins.");
+      Pinnacle.Log(LogLevel.Info, $"Removing {_characterIds.Count} stale player pins.");
 
       foreach (ZDOID characterId in _characterIds) {
         if (_playerPins.TryGetValue(characterId, out Minimap.PinData pin)) {
@@ -227,7 +229,7 @@ namespace Pinnacle {
 
           DestroyPin(pin);
         } else {
-          ZLog.LogWarning($"WTF: {characterId} did not have a matching entry in _playerPins in same frame.");
+          Pinnacle.LogWarning($"WTF: {characterId} did not have a matching entry in _playerPins in same frame.");
         }
       }
 

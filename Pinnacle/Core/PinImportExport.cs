@@ -13,11 +13,6 @@ namespace Pinnacle {
       PlainText
     }
 
-    static void LogInfo(string message) {
-      Chat.m_instance.Ref()?.AddString(message);
-      ZLog.Log(message);
-    }
-
     public static void ExportPinsToFile(Terminal.ConsoleEventArgs args, PinFileFormat exportFormat) {
       if (!Minimap.m_instance) {
         return;
@@ -38,7 +33,7 @@ namespace Pinnacle {
       IReadOnlyCollection<Minimap.PinData> pinsToExport =
           FilterPins(Minimap.m_instance.m_pins, args.Length >= 3 ? args[2] : string.Empty);
 
-      LogInfo($"Exporting {pinsToExport.Count} pins to file: {filename}");
+      Pinnacle.LogInfo($"Exporting {pinsToExport.Count} pins to file: {filename}");
 
       int pinsExported =
           exportFormat switch {
@@ -47,7 +42,7 @@ namespace Pinnacle {
             _ => 0
           };
 
-      LogInfo($"Exported {pinsExported} pins to file: {filename} ");
+      Pinnacle.LogInfo($"Exported {pinsExported} pins to file: {filename} ");
     }
 
     static int ExportPinsToBinaryFile(IReadOnlyCollection<Minimap.PinData> pins, string filename) {
@@ -113,23 +108,25 @@ namespace Pinnacle {
       int count = reader.ReadInt32();
       List<Minimap.PinData> pins = new(capacity: count);
 
-      LogInfo($"Reading {count} pins from file: {filename}");
+      Pinnacle.LogInfo($"Reading {count} pins from file: {filename}");
 
       for (int i = 0; i < count; i++) {
-        Minimap.PinData pin = new();
-        pin.m_name = reader.ReadString();
+        Minimap.PinData pin = new() {
+          m_name = reader.ReadString(),
 
-        pin.m_pos = new() {
-          x = reader.ReadSingle(),
-          y = reader.ReadSingle(),
-          z = reader.ReadSingle()
+          m_pos = new() {
+            x = reader.ReadSingle(),
+            y = reader.ReadSingle(),
+            z = reader.ReadSingle()
+          },
+
+          m_type = (Minimap.PinType) reader.ReadInt32(),
+          m_checked = reader.ReadBoolean(),
+          m_ownerID = reader.ReadInt64(),
+          m_save = true
         };
 
-        pin.m_type = (Minimap.PinType) reader.ReadInt32();
         pinTypeToSprite.TryGetValue(pin.m_type, out pin.m_icon);
-        pin.m_checked = reader.ReadBoolean();
-        pin.m_ownerID = reader.ReadInt64();
-        pin.m_save = true;
 
         pins.Add(pin);
       }
@@ -138,14 +135,14 @@ namespace Pinnacle {
         pins = FilterPins(pins, args[2]);
       }
 
-      LogInfo($"Imported {pins.Count} pins from file: {filename}");
+      Pinnacle.LogInfo($"Imported {pins.Count} pins from file: {filename}");
 
       Minimap.m_instance.m_pins.AddRange(pins);
     }
 
     static List<Minimap.PinData> FilterPins(IReadOnlyCollection<Minimap.PinData> pins, string nameRegexPattern) {
       if (nameRegexPattern.Length > 0) {
-        LogInfo($"Filtering {pins.Count} pins by pin.name with regex: {nameRegexPattern}");
+        Pinnacle.LogInfo($"Filtering {pins.Count} pins by pin.name with regex: {nameRegexPattern}");
         Regex regex = new(nameRegexPattern, RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
 
         return pins.Where(pin => pin.m_save && regex.Match(pin.m_name).Success).ToList();
