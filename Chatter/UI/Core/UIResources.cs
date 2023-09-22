@@ -7,8 +7,19 @@ using TMPro;
 
 using UnityEngine;
 
-namespace Chatter {
+namespace ComfyLib {
   public static class UIResources {
+    public static readonly Dictionary<string, Sprite> SpriteCache = new();
+
+    public static Sprite GetSprite(string spriteName) {
+      if (!SpriteCache.TryGetValue(spriteName, out Sprite sprite)) {
+        sprite = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(sprite => sprite.name == spriteName);
+        SpriteCache[spriteName] = sprite;
+      }
+
+      return sprite;
+    }
+
     public static readonly Lazy<Dictionary<string, string>> OsFontMap =
         new(() => {
           Dictionary<string, string> map = new();

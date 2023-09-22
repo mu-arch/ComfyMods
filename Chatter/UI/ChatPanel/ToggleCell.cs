@@ -37,8 +37,8 @@ namespace Chatter {
 
       cell.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(UIBuilder.CreateSuperellipse(100, 100, 15))
-          .SetColor(Color.clear);
+          .SetSprite(UIResources.GetSprite("button"))
+          .SetColor(new(1f, 1f, 1f, 0.95f));
 
       return cell;
     }
@@ -48,6 +48,7 @@ namespace Chatter {
 
       label.alignment = TextAlignmentOptions.Center;
       label.fontSize = 14f;
+      label.color = new(1f, 1f, 1f, 0.9f);
       label.text = "Toggle";
 
       label.rectTransform
@@ -60,7 +61,7 @@ namespace Chatter {
     }
 
     void OnToggleValueChanged(bool isOn) {
-      Background.color = isOn ? new(0.8f, 0.8f, 0.8f, 0.5f) : new(0.5f, 0.5f, 0.5f, 0.5f);
+      Background.color = isOn ? new(1f, 1f, 1f, 0.95f) : new(0.5f, 0.5f, 0.5f, 0.95f);
       Label.color = isOn ? Color.white : Color.gray;
     }
   }

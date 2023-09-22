@@ -116,6 +116,7 @@
     <Compile Include="Patches\MessageHudPatch.cs" />
     <Compile Include="UI\ChatPanel\InputFieldCell.cs" />
     <Compile Include="UI\ChatPanel\ContentRow.cs" />
+    <Compile Include="UI\ChatPanel\ResizeCell.cs" />
     <Compile Include="UI\ChatPanel\ToggleCell.cs" />
     <Compile Include="UI\ChatPanel\ToggleRow.cs" />
     <Compile Include="UI\Components\DummyIgnoreDrag.cs" />
@@ -132,7 +133,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\ChatPanel.cs" />
     <Compile Include="UI\Components\RectTransformDragger.cs" />
-    <Compile Include="UI\Components\PanelResizer.cs" />
+    <Compile Include="UI\Components\RectTransformResizer.cs" />
     <Compile Include="Core\TerminalCommands.cs" />
   </ItemGroup>
   <ItemGroup>

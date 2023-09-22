@@ -35,18 +35,19 @@ namespace Chatter {
           .SetAnchorMin(Vector2.zero)
           .SetAnchorMax(Vector2.right)
           .SetPivot(new(0.5f, 0f))
-          .SetPosition(new(0f, -40f))
-          .SetSizeDelta(new(0f, 35f));
+          .SetPosition(new(0f, -55f))
+          .SetSizeDelta(new(0f, 45f));
 
       row.AddComponent<Image>()
-        .SetType(Image.Type.Filled)
-        .SetColor(new(0f, 0f, 0f, 0.5f));
+        .SetType(Image.Type.Sliced)
+        .SetSprite(UIBuilder.CreateRoundedCornerSprite(256, 256, 16))
+        .SetColor(new(0.5f, 0.5f, 0.5f, 0.25f));
 
       row.AddComponent<HorizontalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: false, height: false)
-          .SetPadding(left:16, right: 16)
-          .SetSpacing(6f)
+          .SetSpacing(5f)
+          .SetPadding(5, 5, 4, 4)
           .SetChildAlignment(TextAnchor.MiddleRight);
 
       return row;
@@ -57,7 +58,8 @@ namespace Chatter {
       toggle.Label.text = toggleText;
 
       toggle.Cell.AddComponent<LayoutElement>()
-          .SetPreferred(width: toggle.Label.GetPreferredWidth() + 16f, height: toggle.Label.GetPreferredHeight() + 8f);
+          .SetPreferred(width: toggle.Label.GetPreferredWidth() + 25f)
+          .SetFlexible(height: 0.9f);
 
       return toggle;
     }

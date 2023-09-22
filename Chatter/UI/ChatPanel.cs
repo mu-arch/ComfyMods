@@ -20,6 +20,9 @@ namespace Chatter {
 
     public ToggleRow MessageTypeToggleRow { get; private set; }
 
+    public ResizeCell ResizerCell { get; private set; }
+    public RectTransformResizer PanelResizer { get; private set; }
+
     public ChatPanel(Transform parentTransform) {
       Panel = CreateChildPanel(parentTransform);
       PanelRectTransform = Panel.GetComponent<RectTransform>();
@@ -41,6 +44,13 @@ namespace Chatter {
       MessageTypeToggleRow = new(Panel.transform);
       MessageTypeToggleRow.Row.AddComponent<LayoutElement>()
           .SetIgnoreLayout(true);
+
+      ResizerCell = new(MessageTypeToggleRow.Row.transform);
+      ResizerCell.Cell.AddComponent<LayoutElement>()
+          .SetIgnoreLayout(true);
+
+      PanelResizer = ResizerCell.Cell.AddComponent<RectTransformResizer>()
+          .SetTargetRectTransform(Panel.GetComponent<RectTransform>());
     }
 
     GameObject CreateChildPanel(Transform parentTransform) {

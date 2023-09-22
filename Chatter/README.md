@@ -11,7 +11,6 @@
   * Now with full TextMeshPro support!
   * Configuration options have changed, please adjust back to preference.
   * Some features are missing and will be added in later updates:
-    * Drag-and-resize chat panel.
     * Configuration options for text input field, toggle text buttons, world text.
     * OS font support.
     * Screenshots need to be updated.

@@ -18,7 +18,7 @@ namespace Chatter {
   public class Chatter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.chatter";
     public const string PluginName = "Chatter";
-    public const string PluginVersion = "2.0.0";
+    public const string PluginVersion = "2.1.0";
 
     Harmony _harmony;
 
@@ -75,6 +75,7 @@ namespace Chatter {
             .SetAsFirstSibling();
 
         ChatterChatPanel.PanelDragger.OnEndDragEvent += (_, position) => ChatPanelPosition.Value = position;
+        ChatterChatPanel.PanelResizer.OnEndDragEvent += (_, sizeDelta) => ChatPanelSizeDelta.Value = sizeDelta;
         ChatterChatPanel.TextInput.InputField.onSubmit.AddListener(_ => Chat.m_instance.SendInput());
 
         ChatterChatPanel.SetChatTextInputPrefix(ChatPanelDefaultMessageTypeToUse.Value);

@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.1.0
+
+  * Fixed a bug where message dividers were not hidden when the message type toggle was off.
+  * Made the MessageType toggles use the Valheim button sprite.
+  * Added the panel resizer button with new button style.
+
 ### 2.0.0
 
   * Split off Changelog section into a new `CHANGELOG.md` file.

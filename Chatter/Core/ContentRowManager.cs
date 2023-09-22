@@ -24,7 +24,10 @@ namespace Chatter {
         MessageRows.EnqueueItem(row);
 
         SetupContentRow(row);
-        row.Row.SetActive(ChatterChatPanel.IsMessageTypeToggleActive(message.MessageType));
+
+        bool isMessageTypeActive = ChatterChatPanel.IsMessageTypeToggleActive(message.MessageType);
+        row.Divider.Ref()?.SetActive(isMessageTypeActive && ShowChatPanelMessageDividers.Value);
+        row.Row.SetActive(isMessageTypeActive);
       }
 
       TMP_Text bodyLabel = MessageRows.LastItem.AddBodyLabel(message);
@@ -63,8 +66,6 @@ namespace Chatter {
 
     public static void SetupContentRow(ContentRow row) {
       if (row.LayoutType == MessageLayoutType.WithHeaderRow) {
-        row.Divider.gameObject.SetActive(ShowChatPanelMessageDividers.Value);
-
         row.HeaderLeftLabel.font = UIResources.GetFontAssetByName(ChatMessageFontAsset.Value);
         row.HeaderLeftLabel.fontSize = ChatMessageFontSize.Value;
         row.HeaderLeftLabel.text = ChatMessageUtils.GetUsernameText(row.Message.Username);

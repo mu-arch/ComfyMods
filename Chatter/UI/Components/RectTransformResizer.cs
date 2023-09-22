@@ -4,16 +4,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Chatter {
-  public class RectTransformDragger : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
+  public class RectTransformResizer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
     [field: SerializeField]
     public RectTransform TargetRectTransform { get; private set; }
 
-    public RectTransformDragger SetTargetRectTransform(RectTransform rectTransform) {
+    public RectTransformResizer SetTargetRectTransform(RectTransform rectTransform) {
       TargetRectTransform = rectTransform;
       return this;
     }
 
-    public event EventHandler<Vector3> OnEndDragEvent;
+    public event EventHandler<Vector2> OnEndDragEvent;
 
     Vector2 _lastMousePosition;
 
@@ -22,14 +22,16 @@ namespace Chatter {
     }
 
     public void OnDrag(PointerEventData eventData) {
-      Vector2 difference = eventData.position - _lastMousePosition;
+      Vector2 difference = _lastMousePosition - eventData.position;
 
-      TargetRectTransform.position += new Vector3(difference.x, difference.y, 0f);
+      TargetRectTransform.anchoredPosition += new Vector2(0, -difference.y);
+      TargetRectTransform.sizeDelta += new Vector2(difference.x, difference.y);
+
       _lastMousePosition = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData) {
-      OnEndDragEvent?.Invoke(this, TargetRectTransform.anchoredPosition);
+      OnEndDragEvent?.Invoke(this, TargetRectTransform.sizeDelta);
     }
   }
 }
