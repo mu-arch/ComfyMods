@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\ZNetScenePatch.cs" />
+    <Compile Include="Patches\ZoneSystemPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="SkyTree.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

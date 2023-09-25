@@ -8,11 +8,6 @@
     * Adds a `MeshCollider` component to the `YggdrasilBranch` prefab as well as its `branch` children.
     * Sets the layer for the `YggdrasilBranch` prefab/children from 19 (skybox) to 15 (static_solid).
 
-  - **Disable this mod when generating a new world locally.**
-    - The vanilla world generation code makes use of `RayCasts` for vegetation/location placement.
-    - These `RayCasts` go from top-down and the collider on the SkyTree will block placement anywhere below.
-    - Mod should be re-enabled once zone/sector generation has occurred.
-
 ## Installation
 
 ### Manual
@@ -21,7 +16,7 @@
 
 ### Thunderstore (manual install)
 
-  * Go to Settings > Import local mod > Select `SkyTree_v1.4.0.zip`.
+  * Go to Settings > Import local mod > Select `SkyTree_v1.5.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ### Notes
@@ -31,6 +26,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Added new `ZoneSystem.SpawnZone()`patches to change Yggdrasil's layer to skybox during zone generation.
 
 ### 1.4.0
 
