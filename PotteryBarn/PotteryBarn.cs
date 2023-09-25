@@ -20,7 +20,7 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.10.1";
+    public const string PluginVersion = "1.11.0";
 
     Harmony _harmony;
 
@@ -33,17 +33,20 @@ namespace PotteryBarn {
     public static bool _debug = false;
     public static bool IsDropTableDisabled { get; set; } = false;
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
+      PieceManager.OnPiecesRegistered += AddPieces;
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
     public static void AddPieces() {
+      PieceManager.OnPiecesRegistered -= AddPieces;
+
       AddHammerPieces(PieceManager.Instance.GetPieceTable("_HammerPieceTable"));
       AddCultivatorPieces(PieceManager.Instance.GetPieceTable("_CultivatorPieceTable"));
     }
@@ -130,9 +133,12 @@ namespace PotteryBarn {
       Piece.Requirement[] requirements = new Piece.Requirement[data.Count];
       for (int index = 0; index < data.Count; index++) {
         KeyValuePair<string, int> item = data.ElementAt(index);
-        Piece.Requirement req = new();
-        req.m_resItem = PrefabManager.Cache.GetPrefab<GameObject>(item.Key).GetComponent<ItemDrop>();
-        req.m_amount = item.Value;
+
+        Piece.Requirement req = new() {
+          m_resItem = PrefabManager.Cache.GetPrefab<GameObject>(item.Key).GetComponent<ItemDrop>(),
+          m_amount = item.Value
+        };
+
         requirements[index] = req;
       }
       return requirements;

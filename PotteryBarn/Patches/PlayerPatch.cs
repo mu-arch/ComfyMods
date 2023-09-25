@@ -29,6 +29,7 @@ namespace PotteryBarn {
                           new Type[] { typeof(Type) })
                       .MakeGenericMethod(typeof(GameObject))),
               new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(Player), nameof(Player.m_placementGhost))))
+          .ThrowIfInvalid("Could not patch SetupPlacementGhost")
           .SetInstructionAndAdvance(
               Transpilers.EmitDelegate<Func<GameObject, GameObject>>(SetupPlacementGhostInstantiateDelegate))
           .InstructionEnumeration();

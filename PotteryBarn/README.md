@@ -114,9 +114,14 @@
 
 ### Dependencies
 
-  * [Jotunn-v2.12.7](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/)
+  * [Jotunn-v2.13.0](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/)
 
 ## Changelog
+
+### 1.11.0
+
+  * Updated for Jotunn dependency version update to `v2.13.0`.
+  * Now hooks into `PieceManager.OnPiecesRegistered` event for adding pieces.
 
 ### 1.10.1
 
