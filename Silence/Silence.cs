@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Globalization;
 using System.Reflection;
 
 using BepInEx;
@@ -15,7 +17,7 @@ namespace Silence {
   public class Silence : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.silence";
     public const string PluginName = "Silence";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     public static ManualLogSource _logger;
     Harmony _harmony;
@@ -35,43 +37,53 @@ namespace Silence {
     }
 
     public static Chat ChatInstance { get; set; }
-
-    public static bool EnableChatWindow { get; set; } = true;
-    public static bool EnableInWorldTexts { get; set; } = true;
-
-    static readonly WaitForEndOfFrame _endOfFrame = new();
+    public static bool IsSilenced { get; set; } = false;
+    public static readonly WaitForEndOfFrame EndOfFrame = new();
 
     public static IEnumerator ToggleSilenceCoroutine() {
-      yield return _endOfFrame;
-
-      EnableChatWindow = !HideChatWindow.Value || !EnableChatWindow;
-      EnableInWorldTexts = !HideInWorldTexts.Value || !EnableInWorldTexts;
-
-      _logger.LogInfo($"ChatWindow: {EnableChatWindow}\nInWorldTexts: {EnableInWorldTexts}");
-
-      MessageHud.instance.ShowMessage(
-          MessageHud.MessageType.Center, $"ChatWindow: {EnableChatWindow}\nInWorldTexts: {EnableInWorldTexts}");
-
       if (!ChatInstance) {
         yield break;
       }
 
-      if (!EnableChatWindow) {
+      yield return EndOfFrame;
+
+      IsSilenced = !IsSilenced;
+
+      LogInfo($"IsSilenced: {IsSilenced}");
+      MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"IsSilenced: {IsSilenced}");
+
+      if (HideChatWindow.Value) {
+        ToggleChatWindow(IsSilenced);
+      }
+
+      if (HideInWorldTexts.Value) {
+        ToggleInWorldTexts(IsSilenced);
+      }
+    }
+
+    static void ToggleChatWindow(bool isSilenced) {
+      if (isSilenced) {
         ChatInstance.m_hideTimer = ChatInstance.m_hideDelay;
         ChatInstance.m_focused = false;
         ChatInstance.m_wasFocused = false;
         ChatInstance.m_input.DeactivateInputField();
       }
 
-      ChatInstance.m_output.gameObject.SetActive(EnableChatWindow);
+      ChatInstance.m_output.gameObject.SetActive(isSilenced);
+    }
 
-      if (!EnableInWorldTexts) {
+    static void ToggleInWorldTexts(bool isSilenced) {
+      if (isSilenced) {
         foreach (Chat.WorldTextInstance worldText in ChatInstance.m_worldTexts) {
           Destroy(worldText.m_gui);
         }
 
         ChatInstance.m_worldTexts.Clear();
       }
+    }
+
+    public static void LogInfo(object o) {
+      _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
     }
   }
 }

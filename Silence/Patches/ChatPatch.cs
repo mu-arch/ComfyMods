@@ -28,14 +28,14 @@ namespace Silence {
                   AccessTools.Method(typeof(ZInput), nameof(ZInput.GetKeyDown), new Type[] { typeof(KeyCode) })))
           .Advance(offset: 1)
           .InsertAndAdvance(
-              new CodeInstruction(Transpilers.EmitDelegate<Func<bool, bool>>(result => result && EnableChatWindow)))
+              new CodeInstruction(Transpilers.EmitDelegate<Func<bool, bool>>(result => result && !IsSilenced)))
           .InstructionEnumeration();
     }
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Chat.AddInworldText))]
     static bool AddInworldTextPrefix() {
-      return EnableInWorldTexts;
+      return !IsSilenced;
     }
   }
 }

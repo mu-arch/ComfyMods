@@ -29,7 +29,7 @@
 
 ### 1.5.0
 
-  * Added new `ZoneSystem.SpawnZone()`patches to change Yggdrasil's layer to skybox during zone generation.
+  * Added new `ZoneSystem.SpawnZone()` patches to change Yggdrasil's layer to skybox during zone generation.
 
 ### 1.4.0
 
