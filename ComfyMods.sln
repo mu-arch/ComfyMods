@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33529.622
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetOffMyLawn", "GetOffMyLawn\GetOffMyLawn.csproj", "{514D9344-A1B0-4EDF-93A8-17C7AE859946}"
 EndProject
@@ -36,8 +36,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silence", "Silence\Silence.csproj", "{80FE78CC-4CBB-4A45-9790-809B6ED70B46}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shortcuts", "Shortcuts\Shortcuts.csproj", "{149D97C3-4482-49C6-AB51-74F0164D425A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarbonCopy", "CarbonCopy\CarbonCopy.csproj", "{CDD1B039-AB8A-44E9-B7AC-1236E72B8CFC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConstructionDerby", "ConstructionDerby\ConstructionDerby.csproj", "{B1AA2381-78C0-490D-A907-0FA0F0DA22E5}"
 EndProject
@@ -183,10 +181,6 @@ Global
 		{149D97C3-4482-49C6-AB51-74F0164D425A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{149D97C3-4482-49C6-AB51-74F0164D425A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{149D97C3-4482-49C6-AB51-74F0164D425A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CDD1B039-AB8A-44E9-B7AC-1236E72B8CFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CDD1B039-AB8A-44E9-B7AC-1236E72B8CFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CDD1B039-AB8A-44E9-B7AC-1236E72B8CFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CDD1B039-AB8A-44E9-B7AC-1236E72B8CFC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1AA2381-78C0-490D-A907-0FA0F0DA22E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B1AA2381-78C0-490D-A907-0FA0F0DA22E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1AA2381-78C0-490D-A907-0FA0F0DA22E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
