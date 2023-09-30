@@ -1,83 +1,41 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using System.Reflection;
+
+using BepInEx;
 
 using HarmonyLib;
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
+using static TorchesAndResin.PluginConfig;
 
 namespace TorchesAndResin {
   [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
   public class TorchesAndResin : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.torchesandresin";
     public const string PluginName = "TorchesAndResin";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
-    const float TorchStartingFuel = 10000f;
+    public const float TorchStartingFuel = 10000f;
 
-    static readonly int FuelHashCode = "fuel".GetStableHashCode();
-    static readonly string[] EligibleTorchItemNames = {
-      "piece_groundtorch_wood", // standing wood torch
-      "piece_groundtorch", // standing iron torch
-      "piece_walltorch", // sconce torch
-      "piece_brazierceiling01", // hanging brazier
-      "piece_brazierfloor01" // floor brazier
+    public static readonly int FuelHashCode = "fuel".GetStableHashCode();
+
+    public static readonly string[] EligibleTorchItemNames = {
+      "piece_groundtorch_wood", // Standing Wood Torch
+      "piece_groundtorch",      // Standing Iron Torch
+      "piece_walltorch",        // Sconce Torch
+      "piece_brazierceiling01", // Hanging Brazier
+      "piece_brazierfloor01",   // Floor Brazier
+      "fire_pit_iron",          // Firepit Iron
     };
-
-    public static ConfigEntry<bool> IsModEnabled { get; private set; }
 
     Harmony _harmony;
 
-    public void Awake() {
-      IsModEnabled = Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+    void Awake() {
+      BindConfig(Config);
+
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginVersion);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
-    }
-
-    [HarmonyPatch(typeof(Fireplace))]
-    class FireplacePatch {
-      [HarmonyTranspiler]
-      [HarmonyPatch(nameof(Fireplace.Awake))]
-      static IEnumerable<CodeInstruction> AwakeTranspiler(IEnumerable<CodeInstruction> instructions) {
-        return new CodeMatcher(instructions)
-            .MatchForward(
-                useEnd: false,
-                new CodeMatch(OpCodes.Ldstr, "UpdateFireplace"),
-                new CodeMatch(OpCodes.Ldc_R4, 0f),
-                new CodeMatch(OpCodes.Ldc_R4, 2f))
-            .Advance(offset: 1)
-            .SetOperandAndAdvance(0.5f)
-            .InstructionEnumeration();
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(Fireplace.Awake))]
-      static void AwakePrefix(ref Fireplace __instance) {
-        if (IsModEnabled.Value
-            && Array.IndexOf(EligibleTorchItemNames, Utils.GetPrefabName(__instance.gameObject)) >= 0) {
-          __instance.m_startFuel = TorchStartingFuel;
-        }
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(Fireplace.Awake))]
-      static void AwakePostfix(ref Fireplace __instance) {
-        if (!IsModEnabled.Value
-            || !__instance.m_nview
-            || !__instance.m_nview.IsValid()
-            || !__instance.m_nview.IsOwner()
-            || Array.IndexOf(EligibleTorchItemNames, __instance.m_nview.GetPrefabName()) < 0) {
-          return;
-        }
-
-        __instance.m_startFuel = TorchStartingFuel;
-        __instance.m_nview.GetZDO().Set(FuelHashCode, TorchStartingFuel);
-      }
     }
   }
 }

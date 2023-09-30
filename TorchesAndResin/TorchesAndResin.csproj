@@ -90,6 +90,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\FireplacePatch.cs" />
+    <Compile Include="PluginConfig.cs" />
     <Compile Include="TorchesAndResin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

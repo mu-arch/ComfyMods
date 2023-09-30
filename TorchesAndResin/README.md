@@ -2,17 +2,6 @@
 
 *Standing wood/iron/wall torches and hanging/floor braziers are refueled with 10,000 resin.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `TorchesAndResin.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `TorchesAndResin_v1.3.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
   * This will set the fuel for several torch and brazier prefabs to 10,000 resin.
@@ -25,6 +14,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Added `fire_pit_iron` to the supported list.
+  * Extracted patch logic and config logic into separate classes.
 
 ### 1.3.0
 
