@@ -26,16 +26,18 @@ namespace EnRoute {
     static readonly ZPackage _package = new();
 
     static void RouteRPCToPeer(ZNetPeer netPeer, HashSet<long> targetPeerIds, ZRoutedRpc.RoutedRPCData rpcData) {
+      if (netPeer.m_server) {
+        rpcData.m_targetPeerID = netPeer.m_uid;
+        RouteRPCToPeer(netPeer, rpcData);
+        EnRoute.RouteToServerCount++;
+      }
+
       if (targetPeerIds.Count > 0) {
         foreach (long targetPeerId in targetPeerIds) {
           rpcData.m_targetPeerID = targetPeerId;
           RouteRPCToPeer(netPeer, rpcData);
           EnRoute.RouteToNearbyCount++;
         }
-      } else {
-        rpcData.m_targetPeerID = netPeer.m_uid;
-        RouteRPCToPeer(netPeer, rpcData);
-        EnRoute.RouteToServerCount++;
       }
     }
 
