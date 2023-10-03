@@ -22,7 +22,7 @@ namespace EnRoute {
 
     static IEnumerator LogStatsCoroutine() {
       WaitForSeconds waitInterval = new(seconds: 60f);
-      Stopwatch stopwatch = new();
+      Stopwatch stopwatch = Stopwatch.StartNew();
 
       while (true) {
         yield return waitInterval;
