@@ -62,7 +62,7 @@ namespace Chatter {
           .SetSizeDelta(Vector2.zero)
           .SetPosition(Vector2.zero);
 
-      label.enableWordWrapping = false;
+      label.textWrappingMode = TextWrappingModes.NoWrap;
       label.overflowMode = TextOverflowModes.Masking;
       label.richText = false;
       label.alignment = TextAlignmentOptions.Left;
@@ -78,7 +78,7 @@ namespace Chatter {
           .SetSizeDelta(Vector2.zero)
           .SetPosition(Vector2.zero);
 
-      placeholder.enableWordWrapping = false;
+      placeholder.textWrappingMode = TextWrappingModes.NoWrap;
       placeholder.overflowMode = TextOverflowModes.Masking;
       placeholder.richText = true;
       placeholder.alignment = TextAlignmentOptions.Left;

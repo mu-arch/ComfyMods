@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.2.0
+
+  * Fixed for the `v0.217.22` patch.
+
 ### 2.1.0
 
   * Fixed a bug where message dividers were not hidden when the message type toggle was off.

@@ -109,7 +109,7 @@ namespace Chatter {
       label.name = "BodyLabel";
 
       label.alignment = TextAlignmentOptions.Left;
-      label.enableWordWrapping = true;
+      label.textWrappingMode = TextWrappingModes.Normal;
 
       return label;
     }
