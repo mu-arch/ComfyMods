@@ -12,6 +12,16 @@ namespace BetterZeeLog {
       return "[" + dateTimeNow + "] ";
     }
 
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(ZLog.Log))]
+    static bool LogPrefix(ref object o) {
+      if (o.ToString().StartsWith("Console: ")) {
+        return false;
+      }
+
+      return true;
+    }
+
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZLog.Log))]
     static IEnumerable<CodeInstruction> LogTranspiler(IEnumerable<CodeInstruction> instructions) {

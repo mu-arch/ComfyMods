@@ -21,7 +21,7 @@ namespace BetterZeeLog {
       BindConfig(Config);
 
       if (IsModEnabled.Value) {
-        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+        _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
 
         if (RemoveStackTraceForNonErrorLogType.Value) {
           Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);

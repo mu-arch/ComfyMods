@@ -20,6 +20,9 @@
 
   * Fixed for the `v0.217.22` patch.
   * Changed all `ZLog` prefix patches to instead be transpiler patches to fix a bug when used with dedicated servers.
+  * Added a dumb `ZLog.Log` prefix patch to catch messages starting with "`Console: `" to handle an edge-case with
+    dedicated servers calling `ZLog.Log()` in `Terminal.AddString(string)`.
+    * Transpiler patching `Terminal.AddString(string)` fails for no apparent reason hence this dumb patch.
 
 ### 1.4.2
 
