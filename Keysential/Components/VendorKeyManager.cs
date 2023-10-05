@@ -14,13 +14,15 @@ namespace Keysential {
       if (ZNet.m_isServer && VendorKeyManagerPosition.Value != Vector3.zero) {
         GlobalKeysManager.StartKeyManager(
             "haldor0",
+            VendorKeyManagerPosition.Value,
+            _vendorNearbyDistance,
             VendorPlayerProximityCoroutine(
-                VendorKeyManagerPosition.Value, _vendorNearbyDistance, _vendorNearbyGlobalKey));
+                "haldor0", VendorKeyManagerPosition.Value, _vendorNearbyDistance, _vendorNearbyGlobalKey));
       }
     }
 
     public static IEnumerator VendorPlayerProximityCoroutine(
-        Vector3 vendorPosition, float vendorDistance, params string[] vendorKeys) {
+        string managerId, Vector3 vendorPosition, float vendorDistance, params string[] vendorKeys) {
       Keysential.LogInfo(
           $"Starting VendorPlayerProximityCoroutine coroutine... "
               + $"position: {vendorPosition}, distance: {vendorDistance}, keys: {vendorKeys}");
@@ -28,7 +30,7 @@ namespace Keysential {
       List<string> originalKeys = new();
       List<string> nearbyKeys = new();
 
-      HashSet<long> nearbyPeers = new(capacity: 256);
+      HashSet<long> nearbyPeers = GlobalKeysManager.NearbyPeerIdsCache[managerId];
       WaitForSeconds waitInterval = new(seconds: 3f);
 
       while (ZNet.m_instance) {
@@ -51,7 +53,7 @@ namespace Keysential {
               nearbyPeers.Add(netPeer.m_uid);
 
               GlobalKeysManager.SendChatMessage(
-                  netPeer,
+                  netPeer.m_uid,
                   vendorPosition,
                   "<color=green>Haldor</color>",
                   _nearbyChatMessages[Random.Range(0, _nearbyChatMessages.Length)]);

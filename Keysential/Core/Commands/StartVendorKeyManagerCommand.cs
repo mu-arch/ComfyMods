@@ -31,7 +31,7 @@ namespace Keysential {
         return false;
       }
 
-      string[] keys = args[4].Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+      string[] keys = args[4].GetEncodedGlobalKeys();
 
       if (keys.Length <= 0) {
         Keysential.LogError($"No valid values for keys arg: {args[4]}");
@@ -39,7 +39,10 @@ namespace Keysential {
       }
 
       return GlobalKeysManager.StartKeyManager(
-          managerId, VendorKeyManager.VendorPlayerProximityCoroutine(position, distance, keys));
+          managerId,
+          position,
+          distance,
+          VendorKeyManager.VendorPlayerProximityCoroutine(managerId, position, distance, keys));
     }
   }
 }

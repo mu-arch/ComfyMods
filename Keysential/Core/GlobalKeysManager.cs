@@ -5,9 +5,24 @@ using UnityEngine;
 
 namespace Keysential {
   public static class GlobalKeysManager {
-    public static Dictionary<string, Coroutine> CurrentKeyManagers { get; private set; } = new();
+    public class KeyManager {
+      public string ManagerId { get; }
+      public Vector3 Position { get; }
+      public float Distance { get; }
+      public Coroutine Coroutine { get; }
 
-    public static bool StartKeyManager(string managerId, IEnumerator managerMethod) {
+      public KeyManager(string managerId, Vector3 position, float distance, Coroutine coroutine) {
+        ManagerId = managerId;
+        Position = position;
+        Distance = distance;
+        Coroutine = coroutine;
+      }
+    }
+
+    public static Dictionary<string, KeyManager> CurrentKeyManagers { get; private set; } = new();
+    public static Dictionary<string, HashSet<long>> NearbyPeerIdsCache { get; private set; } = new();
+
+    public static bool StartKeyManager(string managerId, Vector3 position, float distance, IEnumerator managerMethod) {
       if (CurrentKeyManagers.ContainsKey(managerId)) {
         Keysential.LogError($"Cannot start due to existing KeyManager coroutine found with id: {managerId}");
         return false;
@@ -15,30 +30,50 @@ namespace Keysential {
 
       Keysential.LogInfo($"Starting KeyManager coroutine with id: {managerId}");
 
+      NearbyPeerIdsCache[managerId] = new(capacity: 256);
       Coroutine managerCoroutine = ZNet.instance.StartCoroutine(managerMethod);
-      CurrentKeyManagers[managerId] = managerCoroutine;
+      CurrentKeyManagers[managerId] = new(managerId, position, distance, managerCoroutine);
 
       return true;
     }
 
     public static bool StopKeyManager(string managerId) {
-      if (!CurrentKeyManagers.TryGetValue(managerId, out Coroutine managerCoroutine)) {
+      if (!CurrentKeyManagers.TryGetValue(managerId, out KeyManager keyManager)) {
         Keysential.LogError($"Could not find KeyManager coroutine with id: {managerId}");
         return false;
       }
 
-      if (managerCoroutine != null) {
+      if (keyManager.Coroutine != null) {
         Keysential.LogInfo($"Stopping KeyManager coroutine with id: {managerId}");
-        ZNet.instance.StopCoroutine(managerCoroutine);
+        ZNet.instance.StopCoroutine(keyManager.Coroutine);
       }
 
       CurrentKeyManagers.Remove(managerId);
+
+      ResetNearbyPeers(keyManager, NearbyPeerIdsCache[managerId]);
+      NearbyPeerIdsCache.Remove(managerId);
+
       return true;
     }
 
-    public static void SendChatMessage(ZNetPeer netPeer, Vector3 position, string name, string message) {
+    static void ResetNearbyPeers(KeyManager keyManager, HashSet<long> nearbyPeerIds) {
+      List<string> originalKeys = new(ZoneSystem.m_instance.m_globalKeys);
+
+      foreach (long nearbyPeerId in nearbyPeerIds) {
+        Keysential.LogInfo($"Sending original global keys to peer: {nearbyPeerId}");
+        ZRoutedRpc.s_instance.InvokeRoutedRPC(nearbyPeerId, "GlobalKeys", originalKeys);
+
+        SendChatMessage(
+            nearbyPeerId,
+            keyManager.Position,
+            "<color=green>Keysential</color>",
+            $"Now exiting: {keyManager.ManagerId}");
+      }
+    }
+
+    public static void SendChatMessage(long netPeerId, Vector3 position, string name, string message) {
       ZRoutedRpc.s_instance.InvokeRoutedRPC(
-          netPeer.m_uid,
+          netPeerId,
           "ChatMessage",
           position,
           (int) Talker.Type.Normal,

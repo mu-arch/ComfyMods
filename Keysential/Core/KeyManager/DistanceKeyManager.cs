@@ -14,7 +14,7 @@ namespace Keysential {
       List<string> originalKeys = new();
       List<string> nearbyKeys = new();
 
-      HashSet<long> nearbyPeers = new(capacity: 256);
+      HashSet<long> nearbyPeers = GlobalKeysManager.NearbyPeerIdsCache[managerId];
       WaitForSeconds waitInterval = new(seconds: 3f);
 
       while (ZNet.m_instance) {
@@ -37,7 +37,7 @@ namespace Keysential {
               nearbyPeers.Add(netPeer.m_uid);
 
               GlobalKeysManager.SendChatMessage(
-                  netPeer, position, "<color=green>Keysential</color>", $"Now entering: {managerId}");
+                  netPeer.m_uid, position, "<color=green>Keysential</color>", $"Now entering: {managerId}");
             }
           } else {
             if (nearbyPeers.Contains(netPeer.m_uid)) {
@@ -46,7 +46,7 @@ namespace Keysential {
               nearbyPeers.Remove(netPeer.m_uid);
 
               GlobalKeysManager.SendChatMessage(
-                  netPeer, position, "<color=green>Keysential</color>", $"Now exiting: {managerId}");
+                  netPeer.m_uid, position, "<color=green>Keysential</color>", $"Now exiting: {managerId}");
             } else {
               // Do nothing.
             }

@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using System;
+﻿using System;
+using System.Globalization;
 using System.Reflection;
 
 using BepInEx;
@@ -14,7 +14,7 @@ namespace Keysential {
   public class Keysential : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.keysential";
     public const string PluginName = "Keysential";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;

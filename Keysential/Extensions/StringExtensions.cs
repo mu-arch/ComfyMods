@@ -35,5 +35,15 @@ namespace ComfyLib {
       vector = default;
       return false;
     }
+
+    public static string[] GetEncodedGlobalKeys(this string text) {
+      string[] keys = text.Split(CommaSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+      for (int i = 0; i < keys.Length; i++) {
+        keys[i] = keys[i].Replace('=', ' ');
+      }
+
+      return keys;
+    }
   }
 }

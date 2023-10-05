@@ -4,6 +4,12 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Fixed for the `v0.217.22` patch.
+  * Added new `GetEncodedGlobalKeys()` extension to enable specifying global keys with spaces by using `=` instead.
+  * Added in temporary-fix to ensure `StopKeyManager` command actually restores original global keys.
+
 ### 1.4.0
 
   * Add new `GlobalKeysManager` and several new commands related to KeyManager starting and stopping.
