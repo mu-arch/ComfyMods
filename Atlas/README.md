@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 1.8.0
+
+  * Fixed for the `v0.217.22` patch.
+
 ### 1.7.0
 
   * Re-added console command `setworldtime` with adjustment for custom `timeCreated` ZDO long property.
