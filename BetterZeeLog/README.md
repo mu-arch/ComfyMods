@@ -4,20 +4,9 @@
 
 ## Features
 
-  * Wraps all `ZLog.Log*` methods to prefix a timestamp and remove the trailing new-line.
+  * Modifies all `ZLog.Log*` methods to prefix a timestamp and remove the trailing new-line.
   * Removes stack traces for `Info` and `Warning` log types.
   * Removes the 'Failed to send data' logging in `ZSteamSocket` to reduce log spam.
-
-## Installation
-
-### Manual
-
-  * Un-zip `BetterZeeLog.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `BetterZeeLog_v1.4.2.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
 
@@ -26,6 +15,11 @@
   * BetterZeeLog icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.5.0
+
+  * Fixed for the `v0.217.22` patch.
+  * Changed all `ZLog` prefix patches to instead be transpiler patches to fix a bug when used with dedicated servers.
 
 ### 1.4.2
 

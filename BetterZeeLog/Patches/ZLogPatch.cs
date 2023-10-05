@@ -1,47 +1,87 @@
 ﻿using System;
-using System.Globalization;
-
-using BepInEx.Logging;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
 using HarmonyLib;
-
-using UnityEngine;
 
 namespace BetterZeeLog {
   [HarmonyPatch(typeof(ZLog))]
   static class ZLogPatch {
-    static readonly bool _isDebugBuild = Debug.isDebugBuild;
-    static readonly ManualLogSource _zLog = BepInEx.Logging.Logger.CreateLogSource("ZLog");
 
-    [HarmonyPrefix]
+    static string DateTimeNowDelegate(string dateTimeNow) {
+      return "[" + dateTimeNow + "] ";
+    }
+
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZLog.Log))]
-    static bool LogPrefix(ref object o) {
-      _zLog.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
-      return false;
+    static IEnumerable<CodeInstruction> LogTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, ": "))
+          .ThrowIfInvalid("Could not patch ZLog.Log() colon instruction.")
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(DateTimeNowDelegate))
+          .SetOperandAndAdvance(string.Empty)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, "\n"))
+          .ThrowIfInvalid("Could not patch ZLog.Log() newline instruction.")
+          .SetOperandAndAdvance(string.Empty)
+          .InstructionEnumeration();
     }
 
-    [HarmonyPrefix]
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZLog.LogWarning))]
-    static bool LogWarningPrefix(ref object o) {
-      _zLog.LogWarning($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
-      return false;
+    static IEnumerable<CodeInstruction> LogWarningTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, ": "))
+          .ThrowIfInvalid("Could not patch ZLog.LogWarning() colon instruction.")
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(DateTimeNowDelegate))
+          .SetOperandAndAdvance(string.Empty)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, "\n"))
+          .ThrowIfInvalid("Could not patch ZLog.LogWarning() newline instruction.")
+          .SetOperandAndAdvance(string.Empty)
+          .InstructionEnumeration();
     }
 
-    [HarmonyPrefix]
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZLog.LogError))]
-    static bool LogErrorPrefix(ref object o) {
-      _zLog.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
-      return false;
+    static IEnumerable<CodeInstruction> LogErrorTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, ": "))
+          .ThrowIfInvalid("Could not patch ZLog.LogError() colon instruction.")
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(DateTimeNowDelegate))
+          .SetOperandAndAdvance(string.Empty)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, "\n"))
+          .ThrowIfInvalid("Could not patch ZLog.LogError() newline instruction.")
+          .SetOperandAndAdvance(string.Empty)
+          .InstructionEnumeration();
     }
 
-    [HarmonyPrefix]
+    [HarmonyTranspiler]
     [HarmonyPatch(nameof(ZLog.DevLog))]
-    static bool DevLogPrefix(ref object o) {
-      if (_isDebugBuild) {
-        _zLog.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
-      }
-
-      return false;
+    static IEnumerable<CodeInstruction> DevLogTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, ": "))
+          .ThrowIfInvalid("Could not patch ZLog.DevLog() colon instruction.")
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<string, string>>(DateTimeNowDelegate))
+          .SetOperandAndAdvance(string.Empty)
+          .MatchForward(
+              useEnd: true,
+              new CodeMatch(OpCodes.Ldstr, "\n"))
+          .ThrowIfInvalid("Could not patch ZLog.DevLog() newline instruction.")
+          .SetOperandAndAdvance(string.Empty)
+          .InstructionEnumeration();
     }
   }
 }
