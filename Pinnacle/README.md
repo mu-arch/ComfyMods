@@ -85,6 +85,10 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Fixed for the `v0.217.22` patch.
+
 ### 1.4.1
 
   * Added `Game.UpdateNoMap()` transpiler patch to fix for a vanilla bug where the minimap will close whenever global
