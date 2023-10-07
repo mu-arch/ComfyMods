@@ -20,6 +20,10 @@
 
 ## Changelog
 
+### 1.4.0
+
+  * Fixed for the `v0.217.24` patch.
+
 ### 1.3.0
 
   * Extracted patch and config code into separate classes.

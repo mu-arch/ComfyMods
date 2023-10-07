@@ -4,6 +4,8 @@ using System.Linq;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,7 +38,7 @@ namespace OdinSaves {
 
     static GameObject _profileCompressionRoot;
     static Button _compressMapDataButton;
-    static Text _profileCompressionText;
+    static TMP_Text _profileCompressionText;
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(FejdStartup.Awake))]
@@ -92,7 +94,7 @@ namespace OdinSaves {
       RectTransform transform = compressMapDataButton.GetComponent<RectTransform>();
       transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
 
-      Text text = compressMapDataButton.GetComponentInChildren<Text>();
+      TMP_Text text = compressMapDataButton.GetComponentInChildren<TMP_Text>();
       text.GetComponent<RectTransform>().SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 200f);
       text.text = "Compression";
 
@@ -102,8 +104,8 @@ namespace OdinSaves {
       return compressMapDataButton;
     }
 
-    static Text CreateProfileCompressionText(FejdStartup fejdStartup, Transform parent) {
-      Text profileCompressionText = UnityEngine.Object.Instantiate(fejdStartup.m_csName, parent);
+    static TMP_Text CreateProfileCompressionText(FejdStartup fejdStartup, Transform parent) {
+      TMP_Text profileCompressionText = UnityEngine.Object.Instantiate(fejdStartup.m_csName, parent);
       profileCompressionText.fontSize = 20;
       profileCompressionText.gameObject.name = "ProfileCompression.Text";
       profileCompressionText.text = "Profile Compression Text";
@@ -121,7 +123,7 @@ namespace OdinSaves {
     static void UpdateCompressMapDataButton(FejdStartup fejdStartup, PlayerProfile profile) {
       bool hasUncompressedData = HasUncompressedData(profile);
 
-      _compressMapDataButton.GetComponentInChildren<Text>().text =
+      _compressMapDataButton.GetComponentInChildren<TMP_Text>().text =
           hasUncompressedData ? "Compress MapData" : "Compressed!";
 
       _compressMapDataButton.onClick.RemoveAllListeners();
@@ -159,7 +161,7 @@ namespace OdinSaves {
       }
 
       long count = 0;
-      Text buttonText = _compressMapDataButton.GetComponentInChildren<Text>();
+      TMP_Text buttonText = _compressMapDataButton.GetComponentInChildren<TMP_Text>();
 
       foreach (PlayerProfile.WorldPlayerData worldPlayerData in profile.m_worldData.Values) {
         buttonText.text = $"Compressing... {++count}/{profile.m_worldData.Count}";

@@ -14,7 +14,7 @@ namespace OdinSaves {
   public class OdinSaves : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.odinsaves";
     public const string PluginName = "OdinSaves";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.4.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
