@@ -34,17 +34,6 @@ These two commands still call the same action as the hotkey and so will obey all
   - `changecolor <radius>` (in console)
   - Changes the color of all pieces in the radius from the player to the currently set target color.
 
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulPieces.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.12.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces).
@@ -52,6 +41,10 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.13.0
+
+  * Fixed for the `v0.217.24` patch.
 
 ### 1.12.0
 
