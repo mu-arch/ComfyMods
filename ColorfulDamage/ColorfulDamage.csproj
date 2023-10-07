@@ -73,6 +73,12 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="ui_lib_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\ui_lib_publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GamePath)\unstripped_corlib\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
     </Reference>
@@ -97,9 +103,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorfulDamage.cs" />
-    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="Patches\DamageTextPatch.cs" />
-    <Compile Include="PluginConfig.cs" />
+    <Compile Include="Config\PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\FontCache.cs" />
   </ItemGroup>

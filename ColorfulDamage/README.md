@@ -11,24 +11,12 @@ Customize your damage numbers, including:
   * Color by damage type
   * Font and font size
   * Damage popup duration and direction
-  * Optional drop shadow effect
 
 All options can be configured in-game via ConfigurationManager.
 
 ## Configuration
 
 ![ColorfulDamage - Configuration](https://i.imgur.com/gjocTQk.png)
-
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulDamage.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `ColorfulDamage_v1.0.1.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
 
@@ -38,6 +26,12 @@ All options can be configured in-game via ConfigurationManager.
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed for the `v0.217.24` patch.
+  * Config-options for fonts simplified for now due to the change to TextMeshPro.
+  * Removed `DamageTextUseShadowEffect` config option as TextMeshPro uses shaders for shadow, re-add later.
 
 ### 1.0.1
 

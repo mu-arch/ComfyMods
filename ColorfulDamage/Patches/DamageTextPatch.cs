@@ -7,8 +7,9 @@ using ComfyLib;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
-using UnityEngine.UI;
 
 using static ColorfulDamage.PluginConfig;
 
@@ -29,21 +30,11 @@ namespace ColorfulDamage {
       worldText.m_worldPos = pos + (UnityEngine.Random.insideUnitSphere * 0.5f);
       worldText.m_gui = UnityEngine.Object.Instantiate(__instance.m_worldTextBase, __instance.transform);
 
-      if (DamageTextUseShadowEffect.Value) {
-        if (worldText.m_gui.TryGetComponent(out Outline outline)) {
-          outline.enabled = false;
-        }
-
-        Shadow shadow = worldText.m_gui.AddComponent<Shadow>();
-        shadow.effectColor = DamageTextShadowEffectColor.Value;
-        shadow.effectDistance = DamageTextShadowEffectDistance.Value;
-      }
-
-      worldText.m_textField = worldText.m_gui.GetComponent<Text>();
+      worldText.m_textField = worldText.m_gui.GetComponent<TMP_Text>();
       worldText.m_textField.text = GetWorldTextText(type, dmg);
       worldText.m_textField.color = GetWorldTextColor(type, dmg, mySelf);
 
-      worldText.m_textField.font = FontCache.GetFont(DamageTextMessageFont.Value);
+      worldText.m_textField.font = FontCache.GetFontAssetByName(DamageTextMessageFont.Value);
       worldText.m_textField.fontSize =
           distance > DamageTextSmallPopupDistance.Value
               ? DamageTextSmallFontSize.Value

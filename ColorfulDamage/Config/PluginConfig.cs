@@ -8,6 +8,8 @@ using ComfyLib;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
 
 namespace ColorfulDamage {
@@ -18,7 +20,6 @@ namespace ColorfulDamage {
       IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       BindDamageTextPopupConfig(config);
-      BindDamageTextShadowEffectConfig(config);
       BindDamageTextColorConfig(config);
 
       _fejdStartupBindConfigQueue.Clear();
@@ -74,33 +75,6 @@ namespace ColorfulDamage {
               10f,
               "Distance to popup DamageText messages using small (far-away) font size.",
               new AcceptableValueRange<float>(0f, 60f));
-    }
-
-    public static ConfigEntry<bool> DamageTextUseShadowEffect { get; private set; }
-    public static ConfigEntry<Color> DamageTextShadowEffectColor { get; private set; }
-    public static ConfigEntry<Vector2> DamageTextShadowEffectDistance { get; private set; }
-
-    private static void BindDamageTextShadowEffectConfig(ConfigFile config) {
-      DamageTextUseShadowEffect =
-          config.BindInOrder(
-              "DamageText.ShadowEffect",
-              "useShadowEffect",
-              false,
-              "If true, uses a Shadow effect on the DamageText instead of Outline effect.");
-
-      DamageTextShadowEffectColor =
-          config.BindInOrder(
-              "DamageText.ShadowEffect",
-              "shadowEffectColor",
-              new Color(0f, 0f, 0f, 0.5f),
-              "Color of the Shadow effect to use on the DamageText.");
-
-      DamageTextShadowEffectDistance =
-          config.BindInOrder(
-              "DamageText.ShadowEffect",
-              "shadowEffectDistance",
-              new Vector2(1.50f, -1.50f),
-              "Distance of the Shadow effect to use on the DamageText.");
     }
 
     public static ConfigEntry<Color> DamageTextPlayerDamageColor { get; private set; }
@@ -183,13 +157,14 @@ namespace ColorfulDamage {
     public static ConfigEntry<int> DamageTextLargeFontSize { get; private set; }
 
     private static void BindDamageTextFontConfig(ConfigFile config) {
-      string[] fontNames = Resources.FindObjectsOfTypeAll<Font>().Select(f => f.name).OrderBy(f => f).ToArray();
+      string[] fontNames =
+          Resources.FindObjectsOfTypeAll<TMP_FontAsset>().Select(f => f.name).OrderBy(f => f).ToArray();
 
       DamageTextMessageFont =
           config.BindInOrder(
               "DamageText.Font",
               "messageFont",
-              "AveriaSerifLibre-Bold",
+              FontCache.ValheimAveriaSansLibreFont,
               "DamageText.font for all damage messages.",
               new AcceptableValueList<string>(fontNames));
 

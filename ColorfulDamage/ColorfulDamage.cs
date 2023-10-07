@@ -9,7 +9,7 @@ namespace ColorfulDamage {
   public class ColorfulDamage : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.colorfuldamage";
     public const string PluginName = "ColorfulDamage";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.1.0";
 
     Harmony _harmony;
 
