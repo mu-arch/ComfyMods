@@ -19,7 +19,7 @@ namespace ComfySigns {
   public class ComfySigns : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.comfysigns";
     public const string PluginName = "ComfySigns";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     Harmony _harmony;
 

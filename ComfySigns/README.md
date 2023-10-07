@@ -31,6 +31,10 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Fixed for the `v0.217.24` patch.
+
 ### 1.4.0
 
   * Updated for `v0.217.14` patch.
