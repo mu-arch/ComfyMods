@@ -25,7 +25,7 @@
 
 ## Create a content mod for Thunderstore
 
-  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.2.0`.
+  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.3.0`.
   * Structure your content mod zip file to resemble the following example:
 
   ```
@@ -57,7 +57,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Intermission_v1.2.0.zip`.
+  * Go to Settings > Import local mod > Select `Intermission_v1.3.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -67,6 +67,12 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.3.0
+
+  * Fixed for the `v0.217.24` patch.
+  * Added work-around for the `FejdStartup` loading text UI state being locked due to the `menuAnimator`.
+  * Removed `shadowEffectColor` and `shadowEffectDistance` config options due to the change to `TextMeshPro`.
 
 ### 1.2.0
 

@@ -23,9 +23,6 @@ namespace Intermission {
     public static ConfigEntry<int> LoadingTipTextFontSize { get; private set; }
     public static ConfigEntry<Color> LoadingTipTextColor { get; private set; }
 
-    public static ConfigEntry<Color> LoadingTipShadowEffectColor { get; private set; }
-    public static ConfigEntry<Vector2> LoadingTipShadowEffectDistance { get; private set; }
-
     public static void BindConfig(ConfigFile config) {
       IsModEnabled =
           config.BindInOrder(
@@ -92,25 +89,6 @@ namespace Intermission {
               "LoadingTip.Text.color value.");
 
       LoadingTipTextColor.SettingChanged += OnLoadingTipConfigChanged;
-
-      // LoadingTip.Text.Shadow
-      LoadingTipShadowEffectColor =
-          config.BindInOrder(
-              "LoadingTip.Text.Shadow",
-              "shadowEffectColor",
-              new Color(0f, 0f, 0f, 0.6f),
-              "LoadingTip.Text.Shadow.effectColor value.");
-
-      LoadingTipShadowEffectColor.SettingChanged += OnLoadingTipConfigChanged;
-
-      LoadingTipShadowEffectDistance =
-          config.BindInOrder(
-              "LoadingTip.Text.Shadow",
-              "shadowEffectDistance",
-              new Vector2(2f, -2f),
-              "LoadingTip.Text.Shadow.effectDistance value.");
-
-      LoadingTipShadowEffectDistance.SettingChanged += OnLoadingTipConfigChanged;
 
       // LoadingScreen.PanelSeparator
       LoadingScreenShowPanelSeparator =

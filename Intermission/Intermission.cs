@@ -1,12 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
 using BepInEx;
+using BepInEx.Logging;
 
 using ComfyLib;
 
 using HarmonyLib;
+
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,11 +23,13 @@ namespace Intermission {
   public class Intermission : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.intermission";
     public const string PluginName = "Intermission";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.3.0";
 
+    static ManualLogSource _logger;
     Harmony _harmony;
 
     void Awake() {
+      _logger = Logger;
       BindConfig(Config);
 
       if (IsModEnabled.Value) {
@@ -35,7 +42,7 @@ namespace Intermission {
       _harmony?.UnpatchSelf();
     }
 
-    public static void SetLoadingTip(Text tipText) {
+    public static void SetLoadingTip(TMP_Text tipText) {
       if (tipText && CustomAssets.GetRandomLoadingTip(out string loadingTipText)) {
         tipText.SetText(loadingTipText);
       }
@@ -47,30 +54,22 @@ namespace Intermission {
       }
     }
 
-    static Text _cachedTipText;
+    static TMP_Text _cachedTipText;
 
-    public static void SetupTipText(Text tipText = default) {
+    public static void SetupTipText(TMP_Text tipText = default) {
       if (tipText) {
         _cachedTipText = tipText;
       } else if (_cachedTipText) {
         tipText = _cachedTipText;
       } else {
-        return;
+        LogError($"Could not find a TipText to setup!");
       }
 
       tipText
-          .SetAlignment(TextAnchor.UpperCenter)
-          .SetHorizontalOverflow(HorizontalWrapMode.Wrap)
+          .SetAlignment(TextAlignmentOptions.Top)
+          .SetTextWrappingMode(TextWrappingModes.Normal)
           .SetFontSize(LoadingTipTextFontSize.Value)
           .SetColor(LoadingTipTextColor.Value);
-
-      tipText.GetComponent<Outline>()
-          .SetEnabled(false);
-
-      tipText.GetOrAddComponent<Shadow>()
-          .SetEnabled(true)
-          .SetEffectColor(LoadingTipShadowEffectColor.Value)
-          .SetEffectDistance(LoadingTipShadowEffectDistance.Value);
 
       tipText.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
@@ -87,7 +86,7 @@ namespace Intermission {
       } else if (_cachedLoadingImage) {
         loadingImage = _cachedLoadingImage;
       } else {
-        return;
+        LogError($"Could not find a LoadingImage to setup!");
       }
 
       loadingImage
@@ -104,7 +103,7 @@ namespace Intermission {
       } else if (_cachedPanelSeparator) {
         panelSeparator = _cachedPanelSeparator;
       } else {
-        return;
+        LogError($"Could not find a PanelSeparator to setup!");
       }
 
       panelSeparator.SetActive(LoadingScreenShowPanelSeparator.Value);
@@ -149,6 +148,14 @@ namespace Intermission {
       }
 
       transform.localScale = endScale;
+    }
+
+    public static void LogInfo(object o) {
+      _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+    }
+
+    public static void LogError(object o) {
+      _logger.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
     }
   }
 }
