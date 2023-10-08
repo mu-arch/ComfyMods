@@ -16,6 +16,13 @@
 
 ## Changelog
 
+### 2.15.0
+
+  * Updated for the `v0.217.24` patch.
+  * Removed `bdew-QuickConnect-1.6.0` and `JereKuusela-Server_Sync_Fix-1.2.0`.
+  * Added `ComfyMods-Enhuddlement-1.2.0` and `ComfyMods-Enigma-1.1.0`.
+  * Updated dependencies list to latest version.
+
 ### 2.14.0
 
   * Replaced `OdinPlus-PlantIt-0.1.5` with `ComfyMods-PlantThings-1.0.0`.
