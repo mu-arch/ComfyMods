@@ -38,6 +38,26 @@ namespace Pinnacle {
       _playerPins.Clear();
     }
 
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(Minimap.OnMapDblClick))]
+    static IEnumerable<CodeInstruction> OnMapDblClickTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Minimap), nameof(Minimap.m_selectedType))))
+          .Advance(offset: 1)
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<int, int>>(OnMapDblClickSelectedTypeDelegate))
+          .InstructionEnumeration();
+    }
+
+    static int OnMapDblClickSelectedTypeDelegate(int selectedType) {
+      if (IsModEnabled.Value && selectedType == (int) Minimap.PinType.Death) {
+        return -1;
+      }
+
+      return selectedType;
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Minimap.OnMapLeftClick))]
     static bool OnMapLeftClickPrefix(ref Minimap __instance) {

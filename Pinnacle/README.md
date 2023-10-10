@@ -85,6 +85,12 @@
 
 ## Changelog
 
+### 1.5.1
+
+  * Fixed a bug where you could not add a new pin if the 'Death' pin icon was selected.
+  * Changed permission level for `resetmap` command to be useable without cheats.
+  * Minor code refactoring.
+
 ### 1.5.0
 
   * Fixed for the `v0.217.22` patch.

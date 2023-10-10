@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 
+using static Pinnacle.PluginConfig;
 using static Pinnacle.PinImportExport;
 
 namespace Pinnacle {
@@ -32,6 +33,19 @@ namespace Pinnacle {
           "pinnacle-namepindata-clearall",
           "PInnacle: clears all name pin data from the Minimap.",
           args => ClearAllNamePinData());
+
+      if (IsModEnabled.Value) {
+        ModifyResetMapCommand();
+      }
+    }
+
+    static void ModifyResetMapCommand() {
+      if (Terminal.commands.TryGetValue("resetmap", out Terminal.ConsoleCommand command)) {
+        command.IsCheat = false;
+        command.OnlyServer = false;
+
+        Pinnacle.LogInfo($"Modified 'resetmap' command: IsCheat = false, OnlyServer = false.");
+      }
     }
 
     static void RemoveAllPins(Terminal.ConsoleEventArgs args) {
