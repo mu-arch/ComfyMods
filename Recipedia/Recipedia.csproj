@@ -109,18 +109,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\PluginConfig.cs" />
-    <Compile Include="Extensions\PluginExtensions.cs" />
+    <Compile Include="Core\RecipeFilterController.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\UnityExtensions.cs" />
+    <Compile Include="Patches\InventoryGuiPatch.cs" />
     <Compile Include="Recipedia.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\Core\UIBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Patches\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />
