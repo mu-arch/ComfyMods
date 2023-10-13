@@ -83,6 +83,11 @@ namespace Recipedia {
       inputField.placeholder = placeholder;
       inputField.onFocusSelectAll = false;
 
+      inputField.MoveToStartOfLine(false, false);
+
+      inputField.enabled = false;
+      inputField.enabled = true;
+
       return inputField;
     }
   }
