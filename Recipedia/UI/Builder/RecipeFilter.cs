@@ -88,6 +88,10 @@ namespace Recipedia {
       inputField.enabled = false;
       inputField.enabled = true;
 
+      Navigation navigation = inputField.navigation;
+      navigation.mode = Navigation.Mode.None;
+      inputField.navigation = navigation;
+
       return inputField;
     }
   }
