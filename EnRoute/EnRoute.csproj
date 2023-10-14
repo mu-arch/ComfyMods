@@ -104,6 +104,7 @@
   <ItemGroup>
     <Compile Include="Core\RouteRecord.cs" />
     <Compile Include="Core\RouteManager.cs" />
+    <Compile Include="Core\RouteToStats.cs" />
     <Compile Include="EnRoute.cs" />
     <Compile Include="Patches\ZNetPatch.cs" />
     <Compile Include="Patches\ZRoutedRPCPatch.cs" />

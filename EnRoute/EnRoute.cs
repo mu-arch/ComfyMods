@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using BepInEx;
@@ -23,9 +23,14 @@ namespace EnRoute {
       _harmony?.UnpatchSelf();
     }
 
-    public static readonly HashSet<int> NearbyMethodHashCodes = new() {
-      "Step".GetStableHashCode(),
-      "DestroyZDO".GetStableHashCode(),
+    public static readonly string[] NearbyRPCMethods = {
+      "Step",
+      "Destroy"
     };
+
+    public static readonly Dictionary<int, string> NearbyRPCMethodByHashCode =
+        NearbyRPCMethods.ToDictionary(method => method.GetStableHashCode());
+
+    public static readonly HashSet<int> NearbyMethodHashCodes = NearbyRPCMethodByHashCode.Keys.ToHashSet();
   }
 }

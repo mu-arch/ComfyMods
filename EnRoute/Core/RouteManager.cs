@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace EnRoute {
   public static class RouteManager {
@@ -16,14 +15,17 @@ namespace EnRoute {
       NetPeerRouting.Remove(netPeer);
     }
 
-    public static readonly HashSet<long> NearbyUserIds = new();
+    public static void RefreshRouteRecords(List<ZNetPeer> netPeers) {
+      foreach (ZNetPeer netPeer in netPeers) {
+        if (!netPeer.IsReady()) {
+          continue;
+        }
 
-    public static long RouteToNearbyCount = 0L;
-    public static long RouteToServerCount = 0L;
 
-    public static void LogStats(TimeSpan timeElapsed) {
-      ZLog.Log($"RouteToNearby: {RouteToNearbyCount}, RouteToServer: {RouteToServerCount}, Elapsed: {timeElapsed}");
+      }
     }
+
+    public static readonly HashSet<long> NearbyUserIds = new();
 
     public static void RefreshNearbyPlayers() {
       NearbyUserIds.Clear();
@@ -60,15 +62,16 @@ namespace EnRoute {
       if (netPeer.m_server) {
         rpcData.m_targetPeerID = netPeer.m_uid;
         RouteRPCToPeer(netPeer, rpcData);
-        RouteToServerCount++;
+        RouteToStats.LogRouteToServer(rpcData.m_methodHash);
       }
 
       if (targetPeerIds.Count > 0) {
         foreach (long targetPeerId in targetPeerIds) {
           rpcData.m_targetPeerID = targetPeerId;
           RouteRPCToPeer(netPeer, rpcData);
-          RouteToNearbyCount++;
         }
+
+        RouteToStats.LogRouteToNearby(rpcData.m_methodHash, targetPeerIds.Count);
       }
     }
 

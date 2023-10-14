@@ -32,7 +32,7 @@ namespace EnRoute {
 
       while (true) {
         yield return waitInterval;
-        RouteManager.LogStats(stopwatch.Elapsed);
+        RouteToStats.LogStats(stopwatch.Elapsed);
       }
     }
   }
