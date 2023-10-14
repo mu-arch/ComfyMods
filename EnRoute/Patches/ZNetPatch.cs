@@ -11,7 +11,13 @@ namespace EnRoute {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ZNet.RPC_PlayerList))]
     static void RPC_PlayerListPostfix() {
-      EnRoute.RefreshNearbyPlayers();
+      RouteManager.RefreshNearbyPlayers();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZNet.UpdatePlayerList))]
+    static void UpdatePlayerListPostfix(ZNet __instance) {
+      
     }
 
     [HarmonyPostfix]
@@ -26,8 +32,7 @@ namespace EnRoute {
 
       while (true) {
         yield return waitInterval;
-
-        EnRoute.LogStats(stopwatch.Elapsed);
+        RouteManager.LogStats(stopwatch.Elapsed);
       }
     }
   }

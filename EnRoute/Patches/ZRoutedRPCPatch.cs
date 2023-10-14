@@ -5,6 +5,18 @@ using HarmonyLib;
 namespace EnRoute {
   [HarmonyPatch(typeof(ZRoutedRpc))]
   static class ZRoutedRPCPatch {
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZRoutedRpc.AddPeer))]
+    static void AddPeerPostfix(ZNetPeer peer) {
+      RouteManager.OnAddPeer(peer);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(ZRoutedRpc.RemovePeer))]
+    static void RemovePeerPostfix(ZNetPeer peer) {
+      RouteManager.OnRemovePeer(peer);
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(ZRoutedRpc.RouteRPC))]
     static bool RouteRPCPrefix(ZRoutedRpc __instance, ZRoutedRpc.RoutedRPCData rpcData) {
@@ -14,37 +26,9 @@ namespace EnRoute {
         return true;
       }
 
-      foreach (ZNetPeer netPeer in __instance.m_peers) {
-        if (netPeer.IsReady()) {
-          RouteRPCToPeer(netPeer, EnRoute.NearbyUserIds, rpcData);
-        }
-      }
+      RouteManager.RouteRPCToNearbyPeers(__instance, rpcData);
 
       return false;
-    }
-
-    static readonly ZPackage _package = new();
-
-    static void RouteRPCToPeer(ZNetPeer netPeer, HashSet<long> targetPeerIds, ZRoutedRpc.RoutedRPCData rpcData) {
-      if (netPeer.m_server) {
-        rpcData.m_targetPeerID = netPeer.m_uid;
-        RouteRPCToPeer(netPeer, rpcData);
-        EnRoute.RouteToServerCount++;
-      }
-
-      if (targetPeerIds.Count > 0) {
-        foreach (long targetPeerId in targetPeerIds) {
-          rpcData.m_targetPeerID = targetPeerId;
-          RouteRPCToPeer(netPeer, rpcData);
-          EnRoute.RouteToNearbyCount++;
-        }
-      }
-    }
-
-    static void RouteRPCToPeer(ZNetPeer netPeer, ZRoutedRpc.RoutedRPCData rpcData) {
-      _package.Clear();
-      rpcData.Serialize(_package);
-      netPeer.m_rpc.Invoke("RoutedRPC", _package);
     }
   }
 }
