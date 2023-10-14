@@ -90,7 +90,10 @@ namespace Enhuddlement {
       hudData.m_name
           .SetColor(nameTextColor)
           .SetFontSize(nameTextFontSize)
-          .SetAlignment(TMPro.TextAlignmentOptions.Bottom);
+          .SetTextWrappingMode(TextWrappingModes.NoWrap)
+          .SetOverflowMode(TextOverflowModes.Overflow)
+          .SetAlignment(TextAlignmentOptions.Bottom)
+          .SetEnableAutoSizing(false);
 
       hudData.m_name.GetComponent<RectTransform>()
           .SetAnchorMin(new(0.5f, 0.5f))

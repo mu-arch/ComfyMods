@@ -50,6 +50,10 @@ modify settings in-game.
 
 ## Changelog
 
+### 1.2.1
+
+  * Fixed a bug for EnemyHud names were being word-wrapped.
+
 ### 1.2.0
 
   * Fixed for the `v0.217.24` patch.
