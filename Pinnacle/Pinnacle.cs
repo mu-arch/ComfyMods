@@ -17,7 +17,7 @@ namespace Pinnacle {
   public class Pinnacle : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.pinnacle";
     public const string PluginName = "Pinnacle";
-    public const string PluginVersion = "1.5.1";
+    public const string PluginVersion = "1.5.2";
 
     static ManualLogSource _logger;
     Harmony _harmony;
@@ -155,8 +155,6 @@ namespace Pinnacle {
         LogWarning($"No local Player found.");
         return;
       }
-
-      targetPosition.y = GetHeight(targetPosition);
 
       LogInfo($"Teleporting player from {player.transform.position} to {targetPosition}.");
       player.TeleportTo(targetPosition, player.transform.rotation, distantTeleport: true);

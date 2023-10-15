@@ -85,6 +85,10 @@
 
 ## Changelog
 
+### 1.5.2
+
+  * Removed the `targetPosition.y` override in the `TeleportTo()` helper method as this is now handled by vanilla code.
+
 ### 1.5.1
 
   * Fixed a bug where you could not add a new pin if the 'Death' pin icon was selected.
