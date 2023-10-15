@@ -10,7 +10,7 @@
 
   * Go to Settings > Browse profile folder.
   * Navigate to the `BepInEx > config > Intermission` folder.
-  * Place `.png` image files in this folder.
+  * Place `.png` or `.jpg` image files in this folder.
   * Create (or modify) `tips.txt` textfile in this folder, one loading tip per line.
 
   ![Thunderstore Example](https://i.imgur.com/P1MY0X8.png)
@@ -25,7 +25,7 @@
 
 ## Create a content mod for Thunderstore
 
-  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.0.0`.
+  * In your `manifest.json` add a dependency to `ComfyMods-Intermission-1.3.0`.
   * Structure your content mod zip file to resemble the following example:
 
   ```
@@ -34,6 +34,7 @@
       - [Intermission]
         - image1.png
         - image2.png
+        - image3.jpg
         - tips.txt
     - icon.png
     - manifest.json
@@ -56,7 +57,7 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Intermission_v1.0.2.zip`.
+  * Go to Settings > Import local mod > Select `Intermission_v1.3.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -66,6 +67,20 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.3.0
+
+  * Fixed for the `v0.217.24` patch.
+  * Added work-around for the `FejdStartup` loading text UI state being locked due to the `menuAnimator`.
+  * Removed `shadowEffectColor` and `shadowEffectDistance` config options due to the change to `TextMeshPro`.
+
+### 1.2.0
+
+  * Added support for `.jpg` image files.
+
+### 1.1.0
+
+  * Updated for Valheim `v0.216.9` patch.
 
 ### 1.0.2
 

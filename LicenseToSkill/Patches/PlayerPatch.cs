@@ -4,7 +4,7 @@ using static LicenseToSkill.PluginConfig;
 
 namespace LicenseToSkill {
   [HarmonyPatch(typeof(Player))]
-  public class PlayerPatch {
+  static class PlayerPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Player.HardDeath))]
     static void HardDeathPostfix(ref Player __instance, ref bool __result) {

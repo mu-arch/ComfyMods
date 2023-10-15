@@ -4,14 +4,19 @@ using System.Reflection.Emit;
 
 using HarmonyLib;
 
+using static Atlas.PluginConfig;
+
 namespace Atlas {
   [HarmonyPatch(typeof(ZoneSystem))]
   static class ZoneSystemPatch {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(ZoneSystem.GenerateLocationsIfNeeded))]
     static bool GenerateLocationsIfNeededPrefix() {
-      ZLog.Log($"Skipping call to GenerateLocationsIfNeeded...");
-      return false;
+      if (IgnoreGenerateLocationsIfNeeded.Value) {
+        return false;
+      }
+
+      return true;
     }
 
     [HarmonyTranspiler]
@@ -20,17 +25,7 @@ namespace Atlas {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(ZLog), nameof(ZLog.Log))),
               new CodeMatch(OpCodes.Ldloc_3),
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(ZoneSystem), nameof(ZoneSystem.m_pgwVersion))))
-          .Advance(offset: 2)
-          .InsertAndAdvance(
-              new CodeInstruction(OpCodes.Ldarg_0),
-              Transpilers.EmitDelegate<Func<int, ZoneSystem, int>>(CheckPgwVersionDelegate))
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldloc_S),
               new CodeMatch(OpCodes.Ldarg_0),
               new CodeMatch(
                   OpCodes.Ldfld, AccessTools.Field(typeof(ZoneSystem), nameof(ZoneSystem.m_locationVersion))))
@@ -41,20 +36,15 @@ namespace Atlas {
           .InstructionEnumeration();
     }
 
-    static int CheckPgwVersionDelegate(int pgwVersion, ZoneSystem zoneSystem) {
-      ZLog.Log($"File pgwVersion is: {pgwVersion}, override to: {zoneSystem.m_pgwVersion}");
-      return zoneSystem.m_pgwVersion;
-    }
-
     static int CheckLocationVersionDelegate(int locationVersion, ZoneSystem zoneSystem) {
-      ZLog.Log($"File locationVersion is: {locationVersion}, override to: {zoneSystem.m_locationVersion}");
-      return zoneSystem.m_locationVersion;
-    }
+      if (IgnoreLocationVersion.Value) {
+        PluginLogger.LogInfo(
+            $"File locationVersion is: {locationVersion}, overriding to: {zoneSystem.m_locationVersion}");
 
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(ZoneSystem.Load))]
-    static void LoadPostfix(ref ZoneSystem __instance) {
-      ZLog.Log($"Verify locationInstances count: {__instance.m_locationInstances.Count}");
+        return zoneSystem.m_locationVersion;
+      }
+
+      return locationVersion;
     }
   }
 }

@@ -10,19 +10,19 @@ namespace Silence {
     public static ConfigEntry<bool> HideChatWindow { get; private set; }
     public static ConfigEntry<bool> HideInWorldTexts { get; private set; }
 
-    public static void BindConfig(ConfigFile Config) {
+    public static void BindConfig(ConfigFile config) {
       IsModEnabled =
-          Config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
+          config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod (restart required).");
 
       ToggleSilenceShortcut =
-          Config.Bind(
+          config.Bind(
               "Silence",
               "toggleSilenceShortcut",
               new KeyboardShortcut(KeyCode.S, KeyCode.RightControl),
               "Shortcut to toggle silence.");
 
-      HideChatWindow = Config.Bind("Silence", "hideChatWindow", true, "When silenced, chat window is hidden.");
-      HideInWorldTexts = Config.Bind("Silence", "hideInWorldTexts", true, "When silenced, hides text in-world.");
+      HideChatWindow = config.Bind("Silence", "hideChatWindow", true, "When silenced, chat window is hidden.");
+      HideInWorldTexts = config.Bind("Silence", "hideInWorldTexts", true, "When silenced, hides text in-world.");
     }
   }
 }

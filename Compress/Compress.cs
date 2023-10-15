@@ -4,8 +4,6 @@ using BepInEx.Logging;
 
 using HarmonyLib;
 
-using Steamworks;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,16 +13,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Compress {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class Compress : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.compress";
     public const string PluginName = "Compress";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.3.0";
 
     static ManualLogSource _logger;
     static ConfigEntry<bool> _isModEnabled;
@@ -155,139 +150,6 @@ namespace Compress {
       }
     }
 
-    class AsyncSocket : IDisposable {
-      readonly ZSteamSocket _socket;
-      readonly BlockingCollection<byte[]> _sendQueue;
-      readonly CancellationTokenSource _cancellationTokenSource;
-
-      public AsyncSocket(ZSteamSocket socket) {
-        _socket = socket;
-        _sendQueue = new(new ConcurrentQueue<byte[]>());
-        _cancellationTokenSource = new();
-
-        new Thread(() => SendLoop(_cancellationTokenSource.Token)).Start();
-      }
-
-      public void QueuePackage(byte[] data) {
-        _sendQueue.Add(data);
-      }
-
-      void SendLoop(CancellationToken cancellationToken) {
-        while (!cancellationToken.IsCancellationRequested) {
-          try {
-            byte[] data = _sendQueue.Take();
-
-            while (!cancellationToken.IsCancellationRequested && !SendPackage(data)) {
-              Thread.Sleep(millisecondsTimeout: 50);
-            }
-          } catch (OperationCanceledException) {
-            break;
-          } catch (Exception exception) {
-            LogError($"{exception}");
-          }
-        }
-      }
-
-      bool SendPackage(byte[] data) {
-        if (!_socket.IsConnected()) {
-          return false;
-        }
-
-        int dataLength = data.Length;
-
-        IntPtr intPtr = Marshal.AllocHGlobal(dataLength);
-        Marshal.Copy(data, 0, intPtr, dataLength);
-
-        EResult result =
-            ZNet.m_isServer
-                ? SteamGameServerNetworkingSockets.SendMessageToConnection(
-                      _socket.m_con, intPtr, (uint) dataLength, 8, out _)
-                : SteamNetworkingSockets.SendMessageToConnection(
-                      _socket.m_con, intPtr, (uint) dataLength, 8, out _);
-
-        Marshal.FreeHGlobal(intPtr);
-
-        if (result != EResult.k_EResultOK) {
-          return false;
-        }
-
-        _socket.m_totalSent += dataLength;
-        return true;
-      }
-
-      bool _isDisposed;
-
-      protected virtual void Dispose(bool disposing) {
-        if (_isDisposed) {
-          return;
-        }
-
-        if (disposing) {
-          _cancellationTokenSource.Cancel();
-          _cancellationTokenSource.Dispose();
-          _sendQueue.Dispose();
-        }
-
-        _isDisposed = true;
-      }
-
-      public void Dispose() {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-      }
-    }
-
-    static readonly ConcurrentDictionary<HSteamNetConnection, AsyncSocket> _asyncSocketByConnection = new();
-
-    [HarmonyPatch(typeof(ZNet))]
-    class ZNetPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZNet.OnNewConnection))]
-      static void OnNewConnectionPrefix(ref ZNet __instance, ref ZNetPeer peer) {
-        ZSteamSocket socket = (ZSteamSocket) peer.m_socket;
-
-        if (_asyncSocketByConnection.TryAdd(socket.m_con, new AsyncSocket(socket))) {
-          LogInfo($"Wrapping socket for peer {peer.m_socket.GetHostName()} into AsyncSocket...");
-        }
-      }
-    }
-
-    [HarmonyPatch(typeof(ZSteamSocket))]
-    class ZSteamSocketPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.Send))]
-      static bool SendPrefix(ref ZSteamSocket __instance, ref ZPackage pkg) {
-        if (pkg.Size() <= 0 || !__instance.IsConnected()) {
-          return false;
-        }
-
-        if (_asyncSocketByConnection.TryGetValue(__instance.m_con, out AsyncSocket socket)) {
-          socket.QueuePackage(pkg.GetArray());
-          return false;
-        }
-
-        return true;
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.SendQueuedPackages))]
-      static bool SendQueuedPackagesPrefix(ref ZSteamSocket __instance) {
-        if (_asyncSocketByConnection.ContainsKey(__instance.m_con)) {
-          return false;
-        }
-
-        return true;
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(ZSteamSocket.Close))]
-      static void ClosePrefix(ref ZSteamSocket __instance) {
-        if (_asyncSocketByConnection.TryRemove(__instance.m_con, out AsyncSocket socket)) {
-          socket.Dispose();
-        }
-      }
-    }
-
     [HarmonyPatch(typeof(ZPackage))]
     class ZPackagePatch {
       [HarmonyPrefix]
@@ -339,10 +201,6 @@ namespace Compress {
 
     static void LogInfo(string message) {
       _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
-    }
-
-    static void LogError(string message) {
-      _logger.LogError($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {message}");
     }
   }
 }

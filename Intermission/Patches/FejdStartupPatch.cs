@@ -1,6 +1,6 @@
-﻿using ComfyLib;
+﻿using HarmonyLib;
 
-using HarmonyLib;
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,19 +11,24 @@ namespace Intermission {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(FejdStartup.Awake))]
     static void AwakePostfix(ref FejdStartup __instance) {
-      Image _loadingImage = __instance.m_loading.transform.Find("Bkg").Ref()?.GetComponent<Image>();
-      Text _loadingText = __instance.m_loading.transform.Find("Text").Ref()?.GetComponent<Text>();
+      Image loadingImage = __instance.m_loading.transform.Find("Bkg").GetComponent<Image>();
 
-      Transform _panelSeparator =
+      // FejdStartup.m_menuAnimator locks the vanilla TMP_Text UI state, so work-around is to clone it to a new object.
+      TMP_Text sourceLoadingText = __instance.m_loading.transform.Find("Text").GetComponent<TMP_Text>();
+      TMP_Text loadingText = UnityEngine.Object.Instantiate(sourceLoadingText, __instance.m_loading.transform);
+      loadingText.name = sourceLoadingText.name;
+      UnityEngine.Object.Destroy(sourceLoadingText.gameObject);
+
+      Transform panelSeparator =
           UnityEngine.Object.Instantiate(
               __instance.m_menuList.transform.Find("ornament"), __instance.m_loading.transform);
 
-      Intermission.SetupTipText(_loadingText);
-      Intermission.SetupLoadingImage(_loadingImage);
-      Intermission.SetupPanelSeparator(_panelSeparator);
+      Intermission.SetupTipText(loadingText);
+      Intermission.SetupLoadingImage(loadingImage);
+      Intermission.SetupPanelSeparator(panelSeparator);
 
-      Intermission.SetLoadingTip(_loadingText);
-      Intermission.SetLoadingImage(_loadingImage);
+      Intermission.SetLoadingTip(loadingText);
+      Intermission.SetLoadingImage(loadingImage);
     }
   }
 }

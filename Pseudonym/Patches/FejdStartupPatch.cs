@@ -1,6 +1,8 @@
-﻿using HarmonyLib;
+﻿using System.Text.RegularExpressions;
 
-using System.Text.RegularExpressions;
+using HarmonyLib;
+
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,21 +13,22 @@ namespace Pseudonym {
     static Button _editButton;
     static PlayerProfile _editingPlayerProfile;
 
-    static Text _newCharacterPanelTopicText;
+    static TextMeshProUGUI _newCharacterPanelTopicText;
     static Button.ButtonClickedEvent _onNewCharacterDoneEvent;
     static PlayerCustomizaton _playerCustomization;
 
     static string _topicText;
     static int _characterLimit;
-    static InputField.ContentType _contentType;
+    static TMP_InputField.ContentType _contentType;
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(FejdStartup.Start))]
     static void StartPostfix(ref FejdStartup __instance) {
       CreateEditButton(__instance);
 
-      _newCharacterPanelTopicText = __instance.m_newCharacterPanel.transform.Find("Topic").Ref()?.GetComponent<Text>();
-      _topicText = Localization.m_instance.textStrings[_newCharacterPanelTopicText];
+      _newCharacterPanelTopicText =
+          __instance.m_newCharacterPanel.transform.Find("Topic").GetComponent<TextMeshProUGUI>();
+      _topicText = Localization.m_instance.textMeshStrings[_newCharacterPanelTopicText];
 
       _onNewCharacterDoneEvent = __instance.m_csNewCharacterDone.onClick;
 
@@ -45,7 +48,7 @@ namespace Pseudonym {
       _editButton.onClick.RemoveAllListeners();
       _editButton.onClick.AddListener(() => OnEditCharacter(fejdStartup));
 
-      _editButton.GetComponentInChildren<Text>().text = "Edit";
+      _editButton.GetComponentInChildren<TextMeshProUGUI>().text = "Edit";
       _editButton.GetComponent<RectTransform>().anchoredPosition += new Vector2(190f, 0f);
     }
 
@@ -59,20 +62,20 @@ namespace Pseudonym {
 
     static void OnEditCharacter(FejdStartup fejdStartup) {
       if (fejdStartup.TryGetPlayerProfile(out PlayerProfile profile)) {
-        ZLog.Log($"Editing existing player: {profile.GetName()}");
+        Pseudonym.LogInfo($"Editing existing player: {profile.GetName()}");
         _editingPlayerProfile = profile;
 
         fejdStartup.m_newCharacterPanel.SetActive(true);
         fejdStartup.m_newCharacterError.SetActive(false);
         fejdStartup.m_selectCharacterPanel.SetActive(false);
 
-        Localization.m_instance.textStrings[_newCharacterPanelTopicText] = $"Edit Character: {profile.GetName()}";
+        Localization.m_instance.textMeshStrings[_newCharacterPanelTopicText] = $"Edit Character: {profile.GetName()}";
 
         fejdStartup.m_csNewCharacterDone.onClick = new();
         fejdStartup.m_csNewCharacterDone.onClick.AddListener(() => OnEditCharacterDone(fejdStartup));
 
         fejdStartup.m_csNewCharacterName.characterLimit = 20;
-        fejdStartup.m_csNewCharacterName.contentType = InputField.ContentType.Standard;
+        fejdStartup.m_csNewCharacterName.contentType = TMP_InputField.ContentType.Standard;
         fejdStartup.m_csNewCharacterName.onValidateInput += OnEditCharacterNameValidateInput;
         fejdStartup.m_csNewCharacterName.text = profile.GetName();
 
@@ -85,8 +88,6 @@ namespace Pseudonym {
     }
 
     static char OnEditCharacterNameValidateInput(string text, int charIndex, char addedChar) {
-      ZLog.Log($"Validating: '{addedChar}' at index: {charIndex}, text: {text}");
-
       return
           _nameRegex.IsMatch(char.ToString(addedChar)) && (charIndex > 0 || addedChar != ' ')
               ? addedChar
@@ -112,7 +113,7 @@ namespace Pseudonym {
         customization.m_hairLevel.SetValueWithoutNotify(
             Mathf.InverseLerp(customization.m_hairMinLevel, customization.m_hairMaxLevel, hairLevel));
       } else {
-        ZLog.LogWarning($"Could not setup player customization for editing.");
+        Pseudonym.LogError($"Could not setup player customization for editing.");
       }
     }
 
@@ -133,7 +134,7 @@ namespace Pseudonym {
     static void OnEditCharacterDone(FejdStartup fejdStartup) {
       if (_editingPlayerProfile != null) {
         string playerName = fejdStartup.m_csNewCharacterName.text;
-        ZLog.Log($"Saving existing player: {_editingPlayerProfile.GetName()} -> {playerName}");
+        Pseudonym.LogInfo($"Saving existing player: {_editingPlayerProfile.GetName()} -> {playerName}");
 
         _editingPlayerProfile.SetName(playerName);
         _editingPlayerProfile.SavePlayerData(fejdStartup.m_playerInstance.GetComponent<Player>());
@@ -142,8 +143,9 @@ namespace Pseudonym {
 
       _editingPlayerProfile = null;
 
-      Localization.m_instance.textStrings[_newCharacterPanelTopicText] = _topicText;
+      Localization.m_instance.textMeshStrings[_newCharacterPanelTopicText] = _topicText;
       fejdStartup.m_csNewCharacterDone.onClick = _onNewCharacterDoneEvent;
+      fejdStartup.m_csNewCharacterName.text = string.Empty;
       fejdStartup.m_csNewCharacterName.characterLimit = _characterLimit;
       fejdStartup.m_csNewCharacterName.contentType = _contentType;
       fejdStartup.m_csNewCharacterName.onValidateInput -= OnEditCharacterNameValidateInput;

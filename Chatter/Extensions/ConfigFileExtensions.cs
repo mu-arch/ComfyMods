@@ -3,18 +3,20 @@ using System.Collections.Generic;
 
 using BepInEx.Configuration;
 
-using HarmonyLib;
+using Chatter;
+
+using TMPro;
 
 namespace ComfyLib {
   public static class ConfigFileExtensions {
-    static readonly Dictionary<string, int> SectionToOrderCache = new();
+    static readonly Dictionary<string, int> _sectionToOrderCache = new();
 
     static int GetSettingOrder(string section) {
-      if (!SectionToOrderCache.TryGetValue(section, out int order)) {
+      if (!_sectionToOrderCache.TryGetValue(section, out int order)) {
         order = 0;
       }
 
-      SectionToOrderCache[section] = order - 1;
+      _sectionToOrderCache[section] = order - 1;
       return order;
     }
 
@@ -43,9 +45,10 @@ namespace ComfyLib {
         string key,
         T defaultValue,
         string description,
-        System.Action<ConfigEntryBase> customDrawer = null,
+        Action<ConfigEntryBase> customDrawer = null,
         bool browsable = true,
-        bool hideDefaultButton = false) {
+        bool hideDefaultButton = false,
+        bool hideSettingName = false) {
       return config.Bind(
           section,
           key,
@@ -57,43 +60,32 @@ namespace ComfyLib {
                 Browsable = true,
                 CustomDrawer = customDrawer,
                 HideDefaultButton = hideDefaultButton,
+                HideSettingName = hideSettingName,
                 Order = GetSettingOrder(section)
               }));
     }
 
     public static StringListConfigEntry BindInOrder(
         this ConfigFile config, string section, string key, string description, string valuesSeparator) {
-      return new StringListConfigEntry(config, section, key, description, valuesSeparator, GetSettingOrder(section));
+      return new StringListConfigEntry(config, section, key, description, valuesSeparator);
+    }
+
+    public static void OnSettingChanged<T>(
+        this ConfigEntry<T> configEntry, Action settingChangedHandler) {
+      configEntry.SettingChanged += (_, _) => settingChangedHandler();
+    }
+
+    public static void OnSettingChanged<T>(
+        this ConfigEntry<T> configEntry, Action<T> settingChangedHandler) {
+      configEntry.SettingChanged += (_, _) => settingChangedHandler(configEntry.Value);
     }
 
     internal sealed class ConfigurationManagerAttributes {
-      public System.Action<ConfigEntryBase> CustomDrawer;
+      public Action<ConfigEntryBase> CustomDrawer;
       public bool? Browsable;
       public bool? HideDefaultButton;
+      public bool? HideSettingName;
       public int? Order;
-    }
-
-    public static void LateBindInOrder(this ConfigFile config, Action<ConfigFile> bindFunc) {
-      _lateBindEntries.Enqueue(() => bindFunc.Invoke(config));
-    }
-
-    static readonly Queue<Action> _lateBindEntries = new();
-
-    [HarmonyPatch(typeof(FejdStartup))]
-    static class FejdStartupPatch {
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(FejdStartup.Awake))]
-      static void AwakePostfix() {
-        while (_lateBindEntries.Count > 0) {
-          _lateBindEntries.Dequeue()?.Invoke();
-        }
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(FejdStartup.OnDestroy))]
-      static void OnDestroyPostfix() {
-        _lateBindEntries.Clear();
-      }
     }
   }
 }

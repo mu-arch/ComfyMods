@@ -1,9 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 
 using BepInEx;
 using BepInEx.Logging;
+
+using ComfyLib;
 
 using HarmonyLib;
 
@@ -16,18 +16,24 @@ namespace ColorfulWards {
   public class ColorfulWards : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulwards";
     public const string PluginName = "ColorfulWards";
-    public const string PluginVersion = "1.4.1";
+    public const string PluginVersion = "1.6.0";
 
-    static readonly Dictionary<PrivateArea, PrivateAreaData> PrivateAreaDataCache = new();
+    public static readonly Color NoColor = new(-1f, -1f, -1f);
+    public static readonly Vector3 NoColorVector3 = new(-1f, -1f, -1f);
+    public static readonly Vector3 BlackColorVector3 = new(0.00012345f, 0.00012345f, 0.00012345f);
 
-    static readonly int PrivateAreaColorHashCode = "PrivateAreaColor".GetStableHashCode();
-    static readonly int PrivateAreaColorAlphaHashCode = "PrivateAreaColorAlpha".GetStableHashCode();
-    static readonly int WardLastColoredByHashCode = "WardLastColoredBy".GetStableHashCode();
+    public static readonly int ColorShaderId = Shader.PropertyToID("_Color");
+    public static readonly int EmissionColorShaderId = Shader.PropertyToID("_EmissionColor");
+
+    public static readonly int PrivateAreaColorHashCode = "PrivateAreaColor".GetStableHashCode();
+    public static readonly int PrivateAreaColorAlphaHashCode = "PrivateAreaColorAlpha".GetStableHashCode();
+    public static readonly int WardLastColoredByHashCode = "WardLastColoredBy".GetStableHashCode();
+    public static readonly int WardLastColoredByHostHashCode = "WardLastColoredByHost".GetStableHashCode();
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       _logger = Logger;
 
       BindConfig(Config);
@@ -35,153 +41,48 @@ namespace ColorfulWards {
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    public static IEnumerator ChangeWardColorCoroutine(PrivateArea targetWard) {
-      yield return null;
-
+    public static void ChangeWardColor(PrivateArea targetWard) {
       if (!targetWard) {
-        yield break;
+        return;
       }
 
       if (!targetWard.m_nview || !targetWard.m_nview.IsValid()) {
         _logger.LogWarning("PrivateArea does not have a valid ZNetView.");
-        yield break;
+        return;
       }
 
       if (!targetWard.m_piece.IsCreator()) {
         _logger.LogWarning("You are not the owner of this Ward.");
-        yield break;
+        return;
       }
 
       targetWard.m_nview.ClaimOwnership();
-
-      targetWard.m_nview.m_zdo.Set(PrivateAreaColorHashCode, Utils.ColorToVec3(TargetWardColor.Value));
-      targetWard.m_nview.m_zdo.Set(PrivateAreaColorAlphaHashCode, TargetWardColor.Value.a);
-      targetWard.m_nview.m_zdo.Set(WardLastColoredByHashCode, Player.m_localPlayer?.GetPlayerID() ?? 0L);
+      SetPrivateAreaColorZDOValues(targetWard.m_nview.m_zdo, TargetWardColor.Value);
 
       targetWard.m_flashEffect?.Create(targetWard.transform.position, targetWard.transform.rotation);
 
-      if (PrivateAreaDataCache.TryGetValue(targetWard, out PrivateAreaData privateAreaData)) {
-        privateAreaData.TargetColor = TargetWardColor.Value;
-        SetPrivateAreaColors(targetWard, privateAreaData);
-      }
-
-      targetWard.StartCoroutine(UpdateEnabledEffect(targetWard));
-    }
-
-    static readonly WaitForEndOfFrame WaitForEndOfFrame = new();
-
-    static IEnumerator UpdateEnabledEffect(PrivateArea privateArea) {
-      if (privateArea.IsEnabled()) {
-        privateArea.m_enabledEffect.SetActive(false);
-        yield return WaitForEndOfFrame;
-        privateArea.m_enabledEffect.SetActive(true);
+      if (targetWard.TryGetComponent(out PrivateAreaColor privateAreaColor)) {
+        privateAreaColor.UpdateColors(true);
       }
     }
 
-    [HarmonyPatch(typeof(PrivateArea))]
-    class PrivateAreaPatch {
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(PrivateArea.IsInside))]
-      static bool PrivateAreaIsInside(
-          ref PrivateArea __instance, ref bool __result, Vector3 point, float radius) {
-        if (!IsModEnabled.Value || !UseRadiusForVerticalCheck.Value) {
-          return true;
-        }
-
-        __result = Vector3.Distance(__instance.transform.position, point) < __instance.m_radius + radius;
-        return false;
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.Awake))]
-      static void PrivateAreaAwakePostfix(ref PrivateArea __instance) {
-        if (!IsModEnabled.Value || !__instance) {
-          return;
-        }
-
-        PrivateAreaDataCache.Add(__instance, new PrivateAreaData(__instance));
-      }
-
-      [HarmonyPrefix]
-      [HarmonyPatch(nameof(PrivateArea.OnDestroy))]
-      static void PrivateAreaOnDestroyPrefix(ref PrivateArea __instance) {
-        PrivateAreaDataCache.Remove(__instance);
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.UpdateStatus))]
-      static void PrivateAreaUpdateStatusPostfix(ref PrivateArea __instance) {
-        if (!IsModEnabled.Value
-            || !__instance
-            || !__instance.m_nview
-            || __instance.m_nview.m_zdo == null
-            || __instance.m_nview.m_zdo.m_zdoMan == null
-            || __instance.m_nview.m_zdo.m_vec3 == null
-            || !__instance.m_nview.m_zdo.m_vec3.ContainsKey(PrivateAreaColorHashCode)
-            || !PrivateAreaDataCache.TryGetValue(__instance, out PrivateAreaData privateAreaData)) {
-          return;
-        }
-
-        Color wardColor = Utils.Vec3ToColor(__instance.m_nview.m_zdo.m_vec3[PrivateAreaColorHashCode]);
-        wardColor.a = __instance.m_nview.m_zdo.GetFloat(PrivateAreaColorAlphaHashCode, defaultValue: 1f);
-
-        privateAreaData.TargetColor = wardColor;
-        SetPrivateAreaColors(__instance, privateAreaData);
-      }
-
-      [HarmonyPostfix]
-      [HarmonyPatch(nameof(PrivateArea.GetHoverText))]
-      static void PrivateAreaGetHoverText(ref PrivateArea __instance, ref string __result) {
-        if (!IsModEnabled.Value
-            || !ShowChangeColorHoverText.Value
-            || !__instance
-            || !__instance.m_piece
-            || !__instance.m_piece.IsCreator()) {
-          return;
-        }
-
-        __result =
-            string.Format(
-                "{0}\n[<color={1}>{2}</color>] Change ward color to: <color=#{3}>#{3}</color>",
-                __result,
-                "#FFA726",
-                ChangeWardColorShortcut.Value,
-                GetColorHtmlString(TargetWardColor.Value));
-      }
+    static void SetPrivateAreaColorZDOValues(ZDO zdo, Color targetWardColor) {
+      zdo.Set(PrivateAreaColorHashCode, ColorToVector3(targetWardColor));
+      zdo.Set(PrivateAreaColorAlphaHashCode, targetWardColor.a);
+      zdo.Set(WardLastColoredByHashCode, Player.m_localPlayer.Ref()?.GetPlayerID() ?? 0L);
+      zdo.Set(WardLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
     }
 
-    static void SetPrivateAreaColors(PrivateArea privateArea, PrivateAreaData privateAreaData) {
-      foreach (Light light in privateAreaData.PointLight) {
-        light.color = privateAreaData.TargetColor;
-      }
+    public static Vector3 ColorToVector3(Color color) {
+      return color == Color.black ? BlackColorVector3 : new(color.r, color.g, color.b);
+    }
 
-      foreach (Material material in privateAreaData.GlowMaterial) {
-        material.SetColor("_EmissionColor", privateAreaData.TargetColor);
-      }
-
-      foreach (ParticleSystem system in privateAreaData.SparcsSystem) {
-        ParticleSystem.ColorOverLifetimeModule colorOverLifetime = system.colorOverLifetime;
-        colorOverLifetime.color = new ParticleSystem.MinMaxGradient(privateAreaData.TargetColor);
-
-        ParticleSystem.MainModule main = system.main;
-        main.startColor = privateAreaData.TargetColor;
-      }
-
-      foreach (ParticleSystemRenderer renderer in privateAreaData.SparcsRenderer) {
-        renderer.material.color = privateAreaData.TargetColor;
-      }
-
-      foreach (ParticleSystem system in privateAreaData.FlareSystem) {
-        Color flareColor = privateAreaData.TargetColor;
-        flareColor.a = 0.1f;
-
-        ParticleSystem.MainModule main = system.main;
-        main.startColor = flareColor;
-      }
+    public static Color Vector3ToColor(Vector3 vector3) {
+      return vector3 == BlackColorVector3 ? Color.black : new(vector3.x, vector3.y, vector3.z);
     }
   }
 }

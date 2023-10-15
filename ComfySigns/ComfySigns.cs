@@ -19,17 +19,17 @@ namespace ComfySigns {
   public class ComfySigns : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.comfysigns";
     public const string PluginName = "ComfySigns";
-    public const string PluginVersion = "1.2.0";
+    public const string PluginVersion = "1.5.0";
 
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
@@ -79,16 +79,7 @@ namespace ComfySigns {
     }
 
     public static readonly EventHandler OnSignConfigChanged = (_, _) => {
-      TMP_FontAsset font = UIFonts.GetFontAsset(SignDefaultTextFont.Value);
-      Color color = SignDefaultTextColor.Value;
-
-      foreach (Sign sign in Resources.FindObjectsOfTypeAll<Sign>()) {
-        if (sign && sign.m_nview && sign.m_nview.IsValid() && sign.m_textWidget) {
-          sign.m_textWidget
-              .SetFont(font)
-              .SetColor(color);
-        }
-      }
+      SetupSignPrefabs(ZNetScene.s_instance);
     };
 
     public static readonly EventHandler OnSignTextTagsConfigChanged = (_, _) => {
@@ -110,5 +101,54 @@ namespace ComfySigns {
         }
       }
     };
+
+    public static void SetupSignPrefabs(ZNetScene netScene) {
+      if (!netScene) {
+        return;
+      }
+
+      TMP_FontAsset fontAsset = UIFonts.GetFontAsset(SignDefaultTextFontAsset.Value);
+      Color fontColor = SignDefaultTextFontColor.Value;
+
+      if (UseFallbackFonts.Value) {
+        AddFallbackFonts(fontAsset);
+      }
+
+      foreach (GameObject prefab in netScene.m_namedPrefabs.Values) {
+        if (prefab.TryGetComponent(out Sign sign)) {
+          SetupSignFont(sign, fontAsset, fontColor);
+        }
+      }
+
+      foreach (ZNetView netView in netScene.m_instances.Values) {
+        if (netView.TryGetComponent(out Sign sign)) {
+          SetupSignFont(sign, fontAsset, fontColor);
+        }
+      }
+    }
+
+    public static void SetupSignFont(Sign sign, TMP_FontAsset fontAsset, Color color) {
+      sign.m_textWidget.font = fontAsset;
+      sign.m_textWidget.fontSharedMaterial = fontAsset.material;
+      sign.m_textWidget.color = color;
+    }
+
+    public static void AddFallbackFonts(TMP_FontAsset font) {
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.ValheimNorse));
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.ValheimNorsebold));
+      AddFallbackFont(font, UIFonts.GetFontAsset(UIFonts.FallbackNotoSansNormal));
+    }
+
+    public static void AddFallbackFont(TMP_FontAsset font, TMP_FontAsset fallbackFont) {     
+      if (!font || !fallbackFont || fallbackFont == font) {
+        return;
+      }
+
+      if (font.fallbackFontAssetTable == null) {
+        font.fallbackFontAssetTable = new() { fallbackFont };
+      } else if (!font.fallbackFontAssetTable.Contains(fallbackFont)) {
+        font.fallbackFontAssetTable.Add(fallbackFont);
+      }
+    }
   }
 }

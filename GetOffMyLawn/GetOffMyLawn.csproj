@@ -105,7 +105,7 @@
     <Compile Include="Patches\PrivateAreaPatch.cs" />
     <Compile Include="Patches\WearNTearPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

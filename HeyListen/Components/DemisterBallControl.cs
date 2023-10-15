@@ -89,11 +89,11 @@ namespace HeyListen {
         return;
       }
 
-      if (!forceUpdate && _lastDataRevision >= NetView.m_zdo.m_dataRevision) {
+      if (!forceUpdate && _lastDataRevision >= NetView.m_zdo.DataRevision) {
         return;
       }
 
-      _lastDataRevision = NetView.m_zdo.m_dataRevision;
+      _lastDataRevision = NetView.m_zdo.DataRevision;
 
       UpdateBodyScale(forceUpdate);
       UpdateBodyColor(forceUpdate);

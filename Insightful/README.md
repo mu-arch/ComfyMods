@@ -2,6 +2,11 @@
 
 *For those that seek words inscribed upon the world.*
 
+## Instructions
+
+  * Hover/target an object with an embedded *Inscription* and a prompt will appear to read it.
+  * Press `RightShift + R` (configurable) to read the hidden text.
+
 ## Installation
 
 ### Manual
@@ -10,13 +15,8 @@
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `Insightful_v1.3.0.zip`.
+  * Go to Settings > Import local mod > Select `Insightful_v1.4.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
-
-## Instructions
-
-  * Hover/target an object with an embedded *Inscription* and a prompt will appear to read it.
-  * Press `RightShift + R` (configurable) to read the hidden text.
 
 ## Notes
 
@@ -25,6 +25,11 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.4.0
+
+  * Fixed for `v0.216.9` patch.
+  * Modified `ReadHiddenText()` to no longer be a coroutine.
 
 ### 1.3.0
 

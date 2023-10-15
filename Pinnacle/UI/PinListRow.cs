@@ -1,5 +1,7 @@
 ﻿using System;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,11 +10,11 @@ namespace Pinnacle {
     public GameObject Row { get; private set; }
 
     public Image PinIcon { get; private set; }
-    public Text PinName { get; private set; }
+    public TMP_Text PinName { get; private set; }
 
-    public Text PositionX { get; private set; }
-    public Text PositionY { get; private set; }
-    public Text PositionZ { get; private set; }
+    public TMP_Text PositionX { get; private set; }
+    public TMP_Text PositionY { get; private set; }
+    public TMP_Text PositionZ { get; private set; }
 
     Minimap.PinData _targetPin;
 
@@ -21,29 +23,41 @@ namespace Pinnacle {
       Row.Button().onClick.AddListener(() => Pinnacle.CenterMapOnOrTeleportTo(_targetPin));
 
       PinIcon = CreateChildPinIcon(Row.transform).Image();
-      PinName = CreateChildPinName(Row.transform).Text();
+      PinName = CreateChildPinName(Row.transform);
 
       UIBuilder.CreateRowSpacer(Row.transform);
 
-      PositionX = CreateChildPinPositionValue(Row.transform).Text();
-      PositionX.SetColor(new(1f, 0.878f, 0.51f));
-      PositionY = CreateChildPinPositionValue(Row.transform).Text();
-      PositionY.SetColor(new(0.565f, 0.792f, 0.976f));
-      PositionZ = CreateChildPinPositionValue(Row.transform).Text();
-      PositionZ.SetColor(new(0.647f, 0.839f, 0.655f));
+      PositionX = CreateChildPinPositionValue(Row.transform);
+      PositionX.color = new(1f, 0.878f, 0.51f);
+      PositionY = CreateChildPinPositionValue(Row.transform);
+      PositionY.color = new(0.565f, 0.792f, 0.976f);
+      PositionZ = CreateChildPinPositionValue(Row.transform);
+      PositionZ.color = new(0.647f, 0.839f, 0.655f);
     }
 
     public PinListRow SetRowContent(Minimap.PinData pin) {
       _targetPin = pin;
 
       PinIcon.SetSprite(pin.m_icon);
-      PinName.SetText(pin.m_name.Length == 0 ? pin.m_type.ToString() : pin.m_name);
+      PinName.SetText(GetLocalizedPinName(pin));
 
       PositionX.SetText($"{pin.m_pos.x:F0}");
       PositionY.SetText($"{pin.m_pos.y:F0}");
       PositionZ.SetText($"{pin.m_pos.z:F0}");
 
       return this;
+    }
+
+    string GetLocalizedPinName(Minimap.PinData pin) {
+      if (pin.m_name.Length <= 0) {
+        return $"<i>{pin.m_type}</i>";
+      }
+
+      if (pin.m_name[0] == '$') {
+        return Localization.m_instance.Localize(pin.m_name);
+      }
+
+      return pin.m_name;
     }
 
     GameObject CreateChildRow(Transform parentTransform) {
@@ -88,23 +102,22 @@ namespace Pinnacle {
       return icon;
     }
 
-    GameObject CreateChildPinName(Transform parentTransform) {
-      GameObject name = UIBuilder.CreateLabel(parentTransform);
+    TMP_Text CreateChildPinName(Transform parentTransform) {
+      TMP_Text name = UIBuilder.CreateTMPLabel(parentTransform);
       name.SetName("Pin.Name");
 
       return name;
     }
 
-    GameObject CreateChildPinPositionValue(Transform parentTransform) {
-      GameObject value = UIBuilder.CreateLabel(parentTransform);
+    TMP_Text CreateChildPinPositionValue(Transform parentTransform) {
+      TMP_Text value = UIBuilder.CreateTMPLabel(parentTransform);
       value.SetName("Pin.Position.Value");
 
-      value.Text()
-          .SetAlignment(TextAnchor.MiddleRight)
-          .SetText("-12345");
+      value.alignment = TextAlignmentOptions.Right;
+      value.text = "-12345";
 
-      value.AddComponent<LayoutElement>()
-          .SetPreferred(width: value.Text().GetPreferredWidth());
+      value.gameObject.AddComponent<LayoutElement>()
+          .SetPreferred(width: value.GetPreferredValues().x);
 
       return value;
     }

@@ -2,17 +2,6 @@
 
 *Change your player hair type/color and beard type/color!*
 
-## Installation
-
-### Manual
-
-  * Un-zip `DyeHard.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `DyeHard_v1.4.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
   * This mod only overrides the visual appearance of your character and does not modify your player data.
@@ -34,6 +23,17 @@
   * `overridePlayerBeardItem` toggles this feature on/off.
   * Change your beard type using the drop-down.
 
+## Installation
+
+### Manual
+
+  * Un-zip `DyeHard.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `DyeHard_v1.5.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ### Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/DyeHard).
@@ -41,6 +41,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Updated for Valheim `v0.216.5` PTB patch.
 
 ### 1.4.0
 

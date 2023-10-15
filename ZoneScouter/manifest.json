@@ -1,10 +1,8 @@
 {
   "name": "ZoneScouter",
-  "version_number": "1.0.1",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/redseiko/ComfyMods/tree/main/ZoneScouter",
   "author": "ComfyMods",
   "description": "The sector's instance level... it's over 9000!",
-  "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.1901"
-  ]
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.2105" ]
 }

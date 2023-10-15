@@ -69,6 +69,9 @@
     <Reference Include="assembly_valheim_publicized">
       <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
     </Reference>
+    <Reference Include="ui_lib_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\ui_lib_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
@@ -76,6 +79,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GamePath)\unstripped_corlib\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
     </Reference>
@@ -102,18 +108,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Patches\PlayerPatch.cs" />
-    <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Config\PluginConfig.cs" />
+    <Compile Include="Core\RecipeFilterController.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
+    <Compile Include="Extensions\UnityExtensions.cs" />
+    <Compile Include="Patches\InventoryGuiPatch.cs" />
+    <Compile Include="Patches\StoreGuiPatch.cs" />
+    <Compile Include="Patches\TextInputPatch.cs" />
     <Compile Include="Recipedia.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\Components\DisableHighlightOnSelect.cs" />
-    <Compile Include="UI\Components\PanelDragger.cs" />
-    <Compile Include="UI\RecipeListPanel.cs" />
+    <Compile Include="UI\Builder\RecipeFilter.cs" />
     <Compile Include="UI\Core\UIBuilder.cs" />
     <Compile Include="UI\Core\UIExtensions.cs" />
     <Compile Include="UI\Core\UIResources.cs" />
-    <Compile Include="UI\Controls\ValueCell.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />

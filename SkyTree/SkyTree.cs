@@ -1,12 +1,13 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+
+using BepInEx;
 using BepInEx.Logging;
 
 using HarmonyLib;
-
-using System;
-using System.Collections;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -17,30 +18,37 @@ namespace SkyTree {
   public class SkyTree : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.skytree";
     public const string PluginName = "SkyTree";
-    public const string PluginVersion = "1.3.0";
+    public const string PluginVersion = "1.5.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       BindConfig(Config);
 
       _logger = Logger;
-      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginVersion);
+      _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
+    public static readonly int SkyboxLayer = 19;
+    public static readonly int StaticSolidLayer = 15;
+
+    public static readonly List<GameObject> YggdrasilBranches = new();
+
     public static IEnumerator FixYggdrasilBranchCoroutine() {
+      YggdrasilBranches.Clear();
+
+      LogInfo("Starting FixYggdrasilBranch coroutine.");
       WaitForSeconds waitInterval = new(seconds: 3f);
-      _logger.LogInfo("Starting FixYggdrasilBranch coroutine.");
 
       while (true) {
         yield return waitInterval;
 
-        if (!ZNetScene.m_instance) {
+        if (!ZNetScene.instance) {
           continue;
         }
 
@@ -51,15 +59,16 @@ namespace SkyTree {
           continue;
         }
 
-        int targetLayer = 15;
-        string targetLayerName = $"{targetLayer}:{LayerMask.LayerToName(targetLayer)}";
+        string targetLayerName = $"{StaticSolidLayer}:{LayerMask.LayerToName(StaticSolidLayer)}";
 
         foreach (GameObject yggdrasil in yggdrasils) {
           int sourceLayer = yggdrasil.layer;
           string sourceLayerName = $"{sourceLayer}:{LayerMask.LayerToName(sourceLayer)}";
 
-          _logger.LogInfo($"Setting YggdrasilBranch layer from {sourceLayerName} to {targetLayerName}.");
-          yggdrasil.layer = targetLayer;
+          LogInfo($"Setting YggdrasilBranch layer from {sourceLayerName} to {targetLayerName}.");
+
+          yggdrasil.layer = StaticSolidLayer;
+          YggdrasilBranches.Add(yggdrasil);
 
           Transform branch = yggdrasil.transform.Find("branch");
 
@@ -70,8 +79,10 @@ namespace SkyTree {
           sourceLayer = branch.gameObject.layer;
           sourceLayerName = $"{sourceLayer}:{LayerMask.LayerToName(sourceLayer)}";
 
-          _logger.LogInfo( $"Found YggdrasilBranch/branch, setting layer from {sourceLayerName} to {targetLayerName}.");
-          branch.gameObject.layer = targetLayer;
+          LogInfo($"Found YggdrasilBranch/branch, setting layer from {sourceLayerName} to {targetLayerName}.");
+
+          branch.gameObject.layer = StaticSolidLayer;
+          YggdrasilBranches.Add(branch.gameObject);
 
           MeshFilter filter = branch.GetComponentInChildren<MeshFilter>();
 
@@ -79,14 +90,22 @@ namespace SkyTree {
             continue;
           }
 
-          _logger.LogInfo("Adding collider to YggdrasilBranch/branch.");
+          LogInfo("Adding collider to YggdrasilBranch/branch.");
           collider = branch.gameObject.AddComponent<MeshCollider>();
           collider.sharedMesh = filter.sharedMesh;
         }
 
-        _logger.LogInfo("Finished FixYggdrasilBranch coroutine.");
+        LogInfo("Finished FixYggdrasilBranch coroutine.");
         yield break;
       }
+    }
+
+    public static void LogInfo(object o) {
+      _logger.LogInfo($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
+    }
+
+    public static void LogWarning(object o) {
+      _logger.LogWarning($"[{DateTime.Now.ToString(DateTimeFormatInfo.InvariantInfo)}] {o}");
     }
   }
 }

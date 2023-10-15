@@ -7,6 +7,49 @@
   * New prefabs (that exist in the game) will be available to build!
   * You might need to pick-up/drop a stone/wood/resource to have the recipe trigger.
 
+### Demister Update
+
+  * Vanilla wisp torches have a range of 10m
+
+| Demister              | Range | Blue Mushrooms | Wisps |
+|-----------------------|-------|----------------|-------|
+| dvergr_demister       | 15    | 8              | 20    |
+| dvergr_demister_large | 30    | 30             | 50    |
+
+### Dvergr Piece Update
+
+| Category    | Prefab                            | Crafting Station | Resource           | Resource           | Resource         | Resource |
+|-------------|-----------------------------------|------------------|--------------------|--------------------|------------------|----------|
+| Building    | blackmarble_head01                | Black forge      | 4x Copper          |                    |                  |          |
+| Building    | blackmarble_head02                | Black forge      | 4x Copper          |                    |                  |          |
+| Building    | metalbar_1x2                      | Black forge      | 8x Copper          |                    |                  |          |
+| Building    | blackmarble_2x2_enforced          | Black forge      | 8x Black marble    | 4x Copper          |                  |          |
+| Building    | blackmarble_out_2                 | Stonecutter      | 8x Black marble    |                    |                  |          |
+| Building    | blackmarble_slope_1x2             | Stonecutter      | 3x Black marble    |                    |                  |          |
+| Building    | blackmarble_tile_floor_1x1        | Stonecutter      | 2x Black marble    |                    |                  |          |
+| Building    | blackmarble_tile_floor_2x2        | Stonecutter      | 4x Black marble    |                    |                  |          |
+| Building    | blackmarble_tile_wall_2x4         | Stonecutter      | 8x Black marble    |                    |                  |          |
+| Building    | blackmarble_base_2                | Stonecutter      | 10x Black marble   |                    |                  |          |
+| Building    | blackmarble_column_3              | Stonecutter      | 24x Black marble   |                    |                  |          |
+| Building    | blackmarble_floor_large           | Stonecutter      | 80x Black marble   |                    |                  |          |
+| Building    | blackmarble_head_big01            | Stonecutter      | 8x Black marble    |                    |                  |          |
+| Building    | blackmarble_head_big02            | Stonecutter      | 8x Black marble    |                    |                  |          |
+| Building    | dvergrprops_wood_floor            | Workbench        | 2x Yggdrasil wood  |                    |                  |          |
+| Building    | dvergrprops_wood_stair            | Workbench        | 2x Yggdrasil wood  |                    |                  |          |
+| Building    | piece_dvergr_pole                 | Black forge      | 2x Yggdrasil wood  | 1x Copper          |                  |          |
+| Building    | piece_dvergr_wood_door            | Black forge      | 12x Yggdrasil wood | 12x Copper         |                  |          |
+| Building    | piece_dvergr_wood_wall            | Black forge      | 10x Yggdrasil wood | 5x Copper          |                  |          |
+| Building    | dvergrprops_banner                | Workbench        | 2x Yggdrasil wood  | 4x Blue jute       |                  |          |
+| Building    | dvergrprops_curtain               | Workbench        | 2x Yggdrasil wood  | 4x Blue jute       |                  |          |
+| Building    | dvergrprops_wood_beam             | Workbench        | 12x Yggdrasil wood |                    |                  |          |
+| Building    | dvergrprops_wood_pole             | Black Forge      | 8x Yggdrasil wood  | 4x Copper          |                  |          |
+| Building    | dvergrprops_wood_stake            | Black Forge      | 2x Yggdrasil wood  | 1x Iron            |                  |          |
+| Building    | dvergrprops_wood_wall             | Black Forge      | 32x Yggdrasil Wood | 16x Copper         |                  |          |
+| Building    | dvergrtown_stair_corner_wood_left | Black Forge      | 6x Yggdrasil Wood  | 3x Copper          |                  |          |
+| Building    | dvergrprops_lantern_standing      | Black Forge      | 1x Lantern         |                    |                  |          |
+| CreatorShop | trade_wagon_destructable          | Black Forge      | 10x Blue mushroom  | 50x Yggdrasil wood | 80x Bronze nails | 10x Tar  |
+| Building    | dvergrprops_hooknchain            | Black Forge      | 5x Iron            | 10x Copper         |                  |          |
+
 ### Creator Shop Items
 
 | Category    | Prefab                  | Crafting Station | Resource          | Resource           | Resource           | Resource     | Resource          |
@@ -62,17 +105,6 @@
   * There is a `Change Pose` switch at the base of the stand.
   * PotteryBarn fixes the error that prevents changing poses in vanilla.
 
-## Installation
-
-### Manual
-
-  * Un-zip `PotteryBarn.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `PotteryBarn_v1.5.1.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ### Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/PotteryBarn).
@@ -80,7 +112,57 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
   * PotteryBarn icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
+### Dependencies
+
+  * [Jotunn-v2.13.0](https://valheim.thunderstore.io/package/ValheimModding/Jotunn/)
+
 ## Changelog
+
+### 1.11.0
+
+  * Updated for Jotunn dependency version update to `v2.13.0`.
+  * Now hooks into `PieceManager.OnPiecesRegistered` event for adding pieces.
+
+### 1.10.1
+
+  * Removed demister ball since it is untargetable and cannot be deconstructed by players
+
+### 1.10.0
+
+  * Fixed comfort on Female armor stand
+
+### 1.9.0
+
+  * Added demisters to the creatorshop
+
+### 1.8.0
+
+  * Updated for `v0.217.14` patch.
+  * Fixed the `Player.SetupPlacementGhost` transpiler patch and made it more robust for future patches.
+  * Removed the `ArmorStand` patch as it's no longer needed.
+  * Code clean-up and refactoring.
+  * Created helper class `ReflectionUtils` and method `GetGenericMethod`.
+
+### 1.7.0
+
+  * Updated for `v0.216.9` patch.
+  * Removed left-over logging statements (oops).
+  * Code clean-up.
+
+### 1.6.2
+
+  * Fixed additional bug in drop behavior.
+
+### 1.6.1
+
+  * Fixed small bug in drop behavior.
+
+### 1.6.0
+
+  * Added dvergr pieces.
+  * World generated pieces will have the same drop rate as vanilla if destroyed with damage or the build hammer.
+  * Player constructed pieces will return recipe costs and may be broken by other players (not just the creator) for any
+    items not on the CreatorShop tab.
 
 ### 1.5.1
 

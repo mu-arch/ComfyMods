@@ -85,6 +85,9 @@
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
@@ -106,17 +109,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorfulPortals.cs" />
+    <Compile Include="Components\TeleportWorldColor.cs" />
+    <Compile Include="Components\TeleportWorldColorUpdater.cs" />
+    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Config\ExtendedColorConfigEntry.cs" />
+    <Compile Include="Config\GUI\GUIBuilder.cs" />
+    <Compile Include="Config\GUI\GUIFocus.cs" />
+    <Compile Include="Config\GUI\GUIHelper.cs" />
+    <Compile Include="Extensions\UnityExtensions.cs" />
+    <Compile Include="Extensions\ZDOExtensions.cs" />
+    <Compile Include="Patches\GamePatch.cs" />
     <Compile Include="Patches\PlayerPatch.cs" />
+    <Compile Include="Patches\TeleportWorldPatch.cs" />
     <Compile Include="PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TeleportWorldData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Core\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />

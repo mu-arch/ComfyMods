@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 using ComfyLib;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +19,7 @@ namespace Enhuddlement {
         ref Player player,
         ref Sadle sadle,
         float dt,
-        ConditionalWeakTable<EnemyHud.HudData, Text> healthTextCache) {
+        ConditionalWeakTable<EnemyHud.HudData, TextMeshProUGUI> healthTextCache) {
       Camera camera = Utils.GetMainCamera();
 
       if (!camera) {
@@ -77,7 +79,7 @@ namespace Enhuddlement {
         float maxHealth = character.GetMaxHealth();
         float healthPercentage = currentHealth / maxHealth;
 
-        if (ShowEnemyHealthValue.Value && healthTextCache.TryGetValue(hudData, out Text healthText)) {
+        if (ShowEnemyHealthValue.Value && healthTextCache.TryGetValue(hudData, out TextMeshProUGUI healthText)) {
           healthText.SetText($"{currentHealth:N0} / {maxHealth:N0}");
         }
 

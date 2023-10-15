@@ -5,25 +5,25 @@ using UnityEngine;
 
 namespace ZoneScouter {
   public class UIResources {
-    static readonly Dictionary<string, Font> FontCache = new();
+    static readonly Dictionary<string, Font> _fontCache = new();
 
-    public static Font FindFont(string name) {
-      if (!FontCache.TryGetValue(name, out Font font)) {
+    public static Font GetFont(string name) {
+      if (!_fontCache.TryGetValue(name, out Font font)) {
         font = Resources.FindObjectsOfTypeAll<Font>().First(f => f.name == name);
-        FontCache[name] = font;
+        _fontCache[name] = font;
       }
 
       return font;
     }
 
-    public static Font AveriaSerifLibre { get => FindFont("AveriaSerifLibre-Regular"); }
+    public static Font AveriaSerifLibre { get => GetFont("AveriaSerifLibre-Regular"); }
 
-    static readonly Dictionary<string, Sprite> SpriteCache = new();
+    static readonly Dictionary<string, Sprite> _spriteCache = new();
 
     public static Sprite GetSprite(string spriteName) {
-      if (!SpriteCache.TryGetValue(spriteName, out Sprite sprite)) {
+      if (!_spriteCache.TryGetValue(spriteName, out Sprite sprite)) {
         sprite = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(sprite => sprite.name == spriteName);
-        SpriteCache[spriteName] = sprite;
+        _spriteCache[spriteName] = sprite;
       }
 
       return sprite;

@@ -1,6 +1,15 @@
 ﻿# CriticalDice
 
+*Roll for initiative.*
+
 ## Changelog
+
+### 1.5.0
+
+  * Updated for `v0.216.8` PTB patch.
+  * Simplified `SendDiceRollResponse()` to use the vanilla `InvokeRoutedRPC()` behaviour.
+  * Modified `.csproj` to reference Valheim dedicated server DLLs.
+  * Added `manifest.json`, `icon.png` and modified the `.csproj` to create a versioned Thunderstore package.
 
 ### 1.4.0
 

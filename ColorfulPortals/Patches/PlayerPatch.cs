@@ -1,12 +1,14 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
+using ComfyLib;
+
+using HarmonyLib;
+
 using static ColorfulPortals.PluginConfig;
 
-namespace ColorfulPortals.Patches {
+namespace ColorfulPortals {
   [HarmonyPatch(typeof(Player))]
   static class PlayerPatch {
     [HarmonyTranspiler]
@@ -15,26 +17,27 @@ namespace ColorfulPortals.Patches {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
-          .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
+          .Advance(offset: 1)
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Func<bool, bool>>(UpdateHoverPostDelegate),
+              new CodeInstruction(OpCodes.Stloc_1))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
-      if (IsModEnabled.Value
+    static bool UpdateHoverPostDelegate(bool takeInput) {
+      if (takeInput
+          && IsModEnabled.Value
           && ChangePortalColorShortcut.Value.IsDown()
           && Player.m_localPlayer
-          && Player.m_localPlayer.m_hovering) {
-        Player.m_localPlayer.StartCoroutine(
-            ColorfulPortals.ChangePortalColorCoroutine(
-                Player.m_localPlayer.m_hovering.GetComponentInParent<TeleportWorld>()));
-
+          && Player.m_localPlayer.m_hovering
+          && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out TeleportWorld teleportWorld)) {
+        ColorfulPortals.ChangePortalColor(teleportWorld);
         return false;
       }
 
-      return takeInputResult;
+      return takeInput;
     }
   }
 }

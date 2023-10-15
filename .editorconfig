@@ -1,7 +1,15 @@
-﻿[*.cs]
+﻿[*]
+
+guidelines = 120
+
+[*.cs]
 
 # IDE0051: Remove unused private members
 dotnet_diagnostic.IDE0051.severity = none
 
 # IDE0060: Remove unused parameter
 dotnet_diagnostic.IDE0060.severity = none
+
+[*.{cs,vb,json,csproj}]
+
+end_of_line = lf

@@ -10,30 +10,26 @@ using HarmonyLib;
 using UnityEngine;
 
 using static ColorfulPieces.PluginConfig;
+using static ColorfulPieces.PluginConstants;
 
 namespace ColorfulPieces {
   [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
   public class ColorfulPieces : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfulpieces";
     public const string PluginName = "ColorfulPieces";
-    public const string PluginVersion = "1.10.0";
-
-    public static readonly int PieceColorHashCode = "PieceColor".GetStableHashCode();
-    public static readonly int PieceEmissionColorFactorHashCode = "PieceEmissionColorFactor".GetStableHashCode();
-    public static readonly int PieceLastColoredByHashCode = "PieceLastColoredBy".GetStableHashCode();
-    public static readonly int PieceLastColoredByHostHashCode = "PieceLastColoredByHost".GetStableHashCode();
+    public const string PluginVersion = "1.13.0";
 
     static ManualLogSource _logger;
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       _logger = Logger;
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
@@ -42,7 +38,6 @@ namespace ColorfulPieces {
           || !wearNTear.m_nview
           || !wearNTear.m_nview.IsValid()
           || !PrivateArea.CheckAccess(wearNTear.transform.position, flash: true)) {
-        _logger.LogWarning("Piece does not have a valid ZNetView or is in a PrivateArea.");
         return false;
       }
 
@@ -51,12 +46,7 @@ namespace ColorfulPieces {
       return true;
     }
 
-    public static IEnumerator ChangePieceColorCoroutine(WearNTear target) {
-      yield return null;
-      ChangePieceColorAction(target);
-    }
-
-    static void ChangePieceColorAction(WearNTear wearNTear) {
+    public static void ChangePieceColorAction(WearNTear wearNTear) {
       if (!ClaimOwnership(wearNTear)) {
         return;
       }
@@ -85,16 +75,14 @@ namespace ColorfulPieces {
       pieceColor.UpdateColors();
 
       Instantiate(
-          ZNetScene.m_instance.GetPrefab("vfx_boar_love"),
+          ZNetScene.s_instance.GetPrefab("vfx_boar_love"),
           pieceColor.transform.position,
           pieceColor.transform.rotation);
     }
 
     static void ChangePieceColorZdo(ZNetView netView) {
-      netView.m_zdo.Set(PieceColorHashCode, Utils.ColorToVec3(TargetPieceColor.Value));
-      netView.m_zdo.Set(PieceEmissionColorFactorHashCode, TargetPieceEmissionColorFactor.Value);
-      netView.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
-      netView.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
+      SetPieceColorZdoValues(
+          netView.m_zdo, ColorToVector3(TargetPieceColor.Value), TargetPieceEmissionColorFactor.Value);
     }
 
     static readonly List<Piece> _piecesCache = new();
@@ -103,7 +91,7 @@ namespace ColorfulPieces {
       yield return null;
 
       _piecesCache.Clear();
-      Piece.GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
+      GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
 
       long changeColorCount = 0L;
 
@@ -122,22 +110,12 @@ namespace ColorfulPieces {
       _piecesCache.Clear();
     }
 
-    public static IEnumerator ClearPieceColorCoroutine(WearNTear target) {
-      yield return null;
-      ClearPieceColorAction(target);
-    }
-
-    static void ClearPieceColorAction(WearNTear wearNTear) {
+    public static void ClearPieceColorAction(WearNTear wearNTear) {
       if (!ClaimOwnership(wearNTear)) {
         return;
       }
 
-      if (wearNTear.m_nview.m_zdo.RemoveVec3(PieceColorHashCode)
-          || wearNTear.m_nview.m_zdo.RemoveFloat(PieceEmissionColorFactorHashCode)) {
-        wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
-        wearNTear.m_nview.m_zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
-        wearNTear.m_nview.m_zdo.IncreseDataRevision();
-      }
+      SetPieceColorZdoValues(wearNTear.m_nview.m_zdo, NoColorVector3, NoEmissionColorFactor);
 
       if (wearNTear.TryGetComponent(out PieceColor pieceColor)) {
         pieceColor.UpdateColors();
@@ -150,7 +128,7 @@ namespace ColorfulPieces {
       yield return null;
 
       _piecesCache.Clear();
-      Piece.GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
+      GetAllPiecesInRadius(Player.m_localPlayer.transform.position, radius, _piecesCache);
 
       long clearColorCount = 0L;
 
@@ -169,11 +147,13 @@ namespace ColorfulPieces {
     }
 
     public static bool CopyPieceColorAction(ZNetView netView) {
-      if (!netView || !netView.IsValid() || !netView.m_zdo.TryGetVec3(PieceColorHashCode, out Vector3 colorAsVector)) {
+      if (!netView
+          || !netView.IsValid()
+          || !netView.m_zdo.TryGetVector3(PieceColorHashCode, out Vector3 colorAsVector)) {
         return false;
       }
 
-      Color color = Utils.Vec3ToColor(colorAsVector);
+      Color color = Vector3ToColor(colorAsVector);
       TargetPieceColor.SetValue(color);
 
       if (netView.m_zdo.TryGetFloat(PieceEmissionColorFactorHashCode, out float factor)) {
@@ -185,6 +165,24 @@ namespace ColorfulPieces {
           $"Copied piece color: #{ColorUtility.ToHtmlStringRGB(color)} (f: {TargetPieceEmissionColorFactor.Value})");
 
       return true;
+    }
+
+    public static void SetPieceColorZdoValues(ZDO zdo, Vector3 colorVector3, float emissionColorFactor) {
+      zdo.Set(PieceColorHashCode, colorVector3);
+      zdo.Set(PieceEmissionColorFactorHashCode, emissionColorFactor);
+      zdo.Set(PieceLastColoredByHashCode, Player.m_localPlayer.GetPlayerID());
+      zdo.Set(PieceLastColoredByHostHashCode, PrivilegeManager.GetNetworkUserId());
+    }
+
+    public static void GetAllPiecesInRadius(Vector3 position, float radius, List<Piece> pieces) {
+      foreach (Piece piece in Piece.s_allPieces) {
+        if (piece.gameObject.layer == Piece.s_ghostLayer
+            || Vector3.Distance(position, piece.transform.position) >= radius) {
+          continue;
+        }
+
+        pieces.Add(piece);
+      }
     }
 
     public static void LogMessage(string message) {

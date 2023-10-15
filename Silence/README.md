@@ -2,17 +2,6 @@
 
 *Completely hide the chat windows and in-game say/shout with a shortcut.*
 
-## Installation
-
-### Manual
-
-  * Un-zip `Silence.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `Silence_v1.3.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Instructions
 
 ### User Interface
@@ -22,6 +11,13 @@
 
   - Enabling or disabling the mod with `isModEnabled` requires a **restart** of the game to take effect.
 
+## Compatability
+
+### Chatter
+
+  * Conflicts with `Chatter` mod as `Chatter` disables the vanilla chat window.
+  * If using `Chatter` ensure that the `HideChatWindow` configuration option is **disabled**.
+
 ### Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Silence).
@@ -29,6 +25,16 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.5.0
+
+  * Reworked `ToggleSilenceCoroutine()` to use a single `IsSilenced` toggle and to use the `HideChatWindow` and
+    `HideInWorldTexts` config values to toggle the chat-window / in-world texts.
+  * Added compatability section for `Chatter`.
+
+### 1.4.0
+
+  * Fixed for the `v0.217.14` patch.
 
 ### 1.3.0
 

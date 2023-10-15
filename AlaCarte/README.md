@@ -9,6 +9,7 @@
 ### Change the menu dialog type
 
   * Switch between the current (transparent) menu and the old (panel) menu.
+  * **Note!** The old menu **does not have** the `Save` and `Continue` buttons.
 
 ### Reposition menu
 
@@ -33,7 +34,7 @@ Changes to any of the configuration options requires opening and closing the men
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `AlaCarte_v1.0.0.zip`.
+  * Go to Settings > Import local mod > Select `AlaCarte_v1.1.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -44,6 +45,10 @@ Changes to any of the configuration options requires opening and closing the men
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed a small bug when using the old menu style.
 
 ### 1.0.0
 

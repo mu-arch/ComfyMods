@@ -41,7 +41,7 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
 
 ### Thunderstore (manual)
 
-  * Go to Settings > Import local mod > Select `SearsCatalog_v1.2.0.zip`.
+  * Go to Settings > Import local mod > Select `SearsCatalog_v1.3.0.zip`.
   * Click "OK/Import local mod" on the pop-up for information.
 
 ## Notes
@@ -52,6 +52,10 @@ All configuration options (except `isModEnabled`) can be modified in-game and wi
   * SearsCatalog icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.3.0
+
+  * Updated for `v0.217.14` patch.
 
 ### 1.2.0
 

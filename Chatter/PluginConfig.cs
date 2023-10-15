@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 using BepInEx.Configuration;
@@ -7,58 +9,47 @@ using ComfyLib;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
 
-namespace Chatter {
-  public class PluginConfig {
-    public static ConfigFile Config { get; private set; }
+using static Chatter.Chatter;
 
+namespace Chatter {
+  public static class PluginConfig {
+    public static ConfigFile Config { get; private set; }
     public static ConfigEntry<bool> IsModEnabled { get; private set; }
+
+    // Panel
+    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; }
+    public static ConfigEntry<Vector2> ChatPanelSizeDelta { get; private set; }
+    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
 
     // Behaviour
     public static ConfigEntry<int> HideChatPanelDelay { get; private set; }
     public static ConfigEntry<float> HideChatPanelAlpha { get; private set; }
 
+    // Scrolling
+    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; }
+    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; }
+    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; }
+
     // Content
     public static ConfigEntry<bool> ShowMessageHudCenterMessages { get; private set; }
     public static ConfigEntry<bool> ShowChatPanelMessageDividers { get; private set; }
+
+    // Spacing
+    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; }
+    public static ConfigEntry<float> ChatPanelContentRowSpacing { get; private set; }
+    public static ConfigEntry<float> ChatPanelContentSingleRowSpacing { get; private set; }
 
     // Defaults
     public static ConfigEntry<Talker.Type> ChatPanelDefaultMessageTypeToUse { get; private set; }
     public static ConfigEntry<ChatMessageType> ChatPanelContentRowTogglesToEnable { get; private set; }
 
-    // Filters
-    public static StringListConfigEntry SayTextFilterList { get; private set; }
-    public static StringListConfigEntry ShoutTextFilterList { get; private set; }
-    public static StringListConfigEntry WhisperTextFilterList { get; private set; }
-    public static StringListConfigEntry HudCenterTextFilterList { get; private set; }
-    public static StringListConfigEntry OtherTextFilterList { get; private set; }
-
     // Layout
-    public static ConfigEntry<Chatter.MessageLayoutType> ChatMessageLayout { get; private set; }
+    public static ConfigEntry<MessageLayoutType> ChatMessageLayout { get; private set; }
     public static ConfigEntry<bool> ChatMessageShowTimestamp { get; private set; }
-
-    // Style
-    public static ConfigEntry<string> ChatMessageFont { get; private set; }
-    public static ConfigEntry<int> ChatMessageFontSize { get; private set; }
-
-    public static ConfigEntry<Color> ChatPanelBackgroundColor { get; private set; }
-    public static ConfigEntry<Vector2> ChatPanelRectMaskSoftness { get; private set; }
-
-    // Spacing
-    public static ConfigEntry<float> ChatPanelContentSpacing { get; private set; }
-    public static ConfigEntry<float> ChatPanelContentBodySpacing { get; private set; }
-    public static ConfigEntry<float> ChatPanelContentSingleRowSpacing { get; private set; }
-
-    // Panel
-    public static ConfigEntry<Vector2> ChatPanelPosition { get; private set; }
-    public static ConfigEntry<Vector2> ChatPanelSize { get; private set; }
-    public static ConfigEntry<float> ChatContentWidthOffset { get; private set; }
-
-    // Scrolling
-    public static ConfigEntry<KeyboardShortcut> ScrollContentUpShortcut { get; private set; }
-    public static ConfigEntry<KeyboardShortcut> ScrollContentDownShortcut { get; private set; }
-    public static ConfigEntry<float> ScrollContentOffsetInterval { get; private set; }
 
     // Colors
     public static ConfigEntry<Color> ChatMessageTextDefaultColor { get; private set; }
@@ -67,6 +58,7 @@ namespace Chatter {
     public static ConfigEntry<Color> ChatMessageTextWhisperColor { get; private set; }
     public static ConfigEntry<Color> ChatMessageTextPingColor { get; private set; }
     public static ConfigEntry<Color> ChatMessageTextMessageHudColor { get; private set; }
+    public static ConfigEntry<Color> ChatMessageUsernameColor { get; private set; }
     public static ConfigEntry<Color> ChatMessageTimestampColor { get; private set; }
 
     // Username
@@ -76,53 +68,136 @@ namespace Chatter {
     public static void BindConfig(ConfigFile config) {
       Config = config;
 
-      IsModEnabled ??= config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+
+      IsModEnabled.OnSettingChanged(toggleOn => ToggleChatter(toggleOn));
+
+      ChatPanelPosition =
+          Config.BindInOrder(
+              "ChatPanel",
+              "chatPanelPosition",
+              new Vector2(-10f, 125f),
+              "The Vector2 position of the ChatPanel.");
+
+      ChatPanelPosition.OnSettingChanged(position => ChatterChatPanel?.PanelRectTransform.SetPosition(position));
+
+      ChatPanelSizeDelta =
+          Config.BindInOrder(
+              "ChatPanel",
+              "chatPanelSizeDelta",
+              new Vector2(500f, 500f),
+              "The size (width, height) of the ChatPanel.");
+
+      ChatPanelSizeDelta.OnSettingChanged(sizeDelta => ChatterChatPanel?.PanelRectTransform.SetSizeDelta(sizeDelta));
+
+      ChatPanelBackgroundColor =
+          config.BindInOrder(
+              "ChatPanel",
+              "chatPanelBackgroundColor",
+              new Color(0f, 0f, 0f, 0.125f),
+              "The background color for the ChatPanel.");
+
+      ChatPanelBackgroundColor.OnSettingChanged(color => ChatterChatPanel?.PanelBackground.SetColor(color));
 
       // Behaviour
-      HideChatPanelDelay ??=
-          config.Bind(
-              "Behaviour",
+      HideChatPanelDelay =
+          config.BindInOrder(
+              "ChatPanel.Behaviour",
               "hideChatPanelDelay",
-              defaultValue: 10,
-              new ConfigDescription(
-                  "Delay (in seconds) before hiding the ChatPanel.", new AcceptableValueRange<int>(1, 180)));
+              defaultValue: 5,
+              "Delay (in seconds) before hiding the ChatPanel.",
+              new AcceptableValueRange<int>(1, 180));
 
-      HideChatPanelAlpha ??=
-          config.Bind(
-              "Behaviour",
+      HideChatPanelAlpha =
+          config.BindInOrder(
+              "ChatPanel.Behaviour",
               "hideChatPanelAlpha",
-              defaultValue: 0.2f,
-              new ConfigDescription(
-                  "Color alpha (in %) for the ChatPanel when hidden.", new AcceptableValueRange<float>(0f, 1f)));
+              defaultValue: 0f,
+              "Color alpha (in %) for the ChatPanel when hidden.",
+              new AcceptableValueRange<float>(0f, 1f));
 
-      BindFilters(config);
+      // Scrolling
+      ScrollContentUpShortcut =
+          config.BindInOrder(
+              "ChatPanel.Scrolling",
+              "scrollContentUpShortcut",
+              new KeyboardShortcut(KeyCode.PageUp),
+              "Keyboard shortcut to scroll the ChatPanel content up.");
+
+      ScrollContentDownShortcut =
+          config.BindInOrder(
+              "ChatPanel.Scrolling",
+              "scrollContentDownShortcut",
+              new KeyboardShortcut(KeyCode.PageDown),
+              "Keyboard shortcut to scroll the ChatPanel content down.");
+
+      ScrollContentOffsetInterval =
+          config.BindInOrder(
+              "ChatPanel.Scrolling",
+              "scrollContentOffsetInterval",
+              defaultValue: 200f,
+              "Interval (in pixels) to scroll the ChatPanel content up/down.",
+              new AcceptableValueRange<float>(-1000f, 1000f));
 
       // Content
-      ShowMessageHudCenterMessages ??=
+      ShowMessageHudCenterMessages =
           config.BindInOrder(
-              "Content",
+              "ChatPanel.Content",
               "showMessageHudCenterMessages",
               defaultValue: true,
               "Show messages from the MessageHud that display in the top-center (usually boss messages).");
 
-      ShowChatPanelMessageDividers ??=
+      ShowChatPanelMessageDividers =
           config.BindInOrder(
-              "Content",
+              "ChatPanel.Content",
               "showChatPanelMessageDividers",
               defaultValue: true,
               "Show the horizontal dividers between groups of messages.");
 
-      // Defaults
-      ChatPanelDefaultMessageTypeToUse ??=
+      ShowChatPanelMessageDividers.OnSettingChanged(toggleOn => ContentRowManager.ToggleMessageDividers(toggleOn));
+
+      // Spacing
+      ChatPanelContentSpacing =
           config.BindInOrder(
-              "Defaults",
+              "ChatPanel.Spacing",
+              "chatPanelContentSpacing",
+              defaultValue: 10f,
+              "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
+              new AcceptableValueRange<float>(-100, 100));
+
+      ChatPanelContentSpacing.OnSettingChanged(() => ChatterChatPanel?.SetContentSpacing());
+
+      ChatPanelContentRowSpacing =
+          config.BindInOrder(
+              "ChatPanel.Spacing",
+              "chatPanelContentRowSpacing",
+              defaultValue: 2f,
+              "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
+              new AcceptableValueRange<float>(-100, 100));
+
+      ChatPanelContentRowSpacing.OnSettingChanged(spacing => ContentRowManager.SetContentRowSpacing(spacing));
+
+      ChatPanelContentSingleRowSpacing =
+          config.BindInOrder(
+              "ChatPanel.Spacing",
+              "chatPanelContentSingleRowSpacing",
+              defaultValue: 10f,
+              "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
+              new AcceptableValueRange<float>(-100, 100));
+
+      ChatPanelContentSingleRowSpacing.OnSettingChanged(() => ChatterChatPanel?.SetContentSpacing());
+
+    // Defaults
+    ChatPanelDefaultMessageTypeToUse =
+          config.BindInOrder(
+              "ChatPanel.Defaults",
               "chatPanelDefaultMessageTypeToUse",
               defaultValue: Talker.Type.Normal,
               "ChatPanel input default message type to use on game start. Ping value is ignored.");
 
-      ChatPanelContentRowTogglesToEnable ??=
+      ChatPanelContentRowTogglesToEnable =
           config.BindInOrder(
-              "Defaults",
+              "ChatPanel.Defaults",
               "chatPanelContentRowTogglesToEnable",
               defaultValue:
                   ChatMessageType.Say
@@ -133,167 +208,129 @@ namespace Chatter {
               "ChatPanel content row toggles to enable on game start.");
 
       // Layout
-      ChatMessageLayout ??=
-          config.Bind(
-              "Layout",
+      ChatMessageLayout =
+          config.BindInOrder(
+              "ChatMessage.Layout",
               "chatMessageLayout",
-              Chatter.MessageLayoutType.WithHeaderRow,
+              MessageLayoutType.WithHeaderRow,
               "Determines which layout to use when displaying a chat message.");
 
-      ChatMessageShowTimestamp ??=
-          config.Bind(
-              "Layout",
+      ChatMessageLayout.OnSettingChanged(() => ContentRowManager.RebuildContentRows());
+
+      ChatMessageShowTimestamp =
+          config.BindInOrder(
+              "ChatMessage.Layout",
               "chatMessageShowTimestamp",
               defaultValue: true,
               "Show a timestamp for each group of chat messages (except system/default).");
 
-      // Style
-      ChatPanelBackgroundColor ??=
-          config.Bind(
-              "Style",
-              "chatPanelBackgroundColor",
-              (Color) new Color32(0, 0, 0, 128),
-              "The background color for the ChatPanel.");
+      ChatMessageShowTimestamp.OnSettingChanged(toggleOn => ContentRowManager.ToggleShowTimestamp(toggleOn));
 
-      ChatPanelRectMaskSoftness ??=
-          config.Bind(
-              "Style", "chatPanelRectMaskSoftness", new Vector2(20f, 20f), "Softness of the ChatPanel's RectMask2D.");
-
-      // Spacing
-      ChatPanelContentSpacing =
+      // Colors
+      ChatMessageTextDefaultColor =
           config.BindInOrder(
-              "Spacing",
-              "chatPanelContentSpacing",
-              defaultValue: 10f,
-              "Spacing (px) between `Content.Row` when using 'WithRowHeader` layout.",
-              new AcceptableValueRange<float>(-100, 100));
+              "ChatMessage.Text.Colors",
+              "chatMessageTextDefaultColor",
+              Color.white,
+              "Color for default/system chat messages.");
 
-      ChatPanelContentBodySpacing =
-          config.BindInOrder(
-              "Spacing",
-              "chatPanelContentBodySpacing",
-              defaultValue: 5f,
-              "Spacing (px) between `Content.Row.Body` when using 'WithRowHeader' layout.",
-              new AcceptableValueRange<float>(-100, 100));
+      ChatMessageTextDefaultColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.Text));
 
-      ChatPanelContentSingleRowSpacing =
+      ChatMessageTextSayColor =
           config.BindInOrder(
-              "Spacing",
-              "chatPanelContentSingleRowSpacing",
-              defaultValue: 10f,
-              "Spacing (in pixels) to use between rows when using 'SingleRow' layout.",
-              new AcceptableValueRange<float>(-100, 100));
+              "ChatMessage.Text.Colors",
+              "chatMessageTextSayColor",
+              Color.white,
+              "Color for 'normal/say' chat messages.");
+
+      ChatMessageTextSayColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.Say));
+
+      ChatMessageTextShoutColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageTextShoutColor",
+              Color.yellow,
+              "Color for 'shouting' chat messages.");
+
+      ChatMessageTextShoutColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.Shout));
+
+      ChatMessageTextWhisperColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageTextWhisperColor",
+              new Color(0.502f, 0f, 0.502f, 1f), // <color=purple> #800080
+              "Color for 'whisper' chat messages.");
+
+      ChatMessageTextWhisperColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.Whisper));
+
+      ChatMessageTextPingColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageTextPingColor",
+              Color.cyan,
+              "Color for 'ping' chat messages.");
+
+      ChatMessageTextPingColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.Ping));
+
+      ChatMessageTextMessageHudColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageTextMessageHudColor",
+              new Color(1f, 0.807f, 0f, 1.0f),
+              "Color for 'MessageHud' chat messages.");
+
+      ChatMessageTextMessageHudColor.OnSettingChanged(
+          color => ContentRowManager.SetMessageTextColor(color, ChatMessageType.HudCenter));
+
+      ChatMessageUsernameColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageUsernameColor",
+              new Color(1f, 0.647f, 0f), // <color=orange> #FFA500
+              "Color for the username shown in chat messages.");
+
+      ChatMessageUsernameColor.OnSettingChanged(color => ContentRowManager.SetUsernameTextColor(color));
+
+      ChatMessageTimestampColor =
+          config.BindInOrder(
+              "ChatMessage.Text.Colors",
+              "chatMessageTimestampColor",
+              (Color) new Color32(244, 246, 247, 255),
+              "Color for any timestamp shown in the chat messages.");
+
+      ChatMessageTimestampColor.OnSettingChanged(color => ContentRowManager.SetTimestampTextColor(color));
 
       // Username
       ChatMessageUsernamePrefix =
           config.BindInOrder(
-              "Username",
+              "ChatMessage.WithHeaderRow",
               "chatMessageUsernamePrefix",
               defaultValue: string.Empty,
-              "If non-empty, adds the text to the beginning of a ChatMesage username.");
+              "If non-empty, adds the text to the beginning of a ChatMesage username in 'WithHeaderRow' mode.");
 
       ChatMessageUsernamePostfix =
           config.BindInOrder(
-              "Username",
+              "ChatMessage.WithHeaderRow",
               "chatMessageUsernamePostfix",
               defaultValue: string.Empty,
-              "If non-empty, adds the text to the end of a ChatMessage username.");
+              "If non-empty, adds the text to the end of a ChatMessage username in 'WithHeaderRow' mode.");
 
-      // Scrolling
-      ScrollContentUpShortcut =
-          config.BindInOrder(
-              "Scrolling",
-              "scrollContentUpShortcut",
-              new KeyboardShortcut(KeyCode.PageUp),
-              "Keyboard shortcut to scroll the ChatPanel content up.");
+      BindFilters(config);
 
-      ScrollContentDownShortcut =
-          config.BindInOrder(
-              "Scrolling",
-              "scrollContentDownShortcut",
-              new KeyboardShortcut(KeyCode.PageDown),
-              "Keyboard shortcut to scroll the ChatPanel content down.");
-
-      ScrollContentOffsetInterval =
-          config.BindInOrder(
-              "Scrolling",
-              "scrollContentOffsetInterval",
-              defaultValue: 200f,
-              "Interval (in pixels) to scroll the ChatPanel content up/down.");
-
-      // Colors
-      ChatMessageTextDefaultColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextDefaultColor",
-              Color.white,
-              new ConfigDescription(
-                  "Color for default/system chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 6 }));
-
-      ChatMessageTextSayColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextSayColor",
-              Color.white,
-              new ConfigDescription(
-                  "Color for 'normal/say' chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 5 }));
-
-      ChatMessageTextShoutColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextShoutColor",
-              Color.yellow,
-              new ConfigDescription(
-                  "Color for 'shouting' chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 4 }));
-
-      ChatMessageTextWhisperColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextWhisperColor",
-              new Color(0.502f, 0f, 0.502f, 1f), // <color=purple> #800080
-              new ConfigDescription(
-                  "Color for 'whisper' chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 3 }));
-
-      ChatMessageTextPingColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextPingColor",
-              Color.cyan,
-              new ConfigDescription(
-                  "Color for 'ping' chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 2 }));
-
-      ChatMessageTextMessageHudColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTextMessageHudColor",
-              new Color(1f, 0.647f, 0f, 1.0f), // <color=orange> #FFA500
-              new ConfigDescription(
-                  "Color for 'MessageHud' chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 1 }));
-
-      ChatMessageTimestampColor ??=
-          config.Bind(
-              "Colors",
-              "chatMessageTimestampColor",
-              (Color) new Color32(244, 246, 247, 255),
-              new ConfigDescription(
-                  "Color for any timestamp shown in the chat messages.",
-                  acceptableValues: null,
-                  new ConfigurationManagerAttributes { Order = 0 }));
-
-      config.LateBindInOrder(config => BindChatMessageFont(config));
+      LateBindConfig(BindChatMessageFontConfig);
     }
+
+    // Filters
+    public static StringListConfigEntry SayTextFilterList { get; private set; }
+    public static StringListConfigEntry ShoutTextFilterList { get; private set; }
+    public static StringListConfigEntry WhisperTextFilterList { get; private set; }
+    public static StringListConfigEntry HudCenterTextFilterList { get; private set; }
+    public static StringListConfigEntry OtherTextFilterList { get; private set; }
 
     static void BindFilters(ConfigFile config) {
       // Filters
@@ -314,79 +351,55 @@ namespace Chatter {
           config.BindInOrder("Filters", "otherHudTextFilterList", "Filter list for all other message texts.", "\t");
     }
 
-    public static float ContentRowSpacing {
-      get {
-        return ChatMessageLayout.Value switch {
-          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
-          _ => ChatPanelContentSpacing.Value,
-        };
-      }
-    }
+    // Fonts
+    public static ConfigEntry<string> ChatMessageFontAsset { get; private set; }
+    public static ConfigEntry<float> ChatMessageFontSize { get; private set; }
 
-    public static float ContentRowBodySpacing {
-      get {
-        return ChatMessageLayout.Value switch {
-          Chatter.MessageLayoutType.SingleRow => ChatPanelContentSingleRowSpacing.Value,
-          _ => ChatPanelContentBodySpacing.Value,
-        };
-      }
-    }
-
-    public static Font MessageFont {
-      get => UIResources.GetFont(ChatMessageFont.Value);
-    }
-
-    public static void BindChatMessageFont(ConfigFile config) {
+    public static void BindChatMessageFontConfig(ConfigFile config) {
       string[] fontNames =
-          Resources.FindObjectsOfTypeAll<Font>()
+          Resources.FindObjectsOfTypeAll<TMP_FontAsset>()
               .Select(f => f.name)
               .OrderBy(f => f)
-              .Concat(Font.GetOSInstalledFontNames()
-              .OrderBy(f => f))
+              .Distinct()
               .ToArray();
 
-      ChatMessageFont ??=
-          config.Bind(
-              "Style",
-              "chatMessageFont",
-              UIResources.AveriaSerifLibre.name,
-              new ConfigDescription("The font to use for chat messages.", new AcceptableValueList<string>(fontNames)));
+      ChatMessageFontAsset =
+          config.BindInOrder(
+              "ChatMessage.Text.Font",
+              "chatMessageTextFontAsset",
+              "Valheim-AveriaSansLibre",
+              "FontAsset (TMP) to use for ChatMessage text.",
+              new AcceptableValueList<string>(fontNames));
 
-      ChatMessageFontSize ??=
-          config.Bind(
-              "Style",
-              "chatMessageFontSize",
-              18,
-              new ConfigDescription("The font size to use for chat messages.", new AcceptableValueRange<int>(8, 64)));
+      ChatMessageFontAsset.OnSettingChanged(
+          fontName => ChatterChatPanel?.SetContentFontAsset(UIResources.GetFontAssetByName(fontName)));
+
+      ChatMessageFontSize =
+          config.BindInOrder(
+              "ChatMessage.Text.Font",
+              "chatMessageTextFontSize",
+              16f,
+              "The font size to use for chat messages.",
+              new AcceptableValueRange<float>(6f, 64f));
+
+      ChatMessageFontSize.OnSettingChanged(fontSize => ChatterChatPanel?.SetContentFontSize(fontSize));
     }
 
-    public static void BindChatPanelSize(RectTransform chatWindowRectTransform) {
-      ChatPanelPosition ??=
-          Config.Bind(
-              "Panel",
-              "chatPanelPosition",
-              chatWindowRectTransform.anchoredPosition,
-              "The Vector2 position of the ChatPanel.");
-
-      ChatPanelSize ??=
-          Config.Bind(
-              "Panel",
-              "chatPanelSize",
-              chatWindowRectTransform.sizeDelta - new Vector2(10f, 0f),
-              "The size (width, height) of the ChatPanel.");
-
-      ChatContentWidthOffset ??=
-          Config.Bind(
-              "Panel",
-              "chatContentWidthOffset",
-              -50f,
-              new ConfigDescription(
-                  "Offsets the width of a row in the ChatPanel content.",
-                  new AcceptableValueRange<float>(-400, 400)));
+    public static void LateBindConfig(Action<ConfigFile> lateBindConfigAction) {
+      _fejdStartupBindConfigQueue.Enqueue(lateBindConfigAction);
     }
-  }
 
-  internal sealed class ConfigurationManagerAttributes {
-    public int? Order;
+    static readonly Queue<Action<ConfigFile>> _fejdStartupBindConfigQueue = new();
+
+    [HarmonyPatch(typeof(FejdStartup))]
+    static class FejdStartupPatch {
+      [HarmonyPostfix]
+      [HarmonyPatch(nameof(FejdStartup.Awake))]
+      static void AwakePostfix() {
+        while (_fejdStartupBindConfigQueue.Count > 0) {
+          _fejdStartupBindConfigQueue.Dequeue()?.Invoke(Config);
+        }
+      }
+    }
   }
 }

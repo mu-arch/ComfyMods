@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Pinnacle {
   public static class UIBuilder {
-    public static GameObject CreateLabel(Transform parentTransform) {
-      GameObject label = new($"{parentTransform.name}.Label", typeof(RectTransform));
-      label.SetParent(parentTransform);
+    public static TextMeshProUGUI CreateTMPLabel(Transform parentTransform) {
+      TextMeshProUGUI label =
+          UnityEngine.Object.Instantiate(UnifiedPopup.instance.bodyText, parentTransform, worldPositionStays: false);
 
-      label.AddComponent<Text>()
-          .SetSupportRichText(true)
-          .SetFont(UIResources.AveriaSerifLibre)
-          .SetFontSize(16)
-          .SetAlignment(TextAnchor.MiddleLeft)
-          .SetColor(Color.white)
-          .SetResizeTextForBestFit(false);
-
-      label.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
+      label.name = "Label";
+      label.text = string.Empty;
+      label.fontSize = 16f;
+      label.color = Color.white;
+      label.richText = true;
+      label.enableAutoSizing = false;
 
       return label;
     }

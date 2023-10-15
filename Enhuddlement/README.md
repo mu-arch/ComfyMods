@@ -48,25 +48,17 @@ modify settings in-game.
 
   * Enhuddlment will un-patch BetterUI's EnemyHud patches to avoid mod conflicts.
 
-## Installation
-
-### Manual
-
-  * Un-zip `Enhuddlement.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Enhuddlement_v1.0.0.zip`.
-  * Click "Import local mod" in the pop-up for information.
-
-## Notes
-
-  * This is the *good enough* release with more features/options to be added later.
-  * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/Enhuddlement).
-  * Looking for a chill Valheim server? [Comfy Valheim Discord](https://discord.gg/ameHJz5PFk)
-  * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
-
 ## Changelog
+
+### 1.2.1
+
+  * Fixed a bug for EnemyHud names were being word-wrapped.
+
+### 1.2.0
+
+  * Fixed for the `v0.217.24` patch.
+  * Migrated all `UI.Text` components to `TextMeshPro`.
+  * Had to remove the cool `VerticalGradient` effect as it's not compatible with `TextMeshPro`.
 
 ### 1.1.0
 

@@ -34,17 +34,6 @@ These two commands still call the same action as the hotkey and so will obey all
   - `changecolor <radius>` (in console)
   - Changes the color of all pieces in the radius from the player to the currently set target color.
 
-## Installation
-
-### Manual
-
-  * Un-zip `ColorfulPieces.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `ColorfulPieces_v1.9.2.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * See source at: [GitHub/ComfyMods](https://github.com/redseiko/ComfyMods/tree/main/ColorfulPieces).
@@ -52,6 +41,25 @@ These two commands still call the same action as the hotkey and so will obey all
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.13.0
+
+  * Fixed for the `v0.217.24` patch.
+
+### 1.12.0
+
+  * Fixed for `v0.217.14` patch.
+
+### 1.11.1
+
+  * Work-around for bug introduced in `v0.216.9` where Color.black (Vector3.zero) was stripped out during world load.
+
+### 1.11.0
+
+  * Updated for `v0.216.8` PTB patch.
+  * Modified `Player.TakeInput()` transpiler to happen after `Player.UpdateHover()` and no longer block other inputs.
+  * Modified all single-Piece color actions to no longer be coroutines.
+  * Added work-around for new ZDO behaviour that does not support removal of existing ZDO key-value pairs.
 
 ### 1.10.0
 
@@ -98,7 +106,7 @@ These two commands still call the same action as the hotkey and so will obey all
   * Fixed crashes related to the VPO-compatibiity introduced in v1.4.0.
     * Reverted to original-caching behaviour that uses `WearNTear` instance itself as the key tied to Awake/Destroy.
     * Moved the SaveMaterialColor/ClearMaterialColor logic to WearNTearData.
-    * Added a cache for Utils.Vector3ToColor() method calls.
+    * Added a cache for Vector3ToColor() method calls.
     * Added a cache variable for Utils.ColorToVector3() method calls.
 
 ### 1.5.2

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+
+using TMPro;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,136 +18,21 @@ namespace ComfyLib {
     }
   }
 
-  public static class ColorExtensions {
-    public static Color SetAlpha(this Color color, float alpha) {
-      color.a = alpha;
-      return color;
-    }
-  }
-
   public static class ContentSizeFitterExtensions {
-    public static ContentSizeFitter SetHorizontalFit(
-        this ContentSizeFitter fitter, ContentSizeFitter.FitMode fitMode) {
+    public static T SetHorizontalFit<T>(this T fitter, ContentSizeFitter.FitMode fitMode) where T : ContentSizeFitter {
       fitter.horizontalFit = fitMode;
       return fitter;
     }
 
-    public static ContentSizeFitter SetVerticalFit(this ContentSizeFitter fitter, ContentSizeFitter.FitMode fitMode) {
+    public static T SetVerticalFit<T>(this T fitter, ContentSizeFitter.FitMode fitMode) where T : ContentSizeFitter {
       fitter.verticalFit = fitMode;
       return fitter;
     }
   }
 
-  public static class GameObjectExtensions {
-    public static GameObject SetName(this GameObject gameObject, string name) {
-      gameObject.name = name;
-      return gameObject;
-    }
-
-    public static T SetName<T>(this T component, string name) where T : Component {
-      component.gameObject.name = name;
-      return component;
-    }
-
-    public static GameObject SetParent(
-        this GameObject gameObject, Transform transform, bool worldPositionStays = false) {
-      gameObject.transform.SetParent(transform, worldPositionStays);
-      return gameObject;
-    }
-
-    public static IEnumerable<GameObject> Children(this GameObject gameObject) {
-      return gameObject
-          ? gameObject.transform.Cast<Transform>().Select(t => t.gameObject)
-          : Enumerable.Empty<GameObject>();
-    }
-
-    public static Button Button(this GameObject gameObject) {
-      return gameObject ? gameObject.GetComponent<Button>() : null;
-    }
-
-    public static Image Image(this GameObject gameObject) {
-      return gameObject ? gameObject.GetComponent<Image>() : null;
-    }
-
-    public static LayoutElement LayoutElement(this GameObject gameObject) {
-      return gameObject ? gameObject.GetComponent<LayoutElement>() : null;
-    }
-
-    public static RectTransform RectTransform(this GameObject gameObject) {
-      return gameObject ? gameObject.GetComponent<RectTransform>() : null;
-    }
-
-    public static Text Text(this GameObject gameObject) {
-      return gameObject ? gameObject.GetComponent<Text>() : null;
-    }
-  }
-
-  public static class GridLayoutGroupExtensions {
-    public static GridLayoutGroup SetCellSize(this GridLayoutGroup layoutGroup, Vector2 cellSize) {
-      layoutGroup.cellSize = cellSize;
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetConstraint(
-        this GridLayoutGroup layoutGroup, GridLayoutGroup.Constraint constraint) {
-      layoutGroup.constraint = constraint;
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetConstraintCount(this GridLayoutGroup layoutGroup, int constraintCount) {
-      layoutGroup.constraintCount = constraintCount;
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetStartAxis(this GridLayoutGroup layoutGroup, GridLayoutGroup.Axis startAxis) {
-      layoutGroup.startAxis = startAxis;
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetStartCorner(
-        this GridLayoutGroup layoutGroup, GridLayoutGroup.Corner startCorner) {
-      layoutGroup.startCorner = startCorner;
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetPadding(
-        this GridLayoutGroup layoutGroup,
-        int? left = null,
-        int? right = null,
-        int? top = null,
-        int? bottom = null) {
-      if (!left.HasValue && !right.HasValue && !top.HasValue && !bottom.HasValue) {
-        throw new ArgumentException("Value for left, right, top or bottom must be provided.");
-      }
-
-      if (left.HasValue) {
-        layoutGroup.padding.left = left.Value;
-      }
-
-      if (right.HasValue) {
-        layoutGroup.padding.right = right.Value;
-      }
-
-      if (top.HasValue) {
-        layoutGroup.padding.top = top.Value;
-      }
-
-      if (bottom.HasValue) {
-        layoutGroup.padding.bottom = bottom.Value;
-      }
-
-      return layoutGroup;
-    }
-
-    public static GridLayoutGroup SetSpacing(this GridLayoutGroup layoutGroup, Vector2 spacing) {
-      layoutGroup.spacing = spacing;
-      return layoutGroup;
-    }
-  }
-
-  public static class HorizontalLayoutGroupExtensions {
-    public static HorizontalLayoutGroup SetChildControl(
-        this HorizontalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {
+  public static class LayoutGroupExtensions {
+    public static T SetChildControl<T>(
+        this T layoutGroup, bool? width = null, bool? height = null) where T : HorizontalOrVerticalLayoutGroup {
       if (!width.HasValue && !height.HasValue) {
         throw new ArgumentException("Value for width or height must be provided.");
       }
@@ -163,8 +48,8 @@ namespace ComfyLib {
       return layoutGroup;
     }
 
-    public static HorizontalLayoutGroup SetChildForceExpand(
-        this HorizontalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {
+    public static T SetChildForceExpand<T>(
+        this T layoutGroup, bool? width = null, bool? height = null) where T : HorizontalOrVerticalLayoutGroup {
       if (!width.HasValue && !height.HasValue) {
         throw new ArgumentException("Value for width or height must be provided.");
       }
@@ -180,18 +65,18 @@ namespace ComfyLib {
       return layoutGroup;
     }
 
-    public static HorizontalLayoutGroup SetChildAlignment(
-        this HorizontalLayoutGroup layoutGroup, TextAnchor alignment) {
+    public static T SetChildAlignment<T>(this T layoutGroup, TextAnchor alignment) where T : LayoutGroup {
       layoutGroup.childAlignment = alignment;
       return layoutGroup;
     }
 
-    public static HorizontalLayoutGroup SetPadding(
-        this HorizontalLayoutGroup layoutGroup,
+    public static T SetPadding<T>(
+        this T layoutGroup,
         int? left = null,
         int? right = null,
         int? top = null,
-        int? bottom = null) {
+        int? bottom = null)
+        where T : LayoutGroup {
       if (!left.HasValue && !right.HasValue && !top.HasValue && !bottom.HasValue) {
         throw new ArgumentException("Value for left, right, top or bottom must be provided.");
       }
@@ -215,79 +100,82 @@ namespace ComfyLib {
       return layoutGroup;
     }
 
-    public static HorizontalLayoutGroup SetSpacing(this HorizontalLayoutGroup layoutGroup, float spacing) {
+    public static T SetSpacing<T>(this T layoutGroup, float spacing) where T : HorizontalOrVerticalLayoutGroup {
       layoutGroup.spacing = spacing;
       return layoutGroup;
     }
   }
 
   public static class ImageExtensions {
-    public static Image SetColor(this Image image, Color color) {
+    public static T SetColor<T>(this T image, Color color) where T : Graphic {
       image.color = color;
       return image;
     }
 
-    public static Image SetFillAmount(this Image image, float amount) {
+    public static T SetFillAmount<T>(this T image, float amount) where T : Image {
       image.fillAmount = amount;
       return image;
     }
 
-    public static Image SetFillCenter(this Image image, bool fillCenter) {
+    public static T SetFillCenter<T>(this T image, bool fillCenter) where T : Image {
       image.fillCenter = fillCenter;
       return image;
     }
 
-    public static Image SetFillMethod(this Image image, Image.FillMethod fillMethod) {
+    public static T SetFillMethod<T>(this T image, Image.FillMethod fillMethod) where T : Image {
       image.fillMethod = fillMethod;
       return image;
     }
 
-    public static Image SetFillOrigin(this Image image, Image.OriginHorizontal origin) {
+    public static T SetFillOrigin<T>(this T image, Image.OriginHorizontal origin) where T : Image {
       image.fillOrigin = (int) origin;
       return image;
     }
 
-    public static Image SetFillOrigin(this Image image, Image.OriginVertical origin) {
+    public static T SetFillOrigin<T>(this T image, Image.OriginVertical origin) where T : Image {
       image.fillOrigin = (int) origin;
       return image;
     }
 
-    public static Image SetMaskable(this Image image, bool maskable) {
+    public static T SetMaskable<T>(this T image, bool maskable) where T : MaskableGraphic {
       image.maskable = maskable;
       return image;
     }
 
-    public static Image SetPreserveAspect(this Image image, bool preserveAspect) {
+    public static T SetMaterial<T>(this T image, Material material) where T : Image {
+      image.material = material;
+      return image;
+    }
+
+    public static T SetPixelsPerUnitMultiplier<T>(this T image, float pixelsPerUnitMultiplier) where T : Image {
+      image.pixelsPerUnitMultiplier = pixelsPerUnitMultiplier;
+      return image;
+    }
+
+    public static T SetPreserveAspect<T>(this T image, bool preserveAspect) where T : Image {
       image.preserveAspect = preserveAspect;
       return image;
     }
 
-    public static Image SetRaycastTarget(this Image image, bool raycastTarget) {
+    public static T SetRaycastTarget<T>(this T image, bool raycastTarget) where T : Graphic {
       image.raycastTarget = raycastTarget;
       return image;
     }
 
-    public static Image SetSprite(this Image image, Sprite sprite) {
+    public static T SetSprite<T>(this T image, Sprite sprite) where T : Image {
       image.sprite = sprite;
       return image;
     }
 
-    public static Image SetType(this Image image, Image.Type type) {
+    public static T SetType<T>(this T image, Image.Type type) where T : Image {
       image.type = type;
       return image;
     }
   }
 
-  public static class InputFieldExtensions {
-    public static InputField SetTextComponent(this InputField inputField, Text textComponent) {
-      inputField.textComponent = textComponent;
-      return inputField;
-    }
-  }
-
   public static class LayoutElementExtensions {
-    public static LayoutElement SetPreferred(
-        this LayoutElement layoutElement, float? width = null, float? height = null) {
+    public static T SetPreferred<T>(
+        this T layoutElement, float? width = null, float? height = null) where T : LayoutElement {
       if (!width.HasValue && !height.HasValue) {
         throw new ArgumentException("Value for width or height must be provided.");
       }
@@ -303,8 +191,8 @@ namespace ComfyLib {
       return layoutElement;
     }
 
-    public static LayoutElement SetFlexible(
-        this LayoutElement layoutElement, float? width = null, float? height = null) {
+    public static T SetFlexible<T>(
+        this T layoutElement, float? width = null, float? height = null) where T : LayoutElement {
       if (!width.HasValue && !height.HasValue) {
         throw new ArgumentException("Value for width or height must be provided.");
       }
@@ -320,8 +208,8 @@ namespace ComfyLib {
       return layoutElement;
     }
 
-    public static LayoutElement SetMinimum(
-        this LayoutElement layoutElement, float? width = null, float? height = null) {
+    public static T SetMinimum<T>(
+        this T layoutElement, float? width = null, float? height = null) where T : LayoutElement {
       if (!width.HasValue && !height.HasValue) {
         throw new ArgumentException("Value for width or height must be provided.");
       }
@@ -337,38 +225,21 @@ namespace ComfyLib {
       return layoutElement;
     }
 
-    public static LayoutElement SetIgnoreLayout(this LayoutElement layoutElement, bool ignoreLayout) {
+    public static T SetIgnoreLayout<T>(this T layoutElement, bool ignoreLayout) where T : LayoutElement {
       layoutElement.ignoreLayout = ignoreLayout;
       return layoutElement;
     }
   }
 
   public static class MaskExtensions {
-    public static Mask SetShowMaskGraphic(this Mask mask, bool showMaskGraphic) {
+    public static T SetShowMaskGraphic<T>(this T mask, bool showMaskGraphic) where T : Mask {
       mask.showMaskGraphic = showMaskGraphic;
       return mask;
     }
   }
 
-  public static class OutlineExtensions {
-    public static Outline SetEffectColor(this Outline outline, Color effectColor) {
-      outline.effectColor = effectColor;
-      return outline;
-    }
-
-    public static Outline SetEffectDistance(this Outline outline, Vector2 effectDistance) {
-      outline.effectDistance = effectDistance;
-      return outline;
-    }
-
-    public static Outline SetUseGraphicAlpha(this Outline outline, bool useGraphicAlpha) {
-      outline.useGraphicAlpha = useGraphicAlpha;
-      return outline;
-    }
-  }
-
   public static class RectMask2DExtensions {
-    public static RectMask2D SetSoftness(this RectMask2D rectMask2d, Vector2Int softness) {
+    public static T SetSoftness<T>(this T rectMask2d, Vector2Int softness) where T : RectMask2D {
       rectMask2d.softness = softness;
       return rectMask2d;
     }
@@ -385,13 +256,13 @@ namespace ComfyLib {
       return rectTransform;
     }
 
-    public static RectTransform SetPivot(this RectTransform rectTransform, Vector2 pivot) {
-      rectTransform.pivot = pivot;
+    public static RectTransform SetAnchoredPosition(this RectTransform rectTransform, Vector2 position) {
+      rectTransform.anchoredPosition = position;
       return rectTransform;
     }
 
-    public static RectTransform SetPosition(this RectTransform rectTransform, Vector2 position) {
-      rectTransform.anchoredPosition = position;
+    public static RectTransform SetPivot(this RectTransform rectTransform, Vector2 pivot) {
+      rectTransform.pivot = pivot;
       return rectTransform;
     }
 
@@ -401,139 +272,135 @@ namespace ComfyLib {
     }
   }
 
+  public static class ScrollbarExtensions {
+    public static T SetDirection<T>(this T scrollbar, Scrollbar.Direction direction) where T : Scrollbar {
+      scrollbar.direction = direction;
+      return scrollbar;
+    }
+
+    public static T SetHandleRect<T>(this T scrollbar, RectTransform handleRect) where T : Scrollbar {
+      scrollbar.handleRect = handleRect;
+      return scrollbar;
+    }
+  }
+
   public static class SelectableExtensions {
-    public static Selectable SetColors(this Selectable selectable, ColorBlock colors) {
+    public static T SetColors<T>(this T selectable, ColorBlock colors) where T : Selectable {
       selectable.colors = colors;
       return selectable;
     }
 
-    public static Selectable SetImage(this Selectable selectable, Image image) {
+    public static T SetImage<T>(this T selectable, Image image) where T : Selectable {
       selectable.image = image;
       return selectable;
     }
 
-    public static Selectable SetInteractable(this Selectable selectable, bool interactable) {
+    public static T SetInteractable<T>(this T selectable, bool interactable) where T : Selectable {
       selectable.interactable = interactable;
       return selectable;
     }
 
-    public static Selectable SetTargetGraphic(this Selectable selectable, Graphic graphic) {
+    public static T SetSpriteState<T>(this T selectable, SpriteState spriteState) where T : Selectable {
+      selectable.spriteState = spriteState;
+      return selectable;
+    }
+
+    public static T SetTargetGraphic<T>(this T selectable, Graphic graphic) where T : Selectable {
       selectable.targetGraphic = graphic;
       return selectable;
     }
 
-    public static Selectable SetTransition(this Selectable selectable, Selectable.Transition transition) {
+    public static T SetTransition<T>(this T selectable, Selectable.Transition transition) where T : Selectable {
       selectable.transition = transition;
       return selectable;
-    }
-
-    public static Selectable SetNavigationMode(this Selectable selectable, Navigation.Mode mode) {
-      Navigation navigation = selectable.navigation;
-      navigation.mode = mode;
-      selectable.navigation = navigation;
-      return selectable;
-    }
-  }
-
-  public static class ShadowExtensions {
-    public static Shadow SetEffectColor(this Shadow shadow, Color effectColor) {
-      shadow.effectColor = effectColor;
-      return shadow;
-    }
-
-    public static Shadow SetEffectDistance(this Shadow shadow, Vector2 effectDistance) {
-      shadow.effectDistance = effectDistance;
-      return shadow;
     }
   }
 
   public static class ScrollRectExtensions {
-    public static ScrollRect SetScrollSensitivity(this ScrollRect scrollRect, float sensitivity) {
+    public static T SetScrollSensitivity<T>(this T scrollRect, float sensitivity) where T : ScrollRect {
       scrollRect.scrollSensitivity = sensitivity;
       return scrollRect;
     }
 
-    public static ScrollRect SetVerticalScrollPosition(this ScrollRect scrollRect, float position) {
+    public static T SetVerticalScrollbar<T>(this T scrollRect, Scrollbar verticalScrollbar) where T : ScrollRect {
+      scrollRect.verticalScrollbar = verticalScrollbar;
+      return scrollRect;
+    }
+
+    public static T SetVerticalScrollPosition<T>(this T scrollRect, float position) where T : ScrollRect {
       scrollRect.verticalNormalizedPosition = position;
       return scrollRect;
     }
 
-    public static ScrollRect SetViewport(this ScrollRect scrollRect, RectTransform viewport) {
+    public static T SetViewport<T>(this T scrollRect, RectTransform viewport) where T : ScrollRect {
       scrollRect.viewport = viewport;
       return scrollRect;
     }
 
-    public static ScrollRect SetContent(this ScrollRect scrollRect, RectTransform content) {
+    public static T SetContent<T>(this T scrollRect, RectTransform content) where T : ScrollRect {
       scrollRect.content = content;
       return scrollRect;
     }
 
-    public static ScrollRect SetHorizontal(this ScrollRect scrollRect, bool horizontal) {
+    public static T SetHorizontal<T>(this T scrollRect, bool horizontal) where T : ScrollRect {
       scrollRect.horizontal = horizontal;
       return scrollRect;
     }
 
-    public static ScrollRect SetVertical(this ScrollRect scrollRect, bool vertical) {
+    public static T SetVertical<T>(this T scrollRect, bool vertical) where T : ScrollRect {
       scrollRect.vertical = vertical;
+      return scrollRect;
+    }
+
+    public static T SetMovementType<T>(this T scrollRect, ScrollRect.MovementType movementType) where T : ScrollRect {
+      scrollRect.movementType = movementType;
       return scrollRect;
     }
   }
 
-  public static class SpriteExtensions {
-    public static Sprite SetName(this Sprite sprite, string name) {
-      sprite.name = name;
-      return sprite;
-    }
-  }
-
-  public static class TextExtensions {
-    public static Text SetAlignment(this Text text, TextAnchor alignment) {
-      text.alignment = alignment;
-      return text;
+  public static class TextMeshProExtensions {
+    public static T SetAlignment<T>(this T tmpText, TextAlignmentOptions alignment) where T : TMP_Text {
+      tmpText.alignment = alignment;
+      return tmpText;
     }
 
-    public static Text SetColor(this Text text, Color color) {
-      text.color = color;
-      return text;
+    public static T SetTextWrappingMode<T>(this T tmpText, TextWrappingModes textWrappingMode) where T : TMP_Text {
+      tmpText.textWrappingMode = textWrappingMode;
+      return tmpText;
     }
 
-    public static Text SetFont(this Text text, Font font) {
-      text.font = font;
-      return text;
+    public static T SetFont<T>(this T tmpText, TMP_FontAsset font) where T : TMP_Text {
+      tmpText.font = font;
+      return tmpText;
     }
 
-    public static Text SetFontStyle(this Text text, FontStyle fontStyle) {
-      text.fontStyle = fontStyle;
-      return text;
+    public static T SetFontSize<T>(this T tmpText, float fontSize) where T : TMP_Text {
+      tmpText.fontSize = fontSize;
+      return tmpText;
     }
 
-    public static Text SetFontSize(this Text text, int fontSize) {
-      text.fontSize = fontSize;
-      return text;
+    public static T SetFontMaterial<T>(this T tmpText, Material fontMaterial) where T : TMP_Text {
+      tmpText.fontMaterial = fontMaterial;
+      return tmpText;
     }
 
-    public static Text SetResizeTextForBestFit(this Text text, bool resizeTextForBestFit) {
-      text.resizeTextForBestFit = resizeTextForBestFit;
-      return text;
+    public static T SetMargin<T>(this T tmpText, Vector4 margin) where T : TMP_Text {
+      tmpText.margin = margin;
+      return tmpText;
     }
 
-    public static Text SetSupportRichText(this Text text, bool supportRichText) {
-      text.supportRichText = supportRichText;
-      return text;
+    public static T SetOverflowMode<T>(this T tmpText, TextOverflowModes overflowMode) where T : TMP_Text {
+      tmpText.overflowMode = overflowMode;
+      return tmpText;
     }
 
-    public static Text SetText(this Text text, string value) {
-      text.text = value;
-      return text;
+    public static T SetRichText<T>(this T tmpText, bool richText) where T : TMP_Text {
+      tmpText.richText = richText;
+      return tmpText;
     }
   }
 
   public static class Texture2DExtensions {
-    public static Texture2D SetName(this Texture2D texture, string name) {
-      texture.name = name;
-      return texture;
-    }
-
     public static Texture2D SetWrapMode(this Texture2D texture, TextureWrapMode wrapMode) {
       texture.wrapMode = wrapMode;
       return texture;
@@ -542,81 +409,6 @@ namespace ComfyLib {
     public static Texture2D SetFilterMode(this Texture2D texture, FilterMode filterMode) {
       texture.filterMode = filterMode;
       return texture;
-    }
-  }
-
-  public static class VerticalLayoutGroupExtensions {
-    public static VerticalLayoutGroup SetChildControl(
-        this VerticalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {
-      if (!width.HasValue && !height.HasValue) {
-        throw new ArgumentException("Value for width or height must be provided.");
-      }
-
-      if (width.HasValue) {
-        layoutGroup.childControlWidth = width.Value;
-      }
-
-      if (height.HasValue) {
-        layoutGroup.childControlHeight = height.Value;
-      }
-
-      return layoutGroup;
-    }
-
-    public static VerticalLayoutGroup SetChildForceExpand(
-        this VerticalLayoutGroup layoutGroup, bool? width = null, bool? height = null) {
-      if (!width.HasValue && !height.HasValue) {
-        throw new ArgumentException("Value for width or height must be provided.");
-      }
-
-      if (width.HasValue) {
-        layoutGroup.childForceExpandWidth = width.Value;
-      }
-
-      if (height.HasValue) {
-        layoutGroup.childForceExpandHeight = height.Value;
-      }
-
-      return layoutGroup;
-    }
-
-    public static VerticalLayoutGroup SetChildAlignment(this VerticalLayoutGroup layoutGroup, TextAnchor alignment) {
-      layoutGroup.childAlignment = alignment;
-      return layoutGroup;
-    }
-
-    public static VerticalLayoutGroup SetPadding(
-        this VerticalLayoutGroup layoutGroup,
-        int? left = null,
-        int? right = null,
-        int? top = null,
-        int? bottom = null) {
-      if (!left.HasValue && !right.HasValue && !top.HasValue && !bottom.HasValue) {
-        throw new ArgumentException("Value for left, right, top or bottom must be provided.");
-      }
-
-      if (left.HasValue) {
-        layoutGroup.padding.left = left.Value;
-      }
-
-      if (right.HasValue) {
-        layoutGroup.padding.right = right.Value;
-      }
-
-      if (top.HasValue) {
-        layoutGroup.padding.top = top.Value;
-      }
-
-      if (bottom.HasValue) {
-        layoutGroup.padding.bottom = bottom.Value;
-      }
-
-      return layoutGroup;
-    }
-
-    public static VerticalLayoutGroup SetSpacing(this VerticalLayoutGroup layoutGroup, float spacing) {
-      layoutGroup.spacing = spacing;
-      return layoutGroup;
     }
   }
 }

@@ -15,10 +15,10 @@ namespace ColorfulLights {
     public static ConfigEntry<int> ColorPromptFontSize { get; private set; }
 
     public static void BindConfig(ConfigFile config) {
-      IsModEnabled = config.Bind("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
+      IsModEnabled = config.BindInOrder("_Global", "isModEnabled", true, "Globally enable or disable this mod.");
 
       ChangeColorActionShortcut =
-          config.Bind(
+          config.BindInOrder(
               "Hotkeys",
               "changeColorActionShortcut",
               new KeyboardShortcut(KeyCode.E, KeyCode.LeftShift),
@@ -34,16 +34,19 @@ namespace ColorfulLights {
               colorPaletteKey: "targetFireplaceColoPalette");
 
       ShowChangeColorHoverText =
-          config.Bind(
+          config.BindInOrder(
               "Hud",
               "showChangeColorHoverText",
-              true,
+              false,
               "Show the 'change color' text when hovering over a lightsoure.");
 
       ColorPromptFontSize =
-          config.Bind("Hud", "colorPrompFontSize", 15, "Font size for the 'change color' text prompt.");
-
-      config.SaveOnConfigSet = true;
+          config.BindInOrder(
+              "Hud",
+              "colorPromptFontSize",
+              16,
+              "Font size for the 'change color' text prompt.",
+              new AcceptableValueRange<int>(4, 24));
     }
   }
 }

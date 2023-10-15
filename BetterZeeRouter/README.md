@@ -4,6 +4,14 @@
 
 ## Changelog
 
+### 1.5.0
+
+  * Fixed for `v0.216.8` PTB patch.
+  * Modified .csproj to now target Valheim dedicated server DLLs.
+  * Removed the conditional `isModEnabled` config to simplify logic.
+  * Renamed `TeleportToHandler` to `TeleportPlayerHandler` and added a `TeleportPlayerAccess.txt` SyncedList.
+  * Moved `ZRoutedRpc` patch logic into its own class and cleaned up some references.
+
 ### 1.4.0
 
   * Extracted config logic into a separate class.

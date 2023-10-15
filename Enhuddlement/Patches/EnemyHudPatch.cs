@@ -8,8 +8,9 @@ using ComfyLib;
 
 using HarmonyLib;
 
+using TMPro;
+
 using UnityEngine;
-using UnityEngine.UI;
 
 using static Enhuddlement.PluginConfig;
 
@@ -40,7 +41,7 @@ namespace Enhuddlement {
       }
     }
 
-    static readonly ConditionalWeakTable<EnemyHud.HudData, Text> _healthTextCache = new();
+    static readonly ConditionalWeakTable<EnemyHud.HudData, TextMeshProUGUI> _healthTextCache = new();
 
     static void SetupPlayerHud(EnemyHud.HudData hudData) {
       SetupName(hudData, PlayerHudNameTextFontSize.Value, PlayerHudNameTextColor.Value);
@@ -89,7 +90,10 @@ namespace Enhuddlement {
       hudData.m_name
           .SetColor(nameTextColor)
           .SetFontSize(nameTextFontSize)
-          .SetAlignment(TMPro.TextAlignmentOptions.Bottom);
+          .SetTextWrappingMode(TextWrappingModes.NoWrap)
+          .SetOverflowMode(TextOverflowModes.Overflow)
+          .SetAlignment(TextAlignmentOptions.Bottom)
+          .SetEnableAutoSizing(false);
 
       hudData.m_name.GetComponent<RectTransform>()
           .SetAnchorMin(new(0.5f, 0.5f))
@@ -115,7 +119,7 @@ namespace Enhuddlement {
 
       SetupHealthBars(hudData, healthBarWidth, healthBarHeight);
 
-      Text healthText = CreateHealthText(hudData, healthTransform, healthTextFontSize, healthTextFontColor);
+      TextMeshProUGUI healthText = CreateHealthText(hudData, healthTransform, healthTextFontSize, healthTextFontColor);
       _healthTextCache.Add(hudData, healthText);
 
       SetupLevel(hudData, healthTransform);
@@ -173,7 +177,7 @@ namespace Enhuddlement {
 
     static void SetupAlerted(EnemyHud.HudData hudData) {
       if (hudData.m_alerted) {
-        Text alertedText = hudData.m_alerted.GetComponent<Text>();
+        TextMeshProUGUI alertedText = hudData.m_alerted.GetComponent<TextMeshProUGUI>();
 
         hudData.m_alerted.SetParent(hudData.m_name.transform, worldPositionStays: false);
         hudData.m_alerted
@@ -181,7 +185,7 @@ namespace Enhuddlement {
             .SetAnchorMax(new(0.5f, 1f))
             .SetPivot(new(0.5f, 0f))
             .SetPosition(Vector2.zero)
-            .SetSizeDelta(new(alertedText.preferredWidth, alertedText.preferredHeight));
+            .SetSizeDelta(alertedText.GetPreferredValues());
 
         hudData.m_alerted.gameObject.SetActive(!EnemyHudUseNameForStatus.Value);
       }
@@ -200,10 +204,11 @@ namespace Enhuddlement {
       }
     }
 
-    static Text CreateHealthText(
+    static TextMeshProUGUI CreateHealthText(
         EnemyHud.HudData hudData, Transform parentTransform, int healthTextFontSize, Color healthTextFontColor) {
-      GameObject label = new("Label", typeof(RectTransform));
-      label.transform.SetParent(parentTransform);
+      TextMeshProUGUI label = UnityEngine.Object.Instantiate(hudData.m_name);
+      label.transform.SetParent(parentTransform, worldPositionStays: false);
+      label.name = "HealthText";
 
       label.GetComponent<RectTransform>()
           .SetAnchorMin(Vector2.zero)
@@ -211,79 +216,64 @@ namespace Enhuddlement {
           .SetPivot(new(0.5f, 0.5f))
           .SetPosition(Vector2.zero);
 
-      Text healthText =
-          label.AddComponent<Text>()
-              .SetName("HealthText")
-              .SetText(string.Empty)
-              .SetFont(hudData.m_character.IsBoss() ? UIResources.Norsebold : UIResources.AveriaSerifLibre)
-              .SetFontSize(healthTextFontSize)
-              .SetColor(healthTextFontColor)
-              .SetAlignment(TextAnchor.MiddleCenter)
-              .SetResizeTextForBestFit(false);
+      label.text = string.Empty;
+      label.fontSize = healthTextFontSize;
+      label.color = healthTextFontColor;
+      label.alignment = TextAlignmentOptions.Center;
+      label.enableAutoSizing = false;
+      label.textWrappingMode = TextWrappingModes.NoWrap;
+      label.overflowMode = TextOverflowModes.Overflow;
 
-      label.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
-
-      return healthText;
+      return label;
     }
 
-    static Text CreateEnemyLevelText(EnemyHud.HudData hudData, Transform healthTransform) {
-      GameObject label = new("Label", typeof(RectTransform));
+    static TextMeshProUGUI CreateEnemyLevelText(EnemyHud.HudData hudData, Transform healthTransform) {
+      TextMeshProUGUI label = UnityEngine.Object.Instantiate(hudData.m_name);
+      label.name = "LevelText";
 
-      Text levelText =
-          label.AddComponent<Text>()
-              .SetName("LevelText")
-              .SetFont(hudData.m_character.IsBoss() ? UIResources.Norsebold : UIResources.AveriaSerifLibre)
-              .SetFontSize(Mathf.Clamp((int) hudData.m_name.fontSize, EnemyLevelTextMinFontSize.Value, 64))
-              .SetColor(new(1f, 0.85882f, 0.23137f, 1f))
-              .SetResizeTextForBestFit(false);
+      label.text = string.Empty;
+      label.fontSize = Mathf.Clamp((int) hudData.m_name.fontSize, EnemyLevelTextMinFontSize.Value, 64f);
+      label.color = new(1f, 0.85882f, 0.23137f, 1f);
+      label.enableAutoSizing = false;
+      label.overflowMode = TextOverflowModes.Overflow;
 
       if (EnemyLevelShowByName.Value) {
-        levelText.transform.SetParent(hudData.m_name.transform, worldPositionStays: false);
+        label.transform.SetParent(hudData.m_name.transform, worldPositionStays: false);
 
-        levelText.GetComponent<RectTransform>()
+        label.GetComponent<RectTransform>()
             .SetAnchorMin(new(1f, 0.5f))
             .SetAnchorMax(new(1f, 0.5f))
             .SetPivot(new(0f, 0.5f))
             .SetPosition(new(5f, 0f))
-            .SetSizeDelta(new(100f, levelText.GetPreferredHeight() + 5f));
+            .SetSizeDelta(new(100f, label.GetPreferredValues().y + 5f));
 
-        levelText
-            .SetAlignment(TextAnchor.MiddleLeft)
-            .SetHorizontalOverflow(HorizontalWrapMode.Overflow)
-            .SetVerticalOverflow(VerticalWrapMode.Overflow);
+        label.alignment = TextAlignmentOptions.Left;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
       } else {
-        levelText.transform.SetParent(healthTransform, worldPositionStays: false);
+        label.transform.SetParent(healthTransform, worldPositionStays: false);
 
         Vector2 sizeDelta = healthTransform.GetComponent<RectTransform>().sizeDelta;
-        sizeDelta.y = levelText.GetPreferredHeight() * 2f;
+        sizeDelta.y = label.GetPreferredValues().y * 2f;
 
-        levelText.GetComponent<RectTransform>()
+        label.GetComponent<RectTransform>()
             .SetAnchorMin(Vector2.zero)
             .SetAnchorMax(Vector2.zero)
             .SetPivot(Vector2.zero)
             .SetPosition(new(0f, 0f - sizeDelta.y - 2f))
             .SetSizeDelta(sizeDelta);
 
-        levelText
-            .SetAlignment(TextAnchor.UpperLeft)
-            .SetHorizontalOverflow(HorizontalWrapMode.Wrap)
-            .SetVerticalOverflow(VerticalWrapMode.Overflow);
+        label.alignment = TextAlignmentOptions.TopLeft;
+        label.textWrappingMode = TextWrappingModes.Normal;
       }
-
-      label.AddComponent<Outline>()
-          .SetEffectColor(Color.black);
 
       int stars = hudData.m_character.m_level - 1;
 
-      levelText.SetText(
+      label.SetText(
           stars <= EnemyLevelStarCutoff.Value
               ? string.Concat(Enumerable.Repeat(EnemyLevelStarSymbol.Value, stars))
               : $"{stars}{EnemyLevelStarSymbol.Value}");
 
-      levelText.gameObject.AddComponent<VerticalGradient>();
-
-      return levelText;
+      return label;
     }
 
     static void SetupEnemyLevelStars(EnemyHud.HudData hudData, Transform healthTransform) {

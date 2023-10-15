@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using TMPro;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace ComfyLib {
   public static class UIFonts {
-    public static Font AveriaSerifLibre { get => GetFont("AveriaSerifLibre-Regular"); }
+    public static Font AveriaSerifLibre { get => GetFont("AveriaSerifLibre-Bold"); }
 
     static readonly Dictionary<string, Font> _fontCache = new();
 
@@ -20,6 +21,10 @@ namespace ComfyLib {
       return font;
     }
 
+    public static readonly string ValheimNorse = "Valheim-Norse";
+    public static readonly string ValheimNorsebold = "Valheim-Norsebold";
+    public static readonly string FallbackNotoSansNormal = "Fallback-NotoSansNormal";
+
     static readonly Dictionary<string, TMP_FontAsset> _fontAssetCache = new();
 
     public static TMP_FontAsset GetFontAsset(string fontName) {
@@ -27,7 +32,14 @@ namespace ComfyLib {
         fontAsset = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(f => f.name == fontName);
 
         if (!fontAsset) {
-          fontAsset = TMP_FontAsset.CreateFontAsset(GetFont(fontName));
+          Font font = GetFont(fontName);
+
+          if (!font) {
+            throw new Exception($"Could not find Font with name: {fontName}");
+          }
+
+          fontAsset = TMP_FontAsset.CreateFontAsset(font);
+          fontAsset.name = fontName;
         }
 
         _fontAssetCache[fontName] = fontAsset;

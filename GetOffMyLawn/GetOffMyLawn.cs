@@ -12,19 +12,19 @@ namespace GetOffMyLawn {
   public class GetOffMyLawn : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.getoffmylawn";
     public const string PluginName = "GetOffMyLawn";
-    public const string PluginVersion = "1.5.0";
+    public const string PluginVersion = "1.6.0";
 
     public static ManualLogSource PluginLogger { get; private set; }
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       PluginLogger = Logger;
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 

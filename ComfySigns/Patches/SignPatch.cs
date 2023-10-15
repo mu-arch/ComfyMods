@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Reflection;
-using System.Text.RegularExpressions;
-
-using ComfyLib;
 
 using HarmonyLib;
-
-using TMPro;
-
-using UnityEngine;
 
 using static ComfySigns.PluginConfig;
 
@@ -19,10 +12,6 @@ namespace ComfySigns {
     [HarmonyPatch(nameof(Sign.Awake))]
     static void AwakePostfix(ref Sign __instance) {
       if (IsModEnabled.Value) {
-        __instance.m_textWidget
-            .SetFont(UIFonts.GetFontAsset(SignDefaultTextFont.Value))
-            .SetColor(SignDefaultTextColor.Value);
-
         __instance.m_characterLimit = 999;
       }
     }

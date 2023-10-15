@@ -2,17 +2,6 @@
 
 *The sector's instance level... it's over 9000!*
 
-## Installation
-
-### Manual
-
-  * Un-zip `ZoneScouter.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual install)
-
-  * Go to Settings > Import local mod > Select `ZoneScouter_v1.0.1.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Features
 
 ### SectorInfoPanel
@@ -48,6 +37,17 @@
 
     ![ZoneScouter - Configuration](https://i.imgur.com/5ScpxAV.png)
 
+## Installation
+
+### Manual
+
+  * Un-zip `ZoneScouter.dll` to your `/Valheim/BepInEx/plugins/` folder.
+
+### Thunderstore (manual install)
+
+  * Go to Settings > Import local mod > Select `ZoneScouter_v1.2.0.zip`.
+  * Click "OK/Import local mod" on the pop-up for information.
+
 ## Notes
 
   * This is the *good enough* release with more features/options to be added later.
@@ -56,6 +56,15 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.2.0
+
+  * Fixed for `v0.216.9` patch.
+
+### 1.1.0
+
+  * Added a new row `ZdoManager.NextId` to the `SectorInfoPanel`.
+  * Minor code clean-up.
 
 ### 1.0.1
 

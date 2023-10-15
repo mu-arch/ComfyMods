@@ -1,10 +1,10 @@
-﻿using BepInEx;
-
-using HarmonyLib;
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+
+using BepInEx;
+
+using HarmonyLib;
 
 using UnityEngine;
 
@@ -15,7 +15,7 @@ namespace ZoneScouter {
   public class ZoneScouter : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.zonescouter";
     public const string PluginName = "ZoneScouter";
-    public const string PluginVersion = "1.0.1";
+    public const string PluginVersion = "1.2.0";
 
     Harmony _harmony;
 
@@ -27,7 +27,7 @@ namespace ZoneScouter {
 
       SectorInfoPanelBackgroundColor.OnSettingChanged(color => _sectorInfoPanel?.Panel.Ref()?.Image().SetColor(color));
       SectorInfoPanelPosition.OnSettingChanged(
-          position => _sectorInfoPanel.Panel.Ref()?.RectTransform().SetPosition(position));
+          position => _sectorInfoPanel?.Panel.Ref()?.RectTransform().SetPosition(position));
 
       SectorInfoPanelFontSize.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
       PositionValueXTextColor.OnSettingChanged(() => _sectorInfoPanel?.SetPanelStyle());
@@ -60,12 +60,12 @@ namespace ZoneScouter {
 
     static long GetSectorZdoCount(Vector2i sector) {
       if (!SectorToIndexCache.TryGetValue(sector, out int index)) {
-        index = ZDOMan.m_instance.SectorToIndex(sector);
+        index = ZDOMan.s_instance.SectorToIndex(sector);
         SectorToIndexCache[sector] = index;
       }
 
       return index >= 0
-          ? ZDOMan.m_instance.m_objectsBySector[index]?.Count ?? 0L
+          ? ZDOMan.s_instance.m_objectsBySector[index]?.Count ?? 0L
           : 0L;
     }
 
@@ -108,12 +108,20 @@ namespace ZoneScouter {
       Vector3 lastPosition = Vector3.positiveInfinity;
       Vector2i lastSector = new(int.MinValue, int.MaxValue);
       long lastZdoCount = long.MaxValue;
+      uint lastNextUid = uint.MaxValue;
 
       while (true) {
         yield return waitInterval;
 
         if (!ZoneSystem.m_instance || !Player.m_localPlayer || !_sectorInfoPanel?.Panel) {
           continue;
+        }
+
+        uint nextUid = ZDOMan.s_instance.m_nextUid;
+
+        if (nextUid != lastNextUid) {
+          _sectorInfoPanel.ZdoManagerNextId.Value.SetText($"{nextUid:D}");
+          lastNextUid = nextUid;
         }
 
         Vector3 position = Player.m_localPlayer.transform.position;

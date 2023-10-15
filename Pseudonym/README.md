@@ -18,17 +18,6 @@
 
 ![Character Name](https://i.imgur.com/vGboiA3.png)
 
-## Installation
-
-### Manual
-
-  * Un-zip `Pseudonym.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Pseudonym_v1.0.0.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * This is the *good enough* release with more features/options to be added later.
@@ -37,6 +26,10 @@
   * Check out our community driven listing site at: [valheimlist.org](https://valheimlist.org/)
 
 ## Changelog
+
+### 1.1.0
+
+  * Fixed for the `v0.217.24` patch.
 
 ### 1.0.1
 

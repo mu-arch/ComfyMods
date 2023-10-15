@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 using static ZoneScouter.PluginConfig;
@@ -19,6 +16,9 @@ namespace ZoneScouter {
     public ContentRow SectorContent { get; private set; }
     public ValueWithLabel SectorXY { get; private set; }
     public ValueWithLabel SectorZdoCount { get; private set; }
+
+    public ContentRow ZdoManagerContent { get; private set; }
+    public ValueWithLabel ZdoManagerNextId { get; private set; }
 
     public PanelDragger PanelDragger { get; private set; }
 
@@ -43,6 +43,11 @@ namespace ZoneScouter {
 
       SectorZdoCount = new(SectorContent.Row.transform);
       SectorZdoCount.Label.SetText("ZDOs");
+
+      ZdoManagerContent = new(Panel.transform);
+
+      ZdoManagerNextId = new(ZdoManagerContent.Row.transform);
+      ZdoManagerNextId.Label.SetText("NextId");
 
       SetPanelStyle();
 
@@ -81,6 +86,12 @@ namespace ZoneScouter {
       SectorZdoCount.Value.SetColor(PositionValueYTextColor.Value);
       SectorZdoCount.FitValueToText("123456");
       SectorZdoCount.Row.Image().SetColor(PositionValueYTextColor.Value.SetAlpha(0.1f));
+
+      ZdoManagerNextId.Label.SetFontSize(fontSize);
+      ZdoManagerNextId.Value.SetFontSize(fontSize);
+      ZdoManagerNextId.Value.SetColor(PositionValueZTextColor.Value);
+      ZdoManagerNextId.FitValueToText("1234567890");
+      ZdoManagerNextId.Row.Image().SetColor(PositionValueZTextColor.Value.SetAlpha(0.1f));
     }
 
     GameObject CreatePanel(Transform parentTransform) {
@@ -90,8 +101,8 @@ namespace ZoneScouter {
       panel.AddComponent<VerticalLayoutGroup>()
           .SetChildControl(width: true, height: true)
           .SetChildForceExpand(width: true, height: false)
-          .SetPadding(left: 10, right: 10, top: 10, bottom: 10)
-          .SetSpacing(8f);
+          .SetPadding(left: 6, right: 6, top: 6, bottom: 6)
+          .SetSpacing(6f);
 
       panel.AddComponent<ContentSizeFitter>()
           .SetHorizontalFit(ContentSizeFitter.FitMode.PreferredSize)
@@ -99,7 +110,7 @@ namespace ZoneScouter {
 
       panel.AddComponent<Image>()
           .SetType(Image.Type.Sliced)
-          .SetSprite(CreateRoundedCornerSprite(400, 400, 15))
+          .SetSprite(CreateSuperellipse(200, 200, 12))
           .SetColor(SectorInfoPanelBackgroundColor.Value);
 
       panel.AddComponent<CanvasGroup>()

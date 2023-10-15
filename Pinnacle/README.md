@@ -76,17 +76,6 @@
   - Changing the Minimap.Pin font/font-size
     - These two options are available once you are logged into any world.
 
-## Installation
-
-### Manual
-
-  * Un-zip `Pinnacle.dll` to your `/Valheim/BepInEx/plugins/` folder.
-
-### Thunderstore (manual)
-
-  * Go to Settings > Import local mod > Select `Pinnacle_v1.2.3.zip`.
-  * Click "OK/Import local mod" on the pop-up for information.
-
 ## Notes
 
   * See source at: [GitHub](https://github.com/redseiko/ComfyMods/tree/main/Pinnacle).
@@ -95,6 +84,44 @@
   * Pinnacle icon created by [@jenniely](https://twitter.com/jenniely) (jenniely.com)
 
 ## Changelog
+
+### 1.5.2
+
+  * Removed the `targetPosition.y` override in the `TeleportTo()` helper method as this is now handled by vanilla code.
+
+### 1.5.1
+
+  * Fixed a bug where you could not add a new pin if the 'Death' pin icon was selected.
+  * Changed permission level for `resetmap` command to be useable without cheats.
+  * Minor code refactoring.
+
+### 1.5.0
+
+  * Fixed for the `v0.217.22` patch.
+
+### 1.4.1
+
+  * Added `Game.UpdateNoMap()` transpiler patch to fix for a vanilla bug where the minimap will close whenever global
+    keys are received.
+  * Refactored logging methods to also log to chat.
+
+### 1.4.0
+
+  * Fixed for `v0.217.14` patch.
+  * Migrated all `UI.Text` usage to new `TMP_Text`.
+  * PinListPanel: pin names for pins with no name will be italicized.
+  * PinListPanel: pin names starting with '$' will be localized for display.
+  * Fixed Pin name font and font-size wiring for TMP_Text, limited to built-in TMP_FontAssets only (for now).
+
+### 1.3.0
+
+  * Fixed build errors for `v0.216.9` PTB update.
+  * Added new project reference to `ui_lib_publicized.dll`.
+  * Converted `Minimap.ShowPinNameInput()` from postfix-patch to prefix-patch due to signature/behaviour change.
+
+### 1.2.4
+
+  * Re-wrote the entire `Minimap.UpdatePlayerPins()` prefix patch again to better update player pins.
 
 ### 1.2.3
 

@@ -1,14 +1,13 @@
-﻿using HarmonyLib;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
-using TMPro;
+using Fishlabs;
+
+using HarmonyLib;
 
 using UnityEngine;
-using UnityEngine.UI;
 
 using static Chatter.Chatter;
 using static Chatter.PluginConfig;
@@ -18,14 +17,18 @@ namespace Chatter {
   static class ChatPatch {
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.Awake))]
-    static void AwakePostfix(ref Chat __instance) {
-      _chatInputField = __instance.m_input;
+    static void AwakePostfix(Chat __instance) {
+      ContentRowManager.MessageRows.ClearItems();
 
-      BindChatConfig(__instance, _chatPanel);
-      MessageRows.ClearItems();
-      ToggleChatter(IsModEnabled.Value);
+      VanillaInputField = __instance.m_input;
+      ToggleChatter(__instance, IsModEnabled.Value);
+      SetupWorldText(__instance);
     }
 
+    static void SetupWorldText(Chat chat) {
+      chat.m_worldTextBase = WorldTextUtils.CreateWorldTextTemplate(chat.m_worldTextBase.transform.parent);
+      chat.m_worldTextBase.SetActive(false);
+    }
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Chat.InputText))]
     static IEnumerable<CodeInstruction> InputTextTranspiler(IEnumerable<CodeInstruction> instructions) {
@@ -38,32 +41,21 @@ namespace Chatter {
 
     static string PrefixSayDelegate(string value) {
       if (IsModEnabled.Value) {
-        return ChatInputTextDefaultPrefix;
+        return ChatTextInputUtils.ChatTextInputPrefix;
       }
 
       return value;
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(Chat.IsTakingInput))]
-    static void IsTakingInput(Chat __instance, ref bool __result) {
-      if (__result && IsModEnabled.Value) {
-        __result = __instance.m_input.isFocused;
-      }
-    }
-
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
-    static void OnNewChatMessagePrefix(
-        ref long senderID, ref Vector3 pos, ref Talker.Type type, ref UserInfo user, ref string text) {
+    static void OnNewChatMessagePrefix(long senderID, Vector3 pos, Talker.Type type, UserInfo user, string text) {
       if (!IsModEnabled.Value) {
         return;
       }
 
-      _isCreatingChatMessage = true;
-
       ChatMessage message = new() {
-        MessageType = GetMessageType(type),
+        MessageType = ChatMessageUtils.GetChatMessageType(type),
         Timestamp = DateTime.Now,
         SenderId = senderID,
         Position = pos,
@@ -72,24 +64,15 @@ namespace Chatter {
         Text = Regex.Replace(text, @"(<|>)", " "),
       };
 
+      IsChatMessageQueued = true;
       AddChatMessage(message);
-    }
-
-    static ChatMessageType GetMessageType(Talker.Type talkerType) {
-      return talkerType switch {
-        Talker.Type.Normal => ChatMessageType.Say,
-        Talker.Type.Shout => ChatMessageType.Shout,
-        Talker.Type.Whisper => ChatMessageType.Whisper,
-        Talker.Type.Ping => ChatMessageType.Ping,
-        _ => ChatMessageType.Text
-      };
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
     static void OnNewChatMessagePostfix() {
       if (IsModEnabled.Value) {
-        _isCreatingChatMessage = false;
+        IsChatMessageQueued = false;
       }
     }
 
@@ -105,6 +88,7 @@ namespace Chatter {
               new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideDelay))),
               new CodeMatch(OpCodes.Clt),
               new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
+          .ThrowIfInvalid("Could not patch HideChatPanelDelegate.")
           .InsertAndAdvance(
               new CodeInstruction(OpCodes.Ldarg_0),
               new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Chat), nameof(Chat.m_hideTimer))),
@@ -119,7 +103,9 @@ namespace Chatter {
               new CodeMatch(OpCodes.Ldarg_0),
               new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
               new CodeMatch(
-                  OpCodes.Callvirt, AccessTools.Method(typeof(InputField), nameof(InputField.ActivateInputField))))
+                  OpCodes.Callvirt,
+                  AccessTools.Method(typeof(GuiInputField), nameof(GuiInputField.ActivateInputField))))
+          .ThrowIfInvalid("Could not patch EnableChatPanelDelegate.")
           .InsertAndAdvance(Transpilers.EmitDelegate<Action>(EnableChatPanelDelegate))
           .MatchForward(
               useEnd: false,
@@ -130,29 +116,81 @@ namespace Chatter {
               new CodeMatch(OpCodes.Ldarg_0),
               new CodeMatch(OpCodes.Ldc_I4_0),
               new CodeMatch(OpCodes.Stfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_focused))))
+          .ThrowIfInvalid("Could not patch DisableChatPanelDelegate.")
           .Advance(offset: 3)
           .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
           .InstructionEnumeration();
     }
 
+    static void HideChatPanelDelegate(float hideTimer) {
+      if (IsModEnabled.Value && ChatterChatPanel?.Panel) {
+        bool isVisible = (hideTimer < HideChatPanelDelay.Value || Menu.IsVisible()) && !Hud.IsUserHidden();
+        ChatterChatPanel.ShowOrHideChatPanel(isVisible);
+      }
+    }
+
+    static void EnableChatPanelDelegate() {
+      if (IsModEnabled.Value) {
+        ChatterChatPanel?.EnableOrDisableChatPanel(true);
+      }
+    }
+
+    static bool DisableChatPanelDelegate(bool active) {
+      if (IsModEnabled.Value) {
+        if (!Menu.IsVisible()) {
+          ChatterChatPanel?.EnableOrDisableChatPanel(false);
+        }
+
+        return true;
+      }
+
+      return active;
+    }
+
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Chat.Update))]
     static void UpdatePostfix(ref Chat __instance) {
-      if (!IsModEnabled.Value || !IsChatPanelVisible) {
+      if (!IsModEnabled.Value || !ChatterChatPanel?.Panel) {
         return;
       }
 
-      if (ScrollContentUpShortcut.Value.IsDown()) {
-        Chatter.ChatPanel?.OffsetVerticalScrollPosition(ScrollContentOffsetInterval.Value);
+      if (ScrollContentUpShortcut.Value.IsDown() && ChatterChatPanel.Panel.activeInHierarchy) {
+        ChatterChatPanel.OffsetContentVerticalScrollPosition(ScrollContentOffsetInterval.Value);
         __instance.m_hideTimer = 0f;
       }
 
       if (ScrollContentDownShortcut.Value.IsDown()) {
-        Chatter.ChatPanel?.OffsetVerticalScrollPosition(-ScrollContentOffsetInterval.Value);
+        ChatterChatPanel.OffsetContentVerticalScrollPosition(-ScrollContentOffsetInterval.Value);
         __instance.m_hideTimer = 0f;
       }
     }
 
+    [HarmonyTranspiler]
+    [HarmonyPatch(nameof(Chat.SendInput))]
+    static IEnumerable<CodeInstruction> SendInputTranspiler(IEnumerable<CodeInstruction> instructions) {
+      return new CodeMatcher(instructions)
+          .MatchForward(
+              useEnd: false,
+              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive))))
+          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
+          .InstructionEnumeration();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.SendInput))]
+    static void SendInputPostfix() {
+      if (IsModEnabled.Value) {
+        ChatterChatPanel?.SetContentVerticalScrollPosition(0f);
+      }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Chat.HasFocus))]
+    static void HasFocusPostfix(ref Chat __instance, ref bool __result) {
+      if (IsModEnabled.Value && ChatterChatPanel?.Panel) {
+        __result = ChatterChatPanel.Panel.activeInHierarchy && __instance.m_input.isFocused;
+      }
+    }
 
     [HarmonyTranspiler]
     [HarmonyPatch(nameof(Chat.AddInworldText))]
@@ -167,14 +205,6 @@ namespace Chatter {
 
     static string ToUpperDelegate(string text) {
       return IsModEnabled.Value ? text : text.ToUpper();
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(Chat.UpdateWorldTextField))]
-    static void UpdateWorldTextFieldPostfix(ref Chat __instance, ref Chat.WorldTextInstance wt) {
-      if (IsModEnabled.Value) {
-        wt.m_textMeshField.fontMaterial = __instance.m_output.fontMaterial;
-      }
     }
   }
 }

@@ -13,8 +13,20 @@ namespace ReturnToSender {
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(ZDOMan), nameof(ZDOMan.SendZDOToPeers2))))
-          .SetOperandAndAdvance(AccessTools.Method(typeof(ZDOMan), nameof(ZDOMan.SendZDOToPeers)))
+          .SetOperandAndAdvance(AccessTools.Method(typeof(ZDOManPatch), nameof(ZDOManPatch.SendZDOToPeers)))
           .InstructionEnumeration();
+    }
+
+    static void SendZDOToPeers(ZDOMan zdoManager, float dt) {
+      zdoManager.m_sendTimer += dt;
+
+      if (zdoManager.m_sendTimer > 0.05f) {
+        zdoManager.m_sendTimer = 0f;
+
+        foreach (ZDOMan.ZDOPeer peer in zdoManager.m_peers) {
+          zdoManager.SendZDOs(peer, flush: false);
+        }
+      }
     }
   }
 }

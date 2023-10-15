@@ -17,36 +17,32 @@ namespace ColorfulPieces {
           .MatchForward(
               useEnd: false,
               new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
           .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Action<bool>>(UpdateHoverPostDelegate))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
-      if (takeInputResult && IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
-        if (ChangePieceColorShortcut.Value.IsDown()) {
-          if (Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
-            Player.m_localPlayer.StartCoroutine(ChangePieceColorCoroutine(changeTarget));
-            return false;
-          }
+    static void UpdateHoverPostDelegate(bool takeInput) {
+      if (takeInput && IsModEnabled.Value && Player.m_localPlayer && Player.m_localPlayer.m_hovering) {
+        if (ChangePieceColorShortcut.Value.IsDown()
+            && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear changeTarget)) {
+          ChangePieceColorAction(changeTarget);
         }
 
         if (ClearPieceColorShortcut.Value.IsDown()
             && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear clearTarget)) {
-          Player.m_localPlayer.StartCoroutine(ClearPieceColorCoroutine(clearTarget));
-          return false;
+          ClearPieceColorAction(clearTarget);
         }
 
         if (CopyPieceColorShortcut.Value.IsDown()
             && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out WearNTear copyTarget)
             && copyTarget) {
           CopyPieceColorAction(copyTarget.m_nview);
-          return false;
         }
       }
-
-      return takeInputResult;
     }
   }
 }

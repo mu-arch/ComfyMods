@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
+using ComfyLib;
+
 using HarmonyLib;
 
 using static ColorfulWards.PluginConfig;
@@ -15,27 +17,27 @@ namespace ColorfulWards.Patches {
       return new CodeMatcher(instructions)
           .MatchForward(
               useEnd: false,
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Character), nameof(Character.TakeInput))))
-          .Advance(offset: 2)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(TakeInputDelegate))
+              new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Player), nameof(Player.UpdateHover))))
+          .Advance(offset: 1)
+          .InsertAndAdvance(
+              new CodeInstruction(OpCodes.Ldloc_1),
+              Transpilers.EmitDelegate<Func<bool, bool>>(UpdateHoverPostDelegate),
+              new CodeInstruction(OpCodes.Stloc_1))
           .InstructionEnumeration();
     }
 
-    static bool TakeInputDelegate(bool takeInputResult) {
-      if (IsModEnabled.Value
+    static bool UpdateHoverPostDelegate(bool takeInput) {
+      if (takeInput
+          && IsModEnabled.Value
           && ChangeWardColorShortcut.Value.IsDown()
           && Player.m_localPlayer
-          && Player.m_localPlayer.m_hovering) {
-        PrivateArea privateArea = Player.m_localPlayer.m_hovering.GetComponentInParent<PrivateArea>();
-
-        if (privateArea) {
-          Player.m_localPlayer.StartCoroutine(ColorfulWards.ChangeWardColorCoroutine(privateArea));
-          return false;
-        }
+          && Player.m_localPlayer.m_hovering
+          && Player.m_localPlayer.m_hovering.TryGetComponentInParent(out PrivateArea privateArea)) {
+        ColorfulWards.ChangeWardColor(privateArea);
+        return false;
       }
 
-      return takeInputResult;
+      return takeInput;
     }
   }
 }

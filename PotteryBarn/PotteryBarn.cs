@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 
 using BepInEx;
-using BepInEx.Logging;
 
 using HarmonyLib;
 
@@ -21,12 +20,12 @@ namespace PotteryBarn {
   public class PotteryBarn : BaseUnityPlugin {
     public const string PluginGuid = "redseiko.valheim.potterybarn";
     public const string PluginName = "PotteryBarn";
-    public const string PluginVersion = "1.5.1";
+    public const string PluginVersion = "1.11.0";
 
-    static ManualLogSource _logger;
     Harmony _harmony;
 
     static Piece.PieceCategory _hammerCreatorShopCategory;
+    static Piece.PieceCategory _hammerBuildingCategory;
     static Piece.PieceCategory _cultivatorCreatorShopCategory;
     static Sprite _standardPrefabIconSprite;
     static Quaternion _prefabIconRenderRotation;
@@ -34,35 +33,38 @@ namespace PotteryBarn {
     public static bool _debug = false;
     public static bool IsDropTableDisabled { get; set; } = false;
 
-    public void Awake() {
-      _logger = Logger;
-
+    void Awake() {
       BindConfig(Config);
-
-      PieceManager.OnPiecesRegistered += () => ZLog.Log("RED I was called second.");
+      PieceManager.OnPiecesRegistered += AddPieces;
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
     public static void AddPieces() {
+      PieceManager.OnPiecesRegistered -= AddPieces;
+
       AddHammerPieces(PieceManager.Instance.GetPieceTable("_HammerPieceTable"));
       AddCultivatorPieces(PieceManager.Instance.GetPieceTable("_CultivatorPieceTable"));
     }
 
     static void AddHammerPieces(PieceTable pieceTable) {
       _hammerCreatorShopCategory = PieceManager.Instance.AddPieceCategory("_HammerPieceTable", "CreatorShop");
+      _hammerBuildingCategory = PieceManager.Instance.AddPieceCategory("_HammerPieceTable", "Building");
 
       _standardPrefabIconSprite = _standardPrefabIconSprite ??= CreateColorSprite(new Color32(34, 132, 73, 64));
       _prefabIconRenderRotation = Quaternion.Euler(0f, -45f, 0f);
 
+      Piece femaleArmorStand = GetExistingPiece("ArmorStand_Female").SetName("ArmorStand_Female");
+      femaleArmorStand.m_comfort = 0;
+
       pieceTable.AddPiece(GetExistingPiece("turf_roof").SetName("turf_roof"));
       pieceTable.AddPiece(GetExistingPiece("turf_roof_top").SetName("turf_roof_top"));
       pieceTable.AddPiece(GetExistingPiece("turf_roof_wall").SetName("turf_roof_wall"));
-      pieceTable.AddPiece(GetExistingPiece("ArmorStand_Female").SetName("ArmorStand_Female"));
+      pieceTable.AddPiece(femaleArmorStand);
       pieceTable.AddPiece(GetExistingPiece("ArmorStand_Male").SetName("ArmorStand_Male"));
 
       pieceTable.AddPiece(
@@ -80,7 +82,18 @@ namespace PotteryBarn {
         GetOrAddPieceComponent(entry.Key, pieceTable)
             .SetResources(CreateRequirements(entry.Value))
             .SetCategory(_hammerCreatorShopCategory)
-            .SetCraftingStation(GetCraftingStation(entry.Key))
+            .SetCraftingStation(GetCraftingStation(Requirements.craftingStationRequirements, entry.Key))
+            .SetCanBeRemoved(true)
+            .SetTargetNonPlayerBuilt(false);
+      }
+
+      foreach (
+          KeyValuePair<string, Dictionary<string, int>> entry in
+              DvergrPieces.DvergrPrefabs.OrderBy(o => o.Key).ToList()) {
+        GetOrAddPieceComponent(entry.Key, pieceTable)
+            .SetResources(CreateRequirements(entry.Value))
+            .SetCategory(_hammerBuildingCategory)
+            .SetCraftingStation(GetCraftingStation(DvergrPieces.DvergrPrefabCraftingStationRequirements, entry.Key))
             .SetCanBeRemoved(true)
             .SetTargetNonPlayerBuilt(false);
       }
@@ -100,7 +113,7 @@ namespace PotteryBarn {
         GetOrAddPieceComponent(entry.Key, pieceTable)
             .SetResources(CreateRequirements(entry.Value))
             .SetCategory(_cultivatorCreatorShopCategory)
-            .SetCraftingStation(GetCraftingStation(entry.Key))
+            .SetCraftingStation(GetCraftingStation(Requirements.craftingStationRequirements, entry.Key))
             .SetCanBeRemoved(true)
             .SetTargetNonPlayerBuilt(false);
       }
@@ -120,16 +133,19 @@ namespace PotteryBarn {
       Piece.Requirement[] requirements = new Piece.Requirement[data.Count];
       for (int index = 0; index < data.Count; index++) {
         KeyValuePair<string, int> item = data.ElementAt(index);
-        Piece.Requirement req = new();
-        req.m_resItem = PrefabManager.Cache.GetPrefab<GameObject>(item.Key).GetComponent<ItemDrop>();
-        req.m_amount = item.Value;
+
+        Piece.Requirement req = new() {
+          m_resItem = PrefabManager.Cache.GetPrefab<GameObject>(item.Key).GetComponent<ItemDrop>(),
+          m_amount = item.Value
+        };
+
         requirements[index] = req;
       }
       return requirements;
     }
 
     static Piece GetExistingPiece(string prefabName) {
-      return ZNetScene.m_instance.Ref()?.GetPrefab(prefabName).Ref()?.GetComponent<Piece>();
+      return ZNetScene.s_instance.Ref()?.GetPrefab(prefabName).Ref()?.GetComponent<Piece>();
     }
 
     static Piece GetOrAddPieceComponent(string prefabName, PieceTable pieceTable) {
@@ -142,11 +158,12 @@ namespace PotteryBarn {
         SetPlacementRestrictions(piece);
       }
 
-      piece.m_icon ??= LoadOrRenderIcon(prefab, _prefabIconRenderRotation, _standardPrefabIconSprite);
+      if (!piece.m_icon) {
+        piece.m_icon = LoadOrRenderIcon(prefab, _prefabIconRenderRotation, _standardPrefabIconSprite);
+      }
 
       if (!pieceTable.m_pieces.Contains(prefab)) {
         pieceTable.m_pieces.Add(prefab);
-        ZLog.Log($"Added Piece {piece.m_name} to PieceTable {pieceTable.name}");
       }
 
       piece.m_description = prefab.name;
@@ -198,10 +215,12 @@ namespace PotteryBarn {
       return Sprite.Create(texture, new(0, 0, 1, 1), Vector2.zero);
     }
 
-    public static void LogMessage(string message) {
-      if (_debug) {
-        _logger.LogMessage(message);
+    public static bool IsNewDvergrPiece(Piece piece) {
+      if (DvergrPieces.DvergrPrefabs.Keys.Contains(piece.m_description)) {
+        return true;
       }
+
+      return false;
     }
 
     public static bool IsCreatorShopPiece(Piece piece) {
@@ -244,10 +263,10 @@ namespace PotteryBarn {
       return false;
     }
 
-    public static CraftingStation GetCraftingStation(string prefabName) {
-      if (Requirements.craftingStationRequirements.ContainsKey(prefabName)) {
+    public static CraftingStation GetCraftingStation(Dictionary<string, string> requirements, string prefabName) {
+      if (requirements.ContainsKey(prefabName)) {
         return PrefabManager.Instance
-            .GetPrefab(Requirements.craftingStationRequirements[prefabName])
+            .GetPrefab(requirements[prefabName])
             .GetComponent<CraftingStation>();
       }
 

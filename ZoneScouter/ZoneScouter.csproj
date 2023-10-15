@@ -74,11 +74,20 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.TextMeshPro_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\Unity.TextMeshPro_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GamePath)\unstripped_corlib\UnityEngine.InputLegacyModule.dll</HintPath>
@@ -100,8 +109,8 @@
     <Compile Include="Patches\HudPatch.cs" />
     <Compile Include="Patches\MenuPatch.cs" />
     <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
-    <Compile Include="SectorBoundaries.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
+    <Compile Include="Core\SectorBoundaries.cs" />
     <Compile Include="UI\PanelDragger.cs" />
     <Compile Include="UI\SectorInfoPanel.cs" />
     <Compile Include="UI\SectorZdoCountGrid.cs" />
@@ -118,7 +127,6 @@
     <None Include="README.md" />
     <None Include="icon.png" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="CopyAssembly" AfterTargets="Build">
     <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(PluginOutputPath)" />

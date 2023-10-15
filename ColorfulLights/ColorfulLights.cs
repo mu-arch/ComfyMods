@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Reflection;
+﻿using System.Reflection;
 
 using BepInEx;
 using BepInEx.Logging;
@@ -15,7 +14,7 @@ namespace ColorfulLights {
   public class ColorfulLights : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.colorfullights";
     public const string PluginName = "ColorfulLights";
-    public const string PluginVersion = "1.8.0";
+    public const string PluginVersion = "1.10.0";
 
     public static readonly int FirePlaceColorHashCode = "FireplaceColor".GetStableHashCode();
     public static readonly int FireplaceColorAlphaHashCode = "FireplaceColorAlpha".GetStableHashCode();
@@ -26,32 +25,30 @@ namespace ColorfulLights {
 
     Harmony _harmony;
 
-    public void Awake() {
+    void Awake() {
       PluginLogger = Logger;
       BindConfig(Config);
 
       _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGUID);
     }
 
-    public void OnDestroy() {
+    void OnDestroy() {
       _harmony?.UnpatchSelf();
     }
 
-    public static IEnumerator ChangeFireplaceColorCoroutine(Fireplace targetFireplace) {
-      yield return null;
-
+    public static bool ChangeFireplaceColor(Fireplace targetFireplace) {
       if (!targetFireplace) {
-        yield break;
+        return false;
       }
 
       if (!targetFireplace.m_nview || !targetFireplace.m_nview.IsValid()) {
         PluginLogger.LogWarning("Fireplace does not have a valid ZNetView.");
-        yield break;
+        return false;
       }
 
       if (!PrivateArea.CheckAccess(targetFireplace.transform.position, radius: 0f, flash: true, wardCheck: false)) {
         PluginLogger.LogWarning("Fireplace is within private area with no access.");
-        yield break;
+        return false;
       }
 
       Vector3 colorVec3 = Utils.ColorToVec3(TargetFireplaceColor.Value);
@@ -69,12 +66,8 @@ namespace ColorfulLights {
       if (targetFireplace.TryGetComponent(out FireplaceColor fireplaceColor)) {
         fireplaceColor.SetFireplaceColors(colorVec3, colorAlpha);
       }
-    }
-  }
 
-  public static class ObjectExtensions {
-    public static T Ref<T>(this T o) where T : UnityEngine.Object {
-      return o ? o : null;
+      return true;
     }
   }
 }

@@ -13,7 +13,7 @@ namespace DyeHard {
   public class DyeHard : BaseUnityPlugin {
     public const string PluginGUID = "redseiko.valheim.dyehard";
     public const string PluginName = "DyeHard";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "1.5.0";
 
     public static readonly int HairColorHashCode = "HairColor".GetStableHashCode();
     public static Player LocalPlayerCache { get; set; }
@@ -72,10 +72,9 @@ namespace DyeHard {
         return;
       }
 
-      if (LocalPlayerCache.m_nview.m_zdo.m_vec3 == null
-          || !LocalPlayerCache.m_nview.m_zdo.m_vec3.ContainsKey(HairColorHashCode)
-          || LocalPlayerCache.m_nview.m_zdo.m_vec3[HairColorHashCode] != color) {
-        LocalPlayerCache.m_nview.GetZDO().Set(HairColorHashCode, color);
+      if (!LocalPlayerCache.m_nview.m_zdo.TryGetVector3(HairColorHashCode, out Vector3 cachedColor)
+          || cachedColor != color) {
+        LocalPlayerCache.m_nview.m_zdo.Set(HairColorHashCode, color);
       }
     }
 

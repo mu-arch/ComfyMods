@@ -18,17 +18,18 @@ namespace Intermission {
       LoadingTips.AddRange(ReadLoadingTips(Path.Combine(pluginDir, "tips.txt")));
 
       LoadingImageFiles.Clear();
-      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir));
+      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir, ".png"));
+      LoadingImageFiles.AddRange(ReadLoadingImageFiles(pluginDir, ".jpg"));
     }
 
     public static IEnumerable<string> ReadLoadingTips(string path) {
       if (File.Exists(path)) {
         string[] loadingTips = File.ReadAllLines(path);
-        ZLog.Log($"Found {loadingTips.Length} custom tips in file: {path}");
+        Intermission.LogInfo($"Found {loadingTips.Length} custom tips in file: {path}");
 
         return loadingTips;
       } else {
-        ZLog.Log($"Creating new empty custom tips file: {path}");
+        Intermission.LogInfo($"Creating new empty custom tips file: {path}");
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.Create(path);
 
@@ -36,11 +37,13 @@ namespace Intermission {
       }
     }
 
-    public static IEnumerable<string> ReadLoadingImageFiles(string path) {
+    public static IEnumerable<string> ReadLoadingImageFiles(string path, string extension) {
       Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-      string[] loadingImageFiles = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
-      ZLog.Log($"Found {loadingImageFiles.Length} custom loading images in directory: {path}");
+      string[] loadingImageFiles = Directory.GetFiles(path, $"*{extension}", SearchOption.TopDirectoryOnly);
+
+      Intermission.LogInfo(
+          $"Found {loadingImageFiles.Length} custom loading images ({extension}) in directory: {path}");
 
       return loadingImageFiles;
     }
@@ -50,10 +53,8 @@ namespace Intermission {
         return sprite;
       }
 
-      if (File.Exists(imageFile)) {
-        ZLog.DevLog($"Reading custom loading image: {imageFile}");
-      } else {
-        ZLog.LogError($"Could not find custom loading image: {imageFile}");
+      if (!File.Exists(imageFile)) {
+        Intermission.LogError($"Could not find custom loading image: {imageFile}");
         return null;
       }
 

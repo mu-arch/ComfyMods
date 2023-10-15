@@ -4,15 +4,13 @@ using static LicenseToSkill.PluginConfig;
 
 namespace LicenseToSkill {
   [HarmonyPatch(typeof(Skills))]
-  class SkillsPatch {
+  static class SkillsPatch {
     [HarmonyPrefix]
-    [HarmonyPatch(nameof(Skills.OnDeath))]
-    static void OnDeathPrefix(ref Skills __instance) {
-      if (!IsModEnabled.Value || __instance.m_player != Player.m_localPlayer) {
-        return;
+    [HarmonyPatch(nameof(Skills.LowerAllSkills))]
+    static void LowerAllSkillsPrefix(ref Skills __instance, ref float factor) {
+      if (IsModEnabled.Value && __instance.m_player == Player.m_localPlayer) {
+        factor = SkillLossPercentOverride.Value * 0.01f;
       }
-
-      __instance.m_DeathLowerFactor = SkillLossPercentOverride.Value * 0.01f;
     }
   }
 }

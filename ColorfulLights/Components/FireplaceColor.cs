@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using ComfyLib;
+
 using UnityEngine;
 
 using static ColorfulLights.ColorfulLights;
@@ -45,7 +47,6 @@ namespace ColorfulLights {
       CacheComponents(fireplace.m_enabledObject);
       CacheComponents(fireplace.m_enabledObjectHigh);
       CacheComponents(fireplace.m_enabledObjectLow);
-      CacheComponents(fireplace.m_fireworks);
 
       InvokeRepeating(nameof(UpdateColors), 0f, 2f);
     }
@@ -68,8 +69,7 @@ namespace ColorfulLights {
         return;
       }
 
-      if (_netView.m_zdo.m_vec3 == null
-          || !_netView.m_zdo.m_vec3.TryGetValue(FirePlaceColorHashCode, out Vector3 colorVec3)) {
+      if (!_netView.m_zdo.TryGetVector3(FirePlaceColorHashCode, out Vector3 colorVec3)) {
         return;
       }
 
@@ -88,17 +88,13 @@ namespace ColorfulLights {
       _targetColorVec3 = colorVec3;
       _targetColorAlpha = colorAlpha;
 
-      SetParticleColors( _lights, _systems, _renderers, TargetColor);
+      SetParticleColors(TargetColor);
     }
 
-    public static void SetParticleColors(
-        IEnumerable<Light> lights,
-        IEnumerable<ParticleSystem> systems,
-        IEnumerable<ParticleSystemRenderer> renderers,
-        Color color) {
+    void SetParticleColors(Color color) {
       ParticleSystem.MinMaxGradient gradient = new(color);
 
-      foreach (ParticleSystem system in systems) {
+      foreach (ParticleSystem system in _systems) {
         ParticleSystem.ColorOverLifetimeModule colorOverLiftime = system.colorOverLifetime;
 
         if (colorOverLiftime.enabled) {
@@ -113,11 +109,11 @@ namespace ColorfulLights {
         }
       }
 
-      foreach (ParticleSystemRenderer renderer in renderers) {
+      foreach (ParticleSystemRenderer renderer in _renderers) {
         renderer.material.color = color;
       }
 
-      foreach (Light light in lights) {
+      foreach (Light light in _lights) {
         light.color = color;
       }
     }

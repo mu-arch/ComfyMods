@@ -16,6 +16,48 @@
 
 ## Changelog
 
+### 2.15.0
+
+  * Updated for the `v0.217.24` patch.
+  * Removed `bdew-QuickConnect-1.6.0` and `JereKuusela-Server_Sync_Fix-1.2.0`.
+  * Added `ComfyMods-Enhuddlement-1.2.0` and `ComfyMods-Enigma-1.1.0`.
+  * Updated dependencies list to latest version.
+
+### 2.14.0
+
+  * Replaced `OdinPlus-PlantIt-0.1.5` with `ComfyMods-PlantThings-1.0.0`.
+
+### 2.13.0
+
+  * Re-added `ComfyMods-Intermission-1.2.0` and `ComfyMods-ComfyLoadingScreens-1.2.0` as they were never broken RIP.
+
+### 2.12.0
+
+  * Re-added `ComfyMods-Chatter-2.0.0`.
+
+### 2.11.0
+
+  * Updated for `v0.217.14` patch.
+  * Removed `RagnarokHCRP-Clock-1.5.0`.
+  * Temporarily removed broken Comfy-specific mods until they are fixed.
+    * `ComfyMods-Chatter-1.4.1`
+    * `ComfyMods-ComfyLoadingScreens-1.2.0`
+    * `ComfyMods-Intermission-1.2.0`
+  * Updated dependencies list to latest versions.
+
+
+### 2.10.0
+
+  * Updated for `v0.216.9` patch.
+  * Removed `Nexus-FarmGrid-0.2.0` and replaced with `SarcenNexusMods-FarmGrid-0.5.0`.
+  * Updated dependencies list to latest versions where applicable.
+
+### 2.9.0
+
+  * Added `ValheimModding-Jotunn-2.11.5`.
+  * Removed `virtuaCode-TrashItems-1.2.5` and replaced with `ComfyMods-DumpsterFire-1.1.0`.
+  * Updated dependencies list to latest versions where applicable.
+
 ### 2.8.0
 
   * Removed `Tekla-ColorfulSigns-5.4.1604` and replaced with `ComfyMods-ComfySigns-1.0.0`.

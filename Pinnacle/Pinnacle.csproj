@@ -69,6 +69,9 @@
     <Reference Include="assembly_valheim_publicized">
       <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\assembly_valheim_publicized.dll</HintPath>
     </Reference>
+    <Reference Include="ui_lib_publicized">
+      <HintPath>$(GamePath)\valheim_Data\Managed\publicized_assemblies\ui_lib_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
@@ -105,14 +108,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CenterMapHelper.cs" />
-    <Compile Include="Config\ConfigFileExtensions.cs" />
+    <Compile Include="Core\CenterMapHelper.cs" />
+    <Compile Include="Extensions\ConfigFileExtensions.cs" />
     <Compile Include="Core\PinImportExport.cs" />
+    <Compile Include="Patches\GamePatch.cs" />
     <Compile Include="Patches\MinimapPatch.cs" />
     <Compile Include="Patches\TerminalPatch.cs" />
     <Compile Include="Pinnacle.cs" />
-    <Compile Include="PluginConfig.cs" />
-    <Compile Include="PluginExtensions.cs" />
+    <Compile Include="Config\PluginConfig.cs" />
+    <Compile Include="Extensions\PluginExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Components\DisableHighlightOnSelect.cs" />
     <Compile Include="UI\Builder\LabelRow.cs" />

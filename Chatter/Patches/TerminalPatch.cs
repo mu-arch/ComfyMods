@@ -1,50 +1,72 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+using System.Reflection;
 
 using HarmonyLib;
 
-using UnityEngine;
-
-using static Chatter.Chatter;
 using static Chatter.PluginConfig;
 
 namespace Chatter {
   [HarmonyPatch(typeof(Terminal))]
   static class TerminalPatch {
-    [HarmonyTranspiler]
-    [HarmonyPatch(nameof(Terminal.UpdateInput))]
-    static IEnumerable<CodeInstruction> UpdateInputTranspiler(IEnumerable<CodeInstruction> instructions) {
-      return new CodeMatcher(instructions)
-          .MatchForward(
-              useEnd: false,
-              new CodeMatch(OpCodes.Ldarg_0),
-              new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Terminal), nameof(Terminal.m_input))),
-              new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Component), "get_gameObject")),
-              new CodeMatch(OpCodes.Ldc_I4_0),
-              new CodeMatch(OpCodes.Callvirt, typeof(GameObject).GetMethod(nameof(GameObject.SetActive))),
-              new CodeMatch(OpCodes.Ret))
-          .Advance(offset: 4)
-          .InsertAndAdvance(Transpilers.EmitDelegate<Func<bool, bool>>(DisableChatPanelDelegate))
-          .InstructionEnumeration();
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(Terminal.SendInput))]
-    static void SendInputPostfix(ref Terminal __instance) {
-      if (IsModEnabled.Value && __instance == Chat.m_instance && Chatter.ChatPanel != null) {
-        Chatter.ChatPanel.SetVerticalScrollPosition(0f);
-      }
-    }
-
     [HarmonyPostfix]
     [HarmonyPatch(nameof(Terminal.AddString), typeof(string))]
-    static void AddStringFinalPostfix(ref Terminal __instance, ref string text) {
-      if (!IsModEnabled.Value || __instance != Chat.m_instance || !_chatPanel?.Panel || _isCreatingChatMessage) {
-        return;
+    static void AddStringPostfix(Terminal __instance, string text) {
+      if (IsModEnabled.Value && __instance is Chat && !Chatter.IsChatMessageQueued) {
+        Chatter.AddChatMessage(
+            new() {
+              MessageType = ChatMessageType.Text,
+              Timestamp = DateTime.Now,
+              Text = text,
+            });
+      }
+    }
+
+    [HarmonyPatch]
+    static class SayDelegatePatch {
+      [HarmonyTargetMethod]
+      static MethodBase FindSayDelegateMethod() {
+        return AccessTools.Method(AccessTools.Inner(typeof(Terminal), "<>c"), "<InitTerminal>b__7_119");
       }
 
-      AddChatMessage(new() { MessageType = ChatMessageType.Text, Timestamp = DateTime.Now, Text = text });
+      [HarmonyPostfix]
+      static void SayDelegatePostfix(ref object __result) {
+        if (IsModEnabled.Value && (bool) __result == false) {
+          Chatter.ChatterChatPanel?.SetChatTextInputPrefix(Talker.Type.Normal);
+          __result = true;
+        }
+      }
+    }
+
+    [HarmonyPatch]
+    static class ShoutDelegatePatch {
+      [HarmonyTargetMethod]
+      static MethodBase FindShoutDelegateMethod() {
+        return AccessTools.Method(AccessTools.Inner(typeof(Terminal), "<>c"), "<InitTerminal>b__7_120");
+      }
+
+      [HarmonyPostfix]
+      static void ShoutDelegatePostfix(ref object __result) {
+        if (IsModEnabled.Value && (bool) __result == false) {
+          Chatter.ChatterChatPanel?.SetChatTextInputPrefix(Talker.Type.Shout);
+          __result = true;
+        }
+      }
+    }
+
+    [HarmonyPatch]
+    static class WhisperDelegatePatch {
+      [HarmonyTargetMethod]
+      static MethodBase FindWhisperDelegateMethod() {
+        return AccessTools.Method(AccessTools.Inner(typeof(Terminal), "<>c"), "<InitTerminal>b__7_121");
+      }
+
+      [HarmonyPostfix]
+      static void WhisperDelegatePostfix(ref object __result) {
+        if (IsModEnabled.Value && (bool) __result == false) {
+          Chatter.ChatterChatPanel?.SetChatTextInputPrefix(Talker.Type.Whisper);
+          __result = true;
+        }
+      }
     }
   }
 }

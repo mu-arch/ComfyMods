@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Chatter {
+namespace ComfyLib {
   public class CircularQueue<T> : ConcurrentQueue<T> {
     readonly int _capacity;
     readonly Action<T> _dequeueFunc;
@@ -11,7 +11,8 @@ namespace Chatter {
       _dequeueFunc = dequeueFunc;
     }
 
-    T _lastItem = default!;
+    T _lastItem = default;
+
     public T LastItem {
       get => _lastItem;
     }
@@ -31,6 +32,8 @@ namespace Chatter {
       while (TryDequeue(out T itemToDequeue)) {
         _dequeueFunc(itemToDequeue);
       }
+
+      _lastItem = default;
     }
   }
 }
